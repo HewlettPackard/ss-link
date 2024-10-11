@@ -78,7 +78,7 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_type_str(type));
 }
 
-static ssize_t length_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
@@ -95,9 +95,9 @@ static ssize_t length_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	length_cm = sl_media_lgrp_length_get(media_lgrp);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "length show (media_lgrp = 0x%p, length = %ucm)",
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "length_cm show (media_lgrp = 0x%p, length_cm = %u)",
 		media_lgrp, length_cm);
-	return scnprintf(buf, PAGE_SIZE, "%ucm\n", length_cm);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", length_cm);
 }
 
 static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -253,7 +253,7 @@ static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr
 static struct kobj_attribute media_state            = __ATTR_RO(state);
 static struct kobj_attribute media_vendor           = __ATTR_RO(vendor);
 static struct kobj_attribute media_type             = __ATTR_RO(type);
-static struct kobj_attribute media_length           = __ATTR_RO(length);
+static struct kobj_attribute media_length_cm        = __ATTR_RO(length_cm);
 static struct kobj_attribute media_max_speed        = __ATTR_RO(max_speed);
 static struct kobj_attribute media_serial_num       = __ATTR_RO(serial_num);
 static struct kobj_attribute media_hpe_part_num     = __ATTR_RO(hpe_part_num);
@@ -266,7 +266,7 @@ static struct attribute *media_attrs[] = {
 	&media_state.attr,
 	&media_vendor.attr,
 	&media_type.attr,
-	&media_length.attr,
+	&media_length_cm.attr,
 	&media_max_speed.attr,
 	&media_serial_num.attr,
 	&media_hpe_part_num.attr,

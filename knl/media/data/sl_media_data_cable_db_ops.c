@@ -17,11 +17,6 @@
 
 int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, struct sl_media_jack *media_jack)
 {
-	int target;
-	int lower_idx;
-	int upper_idx;
-	int middle_idx;
-	int req_idx;
 	int indexer;
 
 	sl_media_log_dbg(NULL, LOG_NAME, "cable validate");
@@ -30,71 +25,34 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	 * Check for loopback module
 	 */
 	if (media_attr->vendor == SL_MEDIA_VENDOR_MULTILANE) {
-		media_attr->hpe_pn     = 1;
-		media_attr->type       = SL_MEDIA_TYPE_PEC;
-		media_attr->length_cm  = 100;
-		media_attr->furcation  = SL_MEDIA_FURCATION_X1;
-		media_attr->max_speed  = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
-		media_attr->speeds_map = SL_MEDIA_SPEEDS_SUPPORT_CK_400G |
-					 SL_MEDIA_SPEEDS_SUPPORT_BS_200G |
-					 SL_MEDIA_SPEEDS_SUPPORT_BJ_100G |
-					 SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
+		media_attr->hpe_pn       = 1;
+		media_attr->type         = SL_MEDIA_TYPE_PEC;
+		media_attr->length_cm    = 100;
+		media_attr->furcation    = SL_MEDIA_FURCATION_X1;
+		media_attr->max_speed    = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		media_attr->speeds_map   = SL_MEDIA_SPEEDS_SUPPORT_CK_400G |
+					   SL_MEDIA_SPEEDS_SUPPORT_BS_200G |
+					   SL_MEDIA_SPEEDS_SUPPORT_BJ_100G |
+					   SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 		media_jack->cable_db_idx = -1;
-		goto out_success;
+		return 0;
 	}
 
-	target     = media_attr->hpe_pn;
-	lower_idx  = 0;
-	upper_idx  = ARRAY_SIZE(cable_db) - 1;
-	middle_idx = 0;
-	req_idx    = -1;
-	indexer    = 0;
-
-	while (lower_idx <= upper_idx) {
-		middle_idx = ((unsigned int)lower_idx + (unsigned int)upper_idx) >> 1;
-		if (cable_db[middle_idx].hpe_pn > target) {
-			upper_idx = middle_idx - 1;
-		} else if (cable_db[middle_idx].hpe_pn < target) {
-			lower_idx = middle_idx + 1;
-		} else {
-			req_idx = middle_idx;
-			break;
+	/*
+	 * Linear search through the cable_db array
+	 */
+	for (indexer = 0; indexer < ARRAY_SIZE(cable_db); ++indexer) {
+		if (cable_db[indexer].hpe_pn == media_attr->hpe_pn &&
+		    cable_db[indexer].vendor == media_attr->vendor &&
+		    cable_db[indexer].type == media_attr->type &&
+		    cable_db[indexer].length_cm == media_attr->length_cm) {
+			media_attr->max_speed = cable_db[indexer].max_speed;
+			media_jack->cable_db_idx = indexer;
+			return 0;
 		}
 	}
 
-	if (req_idx == -1)
-		goto out_failure;
-
-	indexer = req_idx - 2;
-	if (cable_db[req_idx].vendor == media_attr->vendor &&
-		cable_db[req_idx].hpe_pn == media_attr->hpe_pn &&
-		cable_db[req_idx].type == media_attr->type &&
-		cable_db[req_idx].length_cm == media_attr->length_cm) {
-		media_attr->max_speed = cable_db[req_idx].max_speed;
-		media_jack->cable_db_idx = req_idx;
-		goto out_success;
-	} else {
-		while (indexer != req_idx + 3) {
-			if (indexer == req_idx) {
-				indexer++;
-				continue;
-			}
-			if (cable_db[indexer].vendor == media_attr->vendor &&
-				cable_db[indexer].hpe_pn == media_attr->hpe_pn &&
-				cable_db[indexer].type == media_attr->type &&
-				cable_db[indexer].length_cm == media_attr->length_cm) {
-				media_attr->max_speed = cable_db[indexer].max_speed;
-				media_jack->cable_db_idx = indexer;
-				goto out_success;
-			}
-			indexer++;
-		}
-	}
-
-out_failure:
 	return -ENOENT;
-out_success:
-	return 0;
 }
 
 int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, u32 flags)

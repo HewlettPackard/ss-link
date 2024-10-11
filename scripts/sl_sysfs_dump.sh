@@ -96,7 +96,7 @@ dump_cassini() {
     printf " state:                       %s\n" `cat $LGRP/media/state`
     printf " vendor:                      %s\n" `cat $LGRP/media/vendor`
     printf " type:                        %s\n" `cat $LGRP/media/type`
-    printf " length:                      %s\n" `cat $LGRP/media/length`
+    printf " length_cm:                   %s\n" `cat $LGRP/media/length_cm`
     printf " max_speed:                   %s\n" `cat $LGRP/media/max_speed`
     printf " speeds:                      %s\n" `cat $LGRP/media/speeds`
     printf " serial_num:                  %s\n" `cat $LGRP/media/serial_num`
