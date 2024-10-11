@@ -25,13 +25,11 @@
 #define FLAT_MEM_BIT    7
 static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack)
 {
-	u8  flat_mem;
 	int rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get");
 
-	flat_mem = media_jack->eeprom_page0[FLAT_MEM_OFFSET];
-	if (test_bit(FLAT_MEM_BIT, (unsigned long *)&flat_mem)) {
+	if ((media_jack->eeprom_page0[FLAT_MEM_OFFSET] & BIT(FLAT_MEM_BIT)) != 0) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "no page1 in eeprom");
 		return 0;
 	}
