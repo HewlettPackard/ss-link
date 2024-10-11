@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+#
+#  debhelper (dh) cannot cleanly build the driver
+#  so have explicit targets for clean and build
+#  use dh for everything else
+#
+.PHONEY: clean build
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=-all
+
+# Avoid debhelper to introduce additional linker flags
+override_dh_auto_configure:
+	/bin/true
+
+override_dh_auto_clean:
+	@echo "XXX executing clean XXXXXXXXXXX DEB_TARGET_ARCH $(DEB_TARGET_ARCH)"
+	cp common/configs/config.mak.$(DEB_TARGET_ARCH).pkg_build_container config.mak
+	make clean stage_uninstall
+
+override_dh_auto_build:
+	@echo "XXX executing build XXXXXXXXXXX DEB_TARGET_ARCH $(DEB_TARGET_ARCH)"
+	cp common/configs/config.mak.$(DEB_TARGET_ARCH).pkg_build_container config.mak
+	make V=1 stage_install
+
+%:
+	@echo "XXX executing dh $@ XXXXXXXXXXX"
+	dh $@ --without autoreconf --parallel
+	@echo "XXX dh $@ done      XXXXXXXXXXX"

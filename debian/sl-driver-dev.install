@@ -1,0 +1,21 @@
+lib/modules/5.10.*/module.symvers.sl
+lib/modules/5.10.*/modules.builtin
+lib/modules/5.10.*/modules.order
+usr/include/linux/sl_kconfig.h
+usr/include/linux/sl.h
+usr/include/linux/sl_ldev.h
+usr/include/linux/sl_lgrp.h
+usr/include/linux/sl_link.h
+usr/include/linux/sl_fec.h
+usr/include/linux/sl_llr.h
+usr/include/linux/sl_mac.h
+usr/include/linux/sl_media.h
+usr/include/linux/sl_test.h
+usr/include/uapi/sl_ldev.h
+usr/include/uapi/sl_lgrp.h
+usr/include/uapi/sl_link.h
+usr/include/uapi/sl_llr.h
+usr/include/uapi/sl_mac.h
+usr/include/uapi/sl_media.h
+pkgconfig/sl-driver-dev.pc usr/lib/pkgconfig
+usr/bin/sl_sysfs_dump.sh

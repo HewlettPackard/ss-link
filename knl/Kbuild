@@ -1,0 +1,140 @@
+#
+# Slingshot Link
+#
+
+obj-m := $(SL_NAME).o
+
+$(SL_NAME)-y := sl_module.o
+
+$(SL_NAME)-$(SL_TEST) += \
+	sl_test.o                       \
+	ctl/test/sl_ctl_test.o          \
+	core/test/sl_core_test.o        \
+	core/test/sl_core_test_an.o     \
+	core/hw/sl_core_hw_fec_test.o   \
+	core/test/sl_core_test_fec.o    \
+	media/test/sl_media_test.o
+
+$(SL_NAME)-$(SL_ROSETTA_BUILD) += \
+	sl_media_rosetta.o                               \
+	media/sl_media_rosetta_io.o                      \
+	media/sl_media_jack_rosetta.o                    \
+	media/data/sl_media_data_jack_rosetta.o          \
+	media/data/sl_media_data_jack_rosetta_emulator.o \
+	core/hw/sl_core_hw_fec_rosetta.o
+
+$(SL_NAME)-$(SL_EMULATOR_BUILD) += \
+	sl_media_rosetta.o                               \
+	media/sl_media_emulator_io.o                     \
+	media/sl_media_jack_rosetta.o                    \
+	media/data/sl_media_data_jack_emulator.o         \
+	media/data/sl_media_data_jack_rosetta_emulator.o \
+	media/data/sl_media_data_jack_cassini_emulator.o \
+	core/hw/sl_core_hw_fec_rosetta.o
+
+$(SL_NAME)-$(SL_CASSINI_BUILD) += \
+	sl_media_cassini.o                               \
+	media/sl_media_cassini_io.o                      \
+	media/sl_media_jack_cassini.o                    \
+	media/data/sl_media_data_jack_cassini.o          \
+	media/data/sl_media_data_jack_cassini_emulator.o \
+	core/hw/sl_core_hw_fec_cassini.o
+
+$(SL_NAME)-y += \
+	sl_ldev.o  \
+	sl_lgrp.o  \
+	sl_link.o  \
+	sl_llr.o   \
+	sl_mac.o   \
+	sl_media.o \
+	sl_fec.o
+
+$(SL_NAME)-y += \
+	media/sl_media_lgrp.o                   \
+	media/sl_media_ldev.o                   \
+	media/sl_media_jack.o                   \
+	media/data/sl_media_data_ldev.o         \
+	media/data/sl_media_data_lgrp.o         \
+	media/data/sl_media_data_jack.o         \
+	media/data/sl_media_data_cable_db_ops.o \
+	media/base/sl_media_eeprom.o
+
+$(SL_NAME)-y += \
+	core/sl_core_ldev.o                 \
+	core/sl_core_lgrp.o                 \
+	core/sl_core_link.o                 \
+	core/sl_core_link_an.o              \
+	core/sl_core_link_fec.o             \
+	core/sl_core_mac.o                  \
+	core/sl_core_llr.o                  \
+	core/sl_core_str.o                  \
+	core/base/sl_core_timer_link.o      \
+	core/base/sl_core_timer_llr.o       \
+	core/base/sl_core_work_link.o       \
+	core/base/sl_core_work_llr.o        \
+	core/data/sl_core_data_ldev.o       \
+	core/data/sl_core_data_lgrp.o       \
+	core/data/sl_core_data_link.o       \
+	core/data/sl_core_data_llr.o        \
+	core/data/sl_core_data_mac.o        \
+	core/hw/sl_core_hw_intr.o           \
+	core/hw/sl_core_hw_intr_llr.o       \
+	core/hw/sl_core_hw_sbus.o           \
+	core/hw/sl_core_hw_pmi.o            \
+	core/hw/sl_core_hw_uc_ram.o         \
+	core/hw/sl_core_hw_serdes.o         \
+	core/hw/sl_core_hw_serdes_fw.o      \
+	core/hw/sl_core_hw_serdes_core.o    \
+	core/hw/sl_core_hw_serdes_lane.o    \
+	core/hw/sl_core_hw_serdes_lane_tx.o \
+	core/hw/sl_core_hw_serdes_lane_rx.o \
+	core/hw/sl_core_hw_link.o           \
+	core/hw/sl_core_hw_an.o             \
+	core/hw/sl_core_hw_an_lp.o          \
+	core/hw/sl_core_hw_an_up.o          \
+	core/hw/sl_core_hw_pcs.o            \
+	core/hw/sl_core_hw_mac.o            \
+	core/hw/sl_core_hw_llr.o            \
+	core/hw/sl_core_hw_reset.o          \
+	core/test/sl_core_test_serdes.o
+
+$(SL_NAME)-y += \
+	ctl/sl_ctl_ldev.o          \
+	ctl/sl_ctl_lgrp.o          \
+	ctl/sl_ctl_lgrp_notif.o    \
+	ctl/sl_ctl_link.o          \
+	ctl/sl_ctl_link_priv.o     \
+	ctl/sl_ctl_link_fec.o      \
+	ctl/sl_ctl_link_fec_priv.o \
+	ctl/sl_ctl_link_counters.o \
+	ctl/sl_ctl_mac.o           \
+	ctl/sl_ctl_llr.o
+
+$(SL_NAME)-y += \
+	log/sl_log.o
+
+$(SL_NAME)-y += \
+	test/sl_test_common.o
+
+$(SL_NAME)-y += \
+	sysfs/sl_sysfs_ldev.o                 \
+	sysfs/sl_sysfs_lgrp.o                 \
+	sysfs/sl_sysfs_link.o                 \
+	sysfs/sl_sysfs_link_policy.o          \
+	sysfs/sl_sysfs_link_config.o          \
+	sysfs/sl_sysfs_link_fec.o             \
+	sysfs/sl_sysfs_link_fec_current.o     \
+	sysfs/sl_sysfs_link_fec_up.o          \
+	sysfs/sl_sysfs_link_fec_down.o        \
+	sysfs/sl_sysfs_serdes.o               \
+	sysfs/sl_sysfs_serdes_settings.o      \
+	sysfs/sl_sysfs_serdes_eye.o           \
+	sysfs/sl_sysfs_serdes_state.o         \
+	sysfs/sl_sysfs_llr.o                  \
+	sysfs/sl_sysfs_llr_config.o           \
+	sysfs/sl_sysfs_llr_policy.o           \
+	sysfs/sl_sysfs_llr_loop_time.o        \
+	sysfs/sl_sysfs_mac.o                  \
+        sysfs/sl_sysfs_media.o
+
+ccflags-y := -I$(M)

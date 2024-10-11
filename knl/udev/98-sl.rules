@@ -1,0 +1,4 @@
+#Rules to change the permissions for slingshot link driver
+
+KERNEL=="sl0", SUBSYSTEM=="sl", MODE="0666"
+

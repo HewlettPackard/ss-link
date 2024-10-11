@@ -1,0 +1,3 @@
+lib/modules/5.10.*/sshot/sl.ko
+lib/firmware/sl_fw_quad_3.04.bin
+lib/firmware/sl_fw_octet_3.08.bin

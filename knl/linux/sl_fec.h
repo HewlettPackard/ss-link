@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+
+#ifndef _LINUX_SL_FEC_H_
+#define _LINUX_SL_FEC_H_
+
+struct sl_link;
+
+#define SL_CTL_NUM_FEC_LANES 16
+struct sl_fec_info {
+	u64 ucw;                          /* uncorrected code word count */
+	u64 ccw;                          /* corrected code word count   */
+	u64 gcw;                          /* good code word count        */
+	u64 lanes[SL_CTL_NUM_FEC_LANES];  /* error count per lane        */
+	u32 period_ms;                    /* collection period           */
+};
+int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info);
+
+#define SL_CTL_NUM_CCW_BINS 15
+struct sl_fec_tails {
+	u64 ccw_bins[SL_CTL_NUM_CCW_BINS];
+	u32 period_ms;                    /* collection period */ 
+};
+int sl_fec_tails_get(struct sl_link *link, struct sl_fec_tails *fec_tails);
+
+struct sl_ber {
+	u32 mant;
+	s32 exp;
+};
+int sl_fec_ber_calc(struct sl_fec_info *fec_info, struct sl_ber *ucw_ber, struct sl_ber *ccw_ber);
+
+#endif /* _LINUX_SL_FEC_H_ */

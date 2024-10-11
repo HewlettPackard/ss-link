@@ -1,0 +1,13 @@
+@Library("dst-shared") _
+
+rpmBuild(
+    product: "slingshot-host-software",
+    specfile: "sl_driver.spec",
+    target_node: "ncn",
+    buildPrepScript: "runBuildPrep.rhel.sh",
+    rpmBuildCmd: "rpm_build_multikernel.sh _arch=\$arch _buildname=\$buildname _os=\$os",
+    fanout_params: ["rhel_9_4"],
+    build_arch: "aarch64",
+    manifestGen: "true",
+    numToKeepStr: 40
+)

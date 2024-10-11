@@ -1,0 +1,10 @@
+@Library("dst-shared") _
+
+obsBuildPipeline {
+    product = "shs-cn,shs-ncn"
+    productStream = "slingshot-host-software"
+    timeout = 30
+    manifestGen = "true"
+    skipProjectRemoval = "dst:shs:SSHOTPLAT-2637:shasta:cn"
+    numToKeepStr = 40
+}

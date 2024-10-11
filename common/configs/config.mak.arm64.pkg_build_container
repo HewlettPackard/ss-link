@@ -1,0 +1,45 @@
+#
+# build configuration for package build for Rosetta Hardware
+#
+
+ARCH := arm64
+
+WORKSPACE ?= /tmp
+
+SL_MOD_DIR = sshot
+
+INSTALL_DIR := $(DESTDIR)
+STAGING_DIR := $(WORKSPACE)/staging_dir
+
+KNL_REL  := 5.10.35-ls64-slingshot
+KDIR     := /lib/modules/$(KNL_REL)/build
+
+GIT_HASH := $(shell git rev-parse HEAD)
+
+CROSS_COMPILE := aarch64-linux-gnu-
+KNL_BUILD_ARGS += V=1
+KNL_BUILD_ARGS += CROSS_COMPILE=$(CROSS_COMPILE)
+KNL_BUILD_ARGS += ARCH=$(ARCH)
+KNL_BUILD_ARGS += SL_TEST=y
+KNL_BUILD_ARGS += SL_ROSETTA_BUILD=y
+
+KCPPFLAGS += -DBUILDSYS_EXTERNAL_BUILD
+KCPPFLAGS += -DBUILDSYS_FRAMEWORK_ROSETTA
+KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
+## NOTE: to compile tests in the driver
+KCPPFLAGS += -DSL_TEST=1
+
+USR_BUILD_ARGS += -DBUILDSYS_FRAMEWORK_ROSETTA
+USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)
+DISCRIMINATOR  := aarch64-linux-gnu
+
+SL_NAME = sl
+SL_TEST_NAME = sl-test
+KNL_BUILD_ARGS += SL_NAME=$(SL_NAME)
+KNL_BUILD_ARGS += SL_TEST_NAME=$(SL_TEST_NAME)
+
+export SL_MOD_DIR
+export STAGING_DIR
+export DISCRIMINATOR
+export SL_NAME
+export SL_TEST_NAME

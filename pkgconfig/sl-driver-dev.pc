@@ -1,0 +1,9 @@
+sl-driver-dev.pc:
+prefix=/usr
+includedir=${prefix}/include
+
+Name: sl-driver-dev
+Description: Slingshot Link drivers development support.
+Version: 1.0.0
+
+Cflags: -I${includedir}

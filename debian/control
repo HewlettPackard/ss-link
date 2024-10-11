@@ -1,0 +1,31 @@
+Source: sl-driver
+Priority: optional
+Maintainer: hpe.com
+Build-Depends: debhelper, linux-headers-5.10.35-amd64-slingshot [amd64], linux-headers-5.10.35-ls64-slingshot [arm64], rosetta2-headers-dev
+Standards-Version: 4.1.2
+Section: kernel
+Homepage: https://github.hpe.com/hpe/hpc-sshot-sl-driver
+Vcs-Git: https://github.hpe.com/hpe/hpc-sshot-sl-driver.git
+Vcs-Browser: https://github.hpe.com/hpe/hpc-sshot-sl-driver.git
+
+Package: sl-driver
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Slingshot Link drivers
+ Provides kernel modules for controlling a slingshot link
+
+Package: sl-driver-dev
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Slingshot Link drivers development support
+ Provides header files for developing code that accesses a slingshot link
+
+Package: sl-driver-test
+Architecture: all
+Multi-Arch: foreign
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Slingshot Link driver tests
+ Provides tests for slingshot link driver
+

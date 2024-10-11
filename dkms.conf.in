@@ -1,0 +1,28 @@
+## Global options
+PACKAGE_NAME="@PACKAGE_NAME@"
+# Package version should change with each new version
+PACKAGE_VERSION="@PACKAGE_VERSION@"
+ 
+## SHS DKMS variables
+SHS_DKMS_PACKAGEROOT="$dkms_tree/$PACKAGE_NAME/$PACKAGE_VERSION"
+SHS_DKMS_BUILDROOT="$SHS_DKMS_PACKAGEROOT/build"
+SHS_MAKE_ARGS=" \
+    KDIR=$kernel_source_dir \
+    PLATFORM_CASSINI_HW=1 \
+"
+
+MAKE="'make' ${SHS_MAKE_ARGS} all-cass"
+CLEAN="'make' ${SHS_MAKE_ARGS} clean"
+AUTOINSTALL='yes'
+
+# Post-build hook to copy our Module.symvers into the DKMS tree so that other modules can build against it
+POST_BUILD="dkms.post_build.sh ${SHS_DKMS_BUILDROOT}/knl/ ${SHS_DKMS_PACKAGEROOT}"
+
+#
+# cxi-sl.ko
+#
+BUILT_MODULE_LOCATION[0]=knl
+DEST_MODULE_LOCATION[0]=/extra/
+BUILT_MODULE_NAME[0]=cxi-sl
+DEST_MODULE_NAME[0]=cxi-sl
+STRIP[0]=no

@@ -1,0 +1,81 @@
+The SlingShot 2 Link Driver
+====================================
+
+Architecture:
+
+                      +--------+  +-----+    +---------+
+                      | swtest |  | SDK |    | ethtool |
+                      +--------+  +-----+    +---------+
+                          |          |            |
+                          +----+-----+            |
+                               |                  |
+    user                       |                  |
+  -----------------------------|------------------|-----------------
+    kernel                     |                  |
+                               |                  |
+                       +---------------+    +------------+
+                       | Switch driver |    | CXI driver |
+                       +---------------+    +------------+
+                               |                  |
+                               |                  |
+                               +-------+----------+
+                                       |
+                                       |
+                  +--------------------|--------------------+
+                  | Link driver        |                    |
+                  |                    |                    |
+                  |       +------------+--------+           |
+                  |       |                     |           |
+                  |       |             +----------------+  |
+                  |       |   +---------|    Control     |  |
+                  |       |   |         +----------------+  |
+                  |       |   |                 |           |
+                  |  +-----------+      +----------------+  |
+                  |  |   Media   |------|      Core      |  |
+                  |  +-----------+      +----------------+  |
+                  |       |                  |   |          |
+                  |       |           +------+   |          |
+                  |       |           |          |          |
+                  +-------|-----------|----------|----------+
+                          |           |          |
+    kernel                |           |          |
+  ------------------------|-----------|----------|------------------
+    hardware              |           |          |
+                          |           |          |
+                      +-------+       |          |
+                      | jack  |       |          |
+                      +-------+   +------+   +--------+
+                      | cable |   | ASIC |   | SerDes |
+                      +-------+   +------+   +--------+
+
+
+Link Control Functional Block:
+    Responsible for monitoring of policies related to the link.
+
+Link Core Functional Block:
+    Responsible for configuration of the link, bringing the link up and down,
+    and presenting information about the link.
+
+Link Media Functional Block:
+    Responsible for providing access to the link cable and reacting to
+    insert and remove events.
+
+Internal Objects:
+     ldev  - "Link Device":  Is a switch or a nic
+     lgrp  - "Link Group":   Is a group of links
+     link  - "Link":         Is a high speed link
+     cable - "Cable":        Is a cable
+
+Build:
+     cp ./common/configs/<config make file> ./config.mak
+     make clean
+     make
+
+Module:
+     ./knl/[cxi-]sl.ko
+
+Debug:
+     debug level:   echo <level> > /proc/sys/kernel/printk
+     enable file:   echo -n 'file <filename> +p' >> /proc/dynamic_debug/control
+     enable func:   echo -n 'func <function> +p' >> /proc/dynamic_debug/control
+     enable module: echo -n 'module [cxi_]sl +p' >> /proc/dynamic_debug/control

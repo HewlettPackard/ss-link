@@ -1,0 +1,53 @@
+# Run on r2x4_2con3_pcs model
+#
+# Used for debugging the test
+# ddebug file sl_ctl_test.c on
+# ddebug file sl_ctl_link_fec.c on
+
+# Create lgrp [2,3]
+test 1 1 0xC 0 0
+
+# Config lgrp SINGLE
+test 1 2 0xC 0 0
+
+# Create MACs
+test 1 34 0xC 1 0
+
+# Create LLRs
+test 1 35 0xC 1 0
+
+# Set LLR configuration
+test 1 36 0xC 1 0
+
+# Create links
+test 1 3 0xC 1 0
+
+# Configure link with TEST_LINK_CFG_FEC_UP_OFF
+test 1 4 0xC 1 1
+
+# Verify link configuration TEST_LINK_CFG_FEC_UP_OFF
+test 1 12 0xC 1 1
+
+# Configure link with TEST_LINK_CFG_FEC_UP_ON
+test 1 4 0xC 1 2
+
+# Verify link configuration TEST_LINK_CFG_FEC_UP_ON
+test 1 12 0xC 1 2
+
+# Set link policy TEST_LINK_POL_FEC_MON_OFF
+test 1 27 0xC 1 0
+
+# Verify link policy TEST_LINK_POL_FEC_MON_OFF
+test 1 37 0xC 1 0
+
+# Set link policy TEST_LINK_POL_FEC_MON_ON
+test 1 27 0xC 1 1
+
+# Verify link policy TEST_LINK_POL_FEC_MON_ON
+test 1 37 0xC 1 1
+
+# Set link policy TEST_LINK_POL_FEC_MON_ON_DOWN_OFF_CCW_WARN_ON
+test 1 27 0xC 1 2
+
+# Verify link policy TEST_LINK_POL_FEC_MON_ON_DOWN_OFF_CCW_WARN_ON
+test 1 37 0xC 1 2
