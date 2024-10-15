@@ -68,6 +68,7 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	core_link->magic      = SL_CORE_LINK_MAGIC;
 	core_link->num        = link_num;
 	core_link->core_lgrp  = core_lgrp;
+	spin_lock_init(&(core_link->data_lock));
 
 	/* ----- link ----- */
 
