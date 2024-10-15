@@ -450,54 +450,50 @@ static int sl_ctl_test9(struct sl_ctl_test_args test_args)
 }
 
 /* Verify BER calculations */
+struct expected_ber {
+	struct sl_fec_info fec;
+	struct sl_ber      ucw;
+	struct sl_ber      ccw;
+};
+static struct expected_ber expected_bers[] = {
+	{
+		/* BS_200G default config */
+		.fec = { .ucw = 21, .ccw = 51000000, .gcw = 39053125, .period_ms = HZ },
+		.ucw = { .mant = 98, .exp = -12 },
+		.ccw = { .mant = 240, .exp = -6 },	/* Accounted for margin of error */
+	},
+	{
+		/* BS_200G default config */
+		.fec = { .ucw = 22, .ccw = 51000001, .gcw = 39053124, .period_ms = HZ },
+		.ucw = { .mant = 103, .exp = -12 },
+		.ccw = { .mant = 240, .exp = -6 },	/* Accounted for margin of error */
+	},
+};
 static int sl_ctl_test11(struct sl_ctl_test_args test_args)
 {
-
-	struct expected_ber {
-		struct sl_fec_info fec;
-		struct sl_ber      ucw;
-		struct sl_ber      ccw;
-	};
-
-	int                  i;
-	int                  err;
-	int                  test_rtn;
-	struct sl_ber        calc_ucw;
-	struct sl_ber        calc_ccw;
-	struct expected_ber *ber;
-	struct expected_ber  expected_bers[] = {
-		{
-			/* BS_200G default config */
-			.fec = { .ucw = 21, .ccw = 51000000, .gcw = 39053125, .period_ms = HZ },
-			.ucw = { .mant = 98, .exp = -12 },
-			.ccw = { .mant = 240, .exp = -6 },	/* Accounted for margin of error */
-		},
-		{
-			/* BS_200G default config */
-			.fec = { .ucw = 22, .ccw = 51000001, .gcw = 39053124, .period_ms = HZ },
-			.ucw = { .mant = 103, .exp = -12 },
-			.ccw = { .mant = 240, .exp = -6 },	/* Accounted for margin of error */
-		},
-	};
+	int           i;
+	int           err;
+	int           test_rtn;
+	struct sl_ber calc_ucw;
+	struct sl_ber calc_ccw;
 
 	test_rtn = 0;
 
 	for (i = 0; i < ARRAY_SIZE(expected_bers); ++i) {
-		ber = expected_bers + i;
-		err = sl_ctl_link_fec_ber_calc(&ber->fec, &calc_ucw, &calc_ccw);
+		err = sl_ctl_link_fec_ber_calc(&expected_bers[i].fec, &calc_ucw, &calc_ccw);
 		if (err) {
 			pr_err(SL_CTL_TEST_NAME "link_fec_ber_calc failed [%d]", err);
 			return 1;
 		}
 
-		if (!sl_ctl_link_ber_eq(&ber->ucw, &calc_ucw)) {
+		if (!sl_ctl_link_ber_eq(&expected_bers[i].ucw, &calc_ucw)) {
 			pr_warn(SL_CTL_TEST_NAME "link_ber_eq ucw not equal (%de%.2d != %de%.2d)\n",
-				calc_ucw.mant, calc_ucw.exp, ber->ucw.mant, ber->ucw.exp);
+				calc_ucw.mant, calc_ucw.exp, expected_bers[i].ucw.mant, expected_bers[i].ucw.exp);
 			test_rtn = 1;
 		}
-		if (!sl_ctl_link_ber_eq(&ber->ccw, &calc_ccw)) {
+		if (!sl_ctl_link_ber_eq(&expected_bers[i].ccw, &calc_ccw)) {
 			pr_warn(SL_CTL_TEST_NAME "link_ber_eq ccw not equal (%de%.2d != %de%.2d)\n",
-				calc_ccw.mant, calc_ccw.exp, ber->ccw.mant, ber->ccw.exp);
+				calc_ccw.mant, calc_ccw.exp, expected_bers[i].ccw.mant, expected_bers[i].ccw.exp);
 			test_rtn = 1;
 		}
 	}
@@ -527,141 +523,140 @@ static int sl_ctl_test12(struct sl_ctl_test_args test_args)
 }
 
 /* Verify FEC rate check */
+struct expected_fec_rate {
+	u32                ucw_limit;
+	u32                ccw_limit;
+	struct sl_fec_info info;
+};
+static struct expected_fec_rate exceed_fec_rates[] = {
+	{
+		/* BS_200G - Threshold set to exceed */
+		.ucw_limit = 21,
+		.ccw_limit = 51000000,
+		.info = {
+			.ucw       = 21,
+			.ccw       = 51000000,
+			.gcw       = 39053126,
+			.period_ms = HZ,
+		}
+	},
+	{
+		/* Minimum we can detect */
+		.ucw_limit = 1,
+		.ccw_limit = 1,
+		.info = {
+			.ucw       = 1,
+			.ccw       = 1,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+	{
+		/* Maximum we can detect */
+		.ucw_limit = UINT_MAX,
+		.ccw_limit = UINT_MAX,
+		.info = {
+			.ucw       = UINT_MAX,
+			.ccw       = UINT_MAX,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+};
+static struct expected_fec_rate no_exceed_fec_rates[] = {
+	{
+		/* Threshold off */
+		.ucw_limit = 0,
+		.ccw_limit = 0,
+		.info = {
+			.ucw       = 0,
+			.ccw       = 0,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+	{
+		/* All Zero */
+		.ucw_limit = 0,
+		.ccw_limit = 0,
+		.info = {
+			.ucw       = 0,
+			.ccw       = 0,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = 0,
+		}
+	},
+	{
+		/* Configured limitold with invalid rate */
+		.ucw_limit = 1,
+		.ccw_limit = 1,
+		.info = {
+			.ucw       = 0,
+			.ccw       = 0,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = 0,
+		}
+	},
+	{
+		/* Period of 0 */
+		.ucw_limit = 1,
+		.ccw_limit = 1,
+		.info = {
+			.ucw       = 1,
+			.ccw       = 1,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = 0,
+		}
+	},
+	{
+		/* Threshold off, but UCW rate shows errors */
+		.ucw_limit = 0,
+		.ccw_limit = 0,
+		.info = {
+			.ucw       = UINT_MAX,
+			.ccw       = 0,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+	{
+		/* Threshold off, but CCW rate shows errors */
+		.ucw_limit = 0,
+		.ccw_limit = 0,
+		.info = {
+			.ucw       = 0,
+			.ccw       = UINT_MAX,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+	{
+		/* Minimum limitold */
+		.ucw_limit = 1,
+		.ccw_limit = 1,
+		.info = {
+			.ucw       = 0,
+			.ccw       = 0,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms  = HZ,
+		}
+	},
+	{
+		/* Maximum limitold */
+		.ucw_limit = UINT_MAX,
+		.ccw_limit = UINT_MAX,
+		.info = {
+			.ucw       = UINT_MAX - 1,
+			.ccw       = UINT_MAX - 1,
+			.gcw       = 0,	/* Not used in limit check, only for BER calc */
+			.period_ms = HZ,
+		}
+	},
+};
 static int sl_ctl_test13(struct sl_ctl_test_args test_args)
 {
-	struct expected_fec_rate {
-		u32                ucw_limit;
-		u32                ccw_limit;
-		struct sl_fec_info info;
-	};
-
-	int                      i;
-	int                      test_rtn;
-	struct expected_fec_rate exceed_fec_rates[] = {
-		{
-			/* BS_200G - Threshold set to exceed */
-			.ucw_limit = 21,
-			.ccw_limit = 51000000,
-			.info = {
-				.ucw       = 21,
-				.ccw       = 51000000,
-				.gcw       = 39053126,
-				.period_ms = HZ,
-			}
-		},
-		{
-			/* Minimum we can detect */
-			.ucw_limit = 1,
-			.ccw_limit = 1,
-			.info = {
-				.ucw       = 1,
-				.ccw       = 1,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-		{
-			/* Maximum we can detect */
-			.ucw_limit = UINT_MAX,
-			.ccw_limit = UINT_MAX,
-			.info = {
-				.ucw       = UINT_MAX,
-				.ccw       = UINT_MAX,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-	};
-	struct expected_fec_rate no_exceed_fec_rates[] = {
-		{
-			/* Threshold off */
-			.ucw_limit = 0,
-			.ccw_limit = 0,
-			.info = {
-				.ucw       = 0,
-				.ccw       = 0,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-		{
-			/* All Zero */
-			.ucw_limit = 0,
-			.ccw_limit = 0,
-			.info = {
-				.ucw       = 0,
-				.ccw       = 0,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = 0,
-			}
-		},
-		{
-			/* Configured limitold with invalid rate */
-			.ucw_limit = 1,
-			.ccw_limit = 1,
-			.info = {
-				.ucw       = 0,
-				.ccw       = 0,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = 0,
-			}
-		},
-		{
-			/* Period of 0 */
-			.ucw_limit = 1,
-			.ccw_limit = 1,
-			.info = {
-				.ucw       = 1,
-				.ccw       = 1,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = 0,
-			}
-		},
-		{
-			/* Threshold off, but UCW rate shows errors */
-			.ucw_limit = 0,
-			.ccw_limit = 0,
-			.info = {
-				.ucw       = UINT_MAX,
-				.ccw       = 0,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-		{
-			/* Threshold off, but CCW rate shows errors */
-			.ucw_limit = 0,
-			.ccw_limit = 0,
-			.info = {
-				.ucw       = 0,
-				.ccw       = UINT_MAX,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-		{
-			/* Minimum limitold */
-			.ucw_limit = 1,
-			.ccw_limit = 1,
-			.info = {
-				.ucw       = 0,
-				.ccw       = 0,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms  = HZ,
-			}
-		},
-		{
-			/* Maximum limitold */
-			.ucw_limit = UINT_MAX,
-			.ccw_limit = UINT_MAX,
-			.info = {
-				.ucw       = UINT_MAX - 1,
-				.ccw       = UINT_MAX - 1,
-				.gcw       = 0,	/* Not used in limit check, only for BER calc */
-				.period_ms = HZ,
-			}
-		},
-	};
+	int i;
+	int test_rtn;
 
 	test_rtn = 0;
 
