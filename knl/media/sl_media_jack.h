@@ -101,6 +101,7 @@ struct sl_media_jack {
 
 	bool                            is_cable_not_supported;
 	bool                            is_cable_format_invalid;
+	bool                            is_ss200_cable;
 	bool                            is_high_powered;
 	unsigned long                   cable_power_up_wait_time_end;
 	bool                            is_downshifted;

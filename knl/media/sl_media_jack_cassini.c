@@ -89,6 +89,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			}
 			return -EFAULT;
 		}
+		if (media_jack->is_ss200_cable)
+			media_attr.options |= SL_MEDIA_OPT_SS200_CABLE;
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
 			sl_media_log_warn(media_jack, LOG_NAME, "cable validate failed [%d]", rtn);

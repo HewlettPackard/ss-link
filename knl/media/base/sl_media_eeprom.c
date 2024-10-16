@@ -36,9 +36,7 @@ static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *form
 		return 0;
 	}
 
-	spin_lock(&media_jack->data_lock);
 	media_jack->is_cable_format_invalid = true;
-	spin_unlock(&media_jack->data_lock);
 
 	sl_media_log_err(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
 		"invalid format (id = 0x%X, rev = 0x%X)",
@@ -53,10 +51,12 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	switch (host_interface) {
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GAUI_1_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GBASE_CR:
+		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_100GAUI_2_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_100GBASE_CR2:
+		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_100G;
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_100GBASE_CR1:
@@ -67,6 +67,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GBASE_CR4:
+		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		media_jack->appsel_no_200_gaui = appsel_no;
 		media_jack->lane_count_200_gaui = lane_count;
@@ -86,6 +87,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GBASE_CR8:
+		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		fallthrough;
 	case SL_MEDIA_SS1_HOST_INTERFACE_CAUI_4_C2M:

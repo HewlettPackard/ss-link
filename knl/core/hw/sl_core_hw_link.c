@@ -45,8 +45,7 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 		core_link->info_map, core_link->pcs.settings.speed,
 		core_link->fec.settings.mode, core_link->fec.settings.type);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
-			"up callback failed [%d]", rtn);
+		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
 }
 
 void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
