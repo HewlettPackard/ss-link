@@ -88,7 +88,7 @@ static struct kobj_type link_fec_down_lane = {
 	.default_groups = link_fec_down_lane_groups,
 };
 
-ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+static ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
 	struct sl_ctl_link_fecl_kobj       *fecl_kobj;
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
@@ -117,7 +117,7 @@ ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribute *kat
 	}                                                                                                      \
 	static struct kobj_attribute link_fecl##_num = __ATTR_RO(fecl##_num)
 
-ssize_t link_fec_down_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+static ssize_t link_fec_down_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
 	struct sl_ctl_link                 *ctl_link;
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;

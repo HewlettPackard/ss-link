@@ -38,7 +38,7 @@ struct sl_ctl_link_fec_data {
 	struct sl_ctl_link_fec_cntrs *curr_ptr;
 	struct sl_ctl_link_fec_cntrs *prev_ptr;
 	struct sl_fec_info            info;
-	struct sl_fec_tails           tail;
+	struct sl_fec_tail            tail;
 	spinlock_t                    lock;
 };
 
@@ -66,7 +66,7 @@ void                sl_ctl_link_fec_down_cache_store(struct sl_ctl_link *ctl_lin
 void                sl_ctl_link_fec_data_calc(struct sl_ctl_link *ctl_link);
 int                 sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link);
 struct sl_fec_info  sl_ctl_link_fec_data_info_get(struct sl_ctl_link *ctl_link);
-struct sl_fec_tails sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link);
+struct sl_fec_tail  sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link);
 
 int sl_ctl_link_fec_up_cache_cw_cntrs_get(struct sl_ctl_link *ctl_link,
 					  struct sl_core_link_fec_cw_cntrs *cw_cntrs);

@@ -100,7 +100,7 @@ static struct kobj_type link_fec_current_lane = {
 	.default_groups = link_fec_current_lane_groups,
 };
 
-ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
 	int                                 rtn;
 	struct sl_ctl_link_fecl_kobj       *fecl_kobj;
@@ -135,7 +135,7 @@ ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attribute *
 	}                                                                                                      \
 	static struct kobj_attribute link_fecl##_num = __ATTR_RO(fecl##_num)
 
-ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+static ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
 	int                                 rtn;
 	struct sl_ctl_link                 *ctl_link;

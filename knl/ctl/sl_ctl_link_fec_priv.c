@@ -41,7 +41,13 @@ void sl_ctl_link_fec_data_store(struct sl_ctl_link *ctl_link,
 
 void sl_ctl_link_fec_up_cache_clear(struct sl_ctl_link *ctl_link)
 {
-	memset(&(ctl_link->fec_up_cache), 0, sizeof(struct sl_ctl_link_fec_cache));
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	memset(&(ctl_link->fec_up_cache.cw_cntrs),   0, sizeof(struct sl_core_link_fec_cw_cntrs));
+	memset(&(ctl_link->fec_up_cache.lane_cntrs), 0, sizeof(struct sl_core_link_fec_lane_cntrs));
+	memset(&(ctl_link->fec_up_cache.tail_cntrs), 0, sizeof(struct sl_core_link_fec_tail_cntrs));
+	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
 }
 
 void sl_ctl_link_fec_up_cache_store(struct sl_ctl_link *ctl_link,
@@ -65,7 +71,9 @@ void sl_ctl_link_fec_down_cache_clear(struct sl_ctl_link *ctl_link)
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
-	memset(&(ctl_link->fec_down_cache), 0, sizeof(struct sl_ctl_link_fec_cache));
+	memset(&(ctl_link->fec_down_cache.cw_cntrs),   0, sizeof(struct sl_core_link_fec_cw_cntrs));
+	memset(&(ctl_link->fec_down_cache.lane_cntrs), 0, sizeof(struct sl_core_link_fec_lane_cntrs));
+	memset(&(ctl_link->fec_down_cache.tail_cntrs), 0, sizeof(struct sl_core_link_fec_tail_cntrs));
 	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
 }
 
@@ -157,10 +165,10 @@ struct sl_fec_info sl_ctl_link_fec_data_info_get(struct sl_ctl_link *ctl_link)
 	return fec_info;
 }
 
-struct sl_fec_tails sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link)
+struct sl_fec_tail sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link)
 {
-	struct sl_fec_tails fec_tail;
-	unsigned long       irq_flags;
+	struct sl_fec_tail fec_tail;
+	unsigned long      irq_flags;
 
 	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
 	fec_tail = ctl_link->fec_data.tail;

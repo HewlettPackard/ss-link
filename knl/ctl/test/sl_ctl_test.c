@@ -843,8 +843,8 @@ static int sl_ctl_test22(struct sl_ctl_test_args test_args)
 /* Print fec tail array */
 static int sl_ctl_test24(struct sl_ctl_test_args test_args)
 {
-	int                 rtn;
-	struct sl_fec_tails tail;
+	int                rtn;
+	struct sl_fec_tail tail;
 
 	rtn = sl_ctl_link_fec_tail_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &tail);
 

@@ -30,8 +30,7 @@ int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info)
 }
 EXPORT_SYMBOL(sl_fec_info_get);
 
-// FIXME: need to change this interface
-int sl_fec_tails_get(struct sl_link *link, struct sl_fec_tails *fec_tail)
+int sl_fec_tail_get(struct sl_link *link, struct sl_fec_tail *fec_tail)
 {
 	int rtn;
 
@@ -48,7 +47,7 @@ int sl_fec_tails_get(struct sl_link *link, struct sl_fec_tails *fec_tail)
 
 	return sl_ctl_link_fec_tail_get(link->ldev_num, link->lgrp_num, link->num, fec_tail);
 }
-EXPORT_SYMBOL(sl_fec_tails_get);
+EXPORT_SYMBOL(sl_fec_tail_get);
 
 int sl_fec_ber_calc(struct sl_fec_info *fec_info, struct sl_ber *ucw_ber, struct sl_ber *ccw_ber)
 {

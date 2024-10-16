@@ -8,6 +8,7 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "base/sl_core_log.h"
+#include "hw/sl_core_hw_fec_test.h"
 
 #define LOG_NAME SL_CORE_TEST_FEC_LOG_NAME
 

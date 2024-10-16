@@ -23,11 +23,11 @@ struct sl_fec_info {
 int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info);
 
 #define SL_CTL_NUM_CCW_BINS 15
-struct sl_fec_tails {
+struct sl_fec_tail {
 	u64 ccw_bins[SL_CTL_NUM_CCW_BINS];
 	u32 period_ms;                    /* collection period */ 
 };
-int sl_fec_tails_get(struct sl_link *link, struct sl_fec_tails *fec_tails);
+int sl_fec_tail_get(struct sl_link *link, struct sl_fec_tail *fec_tail);
 
 struct sl_ber {
 	u32 mant;
