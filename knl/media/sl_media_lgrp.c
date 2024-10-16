@@ -44,7 +44,16 @@ void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr
 	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media_attr_get");
 
 	spin_lock_irqsave(&media_lgrp->media_jack->data_lock, irq_flags);
-	*media_attr = media_lgrp->cable_info->media_attr;
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		*media_attr = media_lgrp->cable_info->media_attr;
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+		*media_attr = media_lgrp->cable_info->stashed_media_attr;
+		break;
+	default:
+		memset(media_attr, 0, sizeof(struct sl_media_attr));
+	}
 	spin_unlock_irqrestore(&media_lgrp->media_jack->data_lock, irq_flags);
 }
 

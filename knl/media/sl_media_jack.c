@@ -6,6 +6,9 @@
 #include "sl_media_lgrp.h"
 #include "sl_media_io.h"
 #include "data/sl_media_data_jack.h"
+#include "data/sl_media_data_jack_rosetta.h"
+#include "data/sl_media_data_jack_emulator.h"
+#include "data/sl_media_data_jack_cassini.h"
 #include "data/sl_media_data_lgrp.h"
 #include "base/sl_media_log.h"
 
@@ -84,6 +87,59 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 
 	media_jack->cable_power_up_wait_time_end = jiffies +
 			msecs_to_jiffies(SL_MEDIA_XCVR_POWER_UP_WAIT_TIME);
+
+	return 0;
+}
+
+int sl_media_jack_cable_downshift(struct sl_media_jack *media_jack)
+{
+	u8  i;
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable downshift");
+
+	spin_lock(&media_jack->data_lock);
+	if (media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE) {
+		spin_unlock(&media_jack->data_lock);
+		sl_media_log_err(media_jack, LOG_NAME, "downshift failed - no online cable");
+		return -EFAULT;
+	}
+	spin_unlock(&media_jack->data_lock);
+	spin_lock(&media_jack->data_lock);
+	for (i = 0; i < SL_MEDIA_MAX_LGRPS_PER_JACK; ++i) {
+		if (media_jack->cable_info[i].real_cable_status == CABLE_MEDIA_ATTR_STASHED) {
+			spin_unlock(&media_jack->data_lock);
+			sl_media_log_err(media_jack, LOG_NAME,
+					 "downshift failed [%d] fake cable (lgrp_num = %u)",
+					 rtn, media_jack->cable_info[i].lgrp_num);
+			return -EFAULT;
+		}
+	}
+	spin_unlock(&media_jack->data_lock);
+	spin_lock(&media_jack->data_lock);
+	if (!(media_jack->cable_info[0].media_attr.speeds_map &
+			(SL_MEDIA_SPEEDS_SUPPORT_CK_400G | SL_MEDIA_SPEEDS_SUPPORT_BS_200G))) {
+		spin_unlock(&media_jack->data_lock);
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "downshift failed - no downshift support in cable");
+		return -EFAULT;
+	}
+	spin_unlock(&media_jack->data_lock);
+	spin_lock(&media_jack->data_lock);
+	if ((media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
+			(media_jack->lane_count_200_gaui != 0x44)) {
+		spin_unlock(&media_jack->data_lock);
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "downshift failed - invalid host interface and/or lane count");
+		return -EINVAL;
+	}
+	spin_unlock(&media_jack->data_lock);
+
+	rtn = sl_media_data_jack_cable_downshift(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "data jack cable downshift failed [%d]", rtn);
+		return rtn;
+	}
 
 	return 0;
 }

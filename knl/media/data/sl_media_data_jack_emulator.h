@@ -5,5 +5,6 @@
 #define _SL_MEDIA_DATA_JACK_EMULATOR_H_
 
 int sl_media_data_jack_scan(u8 ldev_num);
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack);
 
 #endif /* _SL_MEDIA_DATA_JACK_EMULATOR_H_ */

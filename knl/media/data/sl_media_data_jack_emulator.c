@@ -36,3 +36,8 @@ int sl_media_data_jack_scan(u8 ldev_num)
 
 	return 0;
 }
+
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+{
+	return 0;
+}

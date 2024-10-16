@@ -21,6 +21,7 @@
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_serdes.h"
+#include "hw/sl_core_hw_settings.h"
 #include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_io.h"
@@ -187,8 +188,9 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 void sl_core_hw_link_up_work(struct work_struct *work)
 {
-	int                  rtn;
-	struct sl_core_link *core_link;
+	int                   rtn;
+	struct sl_core_link  *core_link;
+	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP]);
 
@@ -202,6 +204,18 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	sl_core_hw_serdes_link_down(core_link);
 
 	sl_core_hw_pcs_config(core_link);
+
+	if ((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) &&
+		(sl_media_lgrp_cable_type_is_active(core_link->core_lgrp->core_ldev->num,
+		core_link->core_lgrp->num))) {
+		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		rtn = sl_media_jack_cable_downshift(media_lgrp->media_jack);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "downshift failed [%d] (jack_num = %u)",
+					      rtn, media_lgrp->media_jack->physical_num);
+			return;
+		}
+	}
 
 	sl_core_hw_pcs_tx_start(core_link);
 

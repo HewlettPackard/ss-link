@@ -689,3 +689,185 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "jack lgrp connect not found");
 	return -EFAULT;
 }
+
+#define DATA_PATH_STATE_DEACTIVATED 0x1
+#define DATA_PATH_INIT_TIMEOUT_S    200
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+{
+	int rtn;
+	u8  count;
+	u8  deactivated;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable downshift");
+
+	/*
+	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
+	 */
+	media_jack->i2c_data.addr    = 0;
+	media_jack->i2c_data.page    = 0x10;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 128;
+	media_jack->i2c_data.data[0] = 0xFF;
+	media_jack->i2c_data.len     = 1;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (DataPathDeinit = 0xFF)", rtn);
+		return rtn;
+	}
+
+	count = 0;
+	while (1) {
+		/*
+		 * Allow up to 2 seconds (normally observed <= 10ms)
+		 */
+		if (count++ >= DATA_PATH_INIT_TIMEOUT_S) {
+			sl_media_log_err(media_jack, LOG_NAME, "timed out (deinit)");
+			return -ETIMEDOUT;
+		}
+
+		usleep_range(10000, 11000);
+
+		/*
+		 * Read data path states (page 0x11, bytes 128-131, 2 lanes per byte)
+		 */
+		media_jack->i2c_data.addr   = 0;
+		media_jack->i2c_data.page   = 0x11;
+		media_jack->i2c_data.bank   = 0;
+		media_jack->i2c_data.offset = 128;
+		media_jack->i2c_data.len    = 4;
+		rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
+		if (rtn) {
+			sl_media_log_err(media_jack, LOG_NAME,
+					 "read failed [%d] (DataPath states)", rtn);
+			return rtn;
+		}
+
+		/*
+		 * If all lanes are deactivated, we can proceed
+		 */
+		deactivated = (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED);
+		if ((media_jack->i2c_data.data[0] == deactivated) &&
+			(media_jack->i2c_data.data[1] == deactivated) &&
+			(media_jack->i2c_data.data[2] == deactivated) &&
+			(media_jack->i2c_data.data[3] == deactivated)) {
+			sl_media_log_dbg(media_jack, LOG_NAME, "all lanes deactivated");
+			break;
+		}
+	}
+
+	/*
+	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-152
+	 * Config lanes 1 to 4
+	 */
+	media_jack->i2c_data.addr    = 0;
+	media_jack->i2c_data.page    = 0x10;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 145;
+	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4);
+	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4);
+	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4);
+	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4);
+	media_jack->i2c_data.len     = 4;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (SCS0 configuration - config lanes 1-4)", rtn);
+		return rtn;
+	}
+
+	/*
+	 * Config lanes 5 to 8
+	 */
+	media_jack->i2c_data.addr    = 0;
+	media_jack->i2c_data.page    = 0x10;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 149;
+	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
+	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
+	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
+	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
+	media_jack->i2c_data.len     = 4;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (SCS0 configuration - config lanes 5-8)", rtn);
+		return rtn;
+	}
+
+	/*
+	 * ApplyDPInitLane8-1
+	 */
+	media_jack->i2c_data.addr    = 0;
+	media_jack->i2c_data.page    = 0x10;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 143;
+	media_jack->i2c_data.data[0] = 0xFF;
+	media_jack->i2c_data.len     = 1;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (ApplyDPInit = 0xFF)", rtn);
+		return rtn;
+	}
+
+	count = 0;
+	while (1) {
+		/*
+		 * Allow up to 2 seconds (normally observed <= 10ms)
+		 */
+		if (count++ >= DATA_PATH_INIT_TIMEOUT_S) {
+			sl_media_log_err(media_jack, LOG_NAME, "timed out (config success)");
+			return -ETIMEDOUT;
+		}
+
+		usleep_range(10000, 11000);
+
+		/*
+		 * Read Configuration Command Execution and Result Status Codes
+		 * (page 0x11, bytes 202-205, 2 lanes per byte)
+		 */
+		media_jack->i2c_data.addr   = 0;
+		media_jack->i2c_data.page   = 0x11;
+		media_jack->i2c_data.bank   = 0;
+		media_jack->i2c_data.offset = 202;
+		media_jack->i2c_data.len    = 4;
+		rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
+		if (rtn) {
+			sl_media_log_err(media_jack, LOG_NAME,
+					 "read failed [%d] (DataPath states)", rtn);
+			return rtn;
+		}
+
+		/*
+		 * If all lanes are ConfigSuccess (0x1), we can proceed
+		 */
+		if ((media_jack->i2c_data.data[0] == 0x11) &&
+			(media_jack->i2c_data.data[1] == 0x11) &&
+			(media_jack->i2c_data.data[2] == 0x11) &&
+			(media_jack->i2c_data.data[3] == 0x11)) {
+			sl_media_log_dbg(media_jack, LOG_NAME, "Config success");
+			break;
+		}
+	}
+
+	/*
+	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
+	 */
+	media_jack->i2c_data.addr    = 0;
+	media_jack->i2c_data.page    = 0x10;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 128;
+	media_jack->i2c_data.data[0] = 0x00;
+	media_jack->i2c_data.len     = 1;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (DataPathDeinit = 0x00)", rtn);
+		return rtn;
+	}
+
+	media_jack->is_downshifted = true;
+
+	return 0;
+}

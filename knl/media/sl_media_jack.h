@@ -99,11 +99,14 @@ struct sl_media_jack {
 	spinlock_t                      data_lock;
 	spinlock_t                      log_lock;
 
-
 	bool                            is_cable_not_supported;
 	bool                            is_cable_format_invalid;
 	bool                            is_high_powered;
 	unsigned long                   cable_power_up_wait_time_end;
+	bool                            is_downshifted;
+	u8                              appsel_no_200_gaui; /* used for downshifting */
+	u8                              lane_count_200_gaui; /* used for downshifting */
+	u8                              host_interface_200_gaui; /* used for downshifting */
 
 #ifdef BUILDSYS_FRAMEWORK_ROSETTA
 #ifndef BUILDSYS_FRAMEWORK_EMULATOR
@@ -123,5 +126,6 @@ bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
+int  sl_media_jack_cable_downshift(struct sl_media_jack *media_jack);
 
 #endif /* _SL_MEDIA_JACK_H_ */

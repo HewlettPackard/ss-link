@@ -47,8 +47,8 @@ static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *form
 	return -EMEDIUMTYPE;
 }
 
-static void sl_media_eeprom_host_iface_to_speed_map(struct sl_media_jack *media_jack, u8 host_interface,
-						    u32 *speeds_map)
+static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, u8 host_interface,
+					      u32 *speeds_map, u8 appsel_no, u8 lane_count)
 {
 	switch (host_interface) {
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GAUI_1_C2M:
@@ -68,6 +68,9 @@ static void sl_media_eeprom_host_iface_to_speed_map(struct sl_media_jack *media_
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GBASE_CR4:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
+		media_jack->appsel_no_200_gaui = appsel_no;
+		media_jack->lane_count_200_gaui = lane_count;
+		media_jack->host_interface_200_gaui = host_interface;
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_200GBASE_CR2:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
@@ -107,18 +110,23 @@ static void sl_media_eeprom_host_iface_to_speed_map(struct sl_media_jack *media_
 #define APPSEL_END                0xFF
 #define APPSEL_LAST_PAGE0         114
 #define APPSEL_LAST_PAGE1         247
-static int sl_media_eeprom_speeds_map_get(struct sl_media_jack *media_jack, u32 *speeds_map)
+#define APPSEL_LANE_COUNT_OFFSET  2
+static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, u32 *speeds_map)
 {
 	u8  host_interface;
 	u8  appsel_curr;
+	u8  appsel_no;
 
 	appsel_curr = APPSEL_PAGE0_START_OFFSET;
+	appsel_no = 1;
 	while (appsel_curr <= APPSEL_LAST_PAGE0) {
 		host_interface = media_jack->eeprom_page0[appsel_curr];
 		if (host_interface == APPSEL_END)
 			return 0;
-		sl_media_eeprom_host_iface_to_speed_map(media_jack, host_interface, speeds_map);
+		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_no,
+						  media_jack->eeprom_page0[appsel_curr + APPSEL_LANE_COUNT_OFFSET]);
 		appsel_curr += APPSEL_STRIDE;
+		appsel_no++;
 	}
 
 	appsel_curr = APPSEL_PAGE1_START_OFFSET;
@@ -126,8 +134,10 @@ static int sl_media_eeprom_speeds_map_get(struct sl_media_jack *media_jack, u32 
 		host_interface = media_jack->eeprom_page1[appsel_curr];
 		if (host_interface == APPSEL_END)
 			return 0;
-		sl_media_eeprom_host_iface_to_speed_map(media_jack, host_interface, speeds_map);
+		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_no,
+						  media_jack->eeprom_page1[appsel_curr + APPSEL_LANE_COUNT_OFFSET]);
 		appsel_curr += APPSEL_STRIDE;
+		appsel_no++;
 	}
 
 	return 0;
@@ -286,7 +296,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str) ||
 		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num)                    ||
 		sl_media_eeprom_length_get(media_jack, format, &(media_attr->length_cm))              ||
-		sl_media_eeprom_speeds_map_get(media_jack, &(media_attr->speeds_map))                 ||
+		sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map))                ||
 		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))
 		return -ENODATA;
 

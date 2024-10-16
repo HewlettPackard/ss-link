@@ -36,3 +36,11 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 {
 
 }
+
+/*
+ * TODO: implement downshifting on Cassini
+ */
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+{
+	return 0;
+}
