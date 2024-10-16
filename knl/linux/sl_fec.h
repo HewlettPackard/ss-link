@@ -13,6 +13,12 @@ struct sl_fec_info {
 	u64 gcw;                          /* good code word count        */
 	u64 lanes[SL_CTL_NUM_FEC_LANES];  /* error count per lane        */
 	u32 period_ms;                    /* collection period           */
+	struct {
+		s32 ccw_down_limit;       /* ccw down limit used in the monitor */
+		s32 ccw_warn_limit;       /* ccw warn limit used in the monitor */
+		s32 ucw_down_limit;       /* ucw down limit used in the monitor */
+		s32 ucw_warn_limit;       /* ucw warn limit used in the monitor */
+	} monitor;
 };
 int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info);
 

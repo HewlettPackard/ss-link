@@ -524,8 +524,8 @@ static int sl_ctl_test12(struct sl_ctl_test_args test_args)
 
 /* Verify FEC rate check */
 struct expected_fec_rate {
-	u32                ucw_limit;
-	u32                ccw_limit;
+	s32                ucw_limit;
+	s32                ccw_limit;
 	struct sl_fec_info info;
 };
 static struct expected_fec_rate exceed_fec_rates[] = {
@@ -553,8 +553,8 @@ static struct expected_fec_rate exceed_fec_rates[] = {
 	},
 	{
 		/* Maximum we can detect */
-		.ucw_limit = UINT_MAX,
-		.ccw_limit = UINT_MAX,
+		.ucw_limit = INT_MAX,
+		.ccw_limit = INT_MAX,
 		.info = {
 			.ucw       = UINT_MAX,
 			.ccw       = UINT_MAX,
@@ -643,8 +643,8 @@ static struct expected_fec_rate no_exceed_fec_rates[] = {
 	},
 	{
 		/* Maximum limitold */
-		.ucw_limit = UINT_MAX,
-		.ccw_limit = UINT_MAX,
+		.ucw_limit = INT_MAX,
+		.ccw_limit = INT_MAX,
 		.info = {
 			.ucw       = UINT_MAX - 1,
 			.ccw       = UINT_MAX - 1,
@@ -933,7 +933,7 @@ static int sl_ctl_test30(struct sl_ctl_test_args test_args)
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	pr_info(SL_CTL_TEST_NAME
-		"fec_mon_period = %ums, ccw_down_limit = %u, ucw_down_limit = %u, ccw_warn_limit = %u, ucw_warn_limit = %u\n",
+		"fec_mon_period = %ums, ccw_down_limit = %d, ucw_down_limit = %d, ccw_warn_limit = %d, ucw_warn_limit = %d\n",
 		policy.fec_mon_period_ms,
 		policy.fec_mon_ccw_down_limit, policy.fec_mon_ucw_down_limit,
 		policy.fec_mon_ccw_warn_limit, policy.fec_mon_ucw_warn_limit);

@@ -87,8 +87,8 @@ struct sl_link_config {
 
 	__u32 fec_up_settle_wait_ms;
 	__u32 fec_up_check_wait_ms;
-	__u32 fec_up_ucw_limit;
-	__u32 fec_up_ccw_limit;
+	__s32 fec_up_ucw_limit;
+	__s32 fec_up_ccw_limit;
 
 	__u32 pause_map;
 	__u32 hpe_map;
@@ -112,10 +112,10 @@ struct sl_link_policy {
 	__u32 ver;
 	__u32 size;
 
-	__u32 fec_mon_ucw_down_limit;
-	__u32 fec_mon_ucw_warn_limit;
-	__u32 fec_mon_ccw_down_limit;
-	__u32 fec_mon_ccw_warn_limit;
+	__s32 fec_mon_ucw_down_limit;
+	__s32 fec_mon_ucw_warn_limit;
+	__s32 fec_mon_ccw_down_limit;
+	__s32 fec_mon_ccw_warn_limit;
 	__u32 fec_mon_period_ms;
 
 	__u32 options;

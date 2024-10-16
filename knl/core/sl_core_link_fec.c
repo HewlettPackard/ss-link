@@ -8,6 +8,7 @@
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_intr.h"
 #include "hw/sl_core_hw_fec.h"
+#include "data/sl_core_data_link.h"
 
 #define LOG_NAME SL_CORE_LINK_FEC_LOG_NAME
 
@@ -95,4 +96,9 @@ int sl_core_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 
 	return sl_core_hw_fec_data_get(core_link, cw_cntrs, lane_cntrs, tail_cntr);
+}
+
+s32 sl_core_link_fec_limit_calc(u8 ldev_num, u8 lgrp_num, u8 link_num, int mant, int exp)
+{
+	return sl_core_data_link_fec_limit_calc(sl_core_link_get(ldev_num, lgrp_num, link_num), mant, exp);
 }

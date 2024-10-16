@@ -30,4 +30,6 @@ u64  sl_core_data_link_info_map_get(struct sl_core_link *core_link);
 void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 down_cause);
 void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *down_cause, time64_t *down_time);
 
+s32 sl_core_data_link_fec_limit_calc(struct sl_core_link *core_link, int mant, int exp);
+
 #endif /* _SL_CORE_DATA_LINK_H_ */

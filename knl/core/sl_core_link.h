@@ -95,8 +95,8 @@ struct sl_core_link_config {
 
 	u32                            fec_up_settle_wait_ms;
 	u32                            fec_up_check_wait_ms;
-	u32                            fec_up_ucw_limit;
-	u32                            fec_up_ccw_limit;
+	s32                            fec_up_ucw_limit;
+	s32                            fec_up_ccw_limit;
 
 	u32                            pause_map;
 	u32                            hpe_map;
@@ -222,8 +222,8 @@ struct sl_core_link {
 			u32     type;
 			u32     up_settle_wait_ms;
 			u32     up_check_wait_ms;
-			u32     up_ucw_limit;
-			u32     up_ccw_limit;
+			s32     up_ucw_limit;
+			s32     up_ccw_limit;
 		} settings;
 		struct {
 			struct sl_core_link_fec_cw_cntrs   cw;

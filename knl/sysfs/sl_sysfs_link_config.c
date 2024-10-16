@@ -55,9 +55,9 @@ static ssize_t fec_up_ucw_limit_show(struct kobject *kobj, struct kobj_attribute
 	sl_ctl_link_config_get(ctl_link, &config);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_ucw_limit show (fec_up_ucw_limit = %u)", config.fec_up_ucw_limit);
+	    "fec_up_ucw_limit show (fec_up_ucw_limit = %d)", config.fec_up_ucw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.fec_up_ucw_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_ucw_limit);
 }
 
 static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -70,9 +70,9 @@ static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute
 	sl_ctl_link_config_get(ctl_link, &config);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_ccw_limit show (fec_up_ccw_limit = %u)", config.fec_up_ccw_limit);
+	    "fec_up_ccw_limit show (fec_up_ccw_limit = %d)", config.fec_up_ccw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.fec_up_ccw_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_ccw_limit);
 }
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

@@ -244,26 +244,26 @@ int sl_ctl_link_fec_down_cache_tail_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 {
 	int                rtn;
-	u32                ccw_down_limit;
-	u32                ucw_down_limit;
-	u32                ccw_warn_limit;
-	u32                ucw_warn_limit;
+	s32                ccw_down_limit;
+	s32                ccw_warn_limit;
+	s32                ucw_down_limit;
+	s32                ucw_warn_limit;
 	struct sl_fec_info fec_info;
 	unsigned long      irq_flags;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "data check");
 
-	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
-	ccw_down_limit = ctl_link->policy.fec_mon_ccw_down_limit;
-	ucw_down_limit = ctl_link->policy.fec_mon_ucw_down_limit;
-	ccw_warn_limit = ctl_link->policy.fec_mon_ccw_warn_limit;
-	ucw_warn_limit = ctl_link->policy.fec_mon_ucw_warn_limit;
-	spin_unlock_irqrestore(&ctl_link->config_lock, irq_flags);
+	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
+	ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_warn_limit;
+	ucw_down_limit = ctl_link->fec_data.info.monitor.ucw_down_limit;
+	ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_warn_limit;
+	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 
 	fec_info = ctl_link->fec_data.info;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"data check config (ccw_down = %u, ucw_down = %u, ccw_warn = %u, ucw_warn = %u)",
+		"data check config (ccw_down = %d, ucw_down = %d, ccw_warn = %d, ucw_warn = %d)",
 		ccw_down_limit, ucw_down_limit, ccw_warn_limit, ucw_warn_limit);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,

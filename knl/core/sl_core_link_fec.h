@@ -41,4 +41,12 @@ int sl_core_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 
+#define SL_CORE_LINK_FEC_UCW_MANT   1
+#define SL_CORE_LINK_FEC_UCW_EXP  -10
+
+#define SL_CORE_LINK_FEC_CCW_MANT   2
+#define SL_CORE_LINK_FEC_CCW_EXP   -5
+
+s32 sl_core_link_fec_limit_calc(u8 ldev_num, u8 lgrp_num, u8 link_num, int mant, int exp);
+
 #endif /* _SL_CORE_LINK_FEC_H_ */

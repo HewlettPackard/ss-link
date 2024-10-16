@@ -39,9 +39,9 @@ static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_att
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %u)", policy.fec_mon_ucw_down_limit);
+	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %d)", policy.fec_mon_ucw_down_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", policy.fec_mon_ucw_down_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_down_limit);
 }
 
 static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -54,9 +54,9 @@ static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_att
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %u)", policy.fec_mon_ucw_warn_limit);
+	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %d)", policy.fec_mon_ucw_warn_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", policy.fec_mon_ucw_warn_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_warn_limit);
 }
 
 static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -69,9 +69,9 @@ static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_att
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %u)", policy.fec_mon_ccw_down_limit);
+	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", policy.fec_mon_ccw_down_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", policy.fec_mon_ccw_down_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_down_limit);
 }
 
 static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -84,9 +84,9 @@ static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_att
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %u)", policy.fec_mon_ccw_warn_limit);
+	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %d)", policy.fec_mon_ccw_warn_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", policy.fec_mon_ccw_warn_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_warn_limit);
 }
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
