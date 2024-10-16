@@ -750,6 +750,22 @@ out_down:
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
+// HACK: turn off LLR blindly
+{
+	u32 port;
+	u64 data64;
+
+	port = core_link->core_lgrp->num;
+
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num), &data64);
+	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LLR_MODE_UPDATE(data64, 0); /* OFF */
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num), data64);
+
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num));
+
+	udelay(20);
+}
+
 	sl_core_hw_pcs_stop(core_link);
 	sl_core_hw_serdes_link_down(core_link);
 
