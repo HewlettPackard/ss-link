@@ -9,7 +9,7 @@
 #include "linktool.h"
 #include "linktool_iface.h"
 
-#include <sbl_kconfig.h>
+#include <uapi/sbl_kconfig.h>
 #include <hms_sbl.h>
 #include <sbl_sbm_serdes_iface.h>
 
