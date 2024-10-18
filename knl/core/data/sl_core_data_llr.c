@@ -176,13 +176,13 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	switch (llr_config->link_dn_behavior) {
 	default:
 	case SL_LLR_LINK_DN_BEHAVIOR_DISCARD:
-		core_llr->settings.link_dn_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_DISCARD;
+		core_llr->settings.link_down_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_DISCARD;
 		break;
 	case SL_LLR_LINK_DN_BEHAVIOR_BLOCK:
-		core_llr->settings.link_dn_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_BLOCK;
+		core_llr->settings.link_down_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_BLOCK;
 		break;
 	case SL_LLR_LINK_DN_BEHAVIOR_BEST_EFFORT:
-		core_llr->settings.link_dn_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_BEST_EFFORT;
+		core_llr->settings.link_down_behavior = SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_BEST_EFFORT;
 		break;
 	}
 
@@ -214,7 +214,7 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"config set settings (link_dn_behavior %u %s = %u)",
 		llr_config->link_dn_behavior, sl_llr_link_dn_behavior_str(llr_config->link_dn_behavior),
-		core_llr->settings.link_dn_behavior);
+		core_llr->settings.link_down_behavior);
 
 	return 0;
 }

@@ -72,7 +72,7 @@ struct sl_core_llr {
 	struct {
 		u8      size;
 		u8      lossless_when_off;
-		u8      link_dn_behavior;
+		u8      link_down_behavior;
 		u8      filter_ctl_frames;
 		u8      ctl_frame_smac;
 		u16     ctl_frame_ethertype;

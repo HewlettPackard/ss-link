@@ -20,6 +20,12 @@ void sl_sysfs_ldev_delete(struct sl_ctl_ldev *ctl_ldev);
 int  sl_sysfs_lgrp_create(struct sl_ctl_lgrp *ctl_lgrp);
 void sl_sysfs_lgrp_delete(struct sl_ctl_lgrp *ctl_lgrp);
 
+int  sl_sysfs_lgrp_config_create(struct sl_ctl_lgrp *ctl_lgrp);
+void sl_sysfs_lgrp_config_delete(struct sl_ctl_lgrp *ctl_lgrp);
+
+int  sl_sysfs_lgrp_policy_create(struct sl_ctl_lgrp *ctl_lgrp);
+void sl_sysfs_lgrp_policy_delete(struct sl_ctl_lgrp *ctl_lgrp);
+
 int  sl_sysfs_serdes_create(struct sl_ctl_lgrp *ctl_lgrp);
 void sl_sysfs_serdes_delete(struct sl_ctl_lgrp *ctl_lgrp);
 

@@ -47,6 +47,7 @@ struct sl_ctl_lgrp {
 	struct work_struct               notif_work;
 
 	struct kobject                  *parent_kobj;
+	struct kobject                   policy_kobj;
 	struct kobject                   config_kobj;
 	struct kobject                   serdes_kobj;
 	struct kobject                   serdes_lane_kobjs[SL_ASIC_MAX_LANES];

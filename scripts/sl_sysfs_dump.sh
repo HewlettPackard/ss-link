@@ -27,11 +27,17 @@ dump_cassini() {
     printf "mod_ver:                      %s\n" `cat $LGRP/sl_info/mod_ver`
     printf "mod_hash:                     %s\n" `cat $LGRP/sl_info/mod_hash`
 
-    printf "fec caps:                     %s\n" `cat $LGRP/config/caps_fec`
-    printf "tech caps:                    %s\n" `cat $LGRP/config/caps_tech`
-    printf "mfs:                          %s\n" `cat $LGRP/config/mfs`
-    printf "furcation:                    %s\n" `cat $LGRP/config/furcation`
-    printf "err_trace_enable:             %s\n" `cat $LGRP/config/err_trace_enable`
+    printf "lgrp\n"
+    printf " config\n"
+    printf "  fec map:                    %s\n" `cat $LGRP/config/fec_map`
+    printf "  tech map:                   %s\n" `cat $LGRP/config/tech_map`
+    printf "  mfs:                        %s\n" `cat $LGRP/config/mfs`
+    printf "  furcation:                  %s\n" `cat $LGRP/config/furcation`
+    printf "  fec mode:                   %s\n" `cat $LGRP/config/fec_mode`
+    printf "  err_trace_enable:           %s\n" `cat $LGRP/config/err_trace_enable`
+    printf " policies\n"
+    printf "  fabric_link:                %s\n" `cat ${PGRP_PATH}/policies/fabric_link`
+    printf "  r1_partner:                 %s\n" `cat ${PGRP_PATH}/policies/r1_partner`
 
     printf "link\n"
     printf " state:                       %s\n" `cat $LGRP/link/state`
@@ -79,17 +85,18 @@ dump_cassini() {
     printf "llr\n"
     printf " state:                       %s\n" `cat $LGRP/llr/state`
     printf " policies\n"
-    printf "   infinite tries:            %s\n" `cat $LGRP/llr/policies/infinite_tries`
+    printf "  infinite tries:             %s\n" `cat $LGRP/llr/policies/infinite_tries`
     printf " config\n"
-    printf "   setup timeout:             %sms\n" `cat $LGRP/llr/config/setup_timeout_ms`
-    printf "   start timeout:             %sms\n" `cat $LGRP/llr/config/start_timeout_ms`
-    printf "   down behavior:             %s\n" `cat $LGRP/llr/config/down_behavior`
-    printf " loop time calc:              %sns\n" `cat $LGRP/llr/loop/calc_ns`
-    printf " loop time min:               %sns\n" `cat $LGRP/llr/loop/min_ns`
-    printf " loop time max:               %sns\n" `cat $LGRP/llr/loop/max_ns`
-    printf " loop time average:           %sns\n" `cat $LGRP/llr/loop/average_ns`
+    printf "  setup timeout:              %sms\n" `cat $LGRP/llr/config/setup_timeout_ms`
+    printf "  start timeout:              %sms\n" `cat $LGRP/llr/config/start_timeout_ms`
+    printf "  down behavior:              %s\n" `cat $LGRP/llr/config/down_behavior`
+    printf " loop time\n"
+    printf "  calc:                       %sns\n" `cat $LGRP/llr/loop/calc_ns`
+    printf "  min:                        %sns\n" `cat $LGRP/llr/loop/min_ns`
+    printf "  max:                        %sns\n" `cat $LGRP/llr/loop/max_ns`
+    printf "  average:                    %sns\n" `cat $LGRP/llr/loop/average_ns`
     for LOOP in `seq 0 9` ; do
-        printf " loop time measurement $LOOP:     %sns\n" `cat $LGRP/llr/loop/time_${LOOP}_ns`
+        printf "  measurement $LOOP:                %sns\n" `cat $LGRP/llr/loop/time_${LOOP}_ns`
     done
 
     printf "media\n"
@@ -190,8 +197,9 @@ dump_rosetta_pgrp_serdes_lane() {
 	link_training
     )
 
+    printf "   settings\n"
     for CONFIG in ${pgrp_serdes_lane_settings[@]} ; do
-        printf "    %-30s " "settings/${CONFIG}:"
+        printf "    %-30s " "${CONFIG}:"
         cat ${LANE_PATH}/settings/${CONFIG}
     done
 
@@ -202,8 +210,9 @@ dump_rosetta_pgrp_serdes_lane() {
         value_upper
     )
 
+    printf "   eye\n"
     for EYE in ${pgrp_serdes_lane_eye[@]} ; do
-        printf "    %-30s " "eye/${EYE}:"
+        printf "    %-30s " "${EYE}:"
         cat ${LANE_PATH}/eye/${EYE}
     done
 
@@ -212,8 +221,9 @@ dump_rosetta_pgrp_serdes_lane() {
         tx
     )
 
+    printf "   state\n"
     for STATE in ${pgrp_serdes_lane_state[@]} ; do
-        printf "    %-30s " "state/${STATE}:"
+        printf "    %-30s " "${STATE}:"
         cat ${LANE_PATH}/state/${STATE}
     done
 }
@@ -225,16 +235,22 @@ dump_rossetta_pgrp() {
     printf "  port group: ${PGRP_NUM}\n"
 
     declare -a pgrp_config=(
-        caps_fec
-        caps_tech
+        fec_map
+        tech_map
         furcation
         mfs
+        fec_mode
     )
 
+    printf "   config\n"
     for CONFIG in ${pgrp_config[@]} ; do
-        printf "    %-30s " "config/${CONFIG}:"
+        printf "    %-30s " "${CONFIG}:"
         cat ${PGRP_PATH}/config/${CONFIG}
     done
+
+    printf "   policies\n"
+    printf "    fabric_link:                   "; cat ${PGRP_PATH}/policies/fabric_link
+    printf "    r1_partner:                    "; cat ${PGRP_PATH}/policies/r1_partner
 
     declare -a pgrp_media=(
         furcation
@@ -251,8 +267,9 @@ dump_rossetta_pgrp() {
         vendor
     )
 
+    printf "   media\n"
     for MEDIA in ${pgrp_media[@]} ; do
-        printf "    %-30s " "media/${MEDIA}:"
+        printf "    %-30s " "${MEDIA}:"
         cat ${PGRP_PATH}/media/${MEDIA}
     done
 
@@ -265,6 +282,7 @@ dump_rossetta_pgrp() {
         state
     )
 
+    printf "   serdes\n"
     for INFO in ${pgrp_serdes_info[@]} ; do
         printf "    %-30s " "${INFO}:"
         cat ${PGRP_PATH}/serdes/${INFO}
@@ -277,25 +295,29 @@ dump_rossetta_pgrp() {
 
 dump_rossetta_link() {
     local LINK_PATH=$1
+    local NUM=$2
 
+    printf "  link: ${NUM}\n"
     printf "   mac\n"
-    printf "    rx_state:                      %s\n" `cat $LINK_PATH/mac/rx_state`
-    printf "    tx_state:                      %s\n" `cat $LINK_PATH/mac/tx_state`
+    printf "    state\n"
+    printf "     rx:                           %s\n" `cat $LINK_PATH/mac/rx_state`
+    printf "     tx:                           %s\n" `cat $LINK_PATH/mac/tx_state`
 
     printf "   llr\n"
     printf "    state:                         %s\n" `cat $LINK_PATH/llr/state`
     printf "    policies\n"
-    printf "      infinite tries:              %s\n" `cat $LINK_PATH/llr/policies/infinite_tries`
+    printf "     infinite tries:               %s\n" `cat $LINK_PATH/llr/policies/infinite_tries`
     printf "    config\n"
-    printf "      setup timeout:               %sms\n" `cat $LINK_PATH/llr/config/setup_timeout_ms`
-    printf "      start timeout:               %sms\n" `cat $LINK_PATH/llr/config/start_timeout_ms`
-    printf "      down behavior:               %s\n" `cat $LINK_PATH/llr/config/down_behavior`
-    printf "    loop time calc:                %sns\n" `cat $LINK_PATH/llr/loop/calc_ns`
-    printf "    loop time min:                 %sns\n" `cat $LINK_PATH/llr/loop/min_ns`
-    printf "    loop time max:                 %sns\n" `cat $LINK_PATH/llr/loop/max_ns`
-    printf "    loop time average:             %sns\n" `cat $LINK_PATH/llr/loop/average_ns`
+    printf "     setup timeout:                %sms\n" `cat $LINK_PATH/llr/config/setup_timeout_ms`
+    printf "     start timeout:                %sms\n" `cat $LINK_PATH/llr/config/start_timeout_ms`
+    printf "     down behavior:                %s\n" `cat $LINK_PATH/llr/config/down_behavior`
+    printf "    loop time\n"
+    printf "     calc:                         %sns\n" `cat $LINK_PATH/llr/loop/calc_ns`
+    printf "     min:                          %sns\n" `cat $LINK_PATH/llr/loop/min_ns`
+    printf "     max:                          %sns\n" `cat $LINK_PATH/llr/loop/max_ns`
+    printf "     average:                      %sns\n" `cat $LINK_PATH/llr/loop/average_ns`
     for LOOP in `seq 0 9` ; do
-        printf "    loop time measurement $LOOP:         %sns\n" `cat $LINK_PATH/llr/loop/time_${LOOP}_ns`
+        printf "     measurement $LOOP:                %sns\n" `cat $LINK_PATH/llr/loop/time_${LOOP}_ns`
     done
 
     printf "  fec current data\n"
@@ -373,7 +395,7 @@ if [ -d ${TOP} ] ; then
                     LINK=${ROSS}/pgrp/${GRP}/port/${LINK_NUM}
                     ##echo "${LINK}"
                     if [ -e ${LINK} ] ; then
-                        dump_rossetta_link ${LINK}
+                        dump_rossetta_link ${LINK} ${LINK_NUM}
                     fi
                 done
             done

@@ -36,7 +36,7 @@ static ssize_t start_timeout_ms_show(struct kobject *kobj, struct kobj_attribute
 	return scnprintf(buf, PAGE_SIZE, "%u\n", ctl_llr->config.start_timeout_ms);
 }
 
-static ssize_t down_behavior_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t link_down_behavior_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_llr *ctl_llr;
 
@@ -55,7 +55,7 @@ static ssize_t down_behavior_show(struct kobject *kobj, struct kobj_attribute *k
 
 static struct kobj_attribute setup_timeout_ms = __ATTR_RO(setup_timeout_ms);
 static struct kobj_attribute start_timeout_ms = __ATTR_RO(start_timeout_ms);
-static struct kobj_attribute dn_behavior      = __ATTR_RO(down_behavior);
+static struct kobj_attribute dn_behavior      = __ATTR_RO(link_down_behavior);
 
 static struct attribute *llr_config_attrs[] = {
 	&setup_timeout_ms.attr,

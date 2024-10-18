@@ -119,6 +119,8 @@ $(SL_NAME)-y += \
 $(SL_NAME)-y += \
 	sysfs/sl_sysfs_ldev.o                 \
 	sysfs/sl_sysfs_lgrp.o                 \
+	sysfs/sl_sysfs_lgrp_policy.o          \
+	sysfs/sl_sysfs_lgrp_config.o          \
 	sysfs/sl_sysfs_link.o                 \
 	sysfs/sl_sysfs_link_policy.o          \
 	sysfs/sl_sysfs_link_config.o          \

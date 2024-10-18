@@ -294,7 +294,7 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_FILTER_LOSSLESS_WHEN_OFF_UPDATE(data64,
 		core_llr->settings.lossless_when_off);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LINK_DOWN_BEHAVIOR_UPDATE(data64,
-		core_llr->settings.link_dn_behavior);
+		core_llr->settings.link_down_behavior);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_FILTER_CTL_FRAMES_UPDATE(data64,
 		core_llr->settings.filter_ctl_frames);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_ENABLE_LOOP_TIMING_UPDATE(data64, 0);
