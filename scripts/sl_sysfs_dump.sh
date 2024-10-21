@@ -105,7 +105,15 @@ dump_cassini() {
     printf " type:                        %s\n" `cat $LGRP/media/type`
     printf " length_cm:                   %s\n" `cat $LGRP/media/length_cm`
     printf " max_speed:                   %s\n" `cat $LGRP/media/max_speed`
-    printf " speeds:                      %s\n" `cat $LGRP/media/speeds`
+    printf " speeds:\n"
+    for subdir in $LGRP/media/speeds/* ; do
+            if [ -d "$subdir" ]; then
+                    printf "    %s:\n" "$(basename "$subdir")"
+                    for file in "$subdir"/* ; do
+                            printf "      %s: %s\n" "$(basename "$file")" "$(cat "$file")"
+                    done
+            fi
+    done
     printf " serial_num:                  %s\n" `cat $LGRP/media/serial_num`
     printf " hpe_part_num:                %s\n" `cat $LGRP/media/hpe_part_num`
     printf " jack_num:                    %s\n" `cat $LGRP/media/jack_num`
