@@ -15,7 +15,37 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
-static ssize_t fec_up_settle_wait_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t link_up_timeout_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link   *ctl_link;
+	struct sl_link_config config;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
+
+	sl_ctl_link_config_get(ctl_link, &config);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	    "link up timeout show (link_up_timeout = %ums)", config.link_up_timeout_ms);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", config.link_up_timeout_ms);
+}
+
+static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link   *ctl_link;
+	struct sl_link_config config;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
+
+	sl_ctl_link_config_get(ctl_link, &config);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	    "link up tries max show (link_up_tries_max = %u)", config.link_up_tries_max);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", config.link_up_tries_max);
+}
+
+static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link   *ctl_link;
 	struct sl_link_config config;
@@ -30,7 +60,7 @@ static ssize_t fec_up_settle_wait_show(struct kobject *kobj, struct kobj_attribu
 	return scnprintf(buf, PAGE_SIZE, "%u\n", config.fec_up_settle_wait_ms);
 }
 
-static ssize_t fec_up_check_wait_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link   *ctl_link;
 	struct sl_link_config config;
@@ -90,7 +120,7 @@ static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 	return scnprintf(buf, PAGE_SIZE, "%s\n", (config.options & SL_LINK_CONFIG_OPT_LOCK) ? "enabled" : "disabled");
 }
 
-static ssize_t pause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link *ctl_link;
 	int                 idx;
@@ -99,7 +129,7 @@ static ssize_t pause_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"pause show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.pause_map);
+		"pause map show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.pause_map);
 
 	idx = 0;
 	if (is_flag_set(ctl_link->config.pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
@@ -115,7 +145,7 @@ static ssize_t pause_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
 
-static ssize_t hpe_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link *ctl_link;
 	int                 idx;
@@ -124,7 +154,7 @@ static ssize_t hpe_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"hpe show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.hpe_map);
+		"hpe map show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.hpe_map);
 
 	idx = 0;
 	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
@@ -194,24 +224,28 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
 }
 
-static struct kobj_attribute fec_up_settle_wait = __ATTR_RO(fec_up_settle_wait);
-static struct kobj_attribute fec_up_check_wait  = __ATTR_RO(fec_up_check_wait);
-static struct kobj_attribute fec_up_ucw_limit   = __ATTR_RO(fec_up_ucw_limit);
-static struct kobj_attribute fec_up_ccw_limit   = __ATTR_RO(fec_up_ccw_limit);
-static struct kobj_attribute lock               = __ATTR_RO(lock);
-static struct kobj_attribute pause              = __ATTR_RO(pause);
-static struct kobj_attribute hpe                = __ATTR_RO(hpe);
-static struct kobj_attribute autoneg            = __ATTR_RO(autoneg);
-static struct kobj_attribute loopback           = __ATTR_RO(loopback);
+static struct kobj_attribute link_up_timeout_ms    = __ATTR_RO(link_up_timeout_ms);
+static struct kobj_attribute link_up_tries_max_ms  = __ATTR_RO(link_up_tries_max);
+static struct kobj_attribute fec_up_settle_wait_ms = __ATTR_RO(fec_up_settle_wait_ms);
+static struct kobj_attribute fec_up_check_wait_ms  = __ATTR_RO(fec_up_check_wait_ms);
+static struct kobj_attribute fec_up_ucw_limit      = __ATTR_RO(fec_up_ucw_limit);
+static struct kobj_attribute fec_up_ccw_limit      = __ATTR_RO(fec_up_ccw_limit);
+static struct kobj_attribute lock                  = __ATTR_RO(lock);
+static struct kobj_attribute pause_map             = __ATTR_RO(pause_map);
+static struct kobj_attribute hpe_map               = __ATTR_RO(hpe_map);
+static struct kobj_attribute autoneg               = __ATTR_RO(autoneg);
+static struct kobj_attribute loopback              = __ATTR_RO(loopback);
 
 static struct attribute *link_config_attrs[] = {
-	&fec_up_settle_wait.attr,
-	&fec_up_check_wait.attr,
+	&link_up_timeout_ms.attr,
+	&link_up_tries_max_ms.attr,
+	&fec_up_settle_wait_ms.attr,
+	&fec_up_check_wait_ms.attr,
 	&fec_up_ucw_limit.attr,
 	&fec_up_ccw_limit.attr,
 	&lock.attr,
-	&pause.attr,
-	&hpe.attr,
+	&pause_map.attr,
+	&hpe_map.attr,
 	&autoneg.attr,
 	&loopback.attr,
 	NULL

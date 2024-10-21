@@ -220,10 +220,10 @@ enum test_link_policy {
 	TEST_LINK_POL_FEC_MON_OFF,
 	TEST_LINK_POL_FEC_MON_ON,
 	TEST_LINK_POL_FEC_MON_ON_DOWN_OFF_CCW_WARN_ON,
-	NUM_TEST_LINK_POLS,
+	NUM_TEST_LINK_POLICIES,
 };
 
-static struct sl_link_policy test_link_policies[NUM_TEST_LINK_POLS] = {
+static struct sl_link_policy test_link_policies[NUM_TEST_LINK_POLICIES] = {
 	[TEST_LINK_POL_FEC_MON_OFF] = {
 		.magic           = SL_LINK_POLICY_MAGIC,
 		.ver             = SL_LINK_POLICY_VER,
@@ -889,7 +889,7 @@ static int sl_ctl_test27(struct sl_ctl_test_args test_args)
 {
 	enum test_link_policy test_policy;
 
-	if ((test_args.flags > NUM_TEST_LINK_POLS) || (test_args.flags < 0)) {
+	if ((test_args.flags > NUM_TEST_LINK_POLICIES) || (test_args.flags < 0)) {
 		pr_err(SL_CTL_TEST_NAME "Invalid link policy (test_policy = 0x%X)", test_args.flags);
 		return -EINVAL;
 	}
@@ -995,7 +995,7 @@ static int sl_ctl_test37(struct sl_ctl_test_args test_args)
 	struct sl_link_policy policy;
 	struct sl_ctl_link    *ctl_link;
 
-	if ((test_args.flags > NUM_TEST_LINK_POLS) || (test_args.flags < 0)) {
+	if ((test_args.flags > NUM_TEST_LINK_POLICIES) || (test_args.flags < 0)) {
 		pr_err(SL_CTL_TEST_NAME "Invalid link policy (policy_num = 0x%X)", test_args.flags);
 		return -EINVAL;
 	}

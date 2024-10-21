@@ -191,13 +191,21 @@ int sl_sysfs_serdes_create(struct sl_ctl_lgrp *ctl_lgrp)
 	if (rtn) {
 		sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
 			"serdes create kobject_init_and_add failed [%d]", rtn);
-		goto out;
+		goto out_serdes;
+	}
+
+	rtn = kobject_init_and_add(&(ctl_lgrp->serdes_lane_kobj),
+		&serdes_lane_info, &(ctl_lgrp->serdes_kobj), "lane");
+	if (rtn) {
+		sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+			"serdes create kobject_init_and_add failed [%d]", rtn);
+		goto out_lane;
 	}
 
 	for (asic_lane_num = 0; asic_lane_num < SL_ASIC_MAX_LANES; ++asic_lane_num) {
 
 		rtn = kobject_init_and_add(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]),
-			&serdes_lane_info, &(ctl_lgrp->serdes_kobj), "%u", asic_lane_num);
+			&serdes_lane_info, &(ctl_lgrp->serdes_lane_kobj), "%u", asic_lane_num);
 		if (rtn) {
 			sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
 				"serdes create lane kobject_init_and_add failed [%d]", rtn);
@@ -208,7 +216,7 @@ int sl_sysfs_serdes_create(struct sl_ctl_lgrp *ctl_lgrp)
 		if (rtn) {
 			sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
 				"serdes_lane_state_create failed [%d]", rtn);
-			goto out_lane;
+			goto out_lanes;
 		}
 
 		rtn = sl_sysfs_serdes_lane_settings_create(ctl_lgrp, asic_lane_num);
@@ -234,7 +242,7 @@ out_settings:
 	sl_sysfs_serdes_lane_settings_delete(ctl_lgrp, asic_lane_num);
 out_state:
 	sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
-out_lane:
+out_lanes:
 	kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 out_all:
 	for (asic_lane_num = asic_lane_num - 1; asic_lane_num >= 0; --asic_lane_num) {
@@ -243,7 +251,9 @@ out_all:
 		sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
 		kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 	}
-out:
+out_lane:
+	kobject_put(&(ctl_lgrp->serdes_lane_kobj));
+out_serdes:
 	kobject_put(&(ctl_lgrp->serdes_kobj));
 
 	return -ENOMEM;

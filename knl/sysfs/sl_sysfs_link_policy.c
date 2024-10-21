@@ -151,7 +151,7 @@ int sl_sysfs_link_policy_create(struct sl_ctl_link *ctl_link)
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link policy create (num = %u)", ctl_link->num);
 
-	rtn = kobject_init_and_add(&ctl_link->policy_kobj, &link_policy, &ctl_link->kobj, "policy");
+	rtn = kobject_init_and_add(&ctl_link->policy_kobj, &link_policy, &ctl_link->kobj, "policies");
 	if (rtn) {
 		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
 			"link policy create kobject_init_and_add failed [%d]", rtn);

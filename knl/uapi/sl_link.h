@@ -80,8 +80,6 @@ struct sl_link_config {
 	__u32 ver;
 	__u32 size;
 
-	__u32 lane_map;
-
 	__u32 link_up_timeout_ms;
 	__u32 link_up_tries_max;
 

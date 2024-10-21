@@ -45,6 +45,9 @@ void sl_sysfs_link_policy_delete(struct sl_ctl_link *ctl_link);
 int  sl_sysfs_link_fec_create(struct sl_ctl_link *ctl_link);
 void sl_sysfs_link_fec_delete(struct sl_ctl_link *ctl_link);
 
+int  sl_sysfs_link_caps_create(struct sl_ctl_link *ctl_link);
+void sl_sysfs_link_caps_delete(struct sl_ctl_link *ctl_link);
+
 int  sl_sysfs_llr_create(struct sl_ctl_llr *ctl_llr);
 void sl_sysfs_llr_delete(struct sl_ctl_llr *ctl_llr);
 

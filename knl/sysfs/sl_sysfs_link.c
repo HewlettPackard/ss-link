@@ -203,8 +203,18 @@ int sl_sysfs_link_create(struct sl_ctl_link *ctl_link)
 	rtn = sl_sysfs_link_fec_create(ctl_link);
 	if (rtn) {
 		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_fec_create failed [%d]", rtn);
-		sl_sysfs_link_config_delete(ctl_link);
 		sl_sysfs_link_policy_delete(ctl_link);
+		sl_sysfs_link_config_delete(ctl_link);
+		kobject_put(&ctl_link->kobj);
+		return rtn;
+	}
+
+	rtn = sl_sysfs_link_caps_create(ctl_link);
+	if (rtn) {
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_caps_create failed [%d]", rtn);
+		sl_sysfs_link_policy_delete(ctl_link);
+		sl_sysfs_link_config_delete(ctl_link);
+		sl_sysfs_link_fec_delete(ctl_link);
 		kobject_put(&ctl_link->kobj);
 		return rtn;
 	}
@@ -225,5 +235,6 @@ void sl_sysfs_link_delete(struct sl_ctl_link *ctl_link)
 	sl_sysfs_link_policy_delete(ctl_link);
 	sl_sysfs_link_config_delete(ctl_link);
 	sl_sysfs_link_fec_delete(ctl_link);
+	sl_sysfs_link_caps_delete(ctl_link);
 	kobject_put(&ctl_link->kobj);
 }

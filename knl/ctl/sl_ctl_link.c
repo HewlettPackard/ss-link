@@ -234,7 +234,6 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set");
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  lane_map           = 0x%X", link_config->lane_map);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %u",   link_config->link_up_tries_max);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_settle_wait = %ums", link_config->fec_up_settle_wait_ms);

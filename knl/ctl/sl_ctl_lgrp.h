@@ -50,6 +50,7 @@ struct sl_ctl_lgrp {
 	struct kobject                   policy_kobj;
 	struct kobject                   config_kobj;
 	struct kobject                   serdes_kobj;
+	struct kobject                   serdes_lane_kobj;
 	struct kobject                   serdes_lane_kobjs[SL_ASIC_MAX_LANES];
 	struct sl_lgrp_serdes_lane_kobj  serdes_lane_state_kobjs[SL_ASIC_MAX_LANES];
 	struct sl_lgrp_serdes_lane_kobj  serdes_lane_settings_kobjs[SL_ASIC_MAX_LANES];
