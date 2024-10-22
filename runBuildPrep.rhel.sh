@@ -35,7 +35,6 @@ ARTI_LOCATION=${ARTI_LOCATION:-"rpm-master-local"}
 ARTI_BRANCH=${ARTI_BRANCH:-"dev/master"}
 OS_TYPE=`cat /etc/os-release | grep "^ID=" | sed "s/\"//g" | cut -d "=" -f 2`
 OS_VERSION=`cat /etc/os-release | grep "^VERSION_ID=" | sed "s/\"//g" | cut -d "=" -f 2`
-RHEL_GPU_SUPPORTED_VERSIONS="8.9"
 BRANCH=`git branch --show-current`
 END
 
