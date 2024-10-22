@@ -17,6 +17,7 @@ int sl_media_fake_headshell_remove(struct sl_lgrp *lgrp);
 
 const char *sl_media_furcation_str(u32 furcation);
 const char *sl_media_state_str(u8 state);
+const char *sl_media_downshift_state_str(u8 downshift_state);
 const char *sl_media_type_str(u32 type);
 const char *sl_media_vendor_str(u32 vendor);
 const char *sl_media_speed_str(u32 speed);

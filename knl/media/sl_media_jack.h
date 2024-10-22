@@ -48,6 +48,18 @@
 #define SL_MEDIA_SS2_HOST_INTERFACE_400GBASE_CR4     0x48
 #define SL_MEDIA_SS2_HOST_INTERFACE_800GBASE_CR8     0x49 /* SS2 PEC default */
 
+/*
+ * These states reflect the state of downshifting for active cables.
+ * For non-active cables, the downshift state reflects "not required"
+ */
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_NOT_REQUIRED        0
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL          1
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_NO_CABLE     2
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_FAKE_CABLE   3
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_NO_SUPPORT   4
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_INAVLID_INFO 5
+#define SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED              6
+
 struct sl_media_serdes_settings {
 	s16 pre1;
 	s16 pre2;
@@ -104,7 +116,7 @@ struct sl_media_jack {
 	bool                            is_ss200_cable;
 	bool                            is_high_powered;
 	unsigned long                   cable_power_up_wait_time_end;
-	bool                            is_downshifted;
+	u8                              downshift_state;
 	u8                              appsel_no_200_gaui; /* used for downshifting */
 	u8                              lane_count_200_gaui; /* used for downshifting */
 	u8                              host_interface_200_gaui; /* used for downshifting */
@@ -123,10 +135,11 @@ int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jac
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
 struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
 u8                    sl_media_jack_state_get(struct sl_media_jack *media_jack);
+u8                    sl_media_jack_downshift_state_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
-int  sl_media_jack_cable_downshift(struct sl_media_jack *media_jack);
+int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num);
 
 #endif /* _SL_MEDIA_JACK_H_ */

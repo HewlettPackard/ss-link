@@ -869,7 +869,5 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		return rtn;
 	}
 
-	media_jack->is_downshifted = true;
-
 	return 0;
 }

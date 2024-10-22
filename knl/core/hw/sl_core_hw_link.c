@@ -189,7 +189,6 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 {
 	int                   rtn;
 	struct sl_core_link  *core_link;
-	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP]);
 
@@ -204,14 +203,18 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_pcs_config(core_link);
 
-	if ((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) &&
-		(sl_media_lgrp_cable_type_is_active(core_link->core_lgrp->core_ldev->num,
-		core_link->core_lgrp->num))) {
-		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-		rtn = sl_media_jack_cable_downshift(media_lgrp->media_jack);
+	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
+		rtn = sl_media_jack_cable_downshift(core_link->core_lgrp->core_ldev->num,
+				core_link->core_lgrp->num);
 		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "downshift failed [%d] (jack_num = %u)",
-					      rtn, media_lgrp->media_jack->physical_num);
+			sl_core_log_err_trace(core_link, LOG_NAME, "downshift failed [%d]", rtn);
+			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+			if (rtn < 0)
+				sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
+			sl_core_hw_serdes_link_down(core_link);
+			sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED);
+			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+			sl_core_hw_link_up_callback(core_link);
 			return;
 		}
 	}
@@ -224,8 +227,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			"up work hw_serdes_link_up failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
-				"up work link up end failed [%d]", rtn);
+			sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);

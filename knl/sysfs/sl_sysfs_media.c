@@ -250,6 +250,24 @@ static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%s\n", not_supported ? "no" : "yes");
 }
 
+static ssize_t downshift_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    downshift_state;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	downshift_state = sl_media_jack_downshift_state_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"downshift state show (media_lgrp = 0x%p, downshift_state = %u %s)",
+		media_lgrp, downshift_state, sl_media_downshift_state_str(downshift_state));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_downshift_state_str(downshift_state));
+}
+
 static struct kobj_attribute media_state            = __ATTR_RO(state);
 static struct kobj_attribute media_vendor           = __ATTR_RO(vendor);
 static struct kobj_attribute media_type             = __ATTR_RO(type);
@@ -261,6 +279,7 @@ static struct kobj_attribute media_jack_num         = __ATTR_RO(jack_num);
 static struct kobj_attribute media_jack_type        = __ATTR_RO(jack_type);
 static struct kobj_attribute media_furcation        = __ATTR_RO(furcation);
 static struct kobj_attribute media_supported        = __ATTR_RO(supported);
+static struct kobj_attribute media_downshift_state  = __ATTR_RO(downshift_state);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -274,6 +293,7 @@ static struct attribute *media_attrs[] = {
 	&media_jack_type.attr,
 	&media_furcation.attr,
 	&media_supported.attr,
+	&media_downshift_state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);
