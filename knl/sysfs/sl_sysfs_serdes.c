@@ -274,5 +274,6 @@ void sl_sysfs_serdes_delete(struct sl_ctl_lgrp *ctl_lgrp)
 		sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
 		kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 	}
+	kobject_put(&(ctl_lgrp->serdes_lane_kobj));
 	kobject_put(&ctl_lgrp->serdes_kobj);
 }
