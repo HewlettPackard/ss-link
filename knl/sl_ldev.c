@@ -9,6 +9,7 @@
 #include "sl_asic.h"
 #include "sl_log.h"
 #include "sl_ldev.h"
+#include "sl_sysfs.h"
 #include "sl_ctl_ldev.h"
 #include "sl_media_ldev.h"
 
@@ -181,7 +182,7 @@ EXPORT_SYMBOL(sl_ldev_uc_ops_set);
 #endif /* BUILDSYS_FRAMEWORK_CASSINI */
 
 struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
-	struct workqueue_struct *workq, struct sl_ldev_attr *ldev_attr, struct kobject *sysfs_parent)
+	struct workqueue_struct *workq, struct sl_ldev_attr *ldev_attr)
 {
 	int rtn;
 
@@ -196,7 +197,7 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
 		return ERR_PTR(rtn);
 	}
 
-	rtn = sl_ctl_ldev_new(ldev_num, phys_lgrp_map, workq, ldev_attr, sysfs_parent);
+	rtn = sl_ctl_ldev_new(ldev_num, phys_lgrp_map, workq, ldev_attr);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
@@ -205,6 +206,45 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
 	return &ldevs[ldev_num];
 }
 EXPORT_SYMBOL(sl_ldev_new);
+
+int sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent)
+{
+	int                 rtn;
+	struct sl_ctl_ldev *ctl_ldev;
+
+	rtn = sl_ldev_check(ldev);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		return rtn;
+	}
+	if (!parent) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL parent");
+		return -EINVAL;
+	}
+
+	ctl_ldev = sl_ctl_ldev_get(ldev->num);
+	if (!ctl_ldev) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ldev");
+		return -ENOMEM;
+	}
+
+	if (ctl_ldev->parent_kobj) {
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "parent already set");
+		return 0;
+	}
+
+	ctl_ldev->parent_kobj = parent;
+
+	rtn = sl_sysfs_ldev_create(ctl_ldev);
+	if (rtn) {
+		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME,
+			"sysfs_ldev_create failed");
+		return -ENOMEM;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(sl_ldev_sysfs_parent_set);
 
 int sl_ldev_del(struct sl_ldev *ldev)
 {

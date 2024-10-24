@@ -30,8 +30,7 @@ struct sl_ctl_ldev {
 
 int		    sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map,
 				    struct workqueue_struct *workq,
-				    struct sl_ldev_attr *ldev_attr,
-				    struct kobject *sysfs_parent);
+				    struct sl_ldev_attr *ldev_attr);
 void		    sl_ctl_ldev_del(u8 ldev_num);
 struct sl_ctl_ldev *sl_ctl_ldev_get(u8 ldev_num);
 

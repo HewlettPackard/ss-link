@@ -118,7 +118,8 @@ struct sl_ldev_attr {
 };
 
 struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map, struct workqueue_struct *workq,
-			    struct sl_ldev_attr *ldev_attr, struct kobject *sysfs_parent);
+			    struct sl_ldev_attr *ldev_attr);
+int             sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent);
 int		sl_ldev_del(struct sl_ldev *ldev);
 int             sl_ldev_uc_ops_set(struct sl_ldev *ldev, struct sl_uc_ops *uc_ops,
 				   struct sl_uc_accessor *uc_accessor);

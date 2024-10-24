@@ -42,7 +42,7 @@ static bool sl_ctl_ldev_is_deleting(struct sl_ctl_ldev *ctl_ldev)
 }
 
 int sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map, struct workqueue_struct *workq,
-		    struct sl_ldev_attr *ldev_attr, struct kobject *sysfs_parent)
+		    struct sl_ldev_attr *ldev_attr)
 {
 	int                   rtn;
 	struct sl_ctl_ldev   *ctl_ldev;
@@ -93,17 +93,6 @@ int sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map, struct workqueue_struct *workq,
 	if (rtn) {
 		sl_ctl_log_err(ctl_ldev, LOG_NAME, "media_ldev_new failed [%d]", rtn);
 		goto out_del_wq;
-	}
-
-	if (sysfs_parent) {
-		ctl_ldev->parent_kobj = sysfs_parent;
-
-		rtn = sl_sysfs_ldev_create(ctl_ldev);
-		if (rtn) {
-			sl_ctl_log_err(ctl_ldev, LOG_NAME,
-				"sysfs_ldev_create failed [%d]", rtn);
-			goto out_del_wq;
-		}
 	}
 
 	spin_lock(&ctl_ldevs_lock);
