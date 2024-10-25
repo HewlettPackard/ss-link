@@ -36,10 +36,9 @@ static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack,
 int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			       u8 *eeprom_page0, u8 *eeprom_page1, u32 flags)
 {
-	int                        rtn;
-	struct sl_media_attr       media_attr;
-	struct sl_media_jack      *media_jack;
-	unsigned long              irq_flags;
+	int                   rtn;
+	struct sl_media_attr  media_attr;
+	struct sl_media_jack *media_jack;
 
 	media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 	if (!media_jack) {
@@ -82,12 +81,11 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				media_attr.options |= SL_MEDIA_OPT_CABLE_FORMAT_INVALID;
 				rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0],
 									&media_attr);
-				if (rtn) {
+				if (rtn)
 					sl_media_log_err(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
-					return rtn;
-				}
 			}
-			return -EFAULT;
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			return 0;
 		}
 		if (media_jack->is_ss200_cable)
 			media_attr.options |= SL_MEDIA_OPT_SS200_CABLE;
@@ -115,7 +113,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
-		return rtn;
+		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+		return 0;
 	}
 
 	/*
@@ -124,7 +123,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0], &media_attr);
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
-		return rtn;
+		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+		return 0;
 	}
 
 	/*
@@ -141,21 +141,19 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
-			return rtn;
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			return 0;
 		}
 	}
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_ONLINE;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
 
 	return 0;
 }
 
 int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 {
-	struct sl_media_jack      *media_jack;
-	unsigned long              irq_flags;
+	struct sl_media_jack *media_jack;
 
 	media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 	if (!media_jack) {
@@ -172,9 +170,7 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	sl_media_data_cable_serdes_settings_clr(media_jack);
 	sl_media_data_jack_eeprom_clr(media_jack);
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
 
 	return 0;
 }

@@ -34,13 +34,23 @@ struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num)
 	return sl_media_data_jack_get(ldev_num, jack_num);
 }
 
+void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	media_jack->state = state;
+	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+}
+
 u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
 {
-	u8 state;
+	u8            state;
+	unsigned long irq_flags;
 
-	spin_lock(&media_jack->data_lock);
+	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
 	state = media_jack->state;
-	spin_unlock(&media_jack->data_lock);
+	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
 
 	return state;
 }

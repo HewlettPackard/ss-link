@@ -77,7 +77,6 @@ static void sl_media_data_jack_event_online(void *hdl, u8 physical_jack_num)
 {
 	int                   rtn;
 	struct sl_media_jack *media_jack;
-	unsigned long         irq_flags;
 	u8                    jack_num;
 
 	jack_num = sl_media_data_jack_num_update(physical_jack_num);
@@ -89,16 +88,13 @@ static void sl_media_data_jack_event_online(void *hdl, u8 physical_jack_num)
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
 				physical_jack_num, rtn);
-		spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-		media_jack->state = SL_MEDIA_JACK_CABLE_ERROR;
-		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 	}
 }
 
 static void sl_media_data_jack_event_insert(void *hdl, u8 physical_jack_num)
 {
 	struct sl_media_jack *media_jack;
-	unsigned long         irq_flags;
 	u8                    jack_num;
 
 	jack_num = sl_media_data_jack_num_update(physical_jack_num);
@@ -107,9 +103,7 @@ static void sl_media_data_jack_event_insert(void *hdl, u8 physical_jack_num)
 	sl_media_log_dbg(media_jack, LOG_NAME, "insert event (jack_num = %u)", physical_jack_num);
 
 	media_jack->hdl = hdl;
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_INSERTED;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_INSERTED);
 }
 
 static void sl_media_data_jack_event_remove(u8 physical_jack_num)
@@ -137,15 +131,12 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 static void sl_media_data_jack_event_offline(u8 physical_jack_num)
 {
 	struct sl_media_jack *media_jack;
-	unsigned long         irq_flags;
 	u8                    jack_num;
 
 	jack_num = sl_media_data_jack_num_update(physical_jack_num);
 	media_jack = sl_media_data_jack_get(0, jack_num);
 	sl_media_log_dbg(media_jack, LOG_NAME, "offline event (jack_num = %u)", physical_jack_num);
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_ERROR;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 }
 
 /*
@@ -305,9 +296,7 @@ static void sl_media_data_jack_online_verify(struct sl_media_jack *media_jack, u
 		if (rtn) {
 			sl_media_log_dbg(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
 					media_jack->num, rtn);
-			spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-			media_jack->state = SL_MEDIA_JACK_CABLE_ERROR;
-			spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		}
 	}
 }
@@ -315,10 +304,10 @@ static void sl_media_data_jack_online_verify(struct sl_media_jack *media_jack, u
 static int sl_media_data_jack_cable_event(struct notifier_block *event_notifier,
 			unsigned long events, void *data)
 {
-	int                      rtn;
-	void                    *hdl;
-	struct xcvr_jack_data    jack;
-	u8                       physical_jack_num;
+	int                    rtn;
+	void                  *hdl;
+	struct xcvr_jack_data  jack;
+	u8                     physical_jack_num;
 
 	hdl = data;
 	rtn = hsnxcvr_jack_get(hdl, &jack);
@@ -363,7 +352,6 @@ static struct notifier_block event_notifier = {
 
 int sl_media_data_jack_scan(u8 ldev_num)
 {
-	u8                       jack_cntr;
 	u8                       jack_num;
 	u8                       physical_jack_num;
 	unsigned long            irq_flags;
@@ -373,26 +361,26 @@ int sl_media_data_jack_scan(u8 ldev_num)
 	void                    *hdl;
 	int                      rtn;
 	bool                     is_removed;
-	u8                       i;
 
 	sl_media_log_dbg(NULL, LOG_NAME, "jack scan");
 
 	hdl = NULL;
-	for (jack_cntr = 0; jack_cntr < SL_MEDIA_MAX_JACK_NUM; ++jack_cntr) {
+	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
+		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 		hdl = hsnxcvr_get_next_hdl(hdl);
 		if (!hdl) {
-			sl_media_log_err(NULL, LOG_NAME, "hdl not found (jack_num = %u)", jack_cntr);
-			return -EFAULT;
+			sl_media_log_err(NULL, LOG_NAME, "hdl not found (jack_num = %u)", jack_num);
+			return 0;
 		}
 		rtn = hsnxcvr_status_get(hdl, &status);
 		if (rtn) {
-			sl_media_log_err(NULL, LOG_NAME, "status_get failed (jack_num = %u)", jack_cntr);
-			return -EFAULT;
+			sl_media_log_err(NULL, LOG_NAME, "status_get failed (jack_num = %u)", jack_num);
+			continue;
 		}
 		rtn = hsnxcvr_jack_get(hdl, &jack);
 		if (rtn) {
-			sl_media_log_err(NULL, LOG_NAME, "jack_get failed (jack_num = %u)", jack_cntr);
-			return -EFAULT;
+			sl_media_log_err(NULL, LOG_NAME, "jack_get failed (jack_num = %u)", jack_num);
+			continue;
 		}
 
 		rtn = kstrtou8(jack.name + 1, 10, &physical_jack_num);
@@ -400,15 +388,9 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			sl_media_log_err(NULL, LOG_NAME, "kstrtou8 failed [%d]", rtn);
 			return -EFAULT;
 		}
-		jack_num = sl_media_data_jack_num_update(physical_jack_num);
-		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 		spin_lock_irqsave(&media_jack->data_lock, irq_flags);
 		media_jack->physical_num = physical_jack_num;
 		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
-
-		for (i = 0; i < jack.port_count; ++i)
-			sl_media_log_dbg(media_jack, LOG_NAME, "jack_name = %s, asic_port = %u",
-				jack.name, jack.asic_port[i]);
 
 		if (status.flags & XCVR_PRESENT) {
 			/*
@@ -421,18 +403,14 @@ int sl_media_data_jack_scan(u8 ldev_num)
 				sl_media_log_dbg(media_jack, LOG_NAME,
 						"jack online failed - expect online event later (jack_num = %u) [%d]",
 						media_jack->physical_num, rtn);
-				spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-				media_jack->state = SL_MEDIA_JACK_CABLE_ERROR;
-				spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 				break;
 			case 0:
 				break;
 			default:
 				sl_media_log_err(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
 						media_jack->physical_num, rtn);
-				spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-				media_jack->state = SL_MEDIA_JACK_CABLE_ERROR;
-				spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			}
 		} else {
 			media_jack->jack_data = jack;
@@ -442,7 +420,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 	rtn = register_hsnxcvr_notifier(&event_notifier);
 	if (rtn) {
 		sl_media_log_err(NULL, LOG_NAME, "register jack event notifier failed [%d]", rtn);
-		return rtn;
+		return 0;
 	}
 
 	/*
@@ -450,11 +428,11 @@ int sl_media_data_jack_scan(u8 ldev_num)
 	 * online event during the window between
 	 * first scan and notification registration
 	 */
-	for (jack_cntr = 0; jack_cntr < SL_MEDIA_MAX_JACK_NUM; ++jack_cntr) {
-		media_jack = sl_media_data_jack_get(ldev_num, jack_cntr);
+	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
+		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 		rtn = hsnxcvr_status_get(media_jack->hdl, &media_jack->status_data);
 		if (rtn) {
-			sl_media_log_dbg(media_jack, LOG_NAME, "status_get failed (jack_num = %u)",
+			sl_media_log_err(media_jack, LOG_NAME, "status_get failed (jack_num = %u)",
 					media_jack->physical_num);
 			continue;
 		}
@@ -474,6 +452,7 @@ void sl_media_data_jack_unregister_event_notifier(void)
 	unregister_hsnxcvr_notifier(&event_notifier);
 }
 
+#define SL_MEDIA_JACK_CABLE_EVENT_TIMEOUT 200
 int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 {
 	int                   rtn;
@@ -481,28 +460,27 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	u8                    i;
 	struct sl_media_jack *media_jack;
 	struct sl_media_attr  media_attr;
-	unsigned long         irq_flags;
-	u8                    state;
+	u8                    count;
 
 	media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "media data jack online");
 
+	count = 0;
 	while (sl_media_data_jack_cable_is_going_online(media_jack)) {
-		spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-		state = media_jack->state;
-		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
-		if (state == SL_MEDIA_JACK_CABLE_REMOVED) {
+		if (sl_media_jack_state_get(media_jack) == SL_MEDIA_JACK_CABLE_REMOVED) {
 			sl_media_log_dbg(media_jack, LOG_NAME,
 				"cable removed while waiting for online");
 			return 0;
 		}
+		if (count++ >= SL_MEDIA_JACK_CABLE_EVENT_TIMEOUT) {
+			sl_media_log_err(media_jack, LOG_NAME, "timed out waiting for online");
+			return -ETIMEDOUT;
+		}
 		msleep(20);
 	}
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_GOING_ONLINE;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_GOING_ONLINE);
 
 	media_jack->hdl = hdl;
 
@@ -656,9 +634,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		}
 	}
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
-	media_jack->state = SL_MEDIA_JACK_CABLE_ONLINE;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "online (jack = 0x%p)", media_jack);
 

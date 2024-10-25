@@ -134,6 +134,7 @@ struct sl_media_jack {
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
 struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
+void                  sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_state_get(struct sl_media_jack *media_jack);
 u8                    sl_media_jack_downshift_state_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
