@@ -124,7 +124,7 @@ struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *s
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
 	}
-	if (link_num > SL_ASIC_MAX_LINKS) {
+	if (link_num >= SL_ASIC_MAX_LINKS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"invalid (link_num = %u)", link_num);
 		return ERR_PTR(-EINVAL);

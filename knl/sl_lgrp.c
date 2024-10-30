@@ -53,11 +53,11 @@ int sl_lgrp_check(struct sl_lgrp *lgrp)
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "bad lgrp version");
 		return -EINVAL;
 	}
-	if (lgrp->num > SL_ASIC_MAX_LGRPS) {
+	if (lgrp->num >= SL_ASIC_MAX_LGRPS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "bad lgrp num");
 		return -EINVAL;
 	}
-	if (lgrp->ldev_num > SL_ASIC_MAX_LDEVS) {
+	if (lgrp->ldev_num >= SL_ASIC_MAX_LDEVS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "bad ldev num");
 		return -EINVAL;
 	}
@@ -142,7 +142,7 @@ struct sl_lgrp *sl_lgrp_new(struct sl_ldev *ldev, u8 lgrp_num, struct kobject *s
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
 	}
-	if (lgrp_num > SL_ASIC_MAX_LGRPS) {
+	if (lgrp_num >= SL_ASIC_MAX_LGRPS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"invalid (lgrp_num = %u)", lgrp_num);
 		return ERR_PTR(-EINVAL);

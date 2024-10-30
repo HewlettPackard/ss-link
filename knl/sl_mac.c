@@ -79,7 +79,7 @@ struct sl_mac *sl_mac_new(struct sl_lgrp *lgrp, u8 mac_num, struct kobject *sysf
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
 	}
-	if (mac_num > SL_ASIC_MAX_LINKS) {
+	if (mac_num >= SL_ASIC_MAX_LINKS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"invalid (mac_num = %u)", mac_num);
 		return ERR_PTR(-EINVAL);

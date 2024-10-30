@@ -48,7 +48,7 @@ int sl_ldev_check(struct sl_ldev *ldev)
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "bad ldev version");
 		return -EINVAL;
 	}
-	if (ldev->num > SL_ASIC_MAX_LDEVS) {
+	if (ldev->num >= SL_ASIC_MAX_LDEVS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "bad ldev num");
 		return -EINVAL;
 	}
@@ -186,7 +186,7 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
 {
 	int rtn;
 
-	if (ldev_num > SL_ASIC_MAX_LDEVS) {
+	if (ldev_num >= SL_ASIC_MAX_LDEVS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"invalid (ldev_num = %u)", ldev_num);
 		return ERR_PTR(-EINVAL);

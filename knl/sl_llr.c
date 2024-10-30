@@ -124,7 +124,7 @@ struct sl_llr *sl_llr_new(struct sl_lgrp *lgrp, u8 llr_num, struct kobject *sysf
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
 	}
-	if (llr_num > SL_ASIC_MAX_LINKS) {
+	if (llr_num >= SL_ASIC_MAX_LINKS) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"invalid (llr_num = %u)", llr_num);
 		return ERR_PTR(-EINVAL);
