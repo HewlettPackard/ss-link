@@ -25,6 +25,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "serdes-bad-eyes"   },
 	{ .desc = "serdes-ok"         },
 	{ .desc = "pcs-bitlock-ok"    },
+
 	{ .desc = "pcs-align-ok"      },
 	{ .desc = "pcs-lcl-fault"     },
 	{ .desc = "pcs-rmt-fault"     },
@@ -35,6 +36,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "pcs-ok"            },
 	{ .desc = "fec-check"         },
 	{ .desc = "fec-ucw-high"      },
+
 	{ .desc = "fec-ccw-high"      },
 	{ .desc = "fec-ok"            },
 	{ .desc = "link-up-timeout"   },
@@ -45,6 +47,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "mac-rx"            },
 	{ .desc = "mac-tx"            },
 	{ .desc = "an-base-pg"        },
+
 	{ .desc = "an-next-pg"        },
 	{ .desc = "an-error"          },
 	{ .desc = "an-done"           },
@@ -55,7 +58,11 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "llr-starting"      },
 	{ .desc = "llr-running"       },
 	{ .desc = "llr-start_timeout" },
+
+	{ .desc = "llr-starved"       },
+	{ .desc = "llr-replay-at-max" },
 };
+
 #define SL_CORE_INFO_MAP_STR_MIN 10
 void sl_core_info_map_str(u64 info_map, char *info_map_str,
 	unsigned int info_map_str_size)
@@ -63,6 +70,8 @@ void sl_core_info_map_str(u64 info_map, char *info_map_str,
 	int          rtn;
 	unsigned int x;
 	unsigned int str_pos;
+
+	BUILD_BUG_ON(ARRAY_SIZE(sl_core_info_map_str_list) == (SL_CORE_INFO_MAP_NUM_BITS - 1));
 
 	if (info_map_str_size < SL_CORE_INFO_MAP_STR_MIN)
 		return;

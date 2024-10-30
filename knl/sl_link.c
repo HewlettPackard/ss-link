@@ -411,6 +411,8 @@ const char *sl_link_down_cause_str(u32 cause)
 		return "unsupported-cable";
 	case SL_LINK_DOWN_CAUSE_COMMAND:
 		return "command";
+	case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
+		return "llr-replay-at-max";
 	default:
 		return "unrecognized";
 	}

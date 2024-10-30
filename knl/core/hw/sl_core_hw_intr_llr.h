@@ -11,7 +11,6 @@ struct sl_core_llr;
 enum {
 	SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME         = 0,
 	SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE,
-	SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX,
 
 	SL_CORE_HW_INTR_LLR_COUNT                    /* must be last */
 };

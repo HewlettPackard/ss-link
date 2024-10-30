@@ -36,8 +36,9 @@ SL_CORE_HW_INTR_FLGS_LINK_NON_FATAL(3);
 #define SL_CORE_HW_INTR_FLGS_LINK_FAULT(_link_num)                                             \
 	static u64 sl_core_hw_intr_flgs_link_fault_##_link_num[SL_CORE_HW_INTR_FLGS_COUNT] = { \
 		0ULL,                                                                          \
-		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_##_link_num##_SET(1)    |             \
-		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_##_link_num##_SET(1) |             \
+		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_##_link_num##_SET(1)    |         \
+		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_##_link_num##_SET(1)        |         \
+		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_##_link_num##_SET(1)     |         \
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_LF_##_link_num##_SET(1),              \
 		SS2_PORT_PML_ERR_FLG_WORD2_LLR_MAX_STARVATION_LIMIT_##_link_num##_SET(1),      \
 		0ULL,                                                                          \
@@ -90,11 +91,11 @@ SL_CORE_HW_INTR_FLGS_LINK_NON_FATAL(0);
 
 #define SL_CORE_HW_INTR_FLGS_LINK_FAULT(_link_num)                                        \
 	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_link_fault_##_link_num = { \
-		.pcs_link_down_##_link_num    = 1,                                        \
-		.pcs_link_down_lf_##_link_num = 1,                                        \
-		.pcs_link_down_rf_##_link_num = 1,                                        \
-		.pcs_hi_ser_##_link_num       = 1,                                        \
-		.llr_starved_##_link_num      = 1,                                        \
+		.llr_replay_at_max_##_link_num = 1,                                       \
+		.pcs_link_down_##_link_num     = 1,                                       \
+		.pcs_link_down_lf_##_link_num  = 1,                                       \
+		.pcs_link_down_rf_##_link_num  = 1,                                       \
+		.llr_starved_##_link_num       = 1,                                       \
 	}
 SL_CORE_HW_INTR_FLGS_LINK_FAULT(0);
 

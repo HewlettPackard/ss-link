@@ -91,15 +91,11 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		sl_core_hw_llr_start_timeout_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]),
 		sl_core_hw_llr_start_init_complete_intr_work);
-	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_REPLAY_AT_MAX_INTR]),
-		sl_core_hw_llr_replay_at_max_intr_work);
 
 	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME,
 		SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR, "llr setup loop time");
 	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE,
 		SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR, "llr start init complete");
-	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX,
-		SL_CORE_WORK_LLR_REPLAY_AT_MAX_INTR, "llr replay at max");
 
 	rtn = sl_core_hw_intr_llr_hdlr_register(core_llr);
 	if (rtn != 0) {
@@ -135,7 +131,6 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
-	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 
@@ -191,10 +186,6 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	core_llr->settings.ctl_frame_ethertype = 0x88B6;
 	core_llr->settings.retry_threshold     = 2;
 	core_llr->settings.allow_re_init       = 0;
-	// FIXME: could be 0xFE
-	core_llr->settings.replay_ct_max       = 0xFF;
-	// FIXME: could be (3 * loop_time + 500)
-	core_llr->settings.replay_timer_max    = 15500;
 
 	if (llr_config->setup_timeout_ms == 0) {
 		sl_core_log_warn(core_llr, LOG_NAME,

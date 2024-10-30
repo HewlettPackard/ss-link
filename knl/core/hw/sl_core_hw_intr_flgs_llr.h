@@ -33,18 +33,6 @@ SL_CORE_HW_INTR_FLGS_LLR_START_INIT_COMPLETE(1);
 SL_CORE_HW_INTR_FLGS_LLR_START_INIT_COMPLETE(2);
 SL_CORE_HW_INTR_FLGS_LLR_START_INIT_COMPLETE(3);
 
-#define SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(_llr_num)                                                 \
-	static u64 sl_core_hw_intr_flgs_llr_replay_at_max_##_llr_num[SL_CORE_HW_INTR_LLR_FLGS_COUNT] = { \
-		0ULL,                                                                                    \
-		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_##_llr_num##_SET(1),                        \
-		0ULL,                                                                                    \
-		0ULL,                                                                                    \
-	}
-SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(0);
-SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(1);
-SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(2);
-SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(3);
-
 #define SL_CORE_HW_INTR_FLGS_LLR_ITEM(_num, _which)    \
 	[_num] = {                                 \
 		sl_core_hw_intr_flgs_llr_##_which##_0, \
@@ -56,7 +44,6 @@ SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(3);
 static u64 *sl_core_hw_intr_flgs_llr[SL_CORE_HW_INTR_LLR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME,     setup_loop_time),
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE, start_init_complete),
-	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX,       replay_at_max),
 };
 
 #else /* Cassini */
@@ -73,12 +60,6 @@ SL_CORE_HW_INTR_FLGS_LLR_LOOP_TIME(0);
 	}
 SL_CORE_HW_INTR_FLGS_LLR_INIT_COMPLETE(0);
 
-#define SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(_llr_num)                                        \
-	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_llr_replay_at_max_##_llr_num = { \
-		.llr_replay_at_max_##_llr_num = 1,                                              \
-	}
-SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(0);
-
 #define SL_CORE_HW_INTR_FLGS_LLR_ITEM(_num, _which)   \
 	[_num] = {                                    \
 		sl_core_hw_intr_flgs_llr_##_which##_0.qw, \
@@ -87,7 +68,6 @@ SL_CORE_HW_INTR_FLGS_LLR_REPLAY_AT_MAX(0);
 static u64 *sl_core_hw_intr_flgs_llr[SL_CORE_HW_INTR_LLR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME,     setup_loop_time),
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE, start_init_complete),
-	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX,       replay_at_max),
 };
 
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */

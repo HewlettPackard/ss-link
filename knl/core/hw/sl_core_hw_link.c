@@ -650,6 +650,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	u64                                 remote_fault;
 	u64                                 local_fault;
 	u64                                 llr_starvation;
+	u64                                 llr_replay_max;
 	struct sl_core_link                *core_link;
 	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
@@ -678,6 +679,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_0_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		local_fault =
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_LF_0_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
+		llr_replay_max =
+		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_0_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		llr_starvation =
 		SS2_PORT_PML_ERR_FLG_WORD2_LLR_MAX_STARVATION_LIMIT_0_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[2]);
 		break;
@@ -688,6 +691,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_1_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		local_fault =
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_LF_1_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
+		llr_replay_max =
+		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_1_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		llr_starvation =
 		SS2_PORT_PML_ERR_FLG_WORD2_LLR_MAX_STARVATION_LIMIT_1_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[2]);
 		break;
@@ -698,6 +703,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_2_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		local_fault =
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_LF_2_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
+		llr_replay_max =
+		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_2_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		llr_starvation =
 		SS2_PORT_PML_ERR_FLG_WORD2_LLR_MAX_STARVATION_LIMIT_2_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[2]);
 		break;
@@ -708,6 +715,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_RF_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		local_fault =
 		SS2_PORT_PML_ERR_FLG_WORD1_PCS_LINK_DOWN_LF_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
+		llr_replay_max =
+		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		llr_starvation =
 		SS2_PORT_PML_ERR_FLG_WORD2_LLR_MAX_STARVATION_LIMIT_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[2]);
 		break;
@@ -718,12 +727,20 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	remote_fault = 0;
 	local_fault = 0x1;
 	llr_starvation = 0;
+	llr_replay_max = 0;
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 
 	/* llr starvation indicator is first */
 	if (llr_starvation) {
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_STARVED);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_STARVED);
+		goto out_down;
+	}
+
+	/* llr replay max indicator is second */
+	if (llr_replay_max) {
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
+		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX);
 		goto out_down;
 	}
 

@@ -253,6 +253,16 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	sl_core_log_dbg(core_llr, LOG_NAME, "capacity set (data = %lld, seq = %lld)",
 		calc_data, calc_seq);
 
+	core_llr->settings.replay_ct_max    = 0xFE;
+	core_llr->settings.replay_timer_max = (3 * llr_data.loop.average + 500);
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), &data64);
+	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_UPDATE(data64,
+		core_llr->settings.replay_ct_max);
+	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_TIMER_MAX_UPDATE(data64,
+		core_llr->settings.replay_timer_max);
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), data64);
+
 	data64 = 0ULL;
 	data64 = SS2_PORT_PML_CFG_LLR_CAPACITY_MAX_DATA_UPDATE(data64, calc_data);
 	data64 = SS2_PORT_PML_CFG_LLR_CAPACITY_MAX_SEQ_UPDATE(data64, calc_seq);
@@ -353,6 +363,7 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARVED);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
+	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup cmd (core_llr = 0x%p)", core_llr);
 
@@ -671,12 +682,6 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 		return;
 	}
 
-	sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX);
-	rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX);
-	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
-			"start init complete intr - replay at max enable failed [%d]", rtn);
-
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 	if (rtn < 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
@@ -766,16 +771,7 @@ void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr)
 
 void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 {
-	int rtn;
-
 	sl_core_log_dbg(core_llr, LOG_NAME, "stop cmd");
-
-	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_REPLAY_AT_MAX);
-	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
-			"stop cmd - llr replay at max disable failed [%d]", rtn);
-
-	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_REPLAY_AT_MAX_INTR]));
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
@@ -792,6 +788,7 @@ void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARVED);
+	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 
@@ -815,21 +812,4 @@ void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr)
 			return;
 		}
 	}
-}
-
-void sl_core_hw_llr_replay_at_max_intr_work(struct work_struct *work)
-{
-	struct sl_core_llr *core_llr;
-
-	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_REPLAY_AT_MAX_INTR]);
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "replay at max intr work");
-
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "replay at max intr work canceled");
-		return;
-	}
-
-// FIXME: add any other handler action here
-	sl_core_log_warn(core_llr, LOG_NAME, "replay at max intr fired");
 }

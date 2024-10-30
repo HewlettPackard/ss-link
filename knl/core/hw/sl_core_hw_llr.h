@@ -30,6 +30,4 @@ void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags);
 
 void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr);
 
-void sl_core_hw_llr_replay_at_max_intr_work(struct work_struct *work);
-
 #endif /* _SL_CORE_HW_LLR_H_ */
