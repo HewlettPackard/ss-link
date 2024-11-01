@@ -122,6 +122,11 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
+	if (sl_media_jack_downshift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already downshifted");
+		return 0;
+	}
+
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	if (media_lgrp->media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE) {
 		media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_NO_CABLE;

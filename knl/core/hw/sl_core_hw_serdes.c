@@ -190,7 +190,7 @@ static int sl_core_hw_serdes_link_up_an_settings(struct sl_core_link *core_link)
 					core_link->core_lgrp->num, &core_link->serdes.media_serdes_settings);
 
 	core_link->serdes.core_serdes_settings.dfe      = SL_CORE_HW_SERDES_DFE_DISABLE;
-	core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_ENABLE;
+	core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
 	core_link->serdes.core_serdes_settings.osr      = SL_CORE_HW_SERDES_OSR_OSX42P5;
 	core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_NRZ;
 // FIXME: might need to worry about third party
@@ -298,8 +298,11 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
 		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_ER;
 
-	core_link->serdes.core_serdes_settings.dfe      = SL_CORE_HW_SERDES_DFE_ENABLE;
-	core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
+	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
+	if (sl_media_jack_downshift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL)
+		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
+	else
+		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_ENABLE;
 
 	switch (core_link->core_lgrp->config.furcation) {
 	case SL_MEDIA_FURCATION_X1:
