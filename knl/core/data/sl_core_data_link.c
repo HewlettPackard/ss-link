@@ -100,8 +100,14 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_up_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_TIMEOUT]),
 		sl_core_hw_link_up_timeout_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]),
+		sl_core_hw_link_up_cancel_cmd_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]),
 		sl_core_hw_link_up_check_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_DOWN_CMD]),
+		sl_core_hw_link_down_cmd_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_DOWN_FAULT]),
+		sl_core_hw_link_down_fault_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_NON_FATAL_INTR]),
 		sl_core_hw_link_non_fatal_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]),

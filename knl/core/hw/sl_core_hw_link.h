@@ -19,9 +19,11 @@ void sl_core_hw_link_up_check_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_settle_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_check_work(struct work_struct *work);
 void sl_core_hw_link_up_timeout_work(struct work_struct *work);
-void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link);
+void sl_core_hw_link_up_cancel_cmd_work(struct work_struct *work);
 
-void sl_core_hw_link_down_cmd(struct sl_core_link *link);
+void sl_core_hw_link_down_cmd_work(struct work_struct *work);
+void sl_core_hw_link_down_fault_work(struct work_struct *work);
+
 void sl_core_hw_link_down_wait(struct sl_core_link *link);
 
 void sl_core_hw_link_non_fatal_intr_work(struct work_struct *work);

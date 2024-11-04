@@ -100,13 +100,15 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_core_log_dbg(core_link, LOG_NAME, "down - cancel up");
 		core_link->link.state = SL_CORE_LINK_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_up_cancel_cmd(core_link);
+		sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_UP_CANCEL);
+		sl_core_work_link_flush(core_link, SL_CORE_WORK_LINK_UP_CANCEL);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_down_cmd(core_link);
+		sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_DOWN_CMD);
+		sl_core_work_link_flush(core_link, SL_CORE_WORK_LINK_DOWN_CMD);
 		return 0;
 	default:
 		sl_core_log_dbg(core_link, LOG_NAME,
