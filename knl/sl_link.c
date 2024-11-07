@@ -405,8 +405,6 @@ const char *sl_link_down_cause_str(u32 cause)
 		return "timeout";
 	case SL_LINK_DOWN_CAUSE_CANCELED:
 		return "canceled";
-	case SL_LINK_DOWN_CAUSE_LLR_STARVED:
-		return "llr-starved";
 	case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
 		return "unsupported-cable";
 	case SL_LINK_DOWN_CAUSE_COMMAND:

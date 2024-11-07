@@ -89,8 +89,12 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_UP,
 		SL_CORE_WORK_LINK_UP_INTR, "link up");
-	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_NON_FATAL,
-		SL_CORE_WORK_LINK_NON_FATAL_INTR, "link non fatal");
+	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES,
+		SL_CORE_WORK_LINK_HIGH_SERDES_INTR, "link high serdes");
+	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION,
+		SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR, "link llr max starvation");
+	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED,
+		SL_CORE_WORK_LINK_LLR_STARVED_INTR, "link llr starved");
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_FAULT,
 		SL_CORE_WORK_LINK_FAULT_INTR, "link fault");
 
@@ -102,8 +106,12 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_up_timeout_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]),
 		sl_core_hw_link_up_check_work);
-	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_NON_FATAL_INTR]),
-		sl_core_hw_link_non_fatal_intr_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]),
+		sl_core_hw_link_high_serdes_intr_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]),
+		sl_core_hw_link_llr_max_starvation_intr_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]),
+		sl_core_hw_link_llr_starved_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]),
 		sl_core_hw_link_fault_intr_work);
 
@@ -241,7 +249,9 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 
 	/* link */
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_NON_FATAL);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);

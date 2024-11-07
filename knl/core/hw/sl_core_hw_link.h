@@ -24,7 +24,9 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link);
 void sl_core_hw_link_down_cmd(struct sl_core_link *link);
 void sl_core_hw_link_down_wait(struct sl_core_link *link);
 
-void sl_core_hw_link_non_fatal_intr_work(struct work_struct *work);
+void sl_core_hw_link_high_serdes_intr_work(struct work_struct *work);
+void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work);
+void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work);
 void sl_core_hw_link_fault_intr_work(struct work_struct *work);
 
 #endif /* _SL_CORE_HW_LINK_H_ */

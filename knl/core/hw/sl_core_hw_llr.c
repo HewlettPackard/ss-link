@@ -214,7 +214,6 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	u32                port;
 	u64                bytes;
 	u64                calc_data;
-	u64                calc_seq;
 	int                x;
 	u64                total_time;
 	u64                data64;
@@ -224,7 +223,6 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "capacity set (port = %d)", port);
 
-	/* calc min, max and average */
 	llr_data.loop.min = core_llr->loop_time[0];
 	llr_data.loop.max = core_llr->loop_time[0];
 	total_time        = core_llr->loop_time[0];
@@ -235,23 +233,21 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	}
 	llr_data.loop.average = DIV_ROUND_UP(total_time, SL_CORE_LLR_MAX_LOOP_TIME_COUNT);
 
-	/* calc capacity */
-	bytes = (llr_data.loop.average * core_llr->settings.bytes_per_ns) +
-		(SL_CORE_LLR_BYTES_PER_FRAME * SL_CORE_LLR_NUM_FRAMES);
+	if (core_llr->core_lgrp->config.options & SL_LGRP_OPT_FABRIC) {
+		calc_data = 0x800; /* reset value */
+	} else {
+		bytes = (llr_data.loop.average * core_llr->settings.bytes_per_ns) +
+			(SL_CORE_LLR_BYTES_PER_FRAME * SL_CORE_LLR_NUM_FRAMES);
 
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"capacity set (average = %lldns, byte_per_ns = %d, bytes = %lld)",
-		llr_data.loop.average, core_llr->settings.bytes_per_ns, bytes);
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"capacity set (average = %lldns, byte_per_ns = %d, bytes = %lld)",
+			llr_data.loop.average, core_llr->settings.bytes_per_ns, bytes);
 
-	calc_data = DIV_ROUND_UP(bytes, SL_CORE_LLR_BYTE_QUANTA);
-	if (calc_data > core_llr->settings.max_cap_data)
-		calc_data = core_llr->settings.max_cap_data;
-	calc_seq = DIV_ROUND_UP(bytes, SL_CORE_LLR_FRAME_SIZE);
-	if (calc_seq > core_llr->settings.max_cap_seq)
-		calc_seq = core_llr->settings.max_cap_seq;
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "capacity set (data = %lld, seq = %lld)",
-		calc_data, calc_seq);
+		calc_data = DIV_ROUND_UP(bytes, SL_CORE_LLR_BYTE_QUANTA);
+		if (calc_data > core_llr->settings.max_cap_data)
+			calc_data = core_llr->settings.max_cap_data;
+	}
+	sl_core_log_dbg(core_llr, LOG_NAME, "capacity set (data = %lld)", calc_data);
 
 	core_llr->settings.replay_ct_max    = 0xFE;
 	core_llr->settings.replay_timer_max = (3 * llr_data.loop.average + 500);
@@ -263,9 +259,8 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 		core_llr->settings.replay_timer_max);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), data64);
 
-	data64 = 0ULL;
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_CAPACITY(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_CAPACITY_MAX_DATA_UPDATE(data64, calc_data);
-	data64 = SS2_PORT_PML_CFG_LLR_CAPACITY_MAX_SEQ_UPDATE(data64, calc_seq);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_CAPACITY(core_llr->num), data64);
 
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_CAPACITY(core_llr->num));
@@ -361,7 +356,6 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
-	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARVED);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
@@ -466,6 +460,11 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	port = core_llr->core_lgrp->num;
 
+	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
+	if (rtn < 0)
+		sl_core_log_warn(core_llr, LOG_NAME,
+			"loop time intr - setup end failed [%d]", rtn);
+
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"loop time intr work (port = %d)", port);
 
@@ -498,11 +497,6 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 	}
 
 	sl_core_hw_llr_capacity_set(core_llr);
-
-	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
-	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
-			"loop time intr - setup end failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
@@ -787,7 +781,6 @@ void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
-	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARVED);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
