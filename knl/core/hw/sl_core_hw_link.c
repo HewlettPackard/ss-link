@@ -5,6 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
+#include <linux/preempt.h>
 
 #include "sl_kconfig.h"
 #include "sl_ctl_link.h"
@@ -18,6 +19,7 @@
 #include "data/sl_core_data_lgrp.h"
 #include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_link.h"
+#include "hw/sl_core_hw_mac.h"
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_serdes.h"
@@ -27,6 +29,26 @@
 #include "hw/sl_core_hw_io.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
+
+static void sl_core_hw_link_off(struct sl_core_link *core_link)
+{
+	struct sl_core_mac *core_mac;
+
+	preempt_disable();
+
+	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
+				   core_link->core_lgrp->num, core_link->num);
+	if (core_mac) {
+		sl_core_hw_mac_tx_stop(core_mac);
+		sl_core_hw_mac_rx_stop(core_mac);
+	}
+
+	sl_core_hw_pcs_stop(core_link);
+
+	preempt_enable();
+
+	sl_core_hw_serdes_link_down(core_link);
+}
 
 void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 {
@@ -103,7 +125,7 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 
 	sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP);
 
-	sl_core_hw_pcs_stop(core_link);
+	sl_core_hw_link_off(core_link);
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
@@ -162,7 +184,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 	sl_core_data_link_timeouts(core_link);
 
-	sl_core_hw_pcs_stop(core_link);
+	sl_core_hw_link_off(core_link);
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
@@ -284,8 +306,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		if (rtn != -EALREADY)
 			sl_core_log_err(core_link, LOG_NAME,
 				"up success link non fatal enable failed [%d]", rtn);
-		sl_core_hw_pcs_stop(core_link);
-		sl_core_hw_serdes_link_down(core_link);
+		sl_core_hw_link_off(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
@@ -296,8 +317,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		if (rtn != -EALREADY)
 			sl_core_log_err(core_link, LOG_NAME,
 				"up success link fault enable failed [%d]", rtn);
-		sl_core_hw_pcs_stop(core_link);
-		sl_core_hw_serdes_link_down(core_link);
+		sl_core_hw_link_off(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
@@ -347,8 +367,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 		if (rtn < 0)
 			sl_core_log_warn(core_link, LOG_NAME,
 				"up check work link up end failed [%d]", rtn);
-		sl_core_hw_pcs_stop(core_link);
-		sl_core_hw_serdes_link_down(core_link);
+		sl_core_hw_link_off(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
@@ -510,8 +529,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
-	sl_core_hw_pcs_stop(core_link);
-	sl_core_hw_serdes_link_down(core_link);
+	sl_core_hw_link_off(core_link);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_DONE);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
@@ -560,8 +578,7 @@ void sl_core_hw_link_up_cancel_cmd_work(struct work_struct *work)
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
-	sl_core_hw_pcs_stop(core_link);
-	sl_core_hw_serdes_link_down(core_link);
+	sl_core_hw_link_off(core_link);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
@@ -603,8 +620,7 @@ void sl_core_hw_link_down_cmd_work(struct work_struct *work)
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
-	sl_core_hw_pcs_stop(core_link);
-	sl_core_hw_serdes_link_down(core_link);
+	sl_core_hw_link_off(core_link);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
@@ -638,26 +654,8 @@ void sl_core_hw_link_down_fault_work(struct work_struct *work)
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
-// HACK: turn off LLR blindly
-{
-	u32 port;
-	u64 data64;
+	sl_core_hw_link_off(core_link);
 
-	port = core_link->core_lgrp->num;
-
-	sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num), &data64);
-	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LLR_MODE_UPDATE(data64, 0); /* OFF */
-	sl_core_write64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num), data64);
-
-	sl_core_flush64(core_link, SS2_PORT_PML_CFG_LLR_SUBPORT(core_link->num));
-
-	udelay(20);
-}
-
-	sl_core_hw_pcs_stop(core_link);
-	sl_core_hw_serdes_link_down(core_link);
-
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LF);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	rtn = core_link->config.fault_callback(core_link->link.tag,
