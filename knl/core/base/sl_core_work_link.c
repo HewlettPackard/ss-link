@@ -27,14 +27,3 @@ void sl_core_work_link_queue(struct sl_core_link *core_link, u32 work_num)
 		&(core_link->work[work_num])))
 		sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)", work_num);
 }
-
-void sl_core_work_link_flush(struct sl_core_link *core_link, u32 work_num)
-{
-	bool waited;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "flush - (core_link = 0x%p, work_num = %d)", core_link, work_num);
-
-	waited = flush_work(&(core_link->work[work_num]));
-
-	sl_core_log_dbg(core_link, LOG_NAME, "flush - (waited = %s)", waited ? "true" : "false");
-}
