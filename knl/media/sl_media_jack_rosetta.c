@@ -15,7 +15,6 @@
 int sl_media_jack_fake_cable_insert(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr)
 {
 	int                   rtn;
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
@@ -38,17 +37,12 @@ int sl_media_jack_fake_cable_insert(u8 ldev_num, u8 lgrp_num, struct sl_media_at
 		return rtn;
 	}
 
-	spin_lock_irqsave(&media_lgrp->media_jack->data_lock, irq_flags);
-	media_lgrp->media_jack->state = SL_MEDIA_JACK_CABLE_ONLINE;
-	spin_unlock_irqrestore(&media_lgrp->media_jack->data_lock, irq_flags);
-
 	return 0;
 }
 
 void sl_media_jack_fake_cable_remove(u8 ldev_num, u8 lgrp_num)
 {
 	struct sl_media_lgrp *media_lgrp;
-	unsigned long         irq_flags;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 	if (!media_lgrp) {
@@ -61,8 +55,4 @@ void sl_media_jack_fake_cable_remove(u8 ldev_num, u8 lgrp_num)
 		"fake_cable_remove (lgrp_num = %u)", lgrp_num);
 
 	sl_media_data_jack_fake_media_attr_clr(media_lgrp->media_jack, media_lgrp->cable_info);
-
-	spin_lock_irqsave(&media_lgrp->media_jack->data_lock, irq_flags);
-	media_lgrp->media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
-	spin_unlock_irqrestore(&media_lgrp->media_jack->data_lock, irq_flags);
 }
