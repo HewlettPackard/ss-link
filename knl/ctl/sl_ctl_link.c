@@ -498,7 +498,7 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_ctl_log_dbg(NULL, LOG_NAME,
 			"link down NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return 0;
+		return -EBADRQC;
 	}
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down");
@@ -510,16 +510,16 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
 	ctl_link->is_canceled = true;
 	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
-	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
-			"core_link_down failed [%d]", rtn);
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
-		return rtn;
-	}
 
 	cancel_work_sync(&ctl_link->up_notif_work);
 	cancel_work_sync(&ctl_link->fault_notif_work);
+
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
+	if (rtn) {
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+			"core_link_down failed [%d]", rtn);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
+	}
 
 	sl_ctl_link_up_clock_clear(ctl_link);
 	sl_ctl_link_up_attempt_clock_clear(ctl_link);
@@ -547,18 +547,18 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
-	cancel_work_sync(&ctl_link->up_notif_work);
-	cancel_work_sync(&ctl_link->fault_notif_work);
-
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
 	ctl_link->is_canceled = true;
 	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+
+	cancel_work_sync(&ctl_link->up_notif_work);
+	cancel_work_sync(&ctl_link->fault_notif_work);
+
 	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);
 		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_FAIL);
-		return rtn;
 	}
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET);
@@ -656,7 +656,9 @@ int sl_ctl_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 	}
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"state = %s", sl_link_state_str(*state));
+		"state get (state = %u %s, link_state = %u %s)",
+		*state, sl_link_state_str(*state),
+		link_state, sl_core_link_state_str(link_state));
 
 	return 0;
 }

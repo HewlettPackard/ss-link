@@ -634,7 +634,7 @@ void sl_core_hw_link_down_wait(struct sl_core_link *core_link)
 	try_count = 0;
 	while (sl_core_data_link_state_get(core_link) != SL_CORE_LINK_STATE_DOWN) {
 		usleep_range(1000, 2000);
-		if (try_count++ > 10 * 1000) /* apporox 10 to 20 seconds */ {
+		if (try_count++ > 100 * 1000) {
 			sl_core_info_map_str(core_link->info_map, info_map_str, sizeof(info_map_str));
 			sl_core_log_warn(core_link, LOG_NAME,
 				"down wait tries exceeded - failed to get to down (state = %u %s, info = %s)",

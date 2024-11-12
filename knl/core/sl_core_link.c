@@ -82,13 +82,14 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
 	link_state = core_link->link.state;
 	switch (link_state) {
-	case SL_CORE_LINK_STATE_DOWN:
-	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
-		sl_core_log_dbg(core_link, LOG_NAME,
-			"down - already down, configured or unconfigured");
+	case SL_CORE_LINK_STATE_CONFIGURING:
+	case SL_CORE_LINK_STATE_CONFIGURED:
+	case SL_CORE_LINK_STATE_DOWN:
+		sl_core_log_dbg(core_link, LOG_NAME, "down - already down");
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 		return 0;
+	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - already going down");
@@ -103,6 +104,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_core_hw_link_up_cancel_cmd(core_link);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
+	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);

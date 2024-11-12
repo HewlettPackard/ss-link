@@ -476,28 +476,24 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 	return 0;
 }
 
-/*
- * sl_ctl_link_down_work - Internally set the link down in a work queue.
- *
- * Beware, this link down is a different procedure than &sl_ctl_link_down
- */
 void sl_ctl_link_down_work(struct work_struct *work)
 {
-	int rtn;
-	u64 core_imap;
-	unsigned long irq_flags;
-	struct sl_link_data link_data;
-	struct sl_ctl_link *ctl_link = container_of(work, struct sl_ctl_link, down_work);
+	int                  rtn;
+	u64                  core_imap;
+	unsigned long        irq_flags;
+	struct sl_link_data  link_data;
+	struct sl_ctl_link  *ctl_link;
+
+	ctl_link = container_of(work, struct sl_ctl_link, down_work);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "link_down_work");
 
 	rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);
 		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
-		return;
 	}
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN);
