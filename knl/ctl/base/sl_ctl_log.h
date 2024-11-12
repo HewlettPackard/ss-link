@@ -15,6 +15,7 @@
 #define SL_CTL_LINK_FEC_LOG_NAME   "link-fec"
 #define SL_CTL_MAC_LOG_NAME        "mac"
 #define SL_CTL_LLR_LOG_NAME        "llr"
+#define SL_CTL_TEST_FEC_LOG_NAME   "test-fec"
 
 #define sl_ctl_log_dbg(_ptr, _name, _text, ...) \
 	sl_log_dbg((_ptr), SL_CTL_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)

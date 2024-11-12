@@ -11,6 +11,7 @@
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "test/sl_ctl_test.h"
+#include "test/sl_ctl_test_fec.h"
 #include "test/sl_core_test_fec.h"
 
 #include "sl_ctl_ldev.h"
@@ -1012,7 +1013,7 @@ static int sl_ctl_test37(struct sl_ctl_test_args test_args)
 /* Set Test FEC Cntrs use */
 static int sl_ctl_test38(struct sl_ctl_test_args test_args)
 {
-	sl_core_test_fec_cntrs_use_set(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, test_args.flags);
+	sl_ctl_test_fec_cntrs_use_set(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, test_args.flags);
 
 	return 0;
 }

@@ -466,6 +466,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"UCW exceeded limit (UCW = %llu CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
+		sl_core_hw_link_off(core_link);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_UCW_HIGH);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_UCW);
@@ -478,6 +479,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"CCW exceeded limit (UCW = %llu CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
+		sl_core_hw_link_off(core_link);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_CCW_HIGH);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CCW);

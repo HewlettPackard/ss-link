@@ -30,6 +30,8 @@ usr/linktool/linktool
 .cache/
 compile_commands.json
 
+.clangd
+
 *.debhelper
 *.substvars
 changelog
