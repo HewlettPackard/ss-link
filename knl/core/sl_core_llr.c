@@ -111,7 +111,9 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	llr_state = core_llr->state;
 	switch (llr_state) {
 	case SL_CORE_LLR_STATE_CONFIGURED:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup - configured");
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup");
 		core_llr->state = SL_CORE_LLR_STATE_SETTING_UP;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		rtn = sl_core_data_llr_settings(core_llr);
@@ -122,10 +124,8 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		sl_core_hw_llr_setup_cmd(core_llr, callback, tag, flags);
 		return 0;
 	case SL_CORE_LLR_STATE_SETTING_UP:
-	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 	case SL_CORE_LLR_STATE_SETUP:
 	case SL_CORE_LLR_STATE_STARTING:
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
 	case SL_CORE_LLR_STATE_CANCELING:
 	case SL_CORE_LLR_STATE_STOPPING:
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup - in progress");
@@ -159,12 +159,18 @@ int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	llr_state = core_llr->state;
 	switch (llr_state) {
 	case SL_CORE_LLR_STATE_CONFIGURED:
+		sl_core_log_dbg(core_llr, LOG_NAME, "start - configured, not setup");
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return 0;
 	case SL_CORE_LLR_STATE_SETUP:
+		sl_core_log_dbg(core_llr, LOG_NAME, "start");
 		core_llr->state = SL_CORE_LLR_STATE_STARTING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		sl_core_hw_llr_start_cmd(core_llr, callback, tag, flags);
+		return 0;
+	case SL_CORE_LLR_STATE_RUNNING:
+		sl_core_log_dbg(core_llr, LOG_NAME, "start - already running");
+		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
@@ -198,21 +204,21 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags)
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		sl_core_hw_llr_off_wait(core_llr);
 		return 0;
-	case SL_CORE_LLR_STATE_SETUP:
 	case SL_CORE_LLR_STATE_SETTING_UP:
-	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel setup");
 		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		sl_core_hw_llr_setup_cancel_cmd(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_STARTING:
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel start");
 		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		sl_core_hw_llr_start_cancel_cmd(core_llr);
 		return 0;
+	case SL_CORE_LLR_STATE_SETUP:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
 	case SL_CORE_LLR_STATE_RUNNING:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop");
 		core_llr->state = SL_CORE_LLR_STATE_STOPPING;
@@ -268,21 +274,18 @@ void sl_core_llr_data_free(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	kmem_cache_free(core_llr->data_cache, llr_data);
 }
 
-bool sl_core_llr_is_canceled_or_timed_out(struct sl_core_llr *core_llr)
+bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr)
 {
 	bool          is_canceled;
-	bool          is_timed_out;
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	is_canceled  = core_llr->is_canceled;
-	is_timed_out = core_llr->is_timed_out;
 	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_canceled = %s, is_timed_out = %s",
-		is_canceled ? "true" : "false", is_timed_out ? "true" : "false");
+	sl_core_log_dbg(core_llr, LOG_NAME, "is_canceled = %s", is_canceled ? "true" : "false");
 
-	return (is_canceled || is_timed_out);
+	return is_canceled;
 }
 
 void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr)
@@ -304,27 +307,5 @@ void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr)
 
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	core_llr->is_canceled = false;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-}
-
-void sl_core_llr_is_timed_out_set(struct sl_core_llr *core_llr)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_timed_out_set");
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
-	core_llr->is_timed_out = true;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-}
-
-void sl_core_llr_is_timed_out_clr(struct sl_core_llr *core_llr)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_timed_out_clr");
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
-	core_llr->is_timed_out = false;
 	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 }

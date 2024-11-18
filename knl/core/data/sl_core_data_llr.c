@@ -83,6 +83,8 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		sl_core_hw_llr_setup_reuse_timing_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_TIMEOUT]),
 		sl_core_hw_llr_setup_timeout_work);
+	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]),
+		sl_core_hw_llr_setup_unexp_loop_time_intr_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]),
 		sl_core_hw_llr_setup_loop_time_intr_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_START]),
@@ -92,6 +94,8 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]),
 		sl_core_hw_llr_start_init_complete_intr_work);
 
+	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME,
+		SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR, "llr setup unexp loop time");
 	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME,
 		SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR, "llr setup loop time");
 	SL_CORE_INTR_LLR_INIT(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE,
@@ -129,6 +133,7 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	core_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&core_llrs_lock);
 
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
@@ -297,7 +302,7 @@ void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 {
 	unsigned long irq_flags;
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME,
 			"llr_state_set canceled (core_state = %u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));

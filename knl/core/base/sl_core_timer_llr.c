@@ -30,7 +30,7 @@ void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 		core_llr->timers[timer_num].data.timeout_ms,
 		core_llr->timers[timer_num].timer.expires);
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME,
 			"begin - canceled (timer = %u)", timer_num);
 		return;

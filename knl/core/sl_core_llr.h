@@ -33,6 +33,7 @@ enum sl_core_llr_state {
 	SL_CORE_LLR_STATE_SETUP,
 	SL_CORE_LLR_STATE_STARTING,
 	SL_CORE_LLR_STATE_START_TIMEOUT,
+	SL_CORE_LLR_STATE_START_FAIL,
 	SL_CORE_LLR_STATE_RUNNING,
 	SL_CORE_LLR_STATE_CANCELING,
 	SL_CORE_LLR_STATE_STOPPING,
@@ -52,7 +53,6 @@ struct sl_core_llr {
 
 	spinlock_t                                 data_lock;
 	bool                                       is_canceled;
-	bool                                       is_timed_out;
 	u32                                        state;
 	u64                                        info_map;
 	void                                      *tag;
@@ -114,10 +114,8 @@ int  sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 void sl_core_llr_data_free(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 			   struct sl_llr_data *llr_data);
 
-bool sl_core_llr_is_canceled_or_timed_out(struct sl_core_llr *core_llr);
+bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr);
 void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr);
 void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr);
-void sl_core_llr_is_timed_out_set(struct sl_core_llr *core_llr);
-void sl_core_llr_is_timed_out_clr(struct sl_core_llr *core_llr);
 
 #endif /* _SL_CORE_LLR_H_ */

@@ -8,6 +8,7 @@
 
 struct work_struct;
 struct sl_core_link;
+struct sl_core_llr;
 
 void sl_core_hw_llr_link_init(struct sl_core_link *core_link);
 
@@ -16,6 +17,7 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 void sl_core_hw_llr_setup_work(struct work_struct *work);
 void sl_core_hw_llr_setup_reuse_timing_work(struct work_struct *work);
 void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work);
+void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work);
 void sl_core_hw_llr_setup_timeout_work(struct work_struct *work);
 void sl_core_hw_llr_setup_cancel_cmd(struct sl_core_llr *core_llr);
 

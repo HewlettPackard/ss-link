@@ -166,6 +166,8 @@ const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 		return "starting";
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		return "start-timeout";
+	case SL_CORE_LLR_STATE_START_FAIL:
+		return "failed";
 	case SL_CORE_LLR_STATE_RUNNING:
 		return "running";
 	case SL_CORE_LLR_STATE_CANCELING:

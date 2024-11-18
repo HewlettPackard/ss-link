@@ -889,7 +889,7 @@ int sl_core_test_exec(u8 ldev_num, u64 lgrp_map,
 			sl_core_test_launch_rtn[x][0] = sl_core_test_launch_no_lgrp(test_num, ldev->num, x, 0, flags);
 			if (sl_core_test_launch_rtn[x][0] != 0)
 				pr_err(SL_CORE_TEST_NAME "ldev test %d failed [%d]\n",
-					test_num, sl_core_test_launch_rtn[x][y]);
+					test_num, sl_core_test_launch_rtn[x][0]);
 			continue;
 		}
 
@@ -898,7 +898,7 @@ int sl_core_test_exec(u8 ldev_num, u64 lgrp_map,
 			sl_core_test_launch_rtn[x][0] = sl_core_test_launch(test_num, ldev->num, x, 0, flags);
 			if (sl_core_test_launch_rtn[x][0] != 0)
 				pr_err(SL_CORE_TEST_NAME "lgrp test %d failed [%d]\n",
-					test_num, sl_core_test_launch_rtn[x][y]);
+					test_num, sl_core_test_launch_rtn[x][0]);
 			continue;
 		}
 

@@ -12,9 +12,6 @@
 #define SL_PLATFORM_IS_NETSIM(_ldev)   ((_ldev)->platform == PLATFORM_NETSIM)
 #define SL_PLATFORM_IS_EMULATOR(_ldev) ((_ldev)->platform == PLATFORM_Z1)
 
-#define SL_BOARD_WASHINGTON 4
-#define SL_BOARD_KENNEBEC   5
-
 #ifdef BUILDSYS_FRAMEWORK_ROSETTA
 
 #include "ss2_port_pml.h"

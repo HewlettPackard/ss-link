@@ -19,7 +19,7 @@ void sl_core_work_llr_queue(struct sl_core_llr *core_llr, u32 work_num)
 {
 	sl_core_log_dbg(core_llr, LOG_NAME, "queue - (core_link = 0x%p, work_num = %d)", core_llr, work_num);
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "canceled (core_llr = 0x%p)", core_llr);
 		return;
 	}

@@ -51,7 +51,7 @@ static void sl_core_hw_llr_setup_callback(struct sl_core_llr *core_llr)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup callback");
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup callback canceled");
 		return;
 	}
@@ -59,7 +59,7 @@ static void sl_core_hw_llr_setup_callback(struct sl_core_llr *core_llr)
 	llr_data = kmem_cache_alloc(core_llr->data_cache, GFP_ATOMIC);
 	if (llr_data == NULL) {
 		sl_core_log_err(core_llr, LOG_NAME,
-			"setup callback - cache alloc failed");
+			"setup callback cache alloc failed");
 		return;
 	}
 	*llr_data = sl_core_data_llr_data_get(core_llr);
@@ -68,7 +68,7 @@ static void sl_core_hw_llr_setup_callback(struct sl_core_llr *core_llr)
 		core_llr->state, sl_core_data_llr_info_map_get(core_llr), llr_data);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup callback - failed [%d]", rtn);
+			"setup callback failed [%d]", rtn);
 }
 
 static void sl_core_hw_llr_start_callback(struct sl_core_llr *core_llr)
@@ -77,7 +77,7 @@ static void sl_core_hw_llr_start_callback(struct sl_core_llr *core_llr)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "start callback");
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "start callback canceled");
 		return;
 	}
@@ -86,30 +86,17 @@ static void sl_core_hw_llr_start_callback(struct sl_core_llr *core_llr)
 		core_llr->state, sl_core_data_llr_info_map_get(core_llr));
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start callback - failed [%d]", rtn);
+			"start callback failed [%d]", rtn);
 }
 
-static void sl_core_hw_llr_enable(struct sl_core_llr *core_llr)
+static void sl_core_hw_llr_loop_time_start(struct sl_core_llr *core_llr)
 {
 	u32 port;
 	u64 data64;
 
 	port = core_llr->core_lgrp->num;
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "enable (port = %d)", port);
-
-	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_TX_PCS_SUBPORT(core_llr->num), &data64);
-	data64 = SS2_PORT_PML_CFG_TX_PCS_SUBPORT_ENABLE_CTL_OS_UPDATE(data64, 1); /* enable */
-	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_TX_PCS_SUBPORT(core_llr->num), data64);
-
-	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_llr->num), &data64);
-	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_CTL_OS_UPDATE(data64, 1); /* enable */
-	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_llr->num), data64);
-
-	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_CF_RATES(core_llr->num), &data64);
-	// FIXME: will need to set this for each different cable
-	data64 = SS2_PORT_PML_CFG_LLR_CF_RATES_LOOP_TIMING_PERIOD_UPDATE(data64, 1000); /* reset value */
-	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_CF_RATES(core_llr->num), data64);
+	sl_core_log_dbg(core_llr, LOG_NAME, "loop time start (port = %d)", port);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_ENABLE_LOOP_TIMING_UPDATE(data64, 1); /* enable */
@@ -130,6 +117,26 @@ static void sl_core_hw_llr_loop_time_stop(struct sl_core_llr *core_llr)
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_ENABLE_LOOP_TIMING_UPDATE(data64, 0); /* disable */
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), data64);
+
+	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
+}
+
+static void sl_core_hw_llr_ordered_sets_start(struct sl_core_llr *core_llr)
+{
+	u32 port;
+	u64 data64;
+
+	port = core_llr->core_lgrp->num;
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "ordered sets start (port = %d)", port);
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_llr->num), &data64);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_CTL_OS_UPDATE(data64, 1); /* enable */
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_llr->num), data64);
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_TX_PCS_SUBPORT(core_llr->num), &data64);
+	data64 = SS2_PORT_PML_CFG_TX_PCS_SUBPORT_ENABLE_CTL_OS_UPDATE(data64, 1); /* enable */
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_TX_PCS_SUBPORT(core_llr->num), data64);
 
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
 }
@@ -284,9 +291,9 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 
 	port = core_llr->core_lgrp->num;
 
-	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_CONFIG);
-
 	sl_core_log_dbg(core_llr, LOG_NAME, "config (port = %d)", port);
+
+	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_CONFIG);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR, &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SIZE_UPDATE(data64,
@@ -346,11 +353,16 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 }
 
+//---------------------------- SETUP
+
 void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	sl_core_llr_setup_callback_t callback, void *tag, u32 flags)
 {
 	int rtn;
 
+	sl_core_log_dbg(core_llr, LOG_NAME, "setup cmd (core_llr = 0x%p)", core_llr);
+
+	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_CONFIG);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
@@ -359,8 +371,6 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "setup cmd (core_llr = 0x%p)", core_llr);
-
 	core_llr->tag             = tag;
 	core_llr->callbacks.setup = callback;
 	core_llr->flags.setup     = flags;
@@ -368,10 +378,12 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 
 	sl_core_timer_llr_begin(core_llr, SL_CORE_TIMER_LLR_SETUP);
 
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup cmd - loop time disable failed [%d]", rtn);
+			"setup cmd llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
@@ -394,26 +406,31 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup work");
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup work canceled");
 		return;
 	}
+
+	sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+	sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
 
 	sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0) {
 		sl_core_log_err(core_llr, LOG_NAME,
-			"setup - loop time enable failed [%d]", rtn);
+			"setup work llr_flgs_enable failed [%d]", rtn);
 		rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 		if (rtn < 0)
 			sl_core_log_warn(core_llr, LOG_NAME,
-				"setup - setup end failed [%d]", rtn);
+				"setup work timer_llr_end failed [%d]", rtn);
+		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 		sl_core_hw_llr_setup_callback(core_llr);
 		return;
 	}
 
-	sl_core_hw_llr_enable(core_llr);
+	sl_core_hw_llr_ordered_sets_start(core_llr);
+	sl_core_hw_llr_loop_time_start(core_llr);
 }
 
 void sl_core_hw_llr_setup_reuse_timing_work(struct work_struct *work)
@@ -425,19 +442,19 @@ void sl_core_hw_llr_setup_reuse_timing_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup reuse timing work");
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup reuse timing work canceled");
 		return;
 	}
 
 	sl_core_hw_llr_capacity_set(core_llr);
 
-	sl_core_hw_llr_enable(core_llr);
+	sl_core_hw_llr_ordered_sets_start(core_llr);
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	if (rtn < 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup reuse timing - setup end failed [%d]", rtn);
+			"setup reuse timing work timer_llr_end failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
@@ -460,18 +477,12 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	port = core_llr->core_lgrp->num;
 
-	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
-	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
-			"loop time intr - setup end failed [%d]", rtn);
-
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"loop time intr work (port = %d)", port);
+	sl_core_log_dbg(core_llr, LOG_NAME, "loop time intr work (port = %d)", port);
 
 	x = 0;
 	tries = 0;
 	while (x < SL_CORE_LLR_MAX_LOOP_TIME_COUNT) {
-		if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+		if (sl_core_llr_is_canceled(core_llr)) {
 			sl_core_log_dbg(core_llr, LOG_NAME, "loop time intr work canceled");
 			return;
 		}
@@ -483,7 +494,7 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 		loop_time = SS2_PORT_PML_STS_LLR_LOOP_TIME_LOOP_TIME_GET(data64);
 
 		sl_core_log_dbg(core_llr, LOG_NAME,
-			"loop time intr - time %d = %lluns", x, loop_time);
+			"loop time intr work (time %2d = %lluns)", x, loop_time);
 
 		if (tries++ > 100)
 			break;
@@ -498,11 +509,25 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	sl_core_hw_llr_capacity_set(core_llr);
 
+	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
+	if (rtn < 0)
+		sl_core_log_warn(core_llr, LOG_NAME,
+			"loop time intr work timer_llr_end failed [%d]", rtn);
+
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
 	sl_core_hw_llr_setup_callback(core_llr);
+}
+
+void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
+{
+	struct sl_core_llr *core_llr;
+
+	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "unexpected loop time received");
 }
 
 void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
@@ -514,29 +539,41 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup timeout work");
 
-	sl_core_llr_is_timed_out_set(core_llr);
+	if (sl_core_llr_is_canceled(core_llr)) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup timeout work canceled");
+		return;
+	}
+
+	if (sl_core_data_llr_state_get(core_llr) >= SL_CORE_LLR_STATE_SETUP) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup timeout work not needed");
+		return;
+	}
+
+	if (core_llr->policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup timeout work retrying");
+		sl_core_timer_llr_begin(core_llr, SL_CORE_TIMER_LLR_SETUP);
+		sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+		sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+		sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
+		rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
+		if (rtn)
+			sl_core_log_err(core_llr, LOG_NAME,
+				"setup timeout work llr_flgs_enable failed [%d]", rtn);
+		return;
+	}
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup timeout - loop time disable failed [%d]", rtn);
+			"setup timeout work llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
-	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT);
-
-	sl_core_llr_is_timed_out_clr(core_llr);
-
-	if (!sl_core_llr_is_canceled_or_timed_out(core_llr) &&
-		(core_llr->policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES)) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup timeout work - retrying");
-		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETTING_UP);
-		sl_core_hw_llr_setup_cmd(core_llr, core_llr->callbacks.setup, core_llr->tag, core_llr->flags.setup);
-		return;
-	}
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP_TIMEOUT);
 	sl_core_hw_llr_setup_callback(core_llr);
@@ -550,20 +587,23 @@ void sl_core_hw_llr_setup_cancel_cmd(struct sl_core_llr *core_llr)
 
 	sl_core_llr_is_canceled_set(core_llr);
 
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup cancel cmd - loop time disable failed [%d]", rtn);
+			"setup cancel cmd llr_flgs_disable failed [%d]", rtn);
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	if (rtn < 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"setup cancel cmd - setup end failed [%d]", rtn);
+			"setup cancel cmd timer_llr_end failed [%d]", rtn);
 
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_REUSE_TIMING]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_TIMEOUT]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
@@ -578,16 +618,18 @@ void sl_core_hw_llr_setup_cancel_cmd(struct sl_core_llr *core_llr)
 	sl_core_hw_llr_setup_callback(core_llr);
 }
 
+//---------------------------- START
+
 void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 	sl_core_llr_start_callback_t callback, void *tag, u32 flags)
 {
 	int rtn;
 
+	sl_core_log_dbg(core_llr, LOG_NAME, "start cmd");
+
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "start cmd");
 
 	core_llr->tag             = tag;
 	core_llr->callbacks.start = callback;
@@ -599,9 +641,7 @@ void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start cmd - init complete disable failed [%d]", rtn);
-
-	sl_core_hw_llr_off(core_llr);
+			"start cmd llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_work_llr_queue(core_llr, SL_CORE_WORK_LLR_START);
 }
@@ -615,7 +655,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "start work");
 
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "start work canceled");
 		return;
 	}
@@ -624,12 +664,12 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 	rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0) {
 		sl_core_log_err(core_llr, LOG_NAME,
-			"start - init complete enable failed [%d]", rtn);
-		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
+			"start work llr_flgs_enable failed [%d]", rtn);
 		rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 		if (rtn < 0)
 			sl_core_log_warn(core_llr, LOG_NAME,
-				"start - start end failed [%d]", rtn);
+				"start work timer_llr_end failed [%d]", rtn);
+		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
 		sl_core_hw_llr_start_callback(core_llr);
 		return;
@@ -638,50 +678,51 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 	sl_core_hw_llr_on(core_llr);
 }
 
+#define LLR_ADVANCE_TRIES 3
 void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 {
 	int                 rtn;
 	u32                 port;
 	u64                 data64;
 	struct sl_core_llr *core_llr;
+	int                 x;
 
 	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]);
 
 	port = core_llr->core_lgrp->num;
 
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"start init complete intr work (port = %d)", port);
+	sl_core_log_dbg(core_llr, LOG_NAME, "start init complete intr work (port = %d)", port);
 
-	sl_core_hw_llr_loop_time_stop(core_llr);
-
-	if (sl_core_llr_is_canceled_or_timed_out(core_llr)) {
+	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME, "start init complete intr work canceled");
-		return;
-	}
-
-	sl_core_llr_read64(core_llr, SS2_PORT_PML_STS_LLR(core_llr->num), &data64);
-	if (SS2_PORT_PML_STS_LLR_LLR_STATE_GET(data64) != SS2_PORT_PML_LLR_STATE_T_ADVANCE) {
-		sl_core_log_err(core_llr, LOG_NAME,
-			"start init complete intr - not advancing (state = %lld)",
-			SS2_PORT_PML_STS_LLR_LLR_STATE_GET(data64));
-		sl_core_hw_llr_off(core_llr);
-		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
-		rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
-		if (rtn < 0)
-			sl_core_log_warn(core_llr, LOG_NAME,
-				"start init complete intr - start end failed [%d] (state = %lld)",
-				rtn, SS2_PORT_PML_STS_LLR_LLR_STATE_GET(data64));
-		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
-		sl_core_hw_llr_start_callback(core_llr);
 		return;
 	}
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 	if (rtn < 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start init complete intr - start end failed [%d]", rtn);
+			"start init complete intr work timer_llr_end failed [%d]", rtn);
+
+	sl_core_hw_llr_loop_time_stop(core_llr);
+
+	for (x = 0; x < LLR_ADVANCE_TRIES; ++x) {
+		sl_core_llr_read64(core_llr, SS2_PORT_PML_STS_LLR(core_llr->num), &data64);
+		if (SS2_PORT_PML_STS_LLR_LLR_STATE_GET(data64) == SS2_PORT_PML_LLR_STATE_T_ADVANCE)
+			break;
+		usleep_range(15000, 20000);
+	}
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
+
+	if (x >= LLR_ADVANCE_TRIES) {
+		sl_core_log_err(core_llr, LOG_NAME,
+			"start init complete intr work not advancing (state = %lld)",
+			SS2_PORT_PML_STS_LLR_LLR_STATE_GET(data64));
+		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_START_FAIL);
+		sl_core_hw_llr_start_callback(core_llr);
+		return;
+	}
+
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_RUNNING);
@@ -697,12 +738,31 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "start timeout work");
 
-	sl_core_llr_is_timed_out_set(core_llr);
+	if (sl_core_llr_is_canceled(core_llr)) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "start timeout work canceled");
+		return;
+	}
+
+	if (sl_core_data_llr_state_get(core_llr) == SL_CORE_LLR_STATE_RUNNING) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "start timeout work not needed");
+		return;
+	}
+
+	if (core_llr->policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES) {
+		sl_core_log_dbg(core_llr, LOG_NAME, "start timeout work retrying");
+		sl_core_timer_llr_begin(core_llr, SL_CORE_TIMER_LLR_START);
+		sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
+		rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
+		if (rtn)
+			sl_core_log_err(core_llr, LOG_NAME,
+				"start timeout work llr_flgs_enable failed [%d]", rtn);
+		return;
+	}
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start timeout - init complete disable failed [%d]", rtn);
+			"start timeout work llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
@@ -710,17 +770,6 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
-	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_START_TIMEOUT);
-
-	sl_core_llr_is_timed_out_clr(core_llr);
-
-	if (!sl_core_llr_is_canceled_or_timed_out(core_llr) &&
-		(core_llr->policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES)) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "start timeout work - retrying");
-		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETTING_UP);
-		sl_core_hw_llr_setup_cmd(core_llr, core_llr->callbacks.setup, core_llr->tag, core_llr->flags.setup);
-		return;
-	}
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_START_TIMEOUT);
 	sl_core_hw_llr_start_callback(core_llr);
@@ -737,12 +786,12 @@ void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr)
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start cancel cmd - init complete disable failed [%d]", rtn);
+			"start cancel cmd llr_flgs_disable failed [%d]", rtn);
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 	if (rtn < 0)
 		sl_core_log_warn(core_llr, LOG_NAME,
-			"start cancel cmd - start end failed [%d]", rtn);
+			"start cancel cmd timer_llr_end failed [%d]", rtn);
 
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_TIMEOUT]));
@@ -762,6 +811,8 @@ void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr)
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 	sl_core_hw_llr_start_callback(core_llr);
 }
+
+//---------------------------- STOP
 
 void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 {
@@ -784,8 +835,6 @@ void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "stop cmd - done");
 }
 
 void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr)
@@ -795,14 +844,14 @@ void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr)
 	sl_core_log_dbg(core_llr, LOG_NAME, "off wait");
 
 	try_count = 0;
-	while ((sl_core_data_llr_state_get(core_llr) != SL_CORE_LLR_STATE_OFF) &&
-		(sl_core_data_llr_state_get(core_llr) != SL_CORE_LLR_STATE_CONFIGURED)) {
-		usleep_range(1000, 2000);
-		if (try_count++ > 10 * 1000) /* apporox 10 to 20 seconds */ {
-			sl_core_log_warn(core_llr, LOG_NAME,
-				"off wait tries exceeded - failed to get to off (state = %u %s)",
-				core_llr->state, sl_llr_state_str(core_llr->state));
+	do {
+		switch (sl_core_data_llr_state_get(core_llr)) {
+		case SL_CORE_LLR_STATE_INVALID:
+		case SL_CORE_LLR_STATE_OFF:
+		case SL_CORE_LLR_STATE_CONFIGURED:
+		case SL_CORE_LLR_STATE_START_FAIL:
 			return;
 		}
-	}
+		usleep_range(1000, 2000);
+	} while (try_count++ < 10 * 1000);
 }

@@ -188,6 +188,21 @@ static void sl_ctl_llr_start_callback_work(struct work_struct *work)
 			sl_ctl_log_warn(ctl_llr, LOG_NAME,
 				"start TIMEOUT ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
+	case SL_CORE_LLR_STATE_START_FAIL:
+		if (ctl_llr->policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES) {
+			rtn = sl_core_llr_setup(ctl_llr->ctl_lgrp->ctl_ldev->num,
+				ctl_llr->ctl_lgrp->num, ctl_llr->num, sl_ctl_llr_setup_callback, ctl_llr, 0);
+			if (rtn)
+				sl_ctl_log_warn(ctl_llr, LOG_NAME,
+					"start FAIL core_llr_setup failed [%d[", rtn);
+			return;
+		}
+		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_START_TIMEOUT,
+			NULL, 0, ctl_llr->start.imap);
+		if (rtn)
+			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+				"start FAIL ctl_lgrp_notif_enqueue failed [%d[", rtn);
+		return;
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		memset(&(ctl_llr->setup.data), 0, sizeof(struct sl_llr_data));
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_CANCELED,
@@ -464,6 +479,7 @@ int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 	case SL_CORE_LLR_STATE_INVALID:
 	case SL_CORE_LLR_STATE_OFF:
 	case SL_CORE_LLR_STATE_CONFIGURED:
+	case SL_CORE_LLR_STATE_START_FAIL:
 		*state = SL_LLR_STATE_OFF;
 		break;
 	case SL_CORE_LLR_STATE_RUNNING:
