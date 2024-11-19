@@ -173,20 +173,20 @@ u32 sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp)
 	return max_speed;
 }
 
-void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num)
+void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(serial_num, media_lgrp->cable_info->media_attr.serial_num, SL_MEDIA_SERIAL_NUM_SIZE + 1);
+		strncpy(serial_num_str, media_lgrp->cable_info->media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(serial_num, media_lgrp->cable_info->stashed_media_attr.serial_num,
-			SL_MEDIA_SERIAL_NUM_SIZE + 1);
+		strncpy(serial_num_str, media_lgrp->cable_info->stashed_media_attr.serial_num_str,
+			SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	default:
-		memset(serial_num, '0', SL_MEDIA_SERIAL_NUM_SIZE);
-		serial_num[SL_MEDIA_SERIAL_NUM_SIZE] = '\0';
+		memset(serial_num_str, '0', SL_MEDIA_SERIAL_NUM_SIZE - 2);
+		serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
@@ -196,14 +196,14 @@ void sl_media_lgrp_hpe_pn_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(hpe_pn_str, media_lgrp->cable_info->media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE + 1);
+		strncpy(hpe_pn_str, media_lgrp->cable_info->media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(hpe_pn_str, media_lgrp->cable_info->stashed_media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE + 1);
+		strncpy(hpe_pn_str, media_lgrp->cable_info->stashed_media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
 		break;
 	default:
-		memset(hpe_pn_str, '0', SL_MEDIA_HPE_PN_SIZE);
-		hpe_pn_str[SL_MEDIA_HPE_PN_SIZE] = '\0';
+		memset(hpe_pn_str, '0', SL_MEDIA_HPE_PN_SIZE - 2);
+		hpe_pn_str[SL_MEDIA_HPE_PN_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
@@ -277,4 +277,21 @@ bool sl_media_lgrp_is_cable_not_supported(struct sl_media_lgrp *media_lgrp)
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
 	return not_supported;
+}
+
+void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str)
+{
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		strncpy(date_code_str, media_lgrp->cable_info->media_attr.date_code_str, SL_MEDIA_DATE_CODE_SIZE);
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+		strncpy(date_code_str, media_lgrp->cable_info->stashed_media_attr.date_code_str, SL_MEDIA_DATE_CODE_SIZE);
+		break;
+	default:
+		memset(date_code_str, '0', SL_MEDIA_DATE_CODE_SIZE - 2);
+		date_code_str[SL_MEDIA_DATE_CODE_SIZE - 1] = '\0';
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
