@@ -107,12 +107,11 @@ struct sl_media_qsfp {
 	__u32 density;
 };
 
-#define SL_MEDIA_SERIAL_NUM_SIZE 17
-#define SL_MEDIA_HPE_PN_SIZE     13
-#define SL_MEDIA_DATE_CODE_SIZE  9
+#define SL_MEDIA_SERIAL_NUM_SIZE 16
+#define SL_MEDIA_HPE_PN_SIZE     12
 
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
-#define SL_MEDIA_ATTR_VER   7
+#define SL_MEDIA_ATTR_VER   6
 struct sl_media_attr {
 	__u32 magic;
 	__u32 ver;
@@ -123,9 +122,8 @@ struct sl_media_attr {
 	__u32 length_cm;
 	__u32 speeds_map;                /* Supported speeds on cable */
 	__u32 hpe_pn;                    /* HPE part number */
-	char  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
-	char  serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
-	char  date_code_str[SL_MEDIA_DATE_CODE_SIZE];
+	char  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE + 1];
+	char  serial_num[SL_MEDIA_SERIAL_NUM_SIZE + 1];
 	__u32 max_speed;
 
 	__u32 furcation;

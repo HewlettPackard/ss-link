@@ -62,12 +62,11 @@ u32  sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp);
-void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str);
+void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num);
 void sl_media_lgrp_hpe_pn_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str);
 u32  sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp);
 bool sl_media_lgrp_is_cable_not_supported(struct sl_media_lgrp *media_lgrp);
-void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str);
 
 #endif /* _SL_MEDIA_LGRP_H_ */

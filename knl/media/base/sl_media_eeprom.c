@@ -230,11 +230,11 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 	const char *pn_ptr;
 	int i;
 
-	memcpy(hpe_pn_str, &(media_jack->eeprom_page0[HPE_PN_OFFSET]), SL_MEDIA_HPE_PN_SIZE - 1);
-	hpe_pn_str[SL_MEDIA_HPE_PN_SIZE - 1] = '\0';
+	memcpy(hpe_pn_str, &(media_jack->eeprom_page0[HPE_PN_OFFSET]), SL_MEDIA_HPE_PN_SIZE);
+	hpe_pn_str[SL_MEDIA_HPE_PN_SIZE] = '\0';
 
 	pn_ptr = &(media_jack->eeprom_page0[HPE_PN_OFFSET]);
-	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
+	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE; ++i) {
 		if (pn_ptr[i] < 48 || pn_ptr[i] > 57) /* if the PN character is not numeric, ignore it*/
 			continue;
 		*hpe_pn = *hpe_pn * 10 + (pn_ptr[i] - '0');
@@ -244,26 +244,10 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 }
 
 #define SERIAL_NUM_OFFSET 166
-static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, char *serial_num_str)
+static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, char *serial_num)
 {
-	memcpy(serial_num_str, &(media_jack->eeprom_page0[SERIAL_NUM_OFFSET]), SL_MEDIA_SERIAL_NUM_SIZE - 1);
-	serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE - 1] = '\0';
-
-	return 0;
-}
-
-#define DATE_CODE_OFFSET 182
-static int sl_media_eeprom_date_code_get(struct sl_media_jack *media_jack, char *date_code_str)
-{
-	date_code_str[0] = media_jack->eeprom_page0[DATE_CODE_OFFSET];
-	date_code_str[1] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 1];
-	date_code_str[2] = '-';
-	date_code_str[3] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 2];
-	date_code_str[4] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 3];
-	date_code_str[5] = '-';
-	date_code_str[6] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 4];
-	date_code_str[7] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 5];
-	date_code_str[8] = '\0';
+	memcpy(serial_num, &(media_jack->eeprom_page0[SERIAL_NUM_OFFSET]), SL_MEDIA_SERIAL_NUM_SIZE);
+	serial_num[SL_MEDIA_SERIAL_NUM_SIZE] = '\0';
 
 	return 0;
 }
@@ -312,8 +296,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		sl_media_eeprom_type_get(media_jack, format, &(media_attr->type))                     ||
 		sl_media_eeprom_vendor_get(media_jack, format, &(media_attr->vendor))                 ||
 		sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str) ||
-		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str)                ||
-		sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str)                  ||
+		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num)                    ||
 		sl_media_eeprom_length_get(media_jack, format, &(media_attr->length_cm))              ||
 		sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map))                ||
 		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))
@@ -323,9 +306,9 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		media_attr->options = SL_MEDIA_OPT_AUTONEG;
 
 	sl_media_log_dbg(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
-		"vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X, hpe_pn = %u, serial_num_str = %s",
+		"vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X, hpe_pn = %u, serial_num = %s",
 		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map, media_attr->hpe_pn,
-		media_attr->serial_num_str);
+		media_attr->serial_num);
 
 	return 0;
 }

@@ -126,7 +126,7 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
-	char                  serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
+	char                  serial_num[SL_MEDIA_SERIAL_NUM_SIZE + 1];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -137,18 +137,18 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 		return scnprintf(buf, PAGE_SIZE, "no cable\n");
 	}
 
-	sl_media_lgrp_serial_num_get(media_lgrp, serial_num_str);
+	sl_media_lgrp_serial_num_get(media_lgrp, serial_num);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "serial num show (media_lgrp = 0x%p, serial_num = %s)",
-		media_lgrp, serial_num_str);
-	return scnprintf(buf, PAGE_SIZE, "%s\n", serial_num_str);
+		media_lgrp, serial_num);
+	return scnprintf(buf, PAGE_SIZE, "%s\n", serial_num);
 }
 
 static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
-	char                  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
+	char                  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE + 1];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -161,7 +161,7 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	sl_media_lgrp_hpe_pn_get(media_lgrp, hpe_pn_str);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "hpe part num show (media_lgrp = 0x%p, hpe_pn = %s)",
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "serial num show (media_lgrp = 0x%p, hpe_pn = %s)",
 		media_lgrp, hpe_pn_str);
 	return scnprintf(buf, PAGE_SIZE, "%s\n", hpe_pn_str);
 }
@@ -250,28 +250,6 @@ static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%s\n", not_supported ? "no" : "yes");
 }
 
-static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctl_lgrp   *ctl_lgrp;
-	char                  date_code_str[SL_MEDIA_DATE_CODE_SIZE];
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
-	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
-		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "can't read cable attributes\n");
-		return scnprintf(buf, PAGE_SIZE, "no cable\n");
-	}
-
-	sl_media_lgrp_date_code_get(media_lgrp, date_code_str);
-
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "date code show (media_lgrp = 0x%p, date_code = %s)",
-		media_lgrp, date_code_str);
-	return scnprintf(buf, PAGE_SIZE, "%s\n", date_code_str);
-}
-
 static ssize_t downshift_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -301,7 +279,6 @@ static struct kobj_attribute media_jack_num         = __ATTR_RO(jack_num);
 static struct kobj_attribute media_jack_type        = __ATTR_RO(jack_type);
 static struct kobj_attribute media_furcation        = __ATTR_RO(furcation);
 static struct kobj_attribute media_supported        = __ATTR_RO(supported);
-static struct kobj_attribute media_date_code        = __ATTR_RO(date_code);
 static struct kobj_attribute media_downshift_state  = __ATTR_RO(downshift_state);
 
 static struct attribute *media_attrs[] = {
@@ -316,7 +293,6 @@ static struct attribute *media_attrs[] = {
 	&media_jack_type.attr,
 	&media_furcation.attr,
 	&media_supported.attr,
-	&media_date_code.attr,
 	&media_downshift_state.attr,
 	NULL
 };
