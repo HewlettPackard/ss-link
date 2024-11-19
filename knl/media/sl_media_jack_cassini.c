@@ -68,7 +68,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 					   SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 		media_attr.max_speed     = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 		media_attr.jack_type     = SL_MEDIA_JACK_TYPE_BACKPLANE;
-		strncpy(media_attr.serial_num, "AK20212120", sizeof(media_attr.serial_num));
+		strncpy(media_attr.serial_num_str, "AK20212120", sizeof(media_attr.serial_num_str));
 		strncpy(media_attr.hpe_pn_str, "PK60821-555", sizeof(media_attr.hpe_pn_str));
 	} else {
 		memcpy(media_jack->eeprom_page0, eeprom_page0, SL_MEDIA_EEPROM_PAGE_SIZE);
