@@ -28,6 +28,7 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work);
 void sl_core_hw_llr_start_timeout_work(struct work_struct *work);
 void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr);
 
+void sl_core_hw_llr_stop(struct sl_core_llr *core_llr);
 void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags);
 
 void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr);

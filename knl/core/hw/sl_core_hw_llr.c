@@ -5,6 +5,7 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 #include <linux/workqueue.h>
+#include <linux/preempt.h>
 
 #include "sl_kconfig.h"
 #include "sl_core_lgrp.h"
@@ -814,14 +815,23 @@ void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr)
 
 //---------------------------- STOP
 
-void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
+void sl_core_hw_llr_stop(struct sl_core_llr *core_llr)
 {
-	sl_core_log_dbg(core_llr, LOG_NAME, "stop cmd");
+	sl_core_log_dbg(core_llr, LOG_NAME, "stop");
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 	sl_core_hw_llr_off(core_llr);
 	sl_core_hw_llr_discard(core_llr);
+}
+
+void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
+{
+	sl_core_log_dbg(core_llr, LOG_NAME, "stop cmd");
+
+	preempt_disable();
+
+	sl_core_hw_llr_stop(core_llr);
 
 	if (is_flag_set(flags, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP))
 		sl_core_data_llr_data_clr(core_llr);
@@ -835,6 +845,8 @@ void sl_core_hw_llr_stop_cmd(struct sl_core_llr *core_llr, u32 flags)
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
+
+	preempt_enable();
 }
 
 void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr)

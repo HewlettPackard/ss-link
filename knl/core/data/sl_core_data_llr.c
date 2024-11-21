@@ -63,7 +63,9 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	spin_lock_init(&core_llr->data_lock);
 
-	core_llr->state      = SL_CORE_LLR_STATE_OFF;
+	sl_core_hw_llr_stop(core_llr);
+	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_OFF);
+
 	core_llr->data_cache = KMEM_CACHE(sl_llr_data, 0);
 	if (core_llr->data_cache == NULL)
 		return -ENOMEM;
@@ -128,6 +130,8 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		sl_core_log_dbg(NULL, LOG_NAME, "not found (llr_num = %u)", llr_num);
 		return;
 	}
+
+	sl_core_hw_llr_stop(core_llr);
 
 	spin_lock(&core_llrs_lock);
 	core_llrs[ldev_num][lgrp_num][llr_num] = NULL;
