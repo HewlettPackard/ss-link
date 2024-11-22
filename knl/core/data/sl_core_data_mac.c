@@ -17,6 +17,7 @@
 #include "hw/sl_core_hw_intr.h"
 #include "data/sl_core_data_link.h"
 #include "data/sl_core_data_mac.h"
+#include "hw/sl_core_hw_mac.h"
 #include "hw/sl_core_hw_settings.h"
 
 static struct sl_core_mac *core_macs[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
@@ -41,10 +42,11 @@ int sl_core_data_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	core_mac->magic     = SL_CORE_MAC_MAGIC;
 	core_mac->num       = mac_num;
 	core_mac->core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
-	core_mac->tx_state  = SL_CORE_MAC_STATE_OFF;
-	core_mac->rx_state  = SL_CORE_MAC_STATE_OFF;
 
 	spin_lock_init(&core_mac->data_lock);
+
+	sl_core_hw_mac_tx_stop(core_mac);
+	sl_core_hw_mac_rx_stop(core_mac);
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "new (link = 0x%p)", core_mac);
 
@@ -64,6 +66,9 @@ void sl_core_data_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 		sl_core_log_dbg(NULL, LOG_NAME, "not found (mac_num = %u)", mac_num);
 		return;
 	}
+
+	sl_core_hw_mac_tx_stop(core_mac);
+	sl_core_hw_mac_rx_stop(core_mac);
 
 	spin_lock(&core_macs_lock);
 	core_macs[ldev_num][lgrp_num][mac_num] = NULL;
