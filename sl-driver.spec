@@ -28,7 +28,7 @@
 
 Name:           sl-driver
 Version:        1.19.6
-Release:        0
+Release:        %(echo ${BUILD_METADATA})
 Summary:        HPE Slingshot Link driver
 License:        GPL-2.0
 Source0:        %{name}-%{version}.tar.gz

@@ -10,6 +10,8 @@ if [[ -v SHS_NEW_BUILD_SYSTEM ]]; then  # new build system
   quality_stream=$(get_artifactory_quality_label)
 
   add_repository "${ARTI_URL}/${PRODUCT}-rpm-${quality_stream}-local/${target_branch}/${TARGET_OS}" "${PRODUCT}-${quality_stream}"
+
+  generate_local_rpmmacros
   install_dependencies "sl-driver.spec"
 else  # old build system  
   :  # nothing
