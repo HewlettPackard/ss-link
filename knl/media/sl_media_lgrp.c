@@ -295,3 +295,19 @@ void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_co
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
+
+void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver)
+{
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		memcpy(fw_ver, media_lgrp->cable_info->media_attr.fw_ver, SL_MEDIA_FIRMWARE_VERSION_SIZE);
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+		memcpy(fw_ver, media_lgrp->cable_info->stashed_media_attr.fw_ver, SL_MEDIA_FIRMWARE_VERSION_SIZE);
+		break;
+	default:
+		memset(fw_ver, 0, SL_MEDIA_FIRMWARE_VERSION_SIZE);
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+}

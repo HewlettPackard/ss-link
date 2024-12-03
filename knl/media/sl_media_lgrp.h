@@ -69,5 +69,6 @@ u32  sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp);
 bool sl_media_lgrp_is_cable_not_supported(struct sl_media_lgrp *media_lgrp);
 void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str);
+void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver);
 
 #endif /* _SL_MEDIA_LGRP_H_ */

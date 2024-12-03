@@ -44,3 +44,19 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 {
 	return 0;
 }
+
+/*
+ * TODO: implement cable hw shift check on Cassini
+ */
+int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack)
+{
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
+}
+
+/*
+ * TODO: implement upshifting on Cassini
+ */
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+{
+	return 0;
+}

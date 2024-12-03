@@ -37,8 +37,9 @@ enum sl_link_down_cause {
 	SL_LINK_DOWN_CAUSE_COMMAND,
 	SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED,
 	SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX,
+	SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED,
 
-	SL_LINK_DOWN_CAUSE_LLR_STARVED /* FIXME: remove when sw doesn't use it anymore */
+	SL_LINK_DOWN_CAUSE_LLR_STARVED, /* FIXME: remove when sw doesn't use it anymore */
 };
 
 #define SL_LINK_DATA_STATUS_BIT_LOCK        BIT(0)

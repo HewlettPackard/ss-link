@@ -65,8 +65,11 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	case SL_MEDIA_SS2_HOST_INTERFACE_100GAUI_1_L_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_100G;
 		break;
-	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GBASE_CR4:
+		media_jack->is_ss200_cable = true;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
+		break;
+	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		media_jack->appsel_no_200_gaui = appsel_no;
@@ -81,9 +84,12 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_400GBASE_CR4:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
-		fallthrough;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		media_jack->appsel_no_400_gaui = appsel_no;
+		media_jack->host_interface_400_gaui = host_interface;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GBASE_CR8:
@@ -95,10 +101,16 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_800GBASE_CR8:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
-		fallthrough;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_800G;
+		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_800GAUI_8_S_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_800G;
+		if (!media_jack->host_interface_400_gaui) {
+			media_jack->appsel_no_400_gaui = appsel_no;
+			media_jack->host_interface_400_gaui = host_interface;
+		}
 		break;
 	default:
 		sl_media_log_err(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
@@ -268,6 +280,15 @@ static int sl_media_eeprom_date_code_get(struct sl_media_jack *media_jack, char 
 	return 0;
 }
 
+#define FIRMWARE_VERSION_OFFSET 39
+static int sl_media_eeprom_fw_ver_get(struct sl_media_jack *media_jack, u8 *fw_ver)
+{
+	fw_ver[0] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET];
+	fw_ver[1] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET + 1];
+
+	return 0;
+}
+
 #define CMIS_LENGTH_OFFSET    202
 #define SFF8436_LENGTH_OFFSET 146
 static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 format, u32 *length)
@@ -314,6 +335,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str) ||
 		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str)                ||
 		sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str)                  ||
+		sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver)                            ||
 		sl_media_eeprom_length_get(media_jack, format, &(media_attr->length_cm))              ||
 		sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map))                ||
 		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))

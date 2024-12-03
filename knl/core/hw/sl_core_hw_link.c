@@ -262,6 +262,20 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_hw_link_up_callback(core_link);
 			return;
 		}
+	} else {
+		rtn = sl_media_jack_cable_upshift(core_link->core_lgrp->core_ldev->num,
+				core_link->core_lgrp->num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "upshift failed [%d]", rtn);
+			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+			if (rtn < 0)
+				sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
+			sl_core_hw_serdes_link_down(core_link);
+			sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED);
+			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+			sl_core_hw_link_up_callback(core_link);
+			return;
+		}
 	}
 
 	sl_core_hw_pcs_tx_start(core_link);

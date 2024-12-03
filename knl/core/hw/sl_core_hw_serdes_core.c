@@ -473,8 +473,10 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
 
-	if (core_lgrp->serdes.is_pll_locked && (core_lgrp->serdes.clocking == clocking))
+	if (core_lgrp->serdes.is_pll_locked && (core_lgrp->serdes.clocking == clocking)) {
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "pll already locked and clocking already set");
 		return 0;
+	}
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "pll");
 

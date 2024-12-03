@@ -272,37 +272,61 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%s\n", date_code_str);
 }
 
-static ssize_t downshift_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t firmware_version_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
-	u8                    downshift_state;
+	u8                    fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	downshift_state = sl_media_jack_downshift_state_get(media_lgrp->media_jack);
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "can't read cable attributes\n");
+		return scnprintf(buf, PAGE_SIZE, "no cable\n");
+	}
+
+	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"downshift state show (media_lgrp = 0x%p, downshift_state = %u %s)",
-		media_lgrp, downshift_state, sl_media_downshift_state_str(downshift_state));
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_downshift_state_str(downshift_state));
+		"firmware version show (media_lgrp = 0x%p, firmware_version = 0x%x%x)",
+		media_lgrp, fw_ver[0], fw_ver[1]);
+	return scnprintf(buf, PAGE_SIZE, "0x%x%x\n", fw_ver[0], fw_ver[1]);
 }
 
-static struct kobj_attribute media_state            = __ATTR_RO(state);
-static struct kobj_attribute media_vendor           = __ATTR_RO(vendor);
-static struct kobj_attribute media_type             = __ATTR_RO(type);
-static struct kobj_attribute media_length_cm        = __ATTR_RO(length_cm);
-static struct kobj_attribute media_max_speed        = __ATTR_RO(max_speed);
-static struct kobj_attribute media_serial_num       = __ATTR_RO(serial_num);
-static struct kobj_attribute media_hpe_part_num     = __ATTR_RO(hpe_part_num);
-static struct kobj_attribute media_jack_num         = __ATTR_RO(jack_num);
-static struct kobj_attribute media_jack_type        = __ATTR_RO(jack_type);
-static struct kobj_attribute media_furcation        = __ATTR_RO(furcation);
-static struct kobj_attribute media_supported        = __ATTR_RO(supported);
-static struct kobj_attribute media_date_code        = __ATTR_RO(date_code);
-static struct kobj_attribute media_downshift_state  = __ATTR_RO(downshift_state);
+static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    cable_shift_state;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	cable_shift_state = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"cable_shift state show (media_lgrp = 0x%p, cable_shift_state = %u %s)",
+		media_lgrp, cable_shift_state, sl_media_cable_shift_state_str(cable_shift_state));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_cable_shift_state_str(cable_shift_state));
+}
+
+static struct kobj_attribute media_state             = __ATTR_RO(state);
+static struct kobj_attribute media_vendor            = __ATTR_RO(vendor);
+static struct kobj_attribute media_type              = __ATTR_RO(type);
+static struct kobj_attribute media_length_cm         = __ATTR_RO(length_cm);
+static struct kobj_attribute media_max_speed         = __ATTR_RO(max_speed);
+static struct kobj_attribute media_serial_num        = __ATTR_RO(serial_num);
+static struct kobj_attribute media_hpe_part_num      = __ATTR_RO(hpe_part_num);
+static struct kobj_attribute media_jack_num          = __ATTR_RO(jack_num);
+static struct kobj_attribute media_jack_type         = __ATTR_RO(jack_type);
+static struct kobj_attribute media_furcation         = __ATTR_RO(furcation);
+static struct kobj_attribute media_supported         = __ATTR_RO(supported);
+static struct kobj_attribute media_date_code         = __ATTR_RO(date_code);
+static struct kobj_attribute media_firmware_version  = __ATTR_RO(firmware_version);
+static struct kobj_attribute media_cable_shift_state = __ATTR_RO(cable_shift_state);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -317,7 +341,8 @@ static struct attribute *media_attrs[] = {
 	&media_furcation.attr,
 	&media_supported.attr,
 	&media_date_code.attr,
-	&media_downshift_state.attr,
+	&media_firmware_version.attr,
+	&media_cable_shift_state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

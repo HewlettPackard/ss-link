@@ -625,6 +625,11 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		}
 	}
 
+	if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
+		sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
+	else
+		sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+
 	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
 		media_attr.type == SL_MEDIA_TYPE_AEC) {
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
@@ -668,8 +673,12 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 	return -EFAULT;
 }
 
-#define DATA_PATH_STATE_DEACTIVATED 0x1
-#define DATA_PATH_INIT_TIMEOUT_S    200
+#define DATA_PATH_STATE_DEACTIVATED       0x1
+#define DATA_PATH_INIT_TIMEOUT_S          200
+#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x01
+#define DATA_PATH_ID                      0x08
+#define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
+#define DATA_PATH_UPPER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE | DATA_PATH_ID)
 int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 {
 	int rtn;
@@ -742,10 +751,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.page    = 0x10;
 	media_jack->i2c_data.bank    = 0;
 	media_jack->i2c_data.offset  = 145;
-	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4);
-	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4);
-	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4);
-	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4);
+	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
@@ -761,10 +770,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.page    = 0x10;
 	media_jack->i2c_data.bank    = 0;
 	media_jack->i2c_data.offset  = 149;
-	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
-	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
-	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
-	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | 0x08;
+	media_jack->i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	media_jack->i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	media_jack->i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	media_jack->i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
@@ -844,6 +853,122 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 				 "write failed [%d] (DataPathDeinit = 0x00)", rtn);
 		return rtn;
 	}
+
+	/*
+	 * waiting for firmware reload
+	 */
+	msleep(500);
+
+	return 0;
+}
+
+int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack)
+{
+	int rtn;
+	u8  lower_lane_config;
+	u8  upper_lane_config;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable hw shift state get");
+
+	lower_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	upper_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+
+	media_jack->i2c_data.addr   = 0;
+	media_jack->i2c_data.page   = 0x10;
+	media_jack->i2c_data.bank   = 0;
+	media_jack->i2c_data.offset = 145;
+	media_jack->i2c_data.len    = 4;
+	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "read failed [%d] (SCS0 configuration - config lanes 1-4)", rtn);
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+	}
+	if ((media_jack->i2c_data.data[0] != lower_lane_config) ||
+		(media_jack->i2c_data.data[1] != lower_lane_config) ||
+		(media_jack->i2c_data.data[2] != lower_lane_config) ||
+		(media_jack->i2c_data.data[3] != lower_lane_config)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "cable is upshifted");
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED;
+	}
+
+	media_jack->i2c_data.addr   = 0;
+	media_jack->i2c_data.page   = 0x10;
+	media_jack->i2c_data.bank   = 0;
+	media_jack->i2c_data.offset = 149;
+	media_jack->i2c_data.len    = 4;
+	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "read failed [%d] (SCS0 configuration - config lanes 5-8)", rtn);
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+	}
+
+	if ((media_jack->i2c_data.data[0] != upper_lane_config) ||
+		(media_jack->i2c_data.data[1] != upper_lane_config) ||
+		(media_jack->i2c_data.data[2] != upper_lane_config) ||
+		(media_jack->i2c_data.data[3] != upper_lane_config)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "cable is upshifted");
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED;
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is downshifted");
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
+}
+
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable upshift");
+
+	rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset failed [%d]", rtn);
+		return rtn;
+	}
+
+	return 0;
+}
+
+int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable soft reset");
+
+	media_jack->i2c_data.page    = 0;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 0x1a;
+	media_jack->i2c_data.data[0] = 0x08;
+	media_jack->i2c_data.len     = 1;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (%u <- %u)", rtn, media_jack->i2c_data.offset,
+				 media_jack->i2c_data.data[0]);
+		return rtn;
+	}
+
+	msleep(500);
+
+	media_jack->i2c_data.page    = 0;
+	media_jack->i2c_data.bank    = 0;
+	media_jack->i2c_data.offset  = 0x1a;
+	media_jack->i2c_data.data[0] = 0x00;
+	media_jack->i2c_data.len     = 1;
+	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "write failed [%d] (%u <- %u)", rtn, media_jack->i2c_data.offset,
+				 media_jack->i2c_data.data[0]);
+		return rtn;
+	}
+
+	/*
+	 * waiting for firmware reload
+	 */
+	msleep(5000);
 
 	return 0;
 }

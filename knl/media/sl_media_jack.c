@@ -55,15 +55,29 @@ u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
 	return state;
 }
 
-u8 sl_media_jack_downshift_state_get(struct sl_media_jack *media_jack)
+void sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state)
 {
-	u8 downshift_state;
+	unsigned long irq_flags;
 
-	spin_lock(&media_jack->data_lock);
-	downshift_state = media_jack->downshift_state;
-	spin_unlock(&media_jack->data_lock);
+	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	media_jack->cable_shift_state = state;
+	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
 
-	return downshift_state;
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state set = %u", media_jack->cable_shift_state);
+}
+
+u8 sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack)
+{
+	u8            cable_shift_state;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	cable_shift_state = media_jack->cable_shift_state;
+	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state get = %u", cable_shift_state);
+
+	return cable_shift_state;
 }
 
 bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
@@ -112,9 +126,75 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 	return 0;
 }
 
+#define SL_MEDIA_JACK_FIRMWARE_MINOR_VERSION_OFFSET 1
+static bool sl_media_jack_cable_firmware_version_check(struct sl_media_lgrp *media_lgrp)
+{
+	u8 fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
+
+	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
+
+	if (fw_ver[SL_MEDIA_JACK_FIRMWARE_MINOR_VERSION_OFFSET] != 0x04)
+		return false;
+
+	return true;
+}
+
+static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
+{
+	u8  i;
+	int rtn;
+
+	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable shift checks");
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	if (media_lgrp->media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE) {
+		media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE;
+		spin_unlock(&media_lgrp->media_jack->data_lock);
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "shift check failed - no online cable");
+		return -EFAULT;
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
+		return -EINVAL;
+	}
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	for (i = 0; i < SL_MEDIA_MAX_LGRPS_PER_JACK; ++i) {
+		if (media_lgrp->media_jack->cable_info[i].real_cable_status == CABLE_MEDIA_ATTR_STASHED) {
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE;
+			spin_unlock(&media_lgrp->media_jack->data_lock);
+			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
+					 "shift check failed [%d] fake cable (lgrp_num = %u)",
+					 rtn, media_lgrp->media_jack->cable_info[i].lgrp_num);
+			return -EFAULT;
+		}
+	}
+	if (!(media_lgrp->media_jack->cable_info[0].media_attr.speeds_map &
+			(SL_MEDIA_SPEEDS_SUPPORT_CK_400G | SL_MEDIA_SPEEDS_SUPPORT_BS_200G))) {
+		media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT;
+		spin_unlock(&media_lgrp->media_jack->data_lock);
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
+				 "shift check failed - no shift support in cable");
+		return -EINVAL;
+	}
+	if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
+			(media_lgrp->media_jack->lane_count_200_gaui != 0x44) ||
+			(media_lgrp->media_jack->host_interface_400_gaui == 0)) {
+		media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
+		spin_unlock(&media_lgrp->media_jack->data_lock);
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
+				 "shift check failed - invalid host interface and/or lane count");
+		return -EINVAL;
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
+}
+
 int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 {
-	u8                    i;
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
 
@@ -122,66 +202,69 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
-	if (sl_media_jack_downshift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL) {
+	if (sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED &&
+		(sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)) {
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already downshifted");
 		return 0;
 	}
 
-	spin_lock(&media_lgrp->media_jack->data_lock);
-	if (media_lgrp->media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE) {
-		media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_NO_CABLE;
-		spin_unlock(&media_lgrp->media_jack->data_lock);
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "downshift failed - no online cable");
-		return 0;
-	}
-	for (i = 0; i < SL_MEDIA_MAX_LGRPS_PER_JACK; ++i) {
-		if (media_lgrp->media_jack->cable_info[i].real_cable_status == CABLE_MEDIA_ATTR_STASHED) {
-			media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_FAKE_CABLE;
-			spin_unlock(&media_lgrp->media_jack->data_lock);
-			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
-					 "downshift failed [%d] fake cable (lgrp_num = %u)",
-					 rtn, media_lgrp->media_jack->cable_info[i].lgrp_num);
-			return 0;
-		}
-	}
-	spin_unlock(&media_lgrp->media_jack->data_lock);
-
-	if (!sl_media_lgrp_cable_type_is_active(ldev_num, lgrp_num)) {
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - downshift not required");
+	rtn = sl_media_jack_cable_shift_checks(media_lgrp);
+	if (rtn) {
+		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "cable shift checks failed [%d]", rtn);
 		return 0;
 	}
 
-	spin_lock(&media_lgrp->media_jack->data_lock);
-	if (!(media_lgrp->media_jack->cable_info[0].media_attr.speeds_map &
-			(SL_MEDIA_SPEEDS_SUPPORT_CK_400G | SL_MEDIA_SPEEDS_SUPPORT_BS_200G))) {
-		media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_NO_SUPPORT;
-		spin_unlock(&media_lgrp->media_jack->data_lock);
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
-				 "downshift failed - no downshift support in cable");
+	if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+		sl_media_log_err(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
 		return 0;
 	}
-	if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
-			(media_lgrp->media_jack->lane_count_200_gaui != 0x44)) {
-		media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED_INAVLID_INFO;
-		spin_unlock(&media_lgrp->media_jack->data_lock);
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
-				 "downshift failed - invalid host interface and/or lane count");
-		return 0;
-	}
-	spin_unlock(&media_lgrp->media_jack->data_lock);
 
 	rtn = sl_media_data_jack_cable_downshift(media_lgrp->media_jack);
 	if (rtn) {
-		spin_lock(&media_lgrp->media_jack->data_lock);
-		media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_FAILED;
-		spin_unlock(&media_lgrp->media_jack->data_lock);
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED);
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "data jack cable downshift failed [%d]", rtn);
 		return rtn;
 	}
 
-	spin_lock(&media_lgrp->media_jack->data_lock);
-	media_lgrp->media_jack->downshift_state = SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL;
-	spin_unlock(&media_lgrp->media_jack->data_lock);
+	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
+
+	return 0;
+}
+
+int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num)
+{
+	int                   rtn;
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable upshift");
+
+	if ((sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED) &&
+		(sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already upshifted");
+		return 0;
+	}
+
+	rtn = sl_media_jack_cable_shift_checks(media_lgrp);
+	if (rtn) {
+		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "cable shift checks failed [%d]", rtn);
+		return 0;
+	}
+
+	if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+		sl_media_log_err(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
+		return 0;
+	}
+
+	rtn = sl_media_data_jack_cable_upshift(media_lgrp->media_jack);
+	if (rtn) {
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED);
+		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "data jack cable upshift failed [%d]", rtn);
+		return rtn;
+	}
+
+	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 
 	return 0;
 }

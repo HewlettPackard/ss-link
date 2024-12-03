@@ -299,7 +299,7 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_ER;
 
 	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
-	if (sl_media_jack_downshift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_DOWNSHIFT_STATE_SUCCESSFUL)
+	if (sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED)
 		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
 	else
 		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_ENABLE;

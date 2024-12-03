@@ -41,3 +41,13 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 {
 	return 0;
 }
+
+int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack)
+{
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
+}
+
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+{
+	return 0;
+}
