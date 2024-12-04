@@ -19,7 +19,6 @@ struct sl_hw_attr {
         u32 magic;
         u32 ver;
 
-        u8 board;
         u8 cxi_num;
         u8 nic_num;
 };

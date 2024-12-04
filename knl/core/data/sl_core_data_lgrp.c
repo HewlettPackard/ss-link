@@ -183,8 +183,7 @@ int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 void sl_core_data_lgrp_hw_attr_set(struct sl_core_lgrp *core_lgrp, struct sl_hw_attr *hw_attr)
 {
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"hw attr set (board = %u, cxi = %u, nic = %u)",
-		hw_attr->board, hw_attr->cxi_num, hw_attr->nic_num);
+		"hw attr set (cxi = %u, nic = %u)", hw_attr->cxi_num, hw_attr->nic_num);
 
 	core_lgrp->hw_attr = *hw_attr;
 }

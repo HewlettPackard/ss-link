@@ -128,6 +128,8 @@ const char *sl_media_vendor_str(u32 vendor)
 		return "cloud light";
 	case SL_MEDIA_VENDOR_MULTILANE:
 		return "multilane";
+	case SL_MEDIA_VENDOR_AMPHENOL:
+		return "amphenol";
 	default:
 		return "unrecognized";
 	}
