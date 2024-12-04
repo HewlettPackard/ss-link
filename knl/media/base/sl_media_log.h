@@ -14,6 +14,7 @@
 #define SL_MEDIA_DATA_LDEV_LOG_NAME "d-ldev"
 #define SL_MEDIA_DATA_LGRP_LOG_NAME "d-lgrp"
 #define SL_MEDIA_JACK_LOG_NAME      "jack"
+#define SL_MEDIA_DATA_JACK_LOG_NAME "d-jack"
 #define SL_MEDIA_CABLE_LOG_NAME     "cable"
 #define SL_MEDIA_EEPROM_LOG_NAME    "eeprom"
 #define SL_MEDIA_TEST_LOG_NAME      "test"

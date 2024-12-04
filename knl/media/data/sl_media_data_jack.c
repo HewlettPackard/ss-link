@@ -25,7 +25,7 @@
 static struct sl_media_jack *media_jacks[SL_ASIC_MAX_LDEVS][SL_MEDIA_MAX_JACK_NUM];
 static DEFINE_SPINLOCK(media_jacks_lock);
 
-#define LOG_NAME SL_MEDIA_JACK_LOG_NAME
+#define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
 void sl_media_data_jack_del(u8 ldev_num, u8 jack_num)
 {

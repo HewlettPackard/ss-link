@@ -17,7 +17,7 @@
 #include "sl_media_data_jack_rosetta_emulator.h"
 #include "sl_media_data_lgrp.h"
 
-#define LOG_NAME SL_MEDIA_JACK_LOG_NAME
+#define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
 int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *fake_media_attr)

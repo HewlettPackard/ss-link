@@ -19,7 +19,7 @@
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 
-#define LOG_NAME SL_MEDIA_JACK_LOG_NAME
+#define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
 #define FLAT_MEM_OFFSET 2
 #define FLAT_MEM_BIT    7

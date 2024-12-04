@@ -84,8 +84,6 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				if (rtn)
 					sl_media_log_err(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
 			}
-			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-			return 0;
 		}
 		if (media_jack->is_ss200_cable)
 			media_attr.options |= SL_MEDIA_OPT_SS200_CABLE;

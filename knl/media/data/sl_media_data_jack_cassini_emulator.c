@@ -11,7 +11,7 @@
 #include "sl_media_data_jack.h"
 #include "sl_media_data_jack_cassini_emulator.h"
 
-#define LOG_NAME SL_MEDIA_JACK_LOG_NAME
+#define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
 int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 {
