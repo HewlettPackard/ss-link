@@ -82,7 +82,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0],
 									&media_attr);
 				if (rtn)
-					sl_media_log_err(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
+					sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
 			}
 		}
 		if (media_jack->is_ss200_cable)
@@ -110,7 +110,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		return 0;
 	}
@@ -120,7 +120,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	 */
 	rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0], &media_attr);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		return 0;
 	}
@@ -130,7 +130,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	 */
 	rtn = sl_sysfs_media_speeds_create(ldev_num, lgrp_num);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media speeds create failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media speeds create failed [%d]", rtn);
 		return rtn;
 	}
 

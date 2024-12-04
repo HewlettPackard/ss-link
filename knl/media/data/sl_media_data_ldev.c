@@ -46,7 +46,7 @@ int sl_media_data_ldev_new(u8 ldev_num)
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		rtn = sl_media_data_jack_new(media_ldev, jack_num);
 		if (rtn) {
-			sl_media_log_err(media_ldev, LOG_NAME, "jack new failed [%d]", rtn);
+			sl_media_log_err_trace(media_ldev, LOG_NAME, "jack new failed [%d]", rtn);
 			kfree(media_ldev);
 			return -EFAULT;
 		}
@@ -54,7 +54,7 @@ int sl_media_data_ldev_new(u8 ldev_num)
 
 	rtn = sl_media_data_jack_scan(ldev_num);
 	if (rtn) {
-		sl_media_log_err(media_ldev, LOG_NAME, "jack scan failed [%d]", rtn);
+		sl_media_log_err_trace(media_ldev, LOG_NAME, "jack scan failed [%d]", rtn);
 		for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num)
 			sl_media_data_jack_del(ldev_num, jack_num);
 		kfree(media_ldev);
