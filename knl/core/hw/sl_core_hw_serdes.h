@@ -20,4 +20,7 @@ int  sl_core_hw_serdes_link_up(struct sl_core_link *core_link);
 
 void sl_core_hw_serdes_link_down(struct sl_core_link *core_link);
 
+void sl_core_hw_serdes_state_set(struct sl_core_link *core_link, u8 state);
+u8   sl_core_hw_serdes_state_get(struct sl_core_link *core_link);
+
 #endif /* _SL_CORE_HW_SERDES_H_ */

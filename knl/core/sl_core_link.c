@@ -306,3 +306,27 @@ int sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	return 0;
 }
+
+bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link)
+{
+	unsigned long irq_flags;
+	bool          is_policy_set;
+
+	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	is_policy_set = (core_link->policy.options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) != 0;
+	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+
+	return is_policy_set;
+}
+
+bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link)
+{
+	unsigned long irq_flags;
+	bool          is_policy_set;
+
+	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	is_policy_set = (core_link->policy.options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) != 0;
+	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+
+	return is_policy_set;
+}

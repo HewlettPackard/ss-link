@@ -90,7 +90,7 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp) &&
-		!(core_link->policy.options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE)) {
+		!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);

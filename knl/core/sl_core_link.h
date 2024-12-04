@@ -194,10 +194,12 @@ struct sl_core_link {
 	} pcs;
 
 	struct {
-		u8                                       lane_map;
-		struct sl_media_serdes_settings          media_serdes_settings;
-		struct sl_core_serdes_settings           core_serdes_settings;
-		bool                                     use_test_settings;
+		u8                               lane_map;
+		struct sl_media_serdes_settings  media_serdes_settings;
+		struct sl_core_serdes_settings   core_serdes_settings;
+		bool                             use_test_settings;
+		spinlock_t                       data_lock;
+		u8                               serdes_state;
 		struct {
 			// media settings
 			s16 pre1;
@@ -289,5 +291,8 @@ int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
 int  sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				      u32 *down_cause, time64_t *down_time);
+
+bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link);
+bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link);
 
 #endif /* _SL_CORE_LINK_H_ */

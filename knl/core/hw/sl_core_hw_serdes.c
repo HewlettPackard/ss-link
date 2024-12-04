@@ -21,6 +21,9 @@
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
+#define SL_CORE_HW_SERDES_STATE_DOWN 0
+#define SL_CORE_HW_SERDES_STATE_UP   1
+
 static int sl_core_hw_serdes_init(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
@@ -371,26 +374,30 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link up");
 
+	if (sl_core_hw_serdes_state_get(core_link) == SL_CORE_HW_SERDES_STATE_UP) {
+		sl_core_log_info(core_link, LOG_NAME, "serdes already up");
+		return 0;
+	}
+
 	rtn = sl_core_hw_serdes_link_up_settings(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
-			"hw_serdes_link_up_settings failed [%d]", rtn);
+		sl_core_log_err(core_link, LOG_NAME, "hw_serdes_link_up_settings failed [%d]", rtn);
 		return rtn;
 	}
 
 	rtn = sl_core_hw_serdes_start(core_link->core_lgrp, core_link->serdes.core_serdes_settings.clocking);
 	if (rtn) {
-		sl_core_log_err(core_link, LOG_NAME,
-			"hw_serdes_start failed [%d]", rtn);
+		sl_core_log_err(core_link, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
 		return -EIO;
 	}
 
 	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_CHECK);
 	if (rtn != 0) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-			"hw_serdes_lanes_up failed [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "hw_serdes_lanes_up failed [%d]", rtn);
 		return -EIO;
 	}
+
+	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_UP);
 
 	return 0;
 }
@@ -426,14 +433,41 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link down");
 
+	if (sl_core_link_policy_is_keep_serdes_up_set(core_link)) {
+		sl_core_log_info(core_link, LOG_NAME, "link down - keeping serdes up");
+		return;
+	}
+
 	rtn = sl_core_hw_serdes_link_down_settings(core_link);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME,
-			"hw_serdes_link_down_settings failed [%d]", rtn);
+		sl_core_log_warn(core_link, LOG_NAME, "hw_serdes_link_down_settings failed [%d]", rtn);
 
 	sl_core_hw_serdes_lanes_down(core_link);
 
 	memset(&(core_link->serdes.core_serdes_settings), 0, sizeof(struct sl_core_serdes_settings));
 	memset(&(core_link->serdes.media_serdes_settings), 0,
 			sizeof(struct sl_media_serdes_settings));
+
+	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_DOWN);
+}
+
+void sl_core_hw_serdes_state_set(struct sl_core_link *core_link, u8 state)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	core_link->serdes.serdes_state = state;
+	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+}
+
+u8 sl_core_hw_serdes_state_get(struct sl_core_link *core_link)
+{
+	unsigned long irq_flags;
+	u8            serdes_state;
+
+	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	serdes_state = core_link->serdes.serdes_state;
+	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+
+	return serdes_state;
 }
