@@ -86,7 +86,7 @@ static void sl_media_data_jack_event_online(void *hdl, u8 physical_jack_num)
 
 	rtn = sl_media_data_jack_online(hdl, 0, jack_num);
 	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
+		sl_media_log_err(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
 				physical_jack_num, rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 	}
@@ -408,7 +408,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			case 0:
 				break;
 			default:
-				sl_media_log_err_trace(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
+				sl_media_log_err(media_jack, LOG_NAME, "jack online failed (jack_num = %u) [%d]",
 						media_jack->physical_num, rtn);
 				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			}
@@ -559,7 +559,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 					rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i],
 										&media_attr);
 					if (rtn) {
-						sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]",
+						sl_media_log_err(media_jack, LOG_NAME, "media_attr set failed [%d]",
 								 rtn);
 						return rtn;
 					}
@@ -611,7 +611,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
 	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
+		sl_media_log_err(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -620,7 +620,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		media_jack->cable_info[i].lgrp_num = media_jack->jack_data.asic_port[i];
 		rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i], &media_attr);
 		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
+			sl_media_log_err(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
 			return rtn;
 		}
 	}
