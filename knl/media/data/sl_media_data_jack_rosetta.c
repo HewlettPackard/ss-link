@@ -625,10 +625,12 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		}
 	}
 
-	if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
-		sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
-	else
-		sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
+		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
+		else
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+	}
 
 	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
 		media_attr.type == SL_MEDIA_TYPE_AEC) {
