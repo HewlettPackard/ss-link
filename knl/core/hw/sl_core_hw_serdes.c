@@ -374,10 +374,15 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link up");
 
+	/*
+	 * FIXME: remove it when this feature is needed
+	 */
+#if 0
 	if (sl_core_hw_serdes_state_get(core_link) == SL_CORE_HW_SERDES_STATE_UP) {
 		sl_core_log_info(core_link, LOG_NAME, "serdes already up");
 		return 0;
 	}
+#endif
 
 	rtn = sl_core_hw_serdes_link_up_settings(core_link);
 	if (rtn != 0) {
@@ -433,10 +438,15 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link down");
 
-	if (sl_core_link_policy_is_keep_serdes_up_set(core_link)) {
+	/*
+	 * FIXME: remove it when this feature is needed
+	 */
+#if 0
+	/*if (sl_core_link_policy_is_keep_serdes_up_set(core_link)) {
 		sl_core_log_info(core_link, LOG_NAME, "link down - keeping serdes up");
 		return;
-	}
+	}*/
+#endif
 
 	rtn = sl_core_hw_serdes_link_down_settings(core_link);
 	if (rtn)
