@@ -599,6 +599,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		media_attr.max_speed     = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 		strncpy(media_attr.serial_num_str, "AK20212120", sizeof(media_attr.serial_num_str));
 		strncpy(media_attr.hpe_pn_str, "PK60821-555", sizeof(media_attr.hpe_pn_str));
+		strncpy(media_attr.date_code_str, "08-19-21", sizeof(media_attr.date_code_str));
+		memset(media_attr.fw_ver, 0, sizeof(media_attr.fw_ver));
 	}
 
 	flags = 0;

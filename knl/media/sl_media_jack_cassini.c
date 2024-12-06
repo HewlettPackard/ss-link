@@ -70,6 +70,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		media_attr.jack_type     = SL_MEDIA_JACK_TYPE_BACKPLANE;
 		strncpy(media_attr.serial_num_str, "AK20212120", sizeof(media_attr.serial_num_str));
 		strncpy(media_attr.hpe_pn_str, "PK60821-555", sizeof(media_attr.hpe_pn_str));
+		strncpy(media_attr.date_code_str, "08-19-21", sizeof(media_attr.date_code_str));
+		memset(media_attr.fw_ver, 0, sizeof(media_attr.fw_ver));
 	} else {
 		memcpy(media_jack->eeprom_page0, eeprom_page0, SL_MEDIA_EEPROM_PAGE_SIZE);
 		sl_media_data_jack_eeprom_page1_get(media_jack, eeprom_page1);
