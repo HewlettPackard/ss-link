@@ -18,22 +18,24 @@
 
 #define IDENTIFIER_OFFSET    0
 #define REV_CMPL_OFFSET      1
-#define SFF8024_TYPE_QSFPDD  0x18
 static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
 {
-	if (media_jack->eeprom_page0[IDENTIFIER_OFFSET] < SFF8024_TYPE_QSFPDD) {
-		*format = SL_MEDIA_MGMT_IF_SFF8636;
-		return 0;
+	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x0D) ||
+	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x11)) {
+		if (media_jack->eeprom_page0[REV_CMPL_OFFSET] < 0x27) {
+			*format = SL_MEDIA_MGMT_IF_SFF8636;
+			return 0;
+		}
 	}
-	if (media_jack->eeprom_page0[REV_CMPL_OFFSET] < 0x27) {
-		*format = SL_MEDIA_MGMT_IF_SFF8636;
-		return 0;
-	}
-	if (((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x30) ||
-	    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x40) ||
-	    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x50)) {
-		*format = SL_MEDIA_MGMT_IF_CMIS;
-		return 0;
+
+	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] >= 0x1E) &&
+	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] <= 0x25)) {
+		if (((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x30) ||
+		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x40) ||
+		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x50)) {
+			*format = SL_MEDIA_MGMT_IF_CMIS;
+			return 0;
+		}
 	}
 
 	media_jack->is_cable_format_invalid = true;
