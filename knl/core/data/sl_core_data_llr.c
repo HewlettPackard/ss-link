@@ -248,33 +248,31 @@ int sl_core_data_llr_policy_get(struct sl_core_llr *core_llr, struct sl_llr_poli
 int sl_core_data_llr_settings(struct sl_core_llr *core_llr)
 {
 	struct sl_lgrp_config *lgrp_config;
-	struct sl_link_caps   *link_caps;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "settings");
 
 	lgrp_config = &(core_llr->core_lgrp->config);
-	link_caps   = &(core_llr->core_lgrp->link_caps[core_llr->num]);
 
-	if (hweight_long(link_caps->tech_map) != 1) {
+	if (hweight_long(lgrp_config->tech_map) != 1) {
 		sl_core_log_err(core_llr, LOG_NAME,
 			"settings - tech map invalid (map = 0x%08X)",
-			link_caps->tech_map);
+			lgrp_config->tech_map);
 		return -EINVAL;
 	}
 
-	if (SL_LGRP_CONFIG_TECH_CK_400G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_400G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 50;
-	if (SL_LGRP_CONFIG_TECH_CK_200G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_200G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 25;
-	if (SL_LGRP_CONFIG_TECH_CK_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_100G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 13;
-	if (SL_LGRP_CONFIG_TECH_BS_200G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BS_200G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 25;
-	if (SL_LGRP_CONFIG_TECH_CD_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_100G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 13;
-	if (SL_LGRP_CONFIG_TECH_CD_50G  & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_50G  & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 7;
-	if (SL_LGRP_CONFIG_TECH_BJ_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BJ_100G & lgrp_config->tech_map)
 		core_llr->settings.bytes_per_ns = 13;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "settings (bytes = %u)", core_llr->settings.bytes_per_ns);

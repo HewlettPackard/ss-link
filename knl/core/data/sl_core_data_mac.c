@@ -95,34 +95,32 @@ struct sl_core_mac *sl_core_data_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 int sl_core_data_mac_settings(struct sl_core_mac *core_mac)
 {
-	struct sl_lgrp_config  *lgrp_config;
-	struct sl_link_caps    *link_caps;
+	struct sl_lgrp_config *lgrp_config;
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "settings");
 
 	lgrp_config = &(core_mac->core_lgrp->config);
-	link_caps   = &(core_mac->core_lgrp->link_caps[core_mac->num]);
 
-	if (hweight_long(link_caps->tech_map) != 1) {
+	if (hweight_long(lgrp_config->tech_map) != 1) {
 		sl_core_log_err(core_mac, LOG_NAME,
 			"settings - tech map invalid (map = 0x%08X)",
-			link_caps->tech_map);
+			lgrp_config->tech_map);
 		return -EINVAL;
 	}
 
-	if (SL_LGRP_CONFIG_TECH_CK_400G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_400G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_400G;
-	if (SL_LGRP_CONFIG_TECH_CK_200G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_200G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_200G;
-	if (SL_LGRP_CONFIG_TECH_CK_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_100G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
-	if (SL_LGRP_CONFIG_TECH_BS_200G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BS_200G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_200G;
-	if (SL_LGRP_CONFIG_TECH_CD_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_100G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
-	if (SL_LGRP_CONFIG_TECH_CD_50G  & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_50G  & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_50G;
-	if (SL_LGRP_CONFIG_TECH_BJ_100G & link_caps->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BJ_100G & lgrp_config->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "settings (ifg = %u)", core_mac->settings.tx_ifg_adj);
@@ -201,10 +199,28 @@ u32 sl_core_data_mac_tx_state_get(struct sl_core_mac *core_mac)
 {
 	unsigned long irq_flags;
 	u32           tx_state;
+	u64           hw_state;
 
 	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
 	tx_state = core_mac->tx_state;
 	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
+
+	sl_core_hw_mac_tx_state_get(core_mac, &hw_state);
+
+	switch (tx_state) {
+	case SL_CORE_MAC_STATE_OFF:
+		if (hw_state != 0)
+			sl_core_log_warn(core_mac, LOG_NAME,
+				"get TX state off mismatch (sl = %u, hw = %llu)",
+				tx_state, hw_state);
+		break;
+	case SL_CORE_MAC_STATE_ON:
+		if (hw_state != 1)
+			sl_core_log_warn(core_mac, LOG_NAME,
+				"get TX state on mismatch (sl = %u, hw = %llu)",
+				tx_state, hw_state);
+		break;
+	}
 
 	sl_core_log_dbg(core_mac, LOG_NAME,
 		"get TX state = %s", sl_core_mac_state_str(tx_state));
@@ -228,10 +244,28 @@ u32 sl_core_data_mac_rx_state_get(struct sl_core_mac *core_mac)
 {
 	unsigned long irq_flags;
 	u32           rx_state;
+	u64           hw_state;
 
 	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
 	rx_state = core_mac->rx_state;
 	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
+
+	sl_core_hw_mac_rx_state_get(core_mac, &hw_state);
+
+	switch (rx_state) {
+	case SL_CORE_MAC_STATE_OFF:
+		if (hw_state != 0)
+			sl_core_log_warn(core_mac, LOG_NAME,
+				"get RX state off mismatch (sl = %u, hw = %llu)",
+				rx_state, hw_state);
+		break;
+	case SL_CORE_MAC_STATE_ON:
+		if (hw_state != 1)
+			sl_core_log_warn(core_mac, LOG_NAME,
+				"get RX state on mismatch (sl = %u, hw = %llu)",
+				rx_state, hw_state);
+		break;
+	}
 
 	sl_core_log_dbg(core_mac, LOG_NAME,
 		"get RX state = %s", sl_core_mac_state_str(rx_state));

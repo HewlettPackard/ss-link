@@ -17,6 +17,8 @@
 #include "sl_ctl_link_counters.h"
 #include "sl_core_str.h"
 #include "sl_core_link.h"
+#include "sl_core_mac.h"
+#include "sl_core_llr.h"
 #include "sl_core_link_an.h"
 #include "sl_core_link_fec.h"
 #include "sl_test_common.h"
@@ -568,14 +570,26 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	cancel_work_sync(&ctl_link->up_notif_work);
 	cancel_work_sync(&ctl_link->fault_notif_work);
 
+	rtn = sl_core_llr_stop(ldev_num, lgrp_num, link_num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_llr_stop failed [%d]", rtn);
+
+	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, link_num);
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_tx_stop failed [%d]", rtn);
+
+	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, link_num);
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
+
 	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
-	if (rtn) {
-		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
-			"core_link_down failed [%d]", rtn);
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_FAIL);
-	}
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
+
+	sl_core_link_reset(ldev_num, lgrp_num, link_num);
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET);
+
 	sl_ctl_link_up_clock_clear(ctl_link);
 	sl_ctl_link_up_attempt_clock_clear(ctl_link);
 

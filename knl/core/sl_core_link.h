@@ -16,6 +16,7 @@
 #include "sl_core_link_fec.h"
 #include "hw/sl_core_hw_intr.h"
 #include "hw/sl_core_hw_serdes.h"
+#include "hw/sl_core_hw_reset.h"
 #include "base/sl_core_timer_link.h"
 #include "base/sl_core_work_link.h"
 
@@ -273,6 +274,7 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag);
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
+int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);
 int sl_core_link_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_data *link_data);

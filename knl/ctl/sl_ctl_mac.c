@@ -117,13 +117,6 @@ void sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	sl_ctl_mac_is_deleting_set(ctl_mac);
 
-	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
-	if (rtn)
-		sl_ctl_log_warn(ctl_mac, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
-	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
-	if (rtn)
-		sl_ctl_log_warn(ctl_mac, LOG_NAME, "core_mac_tx_stop failed [%d]", rtn);
-
 	sl_core_mac_del(ldev_num, lgrp_num, mac_num);
 	if (rtn)
 		sl_ctl_log_warn(ctl_mac, LOG_NAME, "core_mac_del failed [%d]", rtn);
@@ -165,11 +158,7 @@ int sl_ctl_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "tx start");
 
 	rtn = sl_core_mac_tx_start(ldev_num, lgrp_num, mac_num);
-	switch (rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (rtn) {
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"tx start - core_mac_tx_start failed [%d]", rtn);
 		return rtn;
@@ -192,11 +181,7 @@ int sl_ctl_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "tx stop");
 
 	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
-	switch (rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (rtn) {
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"tx stop - core_mac_tx_stop failed [%d]", rtn);
 		return rtn;
@@ -214,14 +199,16 @@ int sl_ctl_mac_tx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	ctl_mac = sl_ctl_mac_get(ldev_num, lgrp_num, mac_num);
 	if (!ctl_mac) {
 		sl_ctl_log_dbg(NULL, LOG_NAME, "tx state get - NULL mac");
-		return SL_MAC_STATE_OFF;
+		*state = SL_MAC_STATE_OFF;
+		return 0;
 	}
 
 	rtn = sl_core_mac_tx_state_get(ldev_num, lgrp_num, mac_num, &core_mac_state);
 	if (rtn) {
 		sl_ctl_log_dbg(ctl_mac, LOG_NAME,
 			"tx state get - core_mac_tx_state_get failed [%d]", rtn);
-		return SL_MAC_STATE_OFF;
+		*state = SL_MAC_STATE_OFF;
+		return 0;
 	}
 
 	switch (core_mac_state) {
@@ -233,8 +220,8 @@ int sl_ctl_mac_tx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 		break;
 	}
 
-	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "tx state get (state = %u %s)",
-		*state, sl_mac_state_str(*state));
+	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "tx state get (state = %u %s, core_state = %u)",
+		*state, sl_mac_state_str(*state), core_mac_state);
 
 	return 0;
 }
@@ -253,11 +240,7 @@ int sl_ctl_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "rx start");
 
 	rtn = sl_core_mac_rx_start(ldev_num, lgrp_num, mac_num);
-	switch (rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (rtn) {
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"rx start - core_mac_rx_start failed [%d]", rtn);
 		return rtn;
@@ -280,11 +263,7 @@ int sl_ctl_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "rx stop");
 
 	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
-	switch (rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (rtn) {
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"rx stop - core_mac_rx_stop failed [%d]", rtn);
 		return rtn;
@@ -302,14 +281,16 @@ int sl_ctl_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	ctl_mac = sl_ctl_mac_get(ldev_num, lgrp_num, mac_num);
 	if (!ctl_mac) {
 		sl_ctl_log_dbg(NULL, LOG_NAME, "rx state get - NULL mac");
-		return SL_MAC_STATE_OFF;
+		*state = SL_MAC_STATE_OFF;
+		return 0;
 	}
 
 	rtn = sl_core_mac_rx_state_get(ldev_num, lgrp_num, mac_num, &core_mac_state);
 	if (rtn) {
 		sl_ctl_log_dbg(ctl_mac, LOG_NAME,
 			"rx state get - core_mac_rx_state_get failed [%d]", rtn);
-		return SL_MAC_STATE_OFF;
+		*state = SL_MAC_STATE_OFF;
+		return 0;
 	}
 
 	switch (core_mac_state) {
@@ -321,8 +302,8 @@ int sl_ctl_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 		break;
 	}
 
-	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "rx state get (state = %u %s)",
-		*state, sl_mac_state_str(*state));
+	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "rx state get (state = %u %s, core_state = %u)",
+		*state, sl_mac_state_str(*state), core_mac_state);
 
 	return 0;
 }
@@ -342,31 +323,20 @@ int sl_ctl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "reset");
 
 	tx_rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
-	switch (tx_rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (tx_rtn) {
 		/* Log error, but allow the function to continue to mac rx stop */
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"reset - core_mac_tx_stop failed [%d]", tx_rtn);
-		break;
 	}
 
 	rx_rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
-	switch (rx_rtn) {
-	case 0:
-	case -ENOLINK:
-		break;
-	default:
+	if (rx_rtn) {
 		/* Log error, but allow the function to continue execution */
 		sl_ctl_log_err(ctl_mac, LOG_NAME,
 			"core_mac_rx_stop failed [%d]", rx_rtn);
-		break;
 	}
 
-	if (((tx_rtn != 0) && (tx_rtn != -ENOLINK)) ||
-		((rx_rtn != 0) && (rx_rtn != -ENOLINK)))
+	if (tx_rtn && rx_rtn)
 		return -EIO;
 
 	return 0;

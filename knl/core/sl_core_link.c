@@ -119,6 +119,19 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 }
 
+int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	struct sl_core_link *core_link;
+
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+	if (!core_link)
+		return 0;
+
+	sl_core_hw_reset_link(core_link);
+
+	return 0;
+}
+
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state)
 {
 	struct sl_core_link *core_link;

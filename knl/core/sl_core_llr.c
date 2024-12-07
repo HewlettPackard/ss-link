@@ -188,6 +188,8 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags)
 	struct sl_core_llr *core_llr;
 
 	core_llr = sl_core_llr_get(ldev_num, lgrp_num, llr_num);
+	if (!core_llr)
+		return 0;
 
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	llr_state = core_llr->state;

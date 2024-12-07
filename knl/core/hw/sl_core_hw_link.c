@@ -27,7 +27,6 @@
 #include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_io.h"
-#include "hw/sl_core_hw_reset.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
@@ -39,18 +38,14 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
 				   core_link->core_lgrp->num, core_link->num);
-	if (core_mac) {
+	if (core_mac)
 		sl_core_hw_mac_tx_stop(core_mac);
-		sl_core_hw_mac_rx_stop(core_mac);
-	}
 
 	sl_core_hw_pcs_stop(core_link);
 
 	preempt_enable();
 
 	sl_core_hw_serdes_link_down(core_link);
-
-	sl_core_hw_reset_link(core_link);
 }
 
 void sl_core_hw_link_up_callback(struct sl_core_link *core_link)

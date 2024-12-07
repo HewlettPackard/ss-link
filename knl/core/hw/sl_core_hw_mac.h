@@ -9,9 +9,11 @@ struct sl_core_mac;
 void sl_core_hw_mac_tx_config(struct sl_core_mac *core_mac);
 void sl_core_hw_mac_tx_start(struct sl_core_mac *core_mac);
 void sl_core_hw_mac_tx_stop(struct sl_core_mac *core_mac);
+void sl_core_hw_mac_tx_state_get(struct sl_core_mac *core_mac, u64 *state);
 
 void sl_core_hw_mac_rx_config(struct sl_core_mac *core_mac);
 void sl_core_hw_mac_rx_start(struct sl_core_mac *core_mac);
 void sl_core_hw_mac_rx_stop(struct sl_core_mac *core_mac);
+void sl_core_hw_mac_rx_state_get(struct sl_core_mac *core_mac, u64 *state);
 
 #endif /* _SL_CORE_HW_MAC_H_ */
