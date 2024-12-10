@@ -164,7 +164,7 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 	/* set reset */
 	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp, stack_size);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
 		goto out;
 	}
 
@@ -197,14 +197,14 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 	/* set reset */
 	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp, stack_size);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
 		goto out;
 	}
 
 	/* clear reset */
 	rtn = sl_core_hw_serdes_core_uc_reset_clr(core_lgrp);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "uc_reset_clr failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_clr failed [%d]", rtn);
 		goto out;
 	}
 
@@ -313,14 +313,14 @@ static int sl_core_hw_serdes_core_clock_init(struct sl_core_lgrp *core_lgrp)
 	/* defaults set */
 	rtn = sl_core_hw_serdes_core_clock_init_defaults_set(core_lgrp);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "defaults_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "defaults_set failed [%d]", rtn);
 		goto out;
 	}
 
 	/* config set */
 	rtn = sl_core_hw_serdes_core_clock_init_config_set(core_lgrp);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "config_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "config_set failed [%d]", rtn);
 		goto out;
 	}
 
@@ -375,22 +375,22 @@ int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 
 	rtn = sl_core_hw_serdes_core_sbus_reset(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_sbus_reset failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_sbus_reset failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_core_proc_reset(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_proc_reset failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_proc_reset failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_core_clock_init(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_clock_init failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_clock_init failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_core_lgrp_reset(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_lgrp_reset failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_lgrp_reset failed [%d]", rtn);
 		goto out;
 	}
 
@@ -486,7 +486,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	/* PLL set */
 	rtn = sl_core_hw_serdes_core_pll_set(core_lgrp, clocking);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_pll_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_pll_set failed [%d]", rtn);
 		goto out;
 	}
 
@@ -498,7 +498,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	/* PLL check */
 	rtn = sl_core_hw_serdes_core_pll_check(core_lgrp);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "core_pll_check failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_pll_check failed [%d]", rtn);
 		goto out;
 	}
 

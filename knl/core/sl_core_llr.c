@@ -118,7 +118,7 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		rtn = sl_core_data_llr_settings(core_llr);
 		if (rtn) {
-			sl_core_log_err(core_llr, LOG_NAME, "setup - llr_settings failed [%d]", rtn);
+			sl_core_log_err_trace(core_llr, LOG_NAME, "setup - llr_settings failed [%d]", rtn);
 			return -EBADRQC;
 		}
 		sl_core_hw_llr_setup_cmd(core_llr, callback, tag, flags);

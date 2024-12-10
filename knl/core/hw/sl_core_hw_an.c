@@ -344,7 +344,8 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 		port, core_link->an.page_num, data64);
 
 	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_BASE_PAGE_GET(data64) != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		//FIXME: for now to avoid spam dmesg (need sysfs implementation for this error later)
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page store base page set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
 		core_link->an.state = SL_CORE_HW_AN_STATE_RETRY;

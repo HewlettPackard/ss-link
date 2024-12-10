@@ -81,7 +81,7 @@ int sl_core_hw_serdes_fw_info_get(struct sl_core_lgrp *core_lgrp)
 
 	rtn = sl_core_hw_uc_ram_rd_blk(core_lgrp, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
 	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "uc_ram_rd_blk failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_ram_rd_blk failed [%d]", rtn);
 		goto out;
 	}
 
@@ -338,22 +338,22 @@ int sl_core_hw_serdes_fw_load(struct sl_core_lgrp *core_lgrp)
 
 	rtn = sl_core_hw_serdes_fw_image_get(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw load - fw_image_get failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_image_get failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_fw_load_setup(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw load - fw_load_setup failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_load_setup failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_fw_image_write(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw load - fw_image_write failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_image_write failed [%d]", rtn);
 		goto out;
 	}
 	rtn = sl_core_hw_serdes_fw_load_finish(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw load - fw_load_finish failed [%d]", rtn);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_load_finish failed [%d]", rtn);
 		goto out;
 	}
 

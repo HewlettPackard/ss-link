@@ -49,7 +49,7 @@ int sl_core_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 		sl_core_log_dbg(core_mac, LOG_NAME, "tx start - turning ON");
 		rtn = sl_core_data_mac_settings(core_mac);
 		if (rtn) {
-			sl_core_log_err(core_mac, LOG_NAME, "tx start - mac_settings failed [%d]", rtn);
+			sl_core_log_err_trace(core_mac, LOG_NAME, "tx start - mac_settings failed [%d]", rtn);
 			return -EBADRQC;
 		}
 		sl_core_hw_mac_tx_config(core_mac);
@@ -122,7 +122,7 @@ int sl_core_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 		sl_core_log_dbg(core_mac, LOG_NAME, "rx start - turning ON");
 		rtn = sl_core_data_mac_settings(core_mac);
 		if (rtn) {
-			sl_core_log_err(core_mac, LOG_NAME, "rx start - mac_settings failed [%d]", rtn);
+			sl_core_log_err_trace(core_mac, LOG_NAME, "rx start - mac_settings failed [%d]", rtn);
 			return -EBADRQC;
 		}
 		sl_core_hw_mac_rx_config(core_mac);

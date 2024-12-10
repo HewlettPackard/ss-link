@@ -116,7 +116,7 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 	core_link->core_lgrp->link_caps[core_link->num].hpe_map   = core_link->config.hpe_map;
 	rtn = sl_core_data_link_settings(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up start data_link_settings failed [%d]", rtn);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -183,7 +183,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 	rtn = sl_core_data_link_settings(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up after an data_link_settings failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
@@ -297,7 +297,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_UP);
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up work link up enable failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)

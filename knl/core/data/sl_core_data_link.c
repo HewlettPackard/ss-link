@@ -203,7 +203,7 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	rtn = sl_core_hw_intr_hdlr_register(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME, "core_hw_intr_hdlr_register failed [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "core_hw_intr_hdlr_register failed [%d]", rtn);
 		kfree(core_link);
 		return rtn;
 	}

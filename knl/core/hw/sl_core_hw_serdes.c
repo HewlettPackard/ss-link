@@ -115,14 +115,14 @@ int sl_core_hw_serdes_start(struct sl_core_lgrp *core_lgrp, u32 clocking)
 		rtn = sl_core_hw_serdes_swizzles(core_lgrp);
 		if (rtn) {
 			core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-			sl_core_log_err(core_lgrp, LOG_NAME,
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
 				"hw_serdes_swizzles failed [%d]", rtn);
 			return -EIO;
 		}
 		rtn = sl_core_hw_serdes_fw_info_get(core_lgrp);
 		if (rtn != 0) {
 			core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-			sl_core_log_err(core_lgrp, LOG_NAME,
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
 				"hw_serdes_fw_info_get failed [%d]", rtn);
 			return -EIO;
 		}
@@ -133,42 +133,42 @@ int sl_core_hw_serdes_start(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	rtn = sl_core_hw_serdes_init(core_lgrp);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_init failed [%d]", rtn);
 		return -EIO;
 	}
 	rtn = sl_core_hw_serdes_fw_load(core_lgrp);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_fw_load failed [%d]", rtn);
 		return -EIO;
 	}
 	rtn = sl_core_hw_serdes_fw_info_get(core_lgrp);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_fw_info_get failed [%d]", rtn);
 		return -EIO;
 	}
 	rtn = sl_core_hw_serdes_core_init(core_lgrp);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_core_init failed [%d]", rtn);
 		return -EIO;
 	}
 	rtn = sl_core_hw_serdes_core_pll(core_lgrp, clocking);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_core_pll failed [%d]", rtn);
 		return -EIO;
 	}
 	rtn = sl_core_hw_serdes_swizzles(core_lgrp);
 	if (rtn) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw_serdes_swizzles failed [%d]", rtn);
 		return -EIO;
 	}
@@ -229,14 +229,14 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_serdes_link_up_an_settings(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"hw_serdes_link_up_an_settings failed [%d]", rtn);
 		return rtn;
 	}
 
 	rtn = sl_core_hw_serdes_start(core_link->core_lgrp, core_link->serdes.core_serdes_settings.clocking);
 	if (rtn) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"hw_serdes_start failed [%d]", rtn);
 		return -EIO;
 	}
@@ -386,13 +386,13 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_serdes_link_up_settings(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME, "hw_serdes_link_up_settings failed [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "hw_serdes_link_up_settings failed [%d]", rtn);
 		return rtn;
 	}
 
 	rtn = sl_core_hw_serdes_start(core_link->core_lgrp, core_link->serdes.core_serdes_settings.clocking);
 	if (rtn) {
-		sl_core_log_err(core_link, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
 		return -EIO;
 	}
 

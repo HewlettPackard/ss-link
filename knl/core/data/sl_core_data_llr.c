@@ -105,7 +105,7 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	rtn = sl_core_hw_intr_llr_hdlr_register(core_llr);
 	if (rtn != 0) {
-		sl_core_log_err(core_llr, LOG_NAME,
+		sl_core_log_err_trace(core_llr, LOG_NAME,
 			"core_hw_intr_llr_hdlr_register failed [%d]", rtn);
 		kfree(core_llr);
 		return rtn;

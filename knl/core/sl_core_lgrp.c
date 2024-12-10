@@ -51,7 +51,7 @@ int sl_core_lgrp_hw_attr_set(u8 ldev_num, u8 lgrp_num, struct sl_hw_attr *hw_att
 
 	rtn = sl_core_data_lgrp_link_config_check(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"hw attr set - core_data_lgrp_link_config_check failed [%d]", rtn);
 		rtn = -EBADRQC;
 		goto out;
@@ -90,7 +90,7 @@ int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgr
 
 	rtn = sl_core_data_lgrp_link_config_check(core_lgrp);
 	if (rtn != 0) {
-		sl_core_log_err(core_lgrp, LOG_NAME,
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 			"config set - core_data_lgrp_link_config_check failed [%d]", rtn);
 		rtn = -EBADRQC;
 		goto out;

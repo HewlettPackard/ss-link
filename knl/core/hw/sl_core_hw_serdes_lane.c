@@ -592,34 +592,34 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].rx = SL_CORE_HW_SERDES_LANE_STATE_BUSY;
 		rtn = sl_core_hw_serdes_lane_up_rx_setup(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_rx_setup failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_setup failed [%d]", rtn);
 			goto out;
 		}
 		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].tx = SL_CORE_HW_SERDES_LANE_STATE_BUSY;
 		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_tx_setup failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_setup failed [%d]", rtn);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_rx_config(core_link->core_lgrp, core_link, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_rx_config failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_config failed [%d]", rtn);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_tx_config(core_link->core_lgrp, core_link, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_tx_config failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_config failed [%d]", rtn);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_rx_start(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_rx_start failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_start failed [%d]", rtn);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_tx_start(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_tx_start failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_start failed [%d]", rtn);
 			goto out;
 		}
 	}
@@ -630,7 +630,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 			continue;
 		rtn = sl_core_hw_serdes_lane_up_clock_align(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "lane_up_clock_align failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_clock_align failed [%d]", rtn);
 			goto out;
 		}
 	}
