@@ -361,31 +361,45 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			sl_core_link_fec_limit_calc(ctl_link->ctl_lgrp->ctl_ldev->num,
 				ctl_link->ctl_lgrp->num, ctl_link->num,
 				SL_CORE_LINK_FEC_CCW_MANT, SL_CORE_LINK_FEC_CCW_EXP);
-		sl_ctl_log_dbg(ctl_link, LOG_NAME,
-			"monitor CCW down limit calc (default = %u)",
-			ctl_link->fec_data.info.monitor.ccw_down_limit);
+	} else {
+		ctl_link->fec_data.info.monitor.ccw_down_limit = link_policy->fec_mon_ccw_down_limit;
 	}
-	if (link_policy->fec_mon_ccw_warn_limit < 0) {
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"monitor policy (ccw_down_limit = %d)",
+		ctl_link->fec_data.info.monitor.ccw_down_limit);
+
+	if (link_policy->fec_mon_ccw_warn_limit < 0)
 		ctl_link->fec_data.info.monitor.ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_down_limit >> 1;
-		sl_ctl_log_dbg(ctl_link, LOG_NAME,
-			"monitor CCW warn limit calc (default = %u)",
-			ctl_link->fec_data.info.monitor.ccw_warn_limit);
-	}
+	else
+		ctl_link->fec_data.info.monitor.ccw_warn_limit = link_policy->fec_mon_ccw_warn_limit;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"monitor policy (ccw_warn_limit = %d)",
+		ctl_link->fec_data.info.monitor.ccw_warn_limit);
+
 	if (link_policy->fec_mon_ucw_down_limit < 0) {
 		ctl_link->fec_data.info.monitor.ucw_down_limit =
 			sl_core_link_fec_limit_calc(ctl_link->ctl_lgrp->ctl_ldev->num,
 				ctl_link->ctl_lgrp->num, ctl_link->num,
 				SL_CORE_LINK_FEC_UCW_MANT, SL_CORE_LINK_FEC_UCW_EXP);
-		sl_ctl_log_dbg(ctl_link, LOG_NAME,
-			"monitor UCW down limit calc (default = %u)",
-			ctl_link->fec_data.info.monitor.ucw_down_limit);
+	} else {
+		ctl_link->fec_data.info.monitor.ucw_down_limit = link_policy->fec_mon_ucw_down_limit;
 	}
-	if (link_policy->fec_mon_ucw_warn_limit < 0) {
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"monitor policy (ucw_down_limit = %d)",
+		ctl_link->fec_data.info.monitor.ucw_down_limit);
+
+	if (link_policy->fec_mon_ucw_warn_limit < 0)
 		ctl_link->fec_data.info.monitor.ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_down_limit >> 1;
-		sl_ctl_log_dbg(ctl_link, LOG_NAME,
-			"monitor UCW warn limit calc (default = %u)",
-			ctl_link->fec_data.info.monitor.ucw_warn_limit);
-	}
+	else
+		ctl_link->fec_data.info.monitor.ucw_warn_limit = link_policy->fec_mon_ucw_warn_limit;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"monitor policy (ucw_warn_limit = %d)",
+		ctl_link->fec_data.info.monitor.ucw_warn_limit);
+
 	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 
 	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);

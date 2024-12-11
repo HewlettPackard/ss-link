@@ -12,6 +12,7 @@
 #include "sl_ctl_link_priv.h"
 #include "sl_core_link_fec.h"
 #include "sl_test_common.h"
+#include "sl_sysfs_link_fec_mon_policy.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -273,6 +274,12 @@ int sl_sysfs_link_fec_current_create(struct sl_ctl_link *ctl_link)
 		goto out_current_tail;
 	}
 
+	rtn = sl_sysfs_link_fec_mon_policy_create(ctl_link);
+	if (rtn) {
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec mon policy create failed [%d]", rtn);
+		goto out_current_tail;
+	}
+
 	return 0;
 
 out_current_tail:
@@ -300,5 +307,6 @@ void sl_sysfs_link_fec_current_delete(struct sl_ctl_link *ctl_link)
 	for (x = 0; x < SL_MAX_LANES; ++x)
 		kobject_put(&ctl_link->fec.current_fecl_kobjs[x].kobj);
 	kobject_put(&ctl_link->fec.current_lane_kobj);
+	kobject_put(&ctl_link->fec.mon_policy_kobj);
 	kobject_put(&ctl_link->fec.current_kobj);
 }

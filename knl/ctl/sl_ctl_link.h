@@ -99,6 +99,7 @@ struct sl_ctl_link {
 		struct kobject               down_lane_kobj;
 		struct sl_ctl_link_fecl_kobj down_fecl_kobjs[SL_MAX_LANES];
 		struct kobject               down_tail_kobj;
+		struct kobject               mon_policy_kobj;
 	} fec;
 
 	bool is_deleting;
