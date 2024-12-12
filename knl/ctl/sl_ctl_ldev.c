@@ -85,13 +85,13 @@ int sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map, struct workqueue_struct *workq,
 	rtn = sl_core_ldev_new(ldev_num, ctl_ldev->attr.accessors,
 		ctl_ldev->attr.ops, ctl_ldev->workq);
 	if (rtn) {
-		sl_ctl_log_err(ctl_ldev, LOG_NAME, "core_ldev_new failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_ldev, LOG_NAME, "core_ldev_new failed [%d]", rtn);
 		goto out_del_wq;
 	}
 
 	rtn = sl_media_ldev_new(ldev_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_ldev, LOG_NAME, "media_ldev_new failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_ldev, LOG_NAME, "media_ldev_new failed [%d]", rtn);
 		goto out_del_wq;
 	}
 

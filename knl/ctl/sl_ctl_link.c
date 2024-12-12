@@ -119,7 +119,7 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 	rtn = sl_core_link_new(ldev_num, lgrp_num, link_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_new failed [%d]", rtn);
 		goto out;
 	}
@@ -129,7 +129,7 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 		rtn = sl_sysfs_link_create(ctl_link);
 		if (rtn) {
-			sl_ctl_log_err(ctl_link, LOG_NAME,
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"sysfs_link_create failed [%d]", rtn);
 			goto out;
 		}
@@ -290,7 +290,7 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	rtn = sl_core_link_config_set(ldev_num, lgrp_num, link_num, &core_link_config);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_config_set failed [%d]", rtn);
 		return rtn;
 	}
@@ -493,7 +493,7 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	rtn = sl_core_link_up(ldev_num, lgrp_num, link_num,
 		sl_ctl_link_up_callback, ctl_link);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_up failed [%d]", rtn);
 		sl_ctl_link_up_clock_clear(ctl_link);
 		sl_ctl_link_up_attempt_clock_clear(ctl_link);

@@ -96,13 +96,13 @@ int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 
 	rtn = sl_core_lgrp_new(ldev_num, lgrp_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "core_lgrp_new failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME, "core_lgrp_new failed [%d]", rtn);
 		goto out_kfifo_free;
 	}
 
 	rtn = sl_media_lgrp_new(ldev_num, lgrp_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "media_lgrp_new failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME, "media_lgrp_new failed [%d]", rtn);
 		goto out_core_lgrp;
 	}
 
@@ -111,7 +111,7 @@ int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 
 		rtn = sl_sysfs_lgrp_create(ctl_lgrp);
 		if (rtn) {
-			sl_ctl_log_err(ctl_lgrp, LOG_NAME,
+			sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME,
 				"sysfs_lgrp_create failed");
 			goto out_core_lgrp;
 		}
@@ -236,7 +236,7 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 
 	rtn = sl_core_lgrp_config_set(ldev_num, lgrp_num, lgrp_config);
 	if (rtn) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "core_lgrp_config_set failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME, "core_lgrp_config_set failed [%d]", rtn);
 		return rtn;
 	}
 

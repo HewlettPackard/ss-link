@@ -111,7 +111,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_core_hw_link_down_cmd(core_link);
 		return 0;
 	default:
-		sl_core_log_dbg(core_link, LOG_NAME,
+		sl_core_log_err(core_link, LOG_NAME,
 			"down - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);

@@ -68,7 +68,7 @@ int sl_ctl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_p
 
 	rtn = sl_core_mac_new(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 			"core_mac_new failed [%d]", rtn);
 		goto out;
 	}
@@ -78,7 +78,7 @@ int sl_ctl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_p
 
 		rtn = sl_sysfs_mac_create(ctl_mac);
 		if (rtn) {
-			sl_ctl_log_err(ctl_mac, LOG_NAME,
+			sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 				"sysfs_mac_create failed [%d]", rtn);
 			goto out;
 		}
@@ -159,7 +159,7 @@ int sl_ctl_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	rtn = sl_core_mac_tx_start(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 			"tx start - core_mac_tx_start failed [%d]", rtn);
 		return rtn;
 	}
@@ -182,8 +182,8 @@ int sl_ctl_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
-			"tx stop - core_mac_tx_stop failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
+				"tx stop - core_mac_tx_stop failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -241,8 +241,8 @@ int sl_ctl_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	rtn = sl_core_mac_rx_start(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
-			"rx start - core_mac_rx_start failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
+				"rx start - core_mac_rx_start failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -264,7 +264,7 @@ int sl_ctl_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 			"rx stop - core_mac_rx_stop failed [%d]", rtn);
 		return rtn;
 	}
@@ -325,14 +325,14 @@ int sl_ctl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	tx_rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
 	if (tx_rtn) {
 		/* Log error, but allow the function to continue to mac rx stop */
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 			"reset - core_mac_tx_stop failed [%d]", tx_rtn);
 	}
 
 	rx_rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
 	if (rx_rtn) {
 		/* Log error, but allow the function to continue execution */
-		sl_ctl_log_err(ctl_mac, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_mac, LOG_NAME,
 			"core_mac_rx_stop failed [%d]", rx_rtn);
 	}
 

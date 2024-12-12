@@ -296,7 +296,7 @@ void sl_ctl_link_up_callback_work(struct work_struct *work)
 		rtn = sl_core_link_up(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 			ctl_link->num, sl_ctl_link_up_callback, ctl_link);
 		if (rtn) {
-			sl_ctl_log_err(ctl_link, LOG_NAME,
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"up callback work core_link_up failed [%d]", rtn);
 			sl_ctl_link_up_clock_clear(ctl_link);
 			sl_ctl_link_up_attempt_clock_clear(ctl_link);

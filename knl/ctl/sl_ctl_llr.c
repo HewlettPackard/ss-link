@@ -258,7 +258,7 @@ int sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_p
 
 	rtn = sl_core_llr_new(ldev_num, lgrp_num, llr_num);
 	if (rtn) {
-		sl_ctl_log_err(ctl_llr, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 			"core_llr_new failed [%d]", rtn);
 		goto out;
 	}
@@ -268,7 +268,7 @@ int sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_p
 
 		rtn = sl_sysfs_llr_create(ctl_llr);
 		if (rtn) {
-			sl_ctl_log_err(ctl_llr, LOG_NAME,
+			sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 				"sysfs_llr_create failed [%d]", rtn);
 			goto out;
 		}
@@ -361,7 +361,7 @@ int sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_co
 
 	rtn = sl_core_llr_config_set(ldev_num, lgrp_num, llr_num, llr_config);
 	if (rtn) {
-		sl_ctl_log_err(ctl_llr, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 			"core_llr_config_set failed [%d]", rtn);
 		return rtn;
 	}
@@ -421,7 +421,7 @@ int sl_ctl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	rtn = sl_core_llr_setup(ldev_num, lgrp_num, llr_num,
 		sl_ctl_llr_setup_callback, ctl_llr, 0);
 	if (rtn) {
-		sl_ctl_log_err(ctl_llr, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 			"core_llr_setup failed [%d]", rtn);
 		return -EBADRQC;
 	}
@@ -446,7 +446,7 @@ int sl_ctl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num, 0);
 	if (rtn) {
-		sl_ctl_log_err(ctl_llr, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 			"core_llr_stop failed [%d]", rtn);
 		return rtn;
 	}

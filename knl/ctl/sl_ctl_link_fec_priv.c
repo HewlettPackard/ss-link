@@ -362,7 +362,7 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 	rtn = sl_core_link_fec_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_fec_tail_cntrs_get failed [%d]", rtn);
 		goto start_mon;
 	}
@@ -373,7 +373,7 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 
 	rtn = sl_ctl_link_fec_data_check(ctl_link);
 	if (rtn) {
-		sl_ctl_log_err(ctl_link, LOG_NAME, "check failed [%d]", rtn);
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME, "check failed [%d]", rtn);
 		return;
 	}
 
