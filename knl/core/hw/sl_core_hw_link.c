@@ -871,7 +871,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	llr_replay_max = 0;
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 
-	sl_core_log_dbg(core_link, LOG_NAME,
+	sl_core_log_err(core_link, LOG_NAME,
 		"fault intr work (llr_replay = 0x%llX, local = 0x%llX, remote = 0x%llX, down = 0x%llX)",
 		llr_replay_max, local_fault, remote_fault, link_down);
 
