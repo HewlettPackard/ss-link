@@ -728,7 +728,7 @@ void sl_core_hw_link_high_serdes_intr_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SERDES);
 
-	sl_core_log_warn(core_link, LOG_NAME, "high serdes occurred");
+	sl_core_log_warn(core_link, LOG_NAME, "high symbol error ratio occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
@@ -871,12 +871,13 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	llr_replay_max = 0;
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 
-	sl_core_log_err(core_link, LOG_NAME,
+	sl_core_log_dbg(core_link, LOG_NAME,
 		"fault intr work (llr_replay = 0x%llX, local = 0x%llX, remote = 0x%llX, down = 0x%llX)",
 		llr_replay_max, local_fault, remote_fault, link_down);
 
 	/* llr replay max indicator is first */
 	if (llr_replay_max) {
+		sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX);
 		goto out_down;
@@ -884,16 +885,19 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	/* fault indicators are checked worst first */
 	if (local_fault) {
+		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LF);
 		goto out_down;
 	}
 	if (remote_fault) {
+		sl_core_log_err(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_RF);
 		goto out_down;
 	}
 	if (link_down) {
+		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN);
 		goto out_down;
