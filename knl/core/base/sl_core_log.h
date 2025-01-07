@@ -57,6 +57,8 @@
 	sl_log_info((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
 #define sl_core_log_warn(_ptr, _name, _text, ...) \
 	sl_log_warn((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
+#define sl_core_log_warn_trace(_ptr, _name, _text, ...) \
+	sl_log_warn_trace((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
 #define sl_core_log_err(_ptr, _name, _text, ...) \
 	sl_log_err((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
 #define sl_core_log_err_trace(_ptr, _name, _text, ...) \

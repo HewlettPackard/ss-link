@@ -23,8 +23,10 @@
 
 void sl_log(void *ptr, const char *level, const char *block,
 	const char *name, const char *text, ...) __printf(5, 6);
-void sl_log_trace(void *ptr, const char *level, const char *block,
-	const char *name, const char *text, ...) __printf(5, 6);
+void sl_log_err_trace(void *ptr, const char *block,
+	const char *name, const char *text, ...) __printf(4, 5);
+void sl_log_warn_trace(void *ptr, const char *block,
+	const char *name, const char *text, ...) __printf(4, 5);
 
 void __sl_log_dynamic_dbg(struct _ddebug *desc, void *ptr,
 	const char *block, const char *name, const char *text, ...) __printf(5, 6);
@@ -52,7 +54,5 @@ void __sl_log_dynamic_dbg(struct _ddebug *desc, void *ptr,
 	sl_log((_ptr), KERN_WARNING, (_block), (_name), (_text), ##__VA_ARGS__)
 #define sl_log_err(_ptr, _block, _name, _text, ...) \
 	sl_log((_ptr), KERN_ERR, (_block), (_name), (_text), ##__VA_ARGS__)
-#define sl_log_err_trace(_ptr, _block, _name, _text, ...) \
-	sl_log_trace((_ptr), KERN_ERR, (_block), (_name), (_text), ##__VA_ARGS__)
 
 #endif /* _SL_LOG_H_ */

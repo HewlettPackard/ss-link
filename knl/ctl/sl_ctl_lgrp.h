@@ -58,6 +58,7 @@ struct sl_ctl_lgrp {
 
 	// FIXME: for now only enable at the lgrp level
 	bool                             err_trace_enable;
+	bool                             warn_trace_enable;
 
 	bool                             is_deleting;
 	spinlock_t                       data_lock;

@@ -257,7 +257,7 @@ void sl_log(void *ptr, const char *level, const char *block,
 	va_end(args);
 }
 
-void sl_log_trace(void *ptr, const char *level, const char *block,
+void sl_log_err_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...)
 {
 	char                 msg[SL_LOG_MSG_LEN + 1];
@@ -272,10 +272,6 @@ void sl_log_trace(void *ptr, const char *level, const char *block,
 	struct sl_core_llr   *core_llr;
 	struct sl_media_lgrp *media_lgrp;
 
-	if (!level) {
-		pr_err("NULL level\n");
-		return;
-	}
 	if (!block) {
 		pr_err("NULL block\n");
 		return;
@@ -342,7 +338,95 @@ void sl_log_trace(void *ptr, const char *level, const char *block,
 		return;
 	}
 
-	sl_log_msg_create(level, ptr, msg, block, name, text);
+	sl_log_msg_create(KERN_ERR, ptr, msg, block, name, text);
+
+	va_start(args, text);
+	vprintk(msg, args);
+	va_end(args);
+}
+
+void sl_log_warn_trace(void *ptr, const char *block,
+	const char *name, const char *text, ...)
+{
+	char                 msg[SL_LOG_MSG_LEN + 1];
+	va_list              args;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	struct sl_ctl_link   *ctl_link;
+	struct sl_ctl_llr    *ctl_llr;
+	struct sl_ctl_mac    *ctl_mac;
+	struct sl_core_lgrp  *core_lgrp;
+	struct sl_core_link  *core_link;
+	struct sl_core_mac   *core_mac;
+	struct sl_core_llr   *core_llr;
+	struct sl_media_lgrp *media_lgrp;
+
+	if (!block) {
+		pr_err("NULL block\n");
+		return;
+	}
+	if (!name) {
+		pr_err("NULL name\n");
+		return;
+	}
+	if (!text) {
+		pr_err("NULL text\n");
+		return;
+	}
+
+	if (ptr == NULL)
+		return;
+
+	switch (*((u32 *)ptr)) {
+	case SL_CTL_LGRP_MAGIC:
+		ctl_lgrp = ptr;
+		if (!ctl_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CTL_LINK_MAGIC:
+		ctl_link = ptr;
+		if (!ctl_link->ctl_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CTL_LLR_MAGIC:
+		ctl_llr = ptr;
+		if (!ctl_llr->ctl_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CTL_MAC_MAGIC:
+		ctl_mac = ptr;
+		if (!ctl_mac->ctl_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CORE_LGRP_MAGIC:
+		core_lgrp = ptr;
+		if (!core_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CORE_LINK_MAGIC:
+		core_link = ptr;
+		if (!core_link->core_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CORE_MAC_MAGIC:
+		core_mac = ptr;
+		if (!core_mac->core_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_CORE_LLR_MAGIC:
+		core_llr = ptr;
+		if (!core_llr->core_lgrp->warn_trace_enable)
+			return;
+		break;
+	case SL_MEDIA_LGRP_MAGIC:
+		media_lgrp = ptr;
+		if (!media_lgrp->warn_trace_enable)
+			return;
+		break;
+	default:
+		return;
+	}
+
+	sl_log_msg_create(KERN_WARNING, ptr, msg, block, name, text);
 
 	va_start(args, text);
 	vprintk(msg, args);

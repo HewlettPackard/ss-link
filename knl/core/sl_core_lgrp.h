@@ -80,6 +80,7 @@ struct sl_core_lgrp {
 
 	// FIXME: for now only enable at the lgrp level
 	bool err_trace_enable;
+	bool warn_trace_enable;
 };
 
 int		     sl_core_lgrp_new(u8 ldev_num, u8 lgrp_num);
