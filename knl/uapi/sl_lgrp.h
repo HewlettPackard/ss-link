@@ -15,26 +15,26 @@
 #endif
 #endif
 
-#define SL_LGRP_NOTIF_INVALID           0        /* Not a notification */
-#define SL_LGRP_NOTIF_ALL               ~0       /* All notifications  */
-#define SL_LGRP_NOTIF_LINK_UP           BIT(1)
-#define SL_LGRP_NOTIF_LINK_UP_FAIL      BIT(2)
-#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN   BIT(3)
-#define SL_LGRP_NOTIF_LINK_ERROR        BIT(4)
-#define SL_LGRP_NOTIF_LINK_UCW_WARN     BIT(5)
-#define SL_LGRP_NOTIF_LINK_CCW_WARN     BIT(6)
-#define SL_LGRP_NOTIF_LLR_DATA          BIT(7)
-#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT BIT(8)
-#define SL_LGRP_NOTIF_LLR_START_TIMEOUT BIT(9)
-#define SL_LGRP_NOTIF_LLR_RUNNING       BIT(10)
-#define SL_LGRP_NOTIF_LLR_ERROR         BIT(11)
-#define SL_LGRP_NOTIF_MEDIA_PRESENT     BIT(12)
-#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT BIT(13)
-#define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(14)
-#define SL_LGRP_NOTIF_AN_DATA           BIT(15)
-#define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(16)
-#define SL_LGRP_NOTIF_AN_ERROR          BIT(17)
-#define SL_LGRP_NOTIF_LLR_CANCELED      BIT(18)
+#define SL_LGRP_NOTIF_INVALID           0
+#define SL_LGRP_NOTIF_ALL               ~0       /* all notifications               */
+#define SL_LGRP_NOTIF_LINK_UP           BIT(1)   /* link up                         */
+#define SL_LGRP_NOTIF_LINK_UP_FAIL      BIT(2)   /* link up fail                    */
+#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN   BIT(3)   /* link down asynchronously        */
+#define SL_LGRP_NOTIF_LINK_ERROR        BIT(4)   /* link error                      */
+#define SL_LGRP_NOTIF_LINK_UCW_WARN     BIT(5)   /* UCW count crossed warning limit */
+#define SL_LGRP_NOTIF_LINK_CCW_WARN     BIT(6)   /* CCW count crossed warning limit */
+#define SL_LGRP_NOTIF_LLR_DATA          BIT(7)   /* LLR data                        */
+#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT BIT(8)   /* LLR setup timeout               */
+#define SL_LGRP_NOTIF_LLR_START_TIMEOUT BIT(9)   /* LLR start timeout               */
+#define SL_LGRP_NOTIF_LLR_RUNNING       BIT(10)  /* LLR running                     */
+#define SL_LGRP_NOTIF_LLR_ERROR         BIT(11)  /* LLR error                       */
+#define SL_LGRP_NOTIF_MEDIA_PRESENT     BIT(12)  /* media/cable present             */
+#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT BIT(13)  /* media/cable not present         */
+#define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(14)  /* media/cable error               */
+#define SL_LGRP_NOTIF_AN_DATA           BIT(15)  /* autoneg data                    */
+#define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(16)  /* autoneg timeout                 */
+#define SL_LGRP_NOTIF_AN_ERROR          BIT(17)  /* automeg error                   */
+#define SL_LGRP_NOTIF_LLR_CANCELED      BIT(18)  /* LLR canceled                    */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 

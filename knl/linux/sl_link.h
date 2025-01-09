@@ -17,27 +17,27 @@ struct kobject;
 
 enum sl_link_down_cause {
 	SL_LINK_DOWN_CAUSE_INVALID       = 0,
-	SL_LINK_DOWN_CAUSE_NONE,
-	SL_LINK_DOWN_CAUSE_BAD_EYE,
-	SL_LINK_DOWN_CAUSE_UCW,
-	SL_LINK_DOWN_CAUSE_CCW,
-	SL_LINK_DOWN_CAUSE_ALIGN,
-	SL_LINK_DOWN_CAUSE_LF,
-	SL_LINK_DOWN_CAUSE_RF,
-	SL_LINK_DOWN_CAUSE_SERDES,
-	SL_LINK_DOWN_CAUSE_DOWN,
-	SL_LINK_DOWN_CAUSE_UP_TRIES,
-	SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH,
-	SL_LINK_DOWN_CAUSE_AUTONEG_FAIL,
-	SL_LINK_DOWN_CAUSE_CONFIG,
-	SL_LINK_DOWN_CAUSE_INTR_ENABLE,
-	SL_LINK_DOWN_CAUSE_TIMEOUT,
-	SL_LINK_DOWN_CAUSE_CANCELED,
-	SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE,
-	SL_LINK_DOWN_CAUSE_COMMAND,
-	SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED,
-	SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX,
-	SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED,
+	SL_LINK_DOWN_CAUSE_NONE,                /* no cause                 */
+	SL_LINK_DOWN_CAUSE_BAD_EYE,             /* eye limits not good      */
+	SL_LINK_DOWN_CAUSE_UCW,                 /* UCW limit crossed        */
+	SL_LINK_DOWN_CAUSE_CCW,                 /* CCW limit crossed        */
+	SL_LINK_DOWN_CAUSE_ALIGN,               /* link alignment failure   */
+	SL_LINK_DOWN_CAUSE_LF,                  /* link local fault         */
+	SL_LINK_DOWN_CAUSE_RF,                  /* link remote fault        */
+	SL_LINK_DOWN_CAUSE_SERDES,              /* serdes problems          */
+	SL_LINK_DOWN_CAUSE_DOWN,                /* link down                */
+	SL_LINK_DOWN_CAUSE_UP_TRIES,            /* up tries exhaused        */
+	SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH,     /* no match for autoneg     */
+	SL_LINK_DOWN_CAUSE_AUTONEG_FAIL,        /* autoneg failure          */
+	SL_LINK_DOWN_CAUSE_CONFIG,              /* bad config               */
+	SL_LINK_DOWN_CAUSE_INTR_ENABLE,         /* failure enable interrupt */
+	SL_LINK_DOWN_CAUSE_TIMEOUT,             /* link action timeout      */
+	SL_LINK_DOWN_CAUSE_CANCELED,            /* link action cancelled    */
+	SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE,   /* unsuppported cable       */
+	SL_LINK_DOWN_CAUSE_COMMAND,             /* client command           */
+	SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED,    /* downshift failed         */
+	SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX,      /* LLR replay at max        */
+	SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED,      /* upshift failed           */
 
 	SL_LINK_DOWN_CAUSE_LLR_STARVED, /* FIXME: remove when sw doesn't use it anymore */
 };
