@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -27,25 +27,39 @@
 #include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_io.h"
+#include "hw/sl_core_hw_reset.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
 static void sl_core_hw_link_off(struct sl_core_link *core_link)
 {
 	struct sl_core_mac *core_mac;
-
-	preempt_disable();
+	u64                 rx_state;
+	u64                 tx_state;
 
 	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
 				   core_link->core_lgrp->num, core_link->num);
-	if (core_mac)
+	if (core_mac) {
+		sl_core_hw_mac_rx_state_get(core_mac, &rx_state);
+		sl_core_hw_mac_tx_state_get(core_mac, &tx_state);
 		sl_core_hw_mac_tx_stop(core_mac);
+	}
 
 	sl_core_hw_pcs_stop(core_link);
 
-	preempt_enable();
+	if (core_mac)
+		sl_core_hw_mac_rx_stop(core_mac);
 
 	sl_core_hw_serdes_link_down(core_link);
+
+	sl_core_hw_reset_link(core_link);
+
+	if (core_mac) {
+		if (tx_state == SL_CORE_MAC_STATE_ON)
+			sl_core_hw_mac_tx_start(core_mac);
+		if (rx_state == SL_CORE_MAC_STATE_ON)
+			sl_core_hw_mac_rx_start(core_mac);
+	}
 }
 
 void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
@@ -129,10 +143,10 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"up start link up disable failed [%d]", rtn);
-	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"up start link high serdes disable failed [%d]", rtn);
+			"up start link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
@@ -147,7 +161,7 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 			"up start link fault disable failed [%d]", rtn);
 
 	/* clear faults here to see if faults happen during up */
-	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
@@ -198,10 +212,10 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"up after an link up disable failed [%d]", rtn);
-	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"up after an link high serdes disable failed [%d]", rtn);
+			"up after an link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
@@ -216,7 +230,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 			"up after an link fault disable failed [%d]", rtn);
 
 	/* clear faults here to see if faults happen during up */
-	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
@@ -333,10 +347,10 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
 
-	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"up success link high serdes enable failed [%d]", rtn);
+			"up success link high SER enable failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -557,7 +571,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 
 	/* disable interrupts */
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
@@ -578,7 +592,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_SETTLE]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_CHECK]));
-	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
@@ -605,7 +619,7 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link)
 
 	/* disable interrupts */
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
@@ -627,7 +641,7 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_SETTLE]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_CHECK]));
-	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
@@ -654,10 +668,10 @@ void sl_core_hw_link_down_cmd(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "down cmd");
 
-	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"down cmd - link high serdes disable failed [%d]", rtn);
+			"down cmd - link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
@@ -671,7 +685,7 @@ void sl_core_hw_link_down_cmd(struct sl_core_link *core_link)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"down cmd - link fault disable failed [%d]", rtn);
 
-	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]);
+	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]);
@@ -702,7 +716,7 @@ void sl_core_hw_link_down_wait(struct sl_core_link *core_link)
 	try_count = 0;
 	while (sl_core_data_link_state_get(core_link) != SL_CORE_LINK_STATE_DOWN) {
 		usleep_range(1000, 2000);
-		if (try_count++ > 100 * 1000) {
+		if (try_count++ > 500 * 1000) {
 			sl_core_info_map_str(core_link->info_map, info_map_str, sizeof(info_map_str));
 			sl_core_log_warn(core_link, LOG_NAME,
 				"down wait tries exceeded - failed to get to down (state = %u %s, info = %s)",
@@ -713,31 +727,31 @@ void sl_core_hw_link_down_wait(struct sl_core_link *core_link)
 	}
 }
 
-void sl_core_hw_link_high_serdes_intr_work(struct work_struct *work)
+void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 {
 	struct sl_core_link *core_link;
 
-	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]);
+	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 
-	sl_core_log_dbg(core_link, LOG_NAME, "high serdes intr work");
+	sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work");
 
 	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "high serdes intr work canceled");
+		sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work canceled");
 		return;
 	}
 
-	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SERDES);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
 
 	sl_core_log_warn(core_link, LOG_NAME, "high symbol error ratio occurred");
 
-	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES) == -EALREADY) {
+	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
 			return;
 		usleep_range(10000, 12000);
-		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	}
 
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_HIGH_SERDES);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_HIGH_SER);
 }
 
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)

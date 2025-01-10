@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021,2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021,2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LINK_H_
 #define _SL_CORE_LINK_H_
@@ -79,7 +79,7 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_LLR_RUNNING,
 	SL_CORE_INFO_MAP_LLR_START_TIMEOUT,
 
-	SL_CORE_INFO_MAP_HIGH_SERDES,
+	SL_CORE_INFO_MAP_HIGH_SER,
 	SL_CORE_INFO_MAP_LLR_MAX_STARVATION,
 	SL_CORE_INFO_MAP_LLR_STARVED,
 	SL_CORE_INFO_MAP_LLR_REPLAY_MAX,

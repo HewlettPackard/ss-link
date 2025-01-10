@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/bitops.h>
@@ -29,7 +29,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "pcs-align-ok"       },
 	{ .desc = "pcs-lcl-fault"      },
 	{ .desc = "pcs-rmt-fault"      },
-	{ .desc = "pcs-hi-serdes"      },
+	{ .desc = "pcs-high-ser"       },
 	{ .desc = "pcs-link-down"      },
 	{ .desc = "pcs-link-up"        },
 	{ .desc = "pcs-timeout"        },
@@ -59,7 +59,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "llr-running"        },
 	{ .desc = "llr-start_timeout"  },
 
-	{ .desc = "high-serdes"        },
+	{ .desc = "high-ser"           },
 	{ .desc = "llr-max-starvation" },
 	{ .desc = "llr-starved"        },
 	{ .desc = "llr-replay-at-max"  },

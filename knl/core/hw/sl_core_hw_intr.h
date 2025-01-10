@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_INTR_H_
 #define _SL_CORE_HW_INTR_H_
@@ -10,7 +10,7 @@ struct sl_core_link;
 
 enum {
 	SL_CORE_HW_INTR_LINK_UP                  = 0,
-	SL_CORE_HW_INTR_LINK_HIGH_SERDES,
+	SL_CORE_HW_INTR_LINK_HIGH_SER,
 	SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION,
 	SL_CORE_HW_INTR_LINK_LLR_STARVED,
 	SL_CORE_HW_INTR_LINK_FAULT,

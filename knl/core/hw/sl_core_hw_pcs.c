@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
+#include <linux/delay.h>
 
 #include "sl_kconfig.h"
 #include "sl_core_ldev.h"
@@ -179,6 +180,17 @@ void sl_core_hw_pcs_stop(struct sl_core_link *link)
 
 	sl_core_log_dbg(link, LOG_NAME, "stop (port = %u)", port);
 
+	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
+	lanes &= ~link->pcs.settings.rx_active_lanes;
+	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
+	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS, data64);
+
+	sl_core_flush64(link, SS2_PORT_PML_CFG_RX_PCS);
+
+	msleep(20);
+
 	sl_core_read64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), &data64);
 	data64 = SS2_PORT_PML_CFG_PCS_SUBPORT_PCS_ENABLE_UPDATE(data64, 0);
 	sl_core_write64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), data64);
@@ -187,12 +199,6 @@ void sl_core_hw_pcs_stop(struct sl_core_link *link)
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 0);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_RX_SM_UPDATE(data64, 0);
 	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(link->num), data64);
-
-	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS, &data64);
-	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
-	lanes &= ~link->pcs.settings.rx_active_lanes;
-	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
-	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS, data64);
 
 	sl_core_flush64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num));
 

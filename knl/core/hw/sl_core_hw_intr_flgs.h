@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_INTR_FLGS_H_
 #define _SL_CORE_HW_INTR_FLGS_H_
@@ -21,17 +21,17 @@ SL_CORE_HW_INTR_FLGS_LINK_UP(1);
 SL_CORE_HW_INTR_FLGS_LINK_UP(2);
 SL_CORE_HW_INTR_FLGS_LINK_UP(3);
 
-#define SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(_link_num)                                             \
-	static u64 sl_core_hw_intr_flgs_link_high_serdes_##_link_num[SL_CORE_HW_INTR_FLGS_COUNT] = { \
-		0ULL,                                                                                \
-		SS2_PORT_PML_ERR_FLG_WORD1_PCS_HI_SER_##_link_num##_SET(1),                          \
-		0ULL,                                                                                \
-		0ULL,                                                                                \
+#define SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(_link_num)                                             \
+	static u64 sl_core_hw_intr_flgs_link_high_ser_##_link_num[SL_CORE_HW_INTR_FLGS_COUNT] = { \
+		0ULL,                                                                             \
+		SS2_PORT_PML_ERR_FLG_WORD1_PCS_HI_SER_##_link_num##_SET(1),                       \
+		0ULL,                                                                             \
+		0ULL,                                                                             \
 	}
-SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(0);
-SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(1);
-SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(2);
-SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(3);
+SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(0);
+SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(1);
+SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(2);
+SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(3);
 
 #define SL_CORE_HW_INTR_FLGS_LINK_LLR_MAX_STARVATION(_link_num)                                             \
 	static u64 sl_core_hw_intr_flgs_link_llr_max_starvation_##_link_num[SL_CORE_HW_INTR_FLGS_COUNT] = { \
@@ -94,7 +94,7 @@ SL_CORE_HW_INTR_FLGS_AN_PAGE_RECV(3);
 
 static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_UP,                 link_up),
-	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_HIGH_SERDES,        link_high_serdes),
+	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_HIGH_SER,           link_high_ser),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION, link_llr_max_starvation),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_LLR_STARVED,        link_llr_starved),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_FAULT,              link_fault),
@@ -109,11 +109,11 @@ static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	}
 SL_CORE_HW_INTR_FLGS_LINK_UP(0);
 
-#define SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(_link_num)                                        \
-	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_link_high_serdes_##_link_num = { \
-		.pcs_hi_ser_##_link_num               = 1,                                      \
+#define SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(_link_num)                                        \
+	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_link_high_ser_##_link_num = { \
+		.pcs_hi_ser_##_link_num               = 1,                                   \
 	}
-SL_CORE_HW_INTR_FLGS_LINK_HIGH_SERDES(0);
+SL_CORE_HW_INTR_FLGS_LINK_HIGH_SER(0);
 
 #define SL_CORE_HW_INTR_FLGS_LINK_LLR_MAX_STARVATION(_link_num)                                        \
 	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_link_llr_max_starvation_##_link_num = { \
@@ -149,7 +149,7 @@ SL_CORE_HW_INTR_FLGS_AN_PAGE_RECV(0);
 
 static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_UP,                 link_up),
-	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_HIGH_SERDES,        link_high_serdes),
+	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_HIGH_SER,           link_high_ser),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION, link_llr_max_starvation),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_LLR_STARVED,        link_llr_starved),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_FAULT,              link_fault),

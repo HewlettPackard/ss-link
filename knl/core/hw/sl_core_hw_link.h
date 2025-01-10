@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_LINK_H_
 #define _SL_CORE_HW_LINK_H_
@@ -24,7 +24,7 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link);
 void sl_core_hw_link_down_cmd(struct sl_core_link *link);
 void sl_core_hw_link_down_wait(struct sl_core_link *link);
 
-void sl_core_hw_link_high_serdes_intr_work(struct work_struct *work);
+void sl_core_hw_link_high_ser_intr_work(struct work_struct *work);
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work);
 void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work);
 void sl_core_hw_link_fault_intr_work(struct work_struct *work);

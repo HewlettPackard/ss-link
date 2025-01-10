@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -90,8 +90,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_UP,
 		SL_CORE_WORK_LINK_UP_INTR, "link up");
-	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES,
-		SL_CORE_WORK_LINK_HIGH_SERDES_INTR, "link high serdes");
+	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER,
+		SL_CORE_WORK_LINK_HIGH_SER_INTR, "link high SER");
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION,
 		SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR, "link llr max starvation");
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED,
@@ -107,8 +107,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_up_timeout_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]),
 		sl_core_hw_link_up_check_work);
-	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SERDES_INTR]),
-		sl_core_hw_link_high_serdes_intr_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]),
+		sl_core_hw_link_high_ser_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]),
 		sl_core_hw_link_llr_max_starvation_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]),
@@ -250,7 +250,7 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 
 	/* link */
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SERDES);
+	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
