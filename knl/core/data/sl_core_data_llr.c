@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -196,7 +196,7 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	core_llr->settings.retry_threshold     = 2;
 	core_llr->settings.allow_re_init       = 0;
 	core_llr->settings.replay_ct_max       = 0xFF;
-	core_llr->settings.replay_timer_max    = 1550;
+	core_llr->settings.replay_timer_max    = 15500;
 
 	if (llr_config->setup_timeout_ms == 0) {
 		sl_core_log_warn(core_llr, LOG_NAME,

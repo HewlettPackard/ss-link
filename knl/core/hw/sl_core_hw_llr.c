@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -260,12 +260,11 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	core_llr->settings.replay_ct_max    = 0xFE;
 	core_llr->settings.replay_timer_max = (3 * llr_data.loop.average + 500);
 
-	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), &data64);
-	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_UPDATE(data64,
-		core_llr->settings.replay_ct_max);
-	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_TIMER_MAX_UPDATE(data64,
-		core_llr->settings.replay_timer_max);
-	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), data64);
+	if (core_llr->settings.replay_timer_max < 1000)
+		core_llr->settings.replay_timer_max = 1000;
+
+	if (core_llr->settings.replay_timer_max > 15500)
+		core_llr->settings.replay_timer_max = 15500;
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_CAPACITY(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_CAPACITY_MAX_DATA_UPDATE(data64, calc_data);
@@ -713,6 +712,8 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 		usleep_range(15000, 20000);
 	}
 
+	msleep(20);
+
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 
 	if (x >= LLR_ADVANCE_TRIES) {
@@ -723,6 +724,14 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 		sl_core_hw_llr_start_callback(core_llr);
 		return;
 	}
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), &data64);
+	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_UPDATE(data64,
+		core_llr->settings.replay_ct_max);
+	data64 = SS2_PORT_PML_CFG_LLR_SM_REPLAY_TIMER_MAX_UPDATE(data64,
+		core_llr->settings.replay_timer_max);
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), data64);
+	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num));
 
 	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
 
