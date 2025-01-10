@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -13,6 +13,7 @@
 #include "sl_core_link_fec.h"
 #include "sl_test_common.h"
 #include "sl_sysfs_link_fec_mon_policy.h"
+#include "sl_sysfs_link_fec_up_config.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -280,8 +281,16 @@ int sl_sysfs_link_fec_current_create(struct sl_ctl_link *ctl_link)
 		goto out_current_tail;
 	}
 
+	rtn = sl_sysfs_link_fec_up_config_create(ctl_link);
+	if (rtn) {
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec up config create failed [%d]", rtn);
+		goto out_fec_mon_policy;
+	}
+
 	return 0;
 
+out_fec_mon_policy:
+	kobject_put(&ctl_link->fec.mon_policy_kobj);
 out_current_tail:
 	kobject_put(&ctl_link->fec.current_tail_kobj);
 out_current_fecl:
@@ -308,5 +317,6 @@ void sl_sysfs_link_fec_current_delete(struct sl_ctl_link *ctl_link)
 		kobject_put(&ctl_link->fec.current_fecl_kobjs[x].kobj);
 	kobject_put(&ctl_link->fec.current_lane_kobj);
 	kobject_put(&ctl_link->fec.mon_policy_kobj);
+	kobject_put(&ctl_link->fec.up_config_kobj);
 	kobject_put(&ctl_link->fec.current_kobj);
 }

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
-#include "sl_kconfig.h"
-#include "sl_asic.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "base/sl_core_log.h"
@@ -98,7 +96,3 @@ int sl_core_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	return sl_core_hw_fec_data_get(core_link, cw_cntrs, lane_cntrs, tail_cntr);
 }
 
-s32 sl_core_link_fec_limit_calc(u8 ldev_num, u8 lgrp_num, u8 link_num, int mant, int exp)
-{
-	return sl_core_data_link_fec_limit_calc(sl_core_link_get(ldev_num, lgrp_num, link_num), mant, exp);
-}

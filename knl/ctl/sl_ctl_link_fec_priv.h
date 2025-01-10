@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTL_LINK_FEC_PRIV_H_
 #define _SL_CTL_LINK_FEC_PRIV_H_
@@ -12,15 +12,21 @@
 
 struct sl_ctl_link;
 
+#define SL_CTL_LINK_FEC_UCW_MANT   1
+#define SL_CTL_LINK_FEC_UCW_EXP  -10
+#define SL_CTL_LINK_FEC_CCW_MANT   2
+#define SL_CTL_LINK_FEC_CCW_EXP   -5
+
 /* Normalize the rate, and check limit
- * p = limit
+ * l = limit
+ * p = period_ms
  * c = [U/C]CW delta (count)
- * t = time = (jiffies / HZ)
+ * t = time = (p / 1000)
  *
- * p < (c / t); p < (c / (jiffies / HZ)); (p * jiffies) < (c * HZ)
+ * l < (c / t); l * t < c; (l * p) < (c * 1000)
  */
 #define SL_CTL_LINK_FEC_LIMIT_CHECK(_limit, _count, _period) \
-	((_limit && _period) ? (((u64)(_limit) * (_period)) <= ((_count) * HZ)) : 0)
+	((_limit && _period) ? (((u64)(_limit) * (_period)) <= ((_count) * 1000)) : 0)
 #define SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(_limit, _info) \
 	SL_CTL_LINK_FEC_LIMIT_CHECK(_limit, (_info)->ucw, (_info)->period_ms)
 #define SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(_limit, _info) \
@@ -86,5 +92,7 @@ void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link);
 void sl_ctl_link_fec_mon_timer_work(struct work_struct *work);
 void sl_ctl_link_fec_mon_timer(struct timer_list *timer);
 void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link);
+
+s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp);
 
 #endif /* _SL_CTL_LINK_FEC_PRIV_H_ */

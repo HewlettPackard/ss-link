@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/string.h>
 #include <linux/spinlock.h>
@@ -432,4 +432,48 @@ void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 	rtn = del_timer_sync(&ctl_link->fec_mon_timer);
 	if (rtn < 0)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "del_timer_sync failed [%d]", rtn);
+}
+
+#define SL_CTL_LINK_FEC_LIMIT_25   25781250000ULL
+#define SL_CTL_LINK_FEC_LIMIT_50   53125000000ULL
+#define SL_CTL_LINK_FEC_LIMIT_100 106250000000ULL
+s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp)
+{
+	u64 limit;
+	int x;
+	u32 tech_map;
+
+	spin_lock(&ctl_link->ctl_lgrp->config_lock);
+	tech_map = ctl_link->ctl_lgrp->config.tech_map;
+	spin_unlock(&ctl_link->ctl_lgrp->config_lock);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec limit calc (tech_map = %d, mant = %u, exp = %d)", tech_map, mant, exp);
+
+	if (tech_map & SL_LGRP_CONFIG_TECH_CK_400G)
+		limit = SL_CTL_LINK_FEC_LIMIT_100 << 2;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_CK_200G)
+		limit = SL_CTL_LINK_FEC_LIMIT_100 << 1;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_BS_200G)
+		limit = SL_CTL_LINK_FEC_LIMIT_50 << 2;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_CK_100G)
+		limit = SL_CTL_LINK_FEC_LIMIT_100;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_BJ_100G)
+		limit = SL_CTL_LINK_FEC_LIMIT_25 << 2;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_CD_100G)
+		limit = SL_CTL_LINK_FEC_LIMIT_50 << 1;
+	else if (tech_map & SL_LGRP_CONFIG_TECH_CD_50G)
+		limit = SL_CTL_LINK_FEC_LIMIT_50;
+	else
+		limit = SL_CTL_LINK_FEC_LIMIT_100;
+
+	limit *= mant;
+	for (x = exp; x < 0; ++x)
+		limit /= 10;
+
+	if (limit > INT_MAX)
+		return INT_MAX;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec limit calc (limit = %llu)", limit);
+
+	return limit;
 }

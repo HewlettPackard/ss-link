@@ -125,6 +125,7 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_link.o                 \
 	sysfs/sl_sysfs_link_policy.o          \
 	sysfs/sl_sysfs_link_fec_mon_policy.o  \
+	sysfs/sl_sysfs_link_fec_up_config.o   \
 	sysfs/sl_sysfs_link_config.o          \
 	sysfs/sl_sysfs_link_caps.o            \
 	sysfs/sl_sysfs_link_fec.o             \

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTL_LINK_H_
 #define _SL_CTL_LINK_H_
@@ -100,6 +100,7 @@ struct sl_ctl_link {
 		struct sl_ctl_link_fecl_kobj down_fecl_kobjs[SL_MAX_LANES];
 		struct kobject               down_tail_kobj;
 		struct kobject               mon_policy_kobj;
+		struct kobject               up_config_kobj;
 	} fec;
 
 	bool is_deleting;

@@ -521,18 +521,8 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 
 	core_link->fec.settings.up_settle_wait_ms = core_link->config.fec_up_settle_wait_ms;
 	core_link->fec.settings.up_check_wait_ms  = core_link->config.fec_up_check_wait_ms;
-
-	if (core_link->config.fec_up_ucw_limit < 0)
-		core_link->fec.settings.up_ucw_limit =
-			sl_core_data_link_fec_limit_calc(core_link, SL_CORE_LINK_FEC_UCW_MANT, SL_CORE_LINK_FEC_UCW_EXP);
-	else
-		core_link->fec.settings.up_ucw_limit = core_link->config.fec_up_ucw_limit;
-
-	if (core_link->config.fec_up_ccw_limit < 0)
-		core_link->fec.settings.up_ccw_limit =
-			sl_core_data_link_fec_limit_calc(core_link, SL_CORE_LINK_FEC_CCW_MANT, SL_CORE_LINK_FEC_CCW_EXP);
-	else
-		core_link->fec.settings.up_ccw_limit = core_link->config.fec_up_ccw_limit;
+	core_link->fec.settings.up_ccw_limit      = core_link->config.fec_up_ccw_limit;
+	core_link->fec.settings.up_ucw_limit      = core_link->config.fec_up_ucw_limit;
 
 	return 0;
 }
@@ -685,42 +675,3 @@ void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-#define SL_CORE_LINK_FEC_LIMIT_25   25781250000ULL
-#define SL_CORE_LINK_FEC_LIMIT_50   53125000000ULL
-#define SL_CORE_LINK_FEC_LIMIT_100 106250000000ULL
-s32 sl_core_data_link_fec_limit_calc(struct sl_core_link *core_link, int mant, int exp)
-{
-	u64 limit;
-	int x;
-
-	switch (core_link->pcs.settings.pcs_mode) {
-	case SL_CORE_HW_PCS_MODE_BS_200G:
-		limit = SL_CORE_LINK_FEC_LIMIT_50 << 2;
-		break;
-	case SL_CORE_HW_PCS_MODE_BJ_100G:
-		limit = SL_CORE_LINK_FEC_LIMIT_25 << 2;
-		break;
-	case SL_CORE_HW_PCS_MODE_CD_100G:
-		limit = SL_CORE_LINK_FEC_LIMIT_50 << 1;
-		break;
-	case SL_CORE_HW_PCS_MODE_CD_50G:
-		limit = SL_CORE_LINK_FEC_LIMIT_50;
-		break;
-	case SL_CORE_HW_PCS_MODE_CK_400G:
-		limit = SL_CORE_LINK_FEC_LIMIT_100 << 2;
-		break;
-	case SL_CORE_HW_PCS_MODE_CK_200G:
-		limit = SL_CORE_LINK_FEC_LIMIT_100 << 1;
-		break;
-	case SL_CORE_HW_PCS_MODE_CK_100G:
-	default:
-		limit = SL_CORE_LINK_FEC_LIMIT_100;
-		break;
-	}
-
-	limit *= mant;
-	for (x = exp; x < 0; ++x)
-		limit /= 10;
-
-	return limit;
-}
