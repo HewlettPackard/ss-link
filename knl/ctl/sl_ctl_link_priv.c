@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 
@@ -476,6 +476,24 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 	return 0;
 }
 
+int sl_ctl_link_down_callback(void *tag)
+{
+	int                 rtn;
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = tag;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down callback");
+
+	rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+		SL_LGRP_NOTIF_LINK_DOWN, NULL, 0, 0);
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME,
+			"down callback ctl_lgrp_notif_enqueue failed [%d]", rtn);
+
+	return 0;
+}
+
 void sl_ctl_link_down_work(struct work_struct *work)
 {
 	int                  rtn;
@@ -489,7 +507,7 @@ void sl_ctl_link_down_work(struct work_struct *work)
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "link_down_work");
 
 	rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+		ctl_link->ctl_lgrp->num, ctl_link->num, NULL, ctl_link);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);

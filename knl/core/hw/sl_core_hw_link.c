@@ -74,12 +74,29 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 		return;
 	}
 
-	rtn = core_link->link.callbacks.up(core_link->link.tag, core_link->link.state,
+	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link->link.state,
 		(core_link->link.state == SL_CORE_LINK_STATE_UP) ? SL_LINK_DOWN_CAUSE_NONE : core_link->link.last_down_cause,
 		core_link->info_map, core_link->pcs.settings.speed,
 		core_link->fec.settings.mode, core_link->fec.settings.type);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
+}
+
+void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
+{
+	int rtn;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "down callback (callback = 0x%p)",
+		core_link->link.callbacks.down);
+
+	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "down callback canceled");
+		return;
+	}
+
+	rtn = core_link->link.callbacks.down(core_link->link.tags.down);
+	if (rtn != 0)
+		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
 }
 
 void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
@@ -93,7 +110,7 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		"up cmd (link = 0x%p, callback = 0x%p, flags = 0x%X)",
 		core_link, callback, core_link->config.flags);
 
-	core_link->link.tag          = tag;
+	core_link->link.tags.up      = tag;
 	core_link->link.callbacks.up = callback;
 	sl_core_link_is_canceled_clr(core_link);
 
@@ -611,9 +628,22 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_hw_link_up_callback(core_link);
 }
 
-void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link)
+void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link,
+	sl_core_link_down_callback_t callback, void *tag)
 {
-	sl_core_log_dbg(core_link, LOG_NAME, "up cancel cmd");
+	core_link->link.tags.down      = tag;
+	core_link->link.callbacks.down = callback;
+
+	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_UP_CANCEL);
+}
+
+void sl_core_hw_link_up_cancel_work(struct work_struct *work)
+{
+	struct sl_core_link *core_link;
+
+	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CANCEL]);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "up cancel work");
 
 	sl_core_link_is_canceled_set(core_link);
 
@@ -657,33 +687,48 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link)
 	sl_core_link_is_canceled_clr(core_link);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 	sl_core_hw_link_up_callback(core_link);
+
+	if (core_link->link.callbacks.down)
+		sl_core_hw_link_down_callback(core_link);
 }
 
-void sl_core_hw_link_down_cmd(struct sl_core_link *core_link)
+void sl_core_hw_link_down_cmd(struct sl_core_link *core_link,
+	sl_core_link_down_callback_t callback, void *tag)
 {
-	int                                rtn;
-	struct sl_core_link_fec_cw_cntrs   cw_cntrs;
-	struct sl_core_link_fec_lane_cntrs lane_cntrs;
-	struct sl_core_link_fec_tail_cntrs tail_cntrs;
+	core_link->link.tags.down      = tag;
+	core_link->link.callbacks.down = callback;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "down cmd");
+	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_DOWN);
+}
+
+void sl_core_hw_link_down_work(struct work_struct *work)
+{
+	int                                 rtn;
+	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
+	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
+	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	struct sl_core_link                *core_link;
+
+	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_DOWN]);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "down work");
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"down cmd - link high SER disable failed [%d]", rtn);
+			"down work link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"down cmd - link llr max starvation disable failed [%d]", rtn);
+			"down work link llr max starvation disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"down cmd - link llr starved disable failed [%d]", rtn);
+			"down work link llr starved disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
-			"down cmd - link fault disable failed [%d]", rtn);
+			"down work link fault disable failed [%d]", rtn);
 
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]);
@@ -692,7 +737,7 @@ void sl_core_hw_link_down_cmd(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn(core_link, LOG_NAME, "down work hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
@@ -704,27 +749,9 @@ void sl_core_hw_link_down_cmd(struct sl_core_link *core_link)
 
 	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_COMMAND);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-}
 
-void sl_core_hw_link_down_wait(struct sl_core_link *core_link)
-{
-	int  try_count;
-	char info_map_str[64];
-
-	sl_core_log_dbg(core_link, LOG_NAME, "down wait");
-
-	try_count = 0;
-	while (sl_core_data_link_state_get(core_link) != SL_CORE_LINK_STATE_DOWN) {
-		usleep_range(1000, 2000);
-		if (try_count++ > 500 * 1000) {
-			sl_core_info_map_str(core_link->info_map, info_map_str, sizeof(info_map_str));
-			sl_core_log_warn(core_link, LOG_NAME,
-				"down wait tries exceeded - failed to get to down (state = %u %s, info = %s)",
-				core_link->link.state, sl_core_link_state_str(core_link->link.state),
-				info_map_str);
-			return;
-		}
-	}
+	if (core_link->link.callbacks.down)
+		sl_core_hw_link_down_callback(core_link);
 }
 
 void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
@@ -942,7 +969,7 @@ out_down:
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
-	rtn = core_link->config.fault_callback(core_link->link.tag,
+	rtn = core_link->config.fault_callback(core_link->link.tags.up,
 		SL_CORE_LINK_STATE_DOWN, core_link->link.last_down_cause,
 		sl_core_data_link_info_map_get(core_link));
 	if (rtn != 0)

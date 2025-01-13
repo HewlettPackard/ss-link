@@ -115,6 +115,10 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_llr_starved_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]),
 		sl_core_hw_link_fault_intr_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]),
+		sl_core_hw_link_up_cancel_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_DOWN]),
+		sl_core_hw_link_down_work);
 
 	/* ----- an ----- */
 

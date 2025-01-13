@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/bitops.h>
@@ -218,7 +218,7 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u32 cause, u64 in
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"link callback (lgrp_num = %u, link_num = %u, state = %s, cause = %s, info_map = %s)\n",
+		"link up callback (lgrp_num = %u, link_num = %u, state = %s, cause = %s, info_map = %s)\n",
 		test_tag.lgrp_num, test_tag.link_num,
 		sl_core_link_state_str(state), sl_link_down_cause_str(cause), info_map_str);
 
@@ -229,6 +229,20 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u32 cause, u64 in
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].speed      = speed;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].fec_mode   = fec_mode;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].fec_type   = fec_type;
+
+	return 0;
+}
+static int sl_core_test_link_down_callback(void *tag)
+{
+	struct sl_core_test_tag_data test_tag;
+
+	test_tag = *(struct sl_core_test_tag_data *)tag;
+
+	pr_info(SL_CORE_TEST_NAME
+		"link down callback (lgrp_num = %u, link_num = %u)\n",
+		test_tag.lgrp_num, test_tag.link_num);
+
+// FIXME
 
 	return 0;
 }
@@ -414,7 +428,8 @@ static int sl_core_test12(struct sl_core_test_args test_args)
 
 static int sl_core_test13(struct sl_core_test_args test_args)
 {
-	return sl_core_link_down(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
+	return sl_core_link_down(test_args.ldev_num, test_args.lgrp_num, test_args.link_num,
+		sl_core_test_link_down_callback, test_args.tag);
 }
 
 static int sl_core_test14(struct sl_core_test_args test_args)

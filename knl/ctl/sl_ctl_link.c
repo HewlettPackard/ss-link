@@ -181,7 +181,7 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	ctl_link->is_canceled = true;
 	spin_unlock(&ctl_link->data_lock);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, NULL, ctl_link);
 	if (rtn)
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"del core_link_down failed [%d]", rtn);
@@ -562,15 +562,17 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	cancel_work_sync(&ctl_link->up_notif_work);
 	cancel_work_sync(&ctl_link->fault_notif_work);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
+	sl_ctl_link_up_clock_clear(ctl_link);
+	sl_ctl_link_up_attempt_clock_clear(ctl_link);
+
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num,
+		sl_ctl_link_down_callback, ctl_link);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);
 		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
+		return rtn;
 	}
-
-	sl_ctl_link_up_clock_clear(ctl_link);
-	sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
 	return 0;
 }
@@ -614,7 +616,7 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num);
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, NULL, ctl_link);
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTL_LINK_PRIV_H_
 #define _SL_CTL_LINK_PRIV_H_
@@ -23,6 +23,7 @@ int  sl_ctl_link_up_callback(void *tag, u32 state, u32 cause, u64 imap,
 			     u32 speed, u32 fec_mode, u32 fec_type);
 void sl_ctl_link_up_clock_clear(struct sl_ctl_link *ctl_link);
 void sl_ctl_link_up_attempt_clock_clear(struct sl_ctl_link *ctl_link);
+int  sl_ctl_link_down_callback(void *tag);
 void sl_ctl_link_down_work(struct work_struct *work);
 void sl_ctl_link_config_get(struct sl_ctl_link *ctl_link, struct sl_link_config *link_config);
 void sl_ctl_link_policy_get(struct sl_ctl_link *ctl_link, struct sl_link_policy *link_policy);

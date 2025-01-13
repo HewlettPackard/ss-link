@@ -89,6 +89,7 @@ enum sl_core_info_map_bits {
 
 typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
 					  u32 speed, u32 fec_mode, u32 fec_type);
+typedef int (*sl_core_link_down_callback_t)(void *tag);
 typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u32 cause, u64 info_map);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
@@ -141,9 +142,13 @@ struct sl_core_link {
 		u32                                   state;
 		u32                                   last_down_cause;
 		time64_t                              last_down_time;
-		void                                 *tag;
+		struct {
+			void                         *up;
+			void                         *down;
+		} tags;
 		struct {
 			sl_core_link_up_callback_t    up;
+			sl_core_link_down_callback_t  down;
 		} callbacks;
 		struct {
 			u32                           up;
@@ -273,7 +278,8 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag);
-int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
+int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
+		      sl_core_link_down_callback_t callback, void *tag);
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);

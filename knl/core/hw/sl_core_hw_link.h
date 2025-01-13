@@ -19,10 +19,13 @@ void sl_core_hw_link_up_check_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_settle_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_check_work(struct work_struct *work);
 void sl_core_hw_link_up_timeout_work(struct work_struct *work);
-void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link);
+void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link,
+	sl_core_link_down_callback_t callback, void *tag);
+void sl_core_hw_link_up_cancel_work(struct work_struct *work);
 
-void sl_core_hw_link_down_cmd(struct sl_core_link *link);
-void sl_core_hw_link_down_wait(struct sl_core_link *link);
+void sl_core_hw_link_down_cmd(struct sl_core_link *link,
+	sl_core_link_down_callback_t callback, void *tag);
+void sl_core_hw_link_down_work(struct work_struct *work);
 
 void sl_core_hw_link_high_ser_intr_work(struct work_struct *work);
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work);

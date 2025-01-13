@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -30,7 +30,7 @@ static void sl_core_an_up_callback(struct sl_core_link *core_link)
 		return;
 	}
 
-	rtn = core_link->link.callbacks.up(core_link->link.tag, core_link->link.state,
+	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link->link.state,
 		core_link->link.last_down_cause, core_link->info_map, core_link->pcs.settings.speed,
 		core_link->fec.settings.mode, core_link->fec.settings.type);
 	if (rtn != 0)

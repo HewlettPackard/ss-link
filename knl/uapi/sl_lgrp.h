@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _UAPI_SL_LGRP_H_
 #define _UAPI_SL_LGRP_H_
@@ -35,11 +35,13 @@
 #define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(16)  /* autoneg timeout                 */
 #define SL_LGRP_NOTIF_AN_ERROR          BIT(17)  /* automeg error                   */
 #define SL_LGRP_NOTIF_LLR_CANCELED      BIT(18)  /* LLR canceled                    */
+#define SL_LGRP_NOTIF_LINK_DOWN         BIT(19)  /* link down                       */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
 #define SL_LGRP_NOTIF_LINK     (SL_LGRP_NOTIF_LINK_UP         | \
 				SL_LGRP_NOTIF_LINK_UP_FAIL    | \
+				SL_LGRP_NOTIF_LINK_DOWN       | \
 				SL_LGRP_NOTIF_LINK_ASYNC_DOWN | \
 				SL_LGRP_NOTIF_LINK_ERROR      | \
 				SL_LGRP_NOTIF_LINK_UCW_WARN   | \

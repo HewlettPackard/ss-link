@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include "sl_kconfig.h"
@@ -69,7 +69,8 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 }
 
-int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
+int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
+		      sl_core_link_down_callback_t callback, void *tag)
 {
 	unsigned long        irq_flags;
 	u32                  link_state;
@@ -94,21 +95,20 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - already going down");
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_down_wait(core_link);
 		return 0;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - cancel up");
 		core_link->link.state = SL_CORE_LINK_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_up_cancel_cmd(core_link);
+		sl_core_hw_link_up_cancel_cmd(core_link, callback, tag);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_down_cmd(core_link);
+		sl_core_hw_link_down_cmd(core_link, callback, tag);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,

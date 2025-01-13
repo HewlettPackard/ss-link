@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -373,6 +373,8 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "an-error";
 	case SL_LGRP_NOTIF_LLR_CANCELED:
 		return "llr-canceled";
+	case SL_LGRP_NOTIF_LINK_DOWN:
+		return "link-down";
 	default:
 		return "unrecognized";
 	}
