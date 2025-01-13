@@ -418,7 +418,7 @@ static int sl_ctl_test7(struct sl_ctl_test_args test_args)
 	u64                  core_imap;
 	char                 core_imap_str[SL_LINK_INFO_STRLEN];
 
-	sl_ctl_link_state_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &state);
+	sl_ctl_link_state_get_cmd(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &state);
 	core_state = SL_CORE_LINK_STATE_INVALID;
 	core_imap  = 0;
 

@@ -26,7 +26,6 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_FAIL);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_NOTIFIER);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_WORK);
 
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN_CLIENT);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN);
@@ -36,7 +35,6 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET_FAIL);
 
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_ASYNC_UP_NOTIFIER);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_ASYNC_FAULT_NOTIFIER);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_ASYNC_DOWN);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RECOVERING);

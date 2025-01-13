@@ -4,6 +4,7 @@
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
 #include <linux/slab.h>
+#include <linux/completion.h>
 
 #include "sl_asic.h"
 #include "sl_sysfs.h"
@@ -20,10 +21,11 @@
 #include "sl_core_mac.h"
 #include "sl_core_llr.h"
 #include "sl_core_link_an.h"
-#include "sl_core_link_fec.h"
 #include "sl_test_common.h"
 
 #define LOG_NAME SL_CTL_LINK_LOG_NAME
+
+#define SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS 2000
 
 static struct sl_ctl_link *ctl_links[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(ctl_links_lock);
@@ -80,19 +82,6 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 	spin_lock_init(&ctl_link->config_lock);
 	spin_lock_init(&ctl_link->data_lock);
 	spin_lock_init(&ctl_link->up_count_lock);
-	mutex_init(&ctl_link->async_mtx);
-
-	INIT_WORK(&ctl_link->up_notif_work, sl_ctl_link_up_callback_work);
-	ctl_link->up_notif_state = SL_CORE_LINK_STATE_INVALID;
-	ctl_link->up_notif_imap  = 0ULL;
-	spin_lock_init(&ctl_link->up_notif_lock);
-
-	INIT_WORK(&ctl_link->fault_notif_work, sl_ctl_link_fault_callback_work);
-	ctl_link->fault_notif_state = SL_CORE_LINK_STATE_INVALID;
-	ctl_link->fault_notif_imap  = 0ULL;
-	spin_lock_init(&ctl_link->fault_notif_lock);
-
-	INIT_WORK(&ctl_link->down_work, sl_ctl_link_down_work);
 
 	rtn = sl_ctl_link_counters_init(ctl_link);
 	if (rtn) {
@@ -116,6 +105,8 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 	spin_lock_init(&ctl_link->fec_up_cache.lock);
 	spin_lock_init(&ctl_link->fec_down_cache.lock);
+
+	ctl_link->state = SL_LINK_STATE_DOWN;
 
 	rtn = sl_core_link_new(ldev_num, lgrp_num, link_num);
 	if (rtn) {
@@ -148,10 +139,31 @@ out:
 	return rtn;
 }
 
+int sl_ctl_link_down_complete_callback(void *tag)
+{
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = tag;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down complete callback");
+
+	cancel_work_sync(&ctl_link->ctl_lgrp->notif_work);
+	sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+
+	complete(&ctl_link->down_complete);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"link down complete callback (down_complete = 0x%p)", &ctl_link->down_complete);
+
+	return 0;
+}
+
 void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                 rtn;
 	struct sl_ctl_link *ctl_link;
+	u32                 link_state;
+	unsigned long       irq_flags;
+	unsigned long       timeleft;
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctl_link) {
@@ -170,29 +182,60 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctl_link_is_deleting_set(ctl_link);
 
+	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
+	link_state = ctl_link->state;
+	switch (link_state) {
+	case SL_LINK_STATE_STARTING:
+		ctl_link->is_canceled = true;
+		fallthrough;
+	case SL_LINK_STATE_UP:
+		ctl_link->state = SL_LINK_STATE_STOPPING;
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		goto down;
+	case SL_LINK_STATE_STOPPING:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - already stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		goto delete;
+	case SL_LINK_STATE_DOWN:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - already down");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		goto delete;
+	case SL_LINK_STATE_INVALID:
+	default:
+		sl_ctl_log_err(ctl_link, LOG_NAME, "del - invalid state (link_state = %u %s)",
+			link_state, sl_link_state_str(link_state));
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return;
+	}
+
+down:
+
 	sl_ctl_link_fec_mon_stop(ctl_link);
+	cancel_work_sync(&ctl_link->fec_mon_timer_work);
 
 	rtn = sl_core_link_an_lp_caps_stop(ldev_num, lgrp_num, link_num);
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME,
 			"del core_link_an_lp_caps_stop failed [%d]", rtn);
 
-	spin_lock(&ctl_link->data_lock);
-	ctl_link->is_canceled = true;
-	spin_unlock(&ctl_link->data_lock);
+	init_completion(&ctl_link->down_complete);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, NULL, ctl_link);
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_complete_callback, ctl_link);
 	if (rtn)
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"del core_link_down failed [%d]", rtn);
 
-	sl_core_link_del(ldev_num, lgrp_num, link_num);
+	timeleft = wait_for_completion_timeout(&ctl_link->down_complete,
+		msecs_to_jiffies(SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS));
+	if (timeleft == 0)
+		sl_ctl_log_err(ctl_link, LOG_NAME,
+			"completion_timeout (down_complete = 0x%p)", &ctl_link->down_complete);
 
-	cancel_work_sync(&ctl_link->up_notif_work);
-	cancel_work_sync(&ctl_link->fault_notif_work);
-	cancel_work_sync(&ctl_link->down_work);
-	cancel_work_sync(&ctl_link->ctl_lgrp->notif_work);
-	cancel_work_sync(&ctl_link->fec_mon_timer_work);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "completion (timeleft = %lu)", timeleft);
+
+delete:
+	sl_core_link_del(ldev_num, lgrp_num, link_num);
 
 	sl_ctl_link_counters_del(ctl_link);
 
@@ -219,22 +262,14 @@ struct sl_ctl_link *sl_ctl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return ctl_link;
 }
 
-int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			   struct sl_link_config *link_config)
+static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_link_config *link_config)
 {
 	struct sl_core_link_config  core_link_config;
+	u32                         tech_map;
 	unsigned long               irq_flags;
 	int                         rtn;
-	u32                         tech_map;
-	struct sl_ctl_link         *ctl_link;
 
-	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
-	if (!ctl_link) {
-		sl_ctl_log_err(NULL, LOG_NAME,
-			"config set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set cmd");
 
 	spin_lock(&ctl_link->ctl_lgrp->config_lock);
 	tech_map = ctl_link->ctl_lgrp->config.tech_map;
@@ -246,7 +281,6 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set");
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %u",   link_config->link_up_tries_max);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_settle_wait = %ums", link_config->fec_up_settle_wait_ms);
@@ -309,7 +343,8 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	/* flags */
 	core_link_config.flags = link_config->options;
 
-	rtn = sl_core_link_config_set(ldev_num, lgrp_num, link_num, &core_link_config);
+	rtn = sl_core_link_config_set(ctl_link->ctl_lgrp->ctl_ldev->num,
+		ctl_link->ctl_lgrp->num, ctl_link->num, &core_link_config);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_config_set failed [%d]", rtn);
@@ -324,6 +359,45 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "link up tries set to infinite");
 
 	return 0;
+}
+
+int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
+			   struct sl_link_config *link_config)
+{
+	int                 rtn;
+	struct sl_ctl_link *ctl_link;
+	u32                 link_state;
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"config set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	link_state = sl_ctl_link_state_get(ctl_link);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set (link_state = %u %s)",
+		link_state, sl_link_state_str(link_state));
+
+	switch (link_state) {
+	case SL_LINK_STATE_DOWN:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "config - set");
+		rtn = sl_ctl_link_config_set_cmd(ctl_link, link_config);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_config_set_cmd failed [%d]", rtn);
+			return rtn;
+		}
+		return 0;
+	case SL_LINK_STATE_STARTING:
+	case SL_LINK_STATE_INVALID:
+	case SL_LINK_STATE_STOPPING:
+	case SL_LINK_STATE_UP:
+	default:
+		sl_ctl_log_err(ctl_link, LOG_NAME, "config - invalid (link_state = %u %s)",
+			link_state, sl_link_state_str(link_state));
+		return -EBADRQC;
+	}
 }
 
 int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -498,11 +572,52 @@ int sl_ctl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return sl_core_link_an_lp_caps_stop(ldev_num, lgrp_num, link_num);
 }
 
+static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
+{
+	int           rtn;
+	unsigned long irq_flags;
+	u32           link_state;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up cmd");
+
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_START);
+	sl_ctl_link_up_count_zero(ctl_link);
+	sl_ctl_link_up_clock_start(ctl_link);
+	sl_ctl_link_up_attempt_clock_start(ctl_link);
+
+	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
+	ctl_link->is_canceled = false;
+	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+
+	rtn = sl_core_link_up(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
+		sl_ctl_link_up_callback, ctl_link);
+	if (rtn) {
+
+		if (!sl_ctl_link_state_stopping_set(ctl_link)) {
+			link_state = sl_ctl_link_state_get(ctl_link);
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+				"link_state_stopping_set invalid state (link_state = %u %s)",
+				link_state, sl_link_state_str(link_state));
+		}
+
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+			"core_link_up failed [%d]", rtn);
+
+		sl_ctl_link_up_clock_clear(ctl_link);
+		sl_ctl_link_up_attempt_clock_clear(ctl_link);
+
+		return rtn;
+	}
+
+	return 0;
+}
+
 int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                 rtn;
 	unsigned long       irq_flags;
 	struct sl_ctl_link *ctl_link;
+	u32                 link_state;
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctl_link) {
@@ -514,58 +629,48 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up");
 
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_START);
-	sl_ctl_link_up_count_zero(ctl_link);
-	sl_ctl_link_up_clock_start(ctl_link);
-	sl_ctl_link_up_attempt_clock_start(ctl_link);
-
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-	ctl_link->is_canceled = false;
-	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-	rtn = sl_core_link_up(ldev_num, lgrp_num, link_num,
-		sl_ctl_link_up_callback, ctl_link);
-	if (rtn) {
-		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
-			"core_link_up failed [%d]", rtn);
-		sl_ctl_link_up_clock_clear(ctl_link);
-		sl_ctl_link_up_attempt_clock_clear(ctl_link);
-		return rtn;
-	}
-
-	return 0;
-}
-
-int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
-{
-	int                 rtn;
-	unsigned long       irq_flags;
-	struct sl_ctl_link *ctl_link;
-
-	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
-	if (!ctl_link) {
-		sl_ctl_log_dbg(NULL, LOG_NAME,
-			"link down NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
+	link_state = ctl_link->state;
+	switch (link_state) {
+	case SL_LINK_STATE_DOWN:
+		ctl_link->state = SL_LINK_STATE_STARTING;
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - starting");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		rtn = sl_ctl_link_up_cmd(ctl_link);
+		if (rtn) {
+			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_up_cmd failed [%d]", rtn);
+			return rtn;
+		}
+		return 0;
+	case SL_LINK_STATE_STARTING:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already starting");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return 0;
+	case SL_LINK_STATE_UP:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already up");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return 0;
+	case SL_LINK_STATE_STOPPING:
+	case SL_LINK_STATE_INVALID:
+	default:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - invalid (link_state = %u %s)",
+			link_state, sl_link_state_str(link_state));
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		return -EBADRQC;
 	}
+}
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down");
+static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
+{
+	int                 rtn;
 
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down cmd");
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_CLIENT);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
-	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-	ctl_link->is_canceled = true;
-	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-
-	cancel_work_sync(&ctl_link->up_notif_work);
-	cancel_work_sync(&ctl_link->fault_notif_work);
-
-	sl_ctl_link_up_clock_clear(ctl_link);
-	sl_ctl_link_up_attempt_clock_clear(ctl_link);
-
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num,
+	rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
 		sl_ctl_link_down_callback, ctl_link);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
@@ -577,32 +682,75 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
+int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                 rtn;
 	unsigned long       irq_flags;
 	struct sl_ctl_link *ctl_link;
+	u32                 link_state;
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctl_link) {
-		sl_ctl_log_err(NULL, LOG_NAME,
-			"link reset NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+		sl_ctl_log_dbg(NULL, LOG_NAME,
+			"link down NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset");
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down");
+
+	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
+	link_state = ctl_link->state;
+	switch (link_state) {
+	case SL_LINK_STATE_STARTING:
+		ctl_link->is_canceled = true;
+		fallthrough;
+	case SL_LINK_STATE_UP:
+		ctl_link->state = SL_LINK_STATE_STOPPING;
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		rtn = sl_ctl_link_down_cmd(ctl_link);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_cmd failed [%d]", rtn);
+			return rtn;
+		}
+
+		return 0;
+	case SL_LINK_STATE_DOWN:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already down");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return 0;
+	case SL_LINK_STATE_STOPPING:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return 0;
+	case SL_LINK_STATE_INVALID:
+	default:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - invalid (link_state = %u %s)",
+			link_state, sl_link_state_str(link_state));
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return -EBADRQC;
+	}
+}
+
+static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
+{
+	int           rtn;
+	u8            ldev_num;
+	u8            lgrp_num;
+	u8            link_num;
+	unsigned long timeleft;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset cmd");
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_START);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
+	cancel_work_sync(&ctl_link->fec_mon_timer_work);
 
-	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-	ctl_link->is_canceled = true;
-	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-
-	cancel_work_sync(&ctl_link->up_notif_work);
-	cancel_work_sync(&ctl_link->fault_notif_work);
+	ldev_num = ctl_link->ctl_lgrp->ctl_ldev->num;
+	lgrp_num = ctl_link->ctl_lgrp->num;
+	link_num = ctl_link->num;
 
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, link_num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
 	if (rtn)
@@ -616,9 +764,19 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, NULL, ctl_link);
+	init_completion(&ctl_link->down_complete);
+
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_complete_callback, ctl_link);
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
+
+	timeleft = wait_for_completion_timeout(&ctl_link->down_complete,
+		msecs_to_jiffies(SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS));
+	if (timeleft == 0)
+		sl_ctl_log_err(ctl_link, LOG_NAME,
+			"completion_timeout (down_complete = 0x%p)", &ctl_link->down_complete);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "completion (timeleft = %lu)", timeleft);
 
 	sl_core_link_reset(ldev_num, lgrp_num, link_num);
 
@@ -628,6 +786,58 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
 	return 0;
+}
+
+int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	int                 rtn;
+	unsigned long       irq_flags;
+	struct sl_ctl_link *ctl_link;
+	u32                 link_state;
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"link reset NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset");
+
+	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
+	link_state = ctl_link->state;
+	switch (link_state) {
+	case SL_LINK_STATE_STARTING:
+		ctl_link->is_canceled = true;
+		fallthrough;
+	case SL_LINK_STATE_UP:
+		ctl_link->state = SL_LINK_STATE_STOPPING;
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		rtn = sl_ctl_link_reset_cmd(ctl_link);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_reset_cmd failed [%d]", rtn);
+			return rtn;
+		}
+
+		return 0;
+	case SL_LINK_STATE_DOWN:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - already down");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return 0;
+	case SL_LINK_STATE_STOPPING:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already stopping");
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+
+		return 0;
+	case SL_LINK_STATE_INVALID:
+	default:
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - invalid (link_state = %u %s)",
+			link_state, sl_link_state_str(link_state));
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		return -EBADRQC;
+	}
 }
 
 void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -674,7 +884,7 @@ void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_cou
 	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
 }
 
-int sl_ctl_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
+int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 {
 	u32                 link_state;
 	struct sl_ctl_link *ctl_link;
@@ -688,34 +898,9 @@ int sl_ctl_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 		return 0;
 	}
 
-	sl_core_link_state_get(ldev_num, lgrp_num, link_num, &link_state);
+	link_state = sl_ctl_link_state_get(ctl_link);
 
-	switch (link_state) {
-	case SL_CORE_LINK_STATE_UNCONFIGURED:
-	case SL_CORE_LINK_STATE_CONFIGURING:
-	case SL_CORE_LINK_STATE_CONFIGURED:
-	case SL_CORE_LINK_STATE_DOWN:
-		*state = SL_LINK_STATE_DOWN;
-		break;
-	case SL_CORE_LINK_STATE_AN:
-		*state = SL_LINK_STATE_AN;
-		break;
-	case SL_CORE_LINK_STATE_GOING_UP:
-		*state = SL_LINK_STATE_STARTING;
-		break;
-	case SL_CORE_LINK_STATE_CANCELING:
-	case SL_CORE_LINK_STATE_GOING_DOWN:
-	case SL_CORE_LINK_STATE_TIMEOUT:
-		*state = SL_LINK_STATE_STOPPING;
-		break;
-	case SL_CORE_LINK_STATE_UP:
-	case SL_CORE_LINK_STATE_RECOVERING:
-		*state = SL_LINK_STATE_UP;
-		break;
-	default:
-		*state = SL_LINK_STATE_INVALID;
-		break;
-	}
+	*state = link_state;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"state get (state = %u %s, link_state = %u %s)",

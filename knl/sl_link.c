@@ -309,7 +309,7 @@ int sl_link_state_get(struct sl_link *link, u32 *state)
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_state_get(link->ldev_num, link->lgrp_num, link->num, state);
+	return sl_ctl_link_state_get_cmd(link->ldev_num, link->lgrp_num, link->num, state);
 }
 EXPORT_SYMBOL(sl_link_state_get);
 

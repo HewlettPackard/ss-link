@@ -10,6 +10,7 @@
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_lgrp_notif.h"
 #include "sl_ctl_link.h"
+#include "sl_ctl_link_priv.h"
 #include "sl_ctl_link_counters.h"
 #include "sl_ctl_link_fec_priv.h"
 
@@ -284,8 +285,11 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			fec_info.ucw, fec_info.ccw);
 
 		ctl_link->down_cause = SL_LINK_DOWN_CAUSE_UCW;
-		if (!queue_work(ctl_link->ctl_lgrp->ctl_ldev->workq, &ctl_link->down_work))
-			sl_ctl_log_warn(ctl_link, LOG_NAME, "UCW down_work already scheduled");
+		rtn = sl_ctl_link_async_down(ctl_link);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
+			return rtn;
+		}
 
 		return -EIO;
 	}
@@ -296,8 +300,11 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			fec_info.ucw, fec_info.ccw);
 
 		ctl_link->down_cause = SL_LINK_DOWN_CAUSE_CCW;
-		if (!queue_work(ctl_link->ctl_lgrp->ctl_ldev->workq, &ctl_link->down_work))
-			sl_ctl_log_warn(ctl_link, LOG_NAME, "CCW down_work already scheduled");
+		rtn = sl_ctl_link_async_down(ctl_link);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
+			return rtn;
+		}
 
 		return -EIO;
 	}

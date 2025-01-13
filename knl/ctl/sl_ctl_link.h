@@ -35,29 +35,10 @@ struct sl_ctl_link {
 	struct sl_link_policy        policy;
 	spinlock_t                   config_lock;
 
-	struct mutex                 async_mtx;
-
 	spinlock_t                   data_lock;
 	bool                         is_canceled;
 	u32                          up_count;
 	spinlock_t                   up_count_lock;
-
-	struct work_struct           up_notif_work;
-	u32                          up_notif_state;
-	u32                          up_notif_cause;
-	u64                          up_notif_imap;
-	u32                          up_notif_speed;
-	u32                          up_notif_fec_mode;
-	u32                          up_notif_fec_type;
-	spinlock_t                   up_notif_lock;
-
-	struct work_struct           fault_notif_work;
-	u32                          fault_notif_state;
-	u32                          fault_notif_cause;
-	u64                          fault_notif_imap;
-	spinlock_t                   fault_notif_lock;
-
-	struct work_struct           down_work;
 	u32                          down_cause;
 
 	struct sl_ctl_link_counter  *counters;
@@ -103,7 +84,9 @@ struct sl_ctl_link {
 		struct kobject               up_config_kobj;
 	} fec;
 
-	bool is_deleting;
+	bool              is_deleting;
+	u32               state;
+	struct completion down_complete;
 };
 
 int		    sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent);
@@ -127,6 +110,6 @@ void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			       u32 *up_time, u32 *total_time);
 void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
 
-int sl_ctl_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);
+int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);
 
 #endif /* _SL_CTL_LINK_H_ */

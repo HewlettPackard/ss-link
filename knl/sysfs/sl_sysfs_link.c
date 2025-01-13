@@ -21,7 +21,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_ctl_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num, &state);
+	sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num, &state);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"state show (link = 0x%p, state = %u %s)", ctl_link, state, sl_link_state_str(state));
@@ -37,7 +37,7 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_ctl_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num, &state);
+	sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num, &state);
 	sl_core_link_speed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num, &speed);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,

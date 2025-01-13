@@ -28,6 +28,7 @@
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_reset.h"
+#include "sl_ctl_link_priv.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
@@ -838,6 +839,8 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 {
 	int                                 rtn;
+	unsigned long                       irq_flags;
+	u32                                 link_state;
 	u64                                 link_down;
 	u64                                 remote_fault;
 	u64                                 local_fault;
@@ -946,13 +949,30 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 out_down:
 
+	sl_ctl_link_state_set(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+		core_link->core_lgrp->num, core_link->num), SL_LINK_STATE_STOPPING);
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	link_state = core_link->link.state;
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_TIMEOUT:
+	case SL_CORE_LINK_STATE_CANCELING:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
+		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		sl_core_log_dbg(core_link, LOG_NAME, "fault intr work incorrect state (link_state = %s)",
+			sl_core_link_state_str(link_state));
+		return;
+	default:
+		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+	}
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
+
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"fault intr work link up disable failed [%d]", rtn);
-
-	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_GOING_DOWN);
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 
 	if (core_link->config.fault_intr_hdlr)
 		core_link->config.fault_intr_hdlr(core_link->core_lgrp->core_ldev->num,
