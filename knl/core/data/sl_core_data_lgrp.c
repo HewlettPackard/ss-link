@@ -85,7 +85,7 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 	core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_INIT;
 	rtn = sl_core_hw_serdes_start(core_lgrp, SL_CORE_HW_SERDES_CLOCKING_85);
 	if (rtn)
-		sl_core_log_warn(core_lgrp, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
+		sl_core_log_warn_trace(core_lgrp, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
 
 	return 0;
 }

@@ -70,7 +70,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 		sl_core_log_err(core_link, LOG_NAME, "up start no match");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up start link up end failed [%d]", rtn);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -125,7 +125,7 @@ static void sl_core_hw_an_up(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_an_base_page_send(core_link);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up an base page send failed [%d]", rtn);
 }
 
@@ -145,7 +145,7 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up work an page recv disable failed [%d]", rtn);
 
 	sl_core_hw_serdes_link_down(core_link);
@@ -156,7 +156,7 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 			"up work hw_serdes_link_up_an failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES);
@@ -207,7 +207,7 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 		sl_core_log_err(core_link, LOG_NAME, "up done work auto neg failure");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up done work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);

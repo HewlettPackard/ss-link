@@ -316,7 +316,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 				  SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"ctl_lgrp_notif_enqueue failed [%d]", rtn);
 	}
 
@@ -328,7 +328,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"ctl_lgrp_notif_enqueue failed [%d]", rtn);
 	}
 

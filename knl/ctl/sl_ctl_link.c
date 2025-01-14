@@ -216,7 +216,7 @@ down:
 
 	rtn = sl_core_link_an_lp_caps_stop(ldev_num, lgrp_num, link_num);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"del core_link_an_lp_caps_stop failed [%d]", rtn);
 
 	init_completion(&ctl_link->down_complete);
@@ -754,21 +754,21 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, link_num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_llr_stop failed [%d]", rtn);
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_llr_stop failed [%d]", rtn);
 
 	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, link_num);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_tx_stop failed [%d]", rtn);
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_mac_tx_stop failed [%d]", rtn);
 
 	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, link_num);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
 	init_completion(&ctl_link->down_complete);
 
 	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_complete_callback, ctl_link);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 
 	timeleft = wait_for_completion_timeout(&ctl_link->down_complete,
 		msecs_to_jiffies(SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS));

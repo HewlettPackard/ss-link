@@ -82,7 +82,7 @@ void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *link, u32 link_state,
 
 	rtn = sl_core_hw_intr_flgs_disable(link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn(link, LOG_NAME,
+		sl_core_log_warn_trace(link, LOG_NAME,
 			"lp caps get cmd - an page recv disable failed [%d]", rtn);
 
 	sl_core_work_link_queue(link, SL_CORE_WORK_LINK_AN_LP_CAPS_GET);
@@ -110,7 +110,7 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 			"lp caps get work hw_serdes_link_up_an failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"lp caps get work lp caps get end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, core_link->an.link_state);
@@ -127,7 +127,7 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 
 	rtn = sl_core_hw_an_base_page_send(core_link);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get work an base page send failed [%d]", rtn);
 }
 void sl_core_hw_an_lp_caps_stop_cmd(struct sl_core_link *link)
@@ -138,7 +138,7 @@ void sl_core_hw_an_lp_caps_stop_cmd(struct sl_core_link *link)
 
 	rtn = sl_core_hw_intr_flgs_disable(link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn(link, LOG_NAME,
+		sl_core_log_warn_trace(link, LOG_NAME,
 			"lp caps stop cmd - an page recv disable failed [%d]", rtn);
 
 	cancel_work_sync(&link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]);
@@ -165,7 +165,7 @@ void sl_core_hw_an_lp_caps_get_timeout_work(struct work_struct *work)
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get timeout work an page recv disable failed [%d]", rtn);
 
 	sl_core_hw_an_stop(core_link);
@@ -199,7 +199,7 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 
 	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 	if (rtn < 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get done work lp caps get end failed [%d]", rtn);
 
 	sl_core_hw_an_stop(core_link);

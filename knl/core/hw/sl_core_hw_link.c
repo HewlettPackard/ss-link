@@ -159,23 +159,23 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up start link up disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up start link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up start link llr max starvation disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up start link llr starved disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up start link fault disable failed [%d]", rtn);
 
 	/* clear faults here to see if faults happen during up */
@@ -214,7 +214,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 			"up after an data_link_settings failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up after an link up end failed [%d]", rtn);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -228,23 +228,23 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up after an link up disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up after an link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up after an link llr max starvation disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up after an link llr starved disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up after an link fault disable failed [%d]", rtn);
 
 	/* clear faults here to see if faults happen during up */
@@ -282,7 +282,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_log_err_trace(core_link, LOG_NAME, "downshift failed [%d]", rtn);
 			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 			if (rtn < 0)
-				sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 			sl_core_hw_serdes_link_down(core_link);
 			sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED);
 			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -296,7 +296,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_log_err_trace(core_link, LOG_NAME, "upshift failed [%d]", rtn);
 			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 			if (rtn < 0)
-				sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 			sl_core_hw_serdes_link_down(core_link);
 			sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED);
 			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -313,7 +313,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			"up work hw_serdes_link_up failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
+			sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
@@ -328,7 +328,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			"up work link up enable failed [%d]", rtn);
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
@@ -411,7 +411,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn) {
-		sl_core_log_warn(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
 		sl_ctl_link_fec_up_cache_clear(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num));
 	} else {
@@ -447,7 +447,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 		sl_core_log_warn(core_link, LOG_NAME, "up check work pcs is not ok");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up check work link up end failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
 		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN);
@@ -473,7 +473,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 
 	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	if (rtn < 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up check work link up end failed [%d]", rtn);
 
 	sl_core_hw_link_up_success(core_link);
@@ -500,7 +500,7 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_data_store(ctl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
@@ -531,7 +531,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_data_store(ctl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
@@ -540,7 +540,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	if (rtn < 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up fec check work link up end failed [%d]", rtn);
 
 	/* UCW has precedence over CCW */
@@ -716,21 +716,20 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work link high SER disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work link llr max starvation disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work link llr starved disable failed [%d]", rtn);
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work link fault disable failed [%d]", rtn);
-
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]);
@@ -738,7 +737,7 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "down work hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "down work hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
@@ -971,7 +970,7 @@ out_down:
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"fault intr work link up disable failed [%d]", rtn);
 
 	if (core_link->config.fault_intr_hdlr)
@@ -980,7 +979,7 @@ out_down:
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);

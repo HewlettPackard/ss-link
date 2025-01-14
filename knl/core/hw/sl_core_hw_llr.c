@@ -382,7 +382,7 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup cmd llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
@@ -421,7 +421,7 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 			"setup work llr_flgs_enable failed [%d]", rtn);
 		rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 		if (rtn < 0)
-			sl_core_log_warn(core_llr, LOG_NAME,
+			sl_core_log_warn_trace(core_llr, LOG_NAME,
 				"setup work timer_llr_end failed [%d]", rtn);
 		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
@@ -453,7 +453,7 @@ void sl_core_hw_llr_setup_reuse_timing_work(struct work_struct *work)
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup reuse timing work timer_llr_end failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
@@ -511,7 +511,7 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"loop time intr work timer_llr_end failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
@@ -569,7 +569,7 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup timeout work llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
@@ -591,12 +591,12 @@ void sl_core_hw_llr_setup_cancel_cmd(struct sl_core_llr *core_llr)
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup cancel cmd llr_flgs_disable failed [%d]", rtn);
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup cancel cmd timer_llr_end failed [%d]", rtn);
 
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
@@ -640,7 +640,7 @@ void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"start cmd llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_work_llr_queue(core_llr, SL_CORE_WORK_LLR_START);
@@ -667,7 +667,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 			"start work llr_flgs_enable failed [%d]", rtn);
 		rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 		if (rtn < 0)
-			sl_core_log_warn(core_llr, LOG_NAME,
+			sl_core_log_warn_trace(core_llr, LOG_NAME,
 				"start work timer_llr_end failed [%d]", rtn);
 		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
@@ -700,7 +700,7 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"start init complete intr work timer_llr_end failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
@@ -771,7 +771,7 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"start timeout work llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
@@ -795,12 +795,12 @@ void sl_core_hw_llr_start_cancel_cmd(struct sl_core_llr *core_llr)
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"start cancel cmd llr_flgs_disable failed [%d]", rtn);
 
 	rtn = sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 	if (rtn < 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"start cancel cmd timer_llr_end failed [%d]", rtn);
 
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START]));

@@ -179,9 +179,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 		rtn = sl_ctl_link_up_notif_send(ctl_link->ctl_lgrp, ctl_link, core_imap,
 			core_speed, core_fec_mode, core_fec_type);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"up callback ctl_link_up_notif_send failed [%d]", rtn);
-
 		return 0;
 
 	case SL_CORE_LINK_STATE_DOWN:
@@ -217,7 +216,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				core_cause, &link_data, core_imap);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
 
 			return 0;
@@ -243,12 +242,12 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 				ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work core_link_data_get failed [%d]", rtn);
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				SL_LINK_DOWN_CAUSE_UP_TRIES, &link_data, core_imap);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
 
 
@@ -278,12 +277,12 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 				ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work core_link_data_get failed [%d]", rtn);
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				SL_LINK_DOWN_CAUSE_CANCELED, &link_data, core_imap);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
 
 
@@ -317,7 +316,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 				SL_LGRP_NOTIF_LINK_ERROR, &error, sizeof(error), core_imap);
 			if (rtn)
-				sl_ctl_log_warn(ctl_link, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_lgrp_notif_enqueue failed [%d]", rtn);
 
 
@@ -346,7 +345,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 			SL_LGRP_NOTIF_LINK_ERROR, &error, sizeof(error), core_imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"up callback work ctl_lgrp_notif_enqueue failed [%d]", rtn);
 
 
@@ -406,12 +405,12 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 		rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 			ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback core_link_data_get failed [%d]", rtn);
 		rtn = sl_ctl_link_async_down_notif_send(ctl_link->ctl_lgrp, ctl_link,
 			core_cause, &link_data, core_imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback ctl_lgrp_notif_link_async_down_send failed [%d]", rtn);
 
 		return 0;
@@ -428,7 +427,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 			SL_LGRP_NOTIF_LINK_ERROR, &error, sizeof(error), core_imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback work ctl_lgrp_notif_enqueue failed [%d]", rtn);
 
 		return 0;
@@ -449,14 +448,14 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_AN_DATA,
 			caps, sizeof(struct sl_link_caps), 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"lp caps data ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		break;
 	case SL_CORE_LINK_LP_CAPS_TIMEOUT:
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 			SL_LGRP_NOTIF_AN_TIMEOUT, NULL, 0, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"lp caps timeout ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		break;
 	case SL_CORE_LINK_LP_CAPS_ERROR:
@@ -464,7 +463,7 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 			SL_LGRP_NOTIF_AN_ERROR, NULL, 0, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_link, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"lp caps error ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		break;
 	}
@@ -515,7 +514,7 @@ int sl_ctl_link_async_down_callback(void *tag)
 	rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"core_link_data_get failed [%d]", rtn);
 
 	rtn = sl_core_info_map_get(ctl_link->ctl_lgrp->ctl_ldev->num,
@@ -527,7 +526,7 @@ int sl_ctl_link_async_down_callback(void *tag)
 	rtn = sl_ctl_link_async_down_notif_send(ctl_link->ctl_lgrp, ctl_link,
 		ctl_link->down_cause, &link_data, info_map);
 	if (rtn)
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"ctl_link_async_down_notif_send failed [%d]", rtn);
 
 	return 0;

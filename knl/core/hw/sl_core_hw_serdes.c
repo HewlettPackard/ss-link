@@ -450,7 +450,7 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_serdes_link_down_settings(core_link);
 	if (rtn)
-		sl_core_log_warn(core_link, LOG_NAME, "hw_serdes_link_down_settings failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_serdes_link_down_settings failed [%d]", rtn);
 
 	sl_core_hw_serdes_lanes_down(core_link);
 

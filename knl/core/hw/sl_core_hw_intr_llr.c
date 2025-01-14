@@ -30,7 +30,7 @@ void sl_core_hw_intr_llr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, info->intr_num);
 	if (rtn != 0)
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"hdlr - %s - flgs disable failed [%d]",
 			info->log, rtn);
 

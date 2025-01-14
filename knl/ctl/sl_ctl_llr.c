@@ -107,25 +107,25 @@ static void sl_ctl_llr_setup_callback_work(struct work_struct *work)
 			rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_DATA,
 				&(ctl_llr->setup.data), sizeof(struct sl_llr_data), ctl_llr->setup.imap);
 			if (rtn)
-				sl_ctl_log_warn(ctl_llr, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 					"setup SETUP ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		}
 		rtn = sl_core_llr_start(ctl_llr->ctl_lgrp->ctl_ldev->num,
 			ctl_llr->ctl_lgrp->num, ctl_llr->num, sl_ctl_llr_start_callback, ctl_llr, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup SETUP core_llr_start failed [%d[", rtn);
 		return;
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 		rtn = sl_core_llr_stop(ctl_llr->ctl_lgrp->ctl_ldev->num,
 			ctl_llr->ctl_lgrp->num, ctl_llr->num, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup TIMEOUT core_llr_stop failed [%d[", rtn);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT,
 			NULL, 0, ctl_llr->setup.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup TIMEOUT ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	case SL_CORE_LLR_STATE_CONFIGURED:
@@ -133,7 +133,7 @@ static void sl_ctl_llr_setup_callback_work(struct work_struct *work)
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_CANCELED,
 			NULL, 0, ctl_llr->setup.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup CONFIGURED ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	default:
@@ -145,12 +145,12 @@ static void sl_ctl_llr_setup_callback_work(struct work_struct *work)
 		rtn = sl_core_llr_stop(ctl_llr->ctl_lgrp->ctl_ldev->num,
 			ctl_llr->ctl_lgrp->num, ctl_llr->num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup ERROR core_llr_stop failed [%d[", rtn);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_ERROR,
 			&error, sizeof(error), ctl_llr->setup.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup ERROR ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	}
@@ -173,19 +173,19 @@ static void sl_ctl_llr_start_callback_work(struct work_struct *work)
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_RUNNING,
 			NULL, 0, ctl_llr->start.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start RUNNING ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		rtn = sl_core_llr_stop(ctl_llr->ctl_lgrp->ctl_ldev->num,
 			ctl_llr->ctl_lgrp->num, ctl_llr->num, 0);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start TIMEOUT core_llr_stop failed [%d[", rtn);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_START_TIMEOUT,
 			NULL, 0, ctl_llr->start.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start TIMEOUT ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	case SL_CORE_LLR_STATE_START_FAIL:
@@ -193,14 +193,14 @@ static void sl_ctl_llr_start_callback_work(struct work_struct *work)
 			rtn = sl_core_llr_setup(ctl_llr->ctl_lgrp->ctl_ldev->num,
 				ctl_llr->ctl_lgrp->num, ctl_llr->num, sl_ctl_llr_setup_callback, ctl_llr, 0);
 			if (rtn)
-				sl_ctl_log_warn(ctl_llr, LOG_NAME,
+				sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 					"start FAIL core_llr_setup failed [%d[", rtn);
 			return;
 		}
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_START_TIMEOUT,
 			NULL, 0, ctl_llr->start.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start FAIL ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	case SL_CORE_LLR_STATE_CONFIGURED:
@@ -208,7 +208,7 @@ static void sl_ctl_llr_start_callback_work(struct work_struct *work)
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_CANCELED,
 			NULL, 0, ctl_llr->start.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start CONFIGURED ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	default:
@@ -219,12 +219,12 @@ static void sl_ctl_llr_start_callback_work(struct work_struct *work)
 		rtn = sl_core_llr_stop(ctl_llr->ctl_lgrp->ctl_ldev->num,
 			ctl_llr->ctl_lgrp->num, ctl_llr->num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start ERROR core_llr_stop failed [%d[", rtn);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num, SL_LGRP_NOTIF_LLR_ERROR,
 			&error, sizeof(error), ctl_llr->setup.imap);
 		if (rtn)
-			sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start ERROR ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		return;
 	}
@@ -311,7 +311,7 @@ void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num, 0);
 	if (rtn)
-		sl_ctl_log_warn(ctl_llr, LOG_NAME, "core_llr_stop failed [%d[", rtn);
+		sl_ctl_log_warn_trace(ctl_llr, LOG_NAME, "core_llr_stop failed [%d[", rtn);
 
 	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 

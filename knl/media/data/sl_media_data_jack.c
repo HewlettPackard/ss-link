@@ -192,7 +192,7 @@ void sl_media_data_jack_cable_present_send(struct sl_media_lgrp *media_lgrp)
 			SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_PRESENT,
 			&media_lgrp->cable_info->media_attr, sizeof(struct sl_media_attr), 0);
 		if (rtn)
-			sl_media_log_warn(media_lgrp, LOG_NAME,
+			sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 				"present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
 		return;
 	}
@@ -208,7 +208,7 @@ void sl_media_data_jack_cable_not_present_send(struct sl_media_lgrp *media_lgrp)
 	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
 		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NOT_PRESENT, NULL, 0, 0);
 	if (rtn)
-		sl_media_log_warn(media_lgrp, LOG_NAME,
+		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 			"not_present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
 }
 
@@ -221,6 +221,6 @@ void sl_media_data_jack_cable_error_send(struct sl_media_lgrp *media_lgrp, int e
 	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
 		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_ERROR, &error, sizeof(error), 0);
 	if (rtn)
-		sl_media_log_warn(media_lgrp, LOG_NAME,
+		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 			"error_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
 }
