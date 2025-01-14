@@ -14,7 +14,7 @@ echo ${LGRP_NUM} > ${DEBUGFS_DIR}/lgrp/num
 echo 0           > ${DEBUGFS_DIR}/link/num
 
 # bring the link down
-echo "down > ${DEBUGFS_CMD}"
+echo "down" > ${DEBUGFS_CMD}
 
 # set the params to something that won't work
 echo "1" > ${DEBUGFS_DIR}/serdes/pre1
@@ -26,7 +26,7 @@ echo "6" > ${DEBUGFS_DIR}/serdes/post2
 echo "serdes_params_set" > ${DEBUGFS_CMD}
 
 # bring the link up
-echo "up > ${DEBUGFS_CMD}"
+echo "up" > ${DEBUGFS_CMD}
 
 # link state -> expected to not be up
 "Link state = $(cat ${SYSFS_DIR}/0/link/state)"
@@ -35,7 +35,7 @@ echo "up > ${DEBUGFS_CMD}"
 echo "serdes_params_unset" > ${DEBUGFS_CMD}
 
 # bring the link up
-echo "up > ${DEBUGFS_CMD}"
+echo "up" > ${DEBUGFS_CMD}
 
 # link state -> expected to be up
 "Link state = $(cat ${SYSFS_DIR}/0/link/state)"

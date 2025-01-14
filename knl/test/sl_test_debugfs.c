@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/debugfs.h>
 
@@ -104,7 +104,7 @@ static ssize_t sl_test_cmd_write(struct file *f, const char __user *buf, size_t 
 	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, SL_LOG_BLOCK, SL_LOG_DEBUGFS_LOG_NAME,
-			"cmd_write simple_write_to_buffer [%ld]", len);
+			"cmd_write simple_write_to_buffer failed [%ld]", len);
 		return len;
 	}
 
