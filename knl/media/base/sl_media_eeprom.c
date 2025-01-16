@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/errno.h>
@@ -28,8 +28,9 @@ static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *form
 		}
 	}
 
-	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] >= 0x18) &&
-	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] <= 0x25)) {
+	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x18) ||
+	    ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] >= 0x1E) &&
+	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] <= 0x25))) {
 		if (((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x30) ||
 		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x40) ||
 		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x50)) {
