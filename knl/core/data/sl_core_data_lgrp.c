@@ -30,7 +30,7 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 	if (core_lgrp) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "exists (lgrp = 0x%p)", core_lgrp);
+		sl_core_log_err(core_lgrp, LOG_NAME, "new - exists (lgrp = 0x%p)", core_lgrp);
 		return -EBADRQC;
 	}
 
@@ -85,7 +85,7 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 	core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_INIT;
 	rtn = sl_core_hw_serdes_start(core_lgrp, SL_CORE_HW_SERDES_CLOCKING_85);
 	if (rtn)
-		sl_core_log_warn_trace(core_lgrp, LOG_NAME, "hw_serdes_start failed [%d]", rtn);
+		sl_core_log_warn_trace(core_lgrp, LOG_NAME, "new - hw_serdes_start failed [%d]", rtn);
 
 	return 0;
 }
@@ -112,7 +112,7 @@ void sl_core_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 	if (!core_lgrp) {
-		sl_core_log_dbg(NULL, LOG_NAME, "not found (lgrp_num = %u)", lgrp_num);
+		sl_core_log_dbg(NULL, LOG_NAME, "del - not found (lgrp_num = %u)", lgrp_num);
 		return;
 	}
 
@@ -120,7 +120,7 @@ void sl_core_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 	is_configuring = core_lgrp->is_configuring;
 	spin_unlock(&core_lgrp->data_lock);
 	if (is_configuring) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "lgrp is configuring");
+		sl_core_log_err(core_lgrp, LOG_NAME, "del - lgrp is configuring");
 		return;
 	}
 
@@ -156,7 +156,7 @@ int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "lgrp link config check");
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "link config check");
 
 	for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
 		core_link = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, link_num);
@@ -172,7 +172,8 @@ int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 			continue;
 		default:
 			sl_core_log_err(core_lgrp, LOG_NAME,
-				"not able to config (link_num = %u)", link_num);
+				"link config check wrong state (link_num = %u, state = %u %s)",
+				link_num, link_state, sl_core_link_state_str(link_state));
 			return -EBADRQC;
 		}
 	}
