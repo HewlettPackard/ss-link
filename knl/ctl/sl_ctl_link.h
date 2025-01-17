@@ -39,7 +39,6 @@ struct sl_ctl_link {
 	bool                         is_canceled;
 	u32                          up_count;
 	spinlock_t                   up_count_lock;
-	u32                          down_cause;
 
 	struct sl_ctl_link_counter  *counters;
 

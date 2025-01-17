@@ -70,7 +70,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 }
 
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag)
+		      sl_core_link_down_callback_t callback, void *tag, u32 down_cause)
 {
 	unsigned long        irq_flags;
 	u32                  link_state;
@@ -108,6 +108,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		sl_core_data_link_last_down_cause_set(core_link, down_cause);
 		sl_core_hw_link_down_cmd(core_link, callback, tag);
 		return 0;
 	default:

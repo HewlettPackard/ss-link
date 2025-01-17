@@ -747,7 +747,6 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_COMMAND);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	if (core_link->link.callbacks.down)

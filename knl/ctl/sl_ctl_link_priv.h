@@ -24,7 +24,7 @@ void sl_ctl_link_up_clock_clear(struct sl_ctl_link *ctl_link);
 void sl_ctl_link_up_attempt_clock_clear(struct sl_ctl_link *ctl_link);
 int  sl_ctl_link_down_callback(void *tag);
 int  sl_ctl_link_async_down_callback(void *tag);
-int  sl_ctl_link_async_down(struct sl_ctl_link *ctl_link);
+int  sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u32 down_cause);
 void sl_ctl_link_config_get(struct sl_ctl_link *ctl_link, struct sl_link_config *link_config);
 void sl_ctl_link_policy_get(struct sl_ctl_link *ctl_link, struct sl_link_policy *link_policy);
 

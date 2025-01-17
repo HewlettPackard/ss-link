@@ -497,12 +497,21 @@ int sl_ctl_link_down_callback(void *tag)
 
 int sl_ctl_link_async_down_callback(void *tag)
 {
-	int                 rtn;
-	u64                 info_map;
-	struct sl_link_data link_data;
-	struct sl_ctl_link *ctl_link;
+	int                  rtn;
+	u64                  info_map;
+	u32                  down_cause;
+	time64_t             down_time;
+	u8                   ldev_num;
+	u8                   lgrp_num;
+	u8                   link_num;
+	struct sl_link_data  link_data;
+	struct sl_ctl_link  *ctl_link;
 
 	ctl_link = tag;
+
+	ldev_num = ctl_link->ctl_lgrp->ctl_ldev->num;
+	lgrp_num = ctl_link->ctl_lgrp->num;
+	link_num = ctl_link->num;
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN);
 	sl_ctl_link_up_clock_clear(ctl_link);
@@ -511,20 +520,23 @@ int sl_ctl_link_async_down_callback(void *tag)
 	flush_work(&ctl_link->ctl_lgrp->notif_work);
 	sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
-	rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
+	rtn = sl_core_link_data_get(ldev_num, lgrp_num, link_num, &link_data);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"core_link_data_get failed [%d]", rtn);
 
-	rtn = sl_core_info_map_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &info_map);
+	rtn = sl_core_info_map_get(ldev_num, lgrp_num, link_num, &info_map);
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME,
 			"core_info_map_get failed [%d]", rtn);
 
+	rtn = sl_core_link_last_down_cause_get(ldev_num, lgrp_num, link_num,
+		&down_cause, &down_time);
+	if (rtn)
+		sl_ctl_log_warn(ctl_link, LOG_NAME, "last_down_cause_get failed [%d]", rtn);
+
 	rtn = sl_ctl_link_async_down_notif_send(ctl_link->ctl_lgrp, ctl_link,
-		ctl_link->down_cause, &link_data, info_map);
+		down_cause, &link_data, info_map);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"ctl_link_async_down_notif_send failed [%d]", rtn);
@@ -532,7 +544,7 @@ int sl_ctl_link_async_down_callback(void *tag)
 	return 0;
 }
 
-int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link)
+int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u32 down_cause)
 {
 	int                  rtn;
 	unsigned long        irq_flags;
@@ -551,8 +563,8 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link)
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down - stopping");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 
-		rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num,
-			ctl_link->ctl_lgrp->num, ctl_link->num, sl_ctl_link_async_down_callback, ctl_link);
+		rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
+			sl_ctl_link_async_down_callback, ctl_link, down_cause);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"core_link_down failed [%d]", rtn);

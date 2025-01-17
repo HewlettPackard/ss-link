@@ -284,8 +284,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			"UCW exceeded down limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 
-		ctl_link->down_cause = SL_LINK_DOWN_CAUSE_UCW;
-		rtn = sl_ctl_link_async_down(ctl_link);
+		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_UCW);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
 			return rtn;
@@ -299,8 +298,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			"CCW exceeded down limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 
-		ctl_link->down_cause = SL_LINK_DOWN_CAUSE_CCW;
-		rtn = sl_ctl_link_async_down(ctl_link);
+		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_CCW);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
 			return rtn;
