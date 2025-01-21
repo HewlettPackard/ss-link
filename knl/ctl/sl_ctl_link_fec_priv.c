@@ -14,6 +14,7 @@
 #include "sl_ctl_link_counters.h"
 #include "sl_ctl_link_fec_priv.h"
 
+#define SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES 1
 #define LOG_NAME SL_CTL_LINK_FEC_LOG_NAME
 
 void sl_ctl_link_fec_data_store(struct sl_ctl_link *ctl_link,
@@ -250,6 +251,16 @@ int sl_ctl_link_fec_down_cache_tail_cntrs_get(struct sl_ctl_link *ctl_link,
 	return 0;
 }
 
+static bool sl_ctl_link_fec_ucw_chance_limit_check(struct sl_ctl_link *ctl_link, s32 limit, struct sl_fec_info *info)
+{
+	ctl_link->fec_ucw_chance = SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(limit, info) ? ctl_link->fec_ucw_chance + 1 : 0;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec_ucw_chance_limit_check (limit = %d, UCW = %llu, ucw_chance = %u)",
+		limit, info->ucw, ctl_link->fec_ucw_chance);
+
+	return ctl_link->fec_ucw_chance > SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES;
+}
+
 int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 {
 	int                rtn;
@@ -279,11 +290,11 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		"data check info (UCW = %llu, CCW = %llu, GCW = %llu, period = %ums)",
 		fec_info.ucw, fec_info.ccw, fec_info.gcw, fec_info.period_ms);
 
-	if (SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(ucw_down_limit, &fec_info)) {
+	if (sl_ctl_link_fec_ucw_chance_limit_check(ctl_link, ucw_down_limit, &fec_info)) {
 		sl_ctl_log_err(ctl_link, LOG_NAME,
-			"UCW exceeded down limit (UCW = %llu, CCW = %llu)",
-			fec_info.ucw, fec_info.ccw);
-
+			"UCW exceeded down limit (UCW = %llu, CCW = %llu, ucw_chance = %u)",
+			fec_info.ucw, fec_info.ccw, ctl_link->fec_ucw_chance);
+		ctl_link->fec_ucw_chance = 0;
 		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_UCW);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);

@@ -57,6 +57,7 @@ struct sl_ctl_link {
 	struct work_struct           fec_mon_timer_work;
 	struct sl_ctl_link_fec_cache fec_up_cache;
 	struct sl_ctl_link_fec_cache fec_down_cache;
+	u8                           fec_ucw_chance;
 
 	struct sl_ctl_lgrp          *ctl_lgrp;
 
