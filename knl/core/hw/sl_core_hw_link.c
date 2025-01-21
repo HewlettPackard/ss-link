@@ -83,7 +83,7 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
 }
 
-void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
+static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 {
 	int rtn;
 

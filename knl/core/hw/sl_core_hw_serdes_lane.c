@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -220,6 +220,8 @@ int sl_core_hw_serdes_lane_osr_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_
 
 	*osr = (SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_OSR_MODE_GET(data64) & 0x3F);
 
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "osr get (port = %u, osr = %u)", port, *osr);
+
 	return 0;
 }
 
@@ -250,6 +252,9 @@ int sl_core_hw_serdes_lane_encoding_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 		*encoding = SL_CORE_HW_SERDES_ENCODING_NRZ;
 	}
 
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+		"encoding get (port = %u, encoding = %u)", port, *encoding);
+
 	return 0;
 out:
 	return rtn;
@@ -265,6 +270,9 @@ int sl_core_hw_serdes_lane_width_get(struct sl_core_lgrp *core_lgrp, u8 asic_lan
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
 
 	*width = ((SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_OSR_MODE_GET(data64) >> 7) & 0x3);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+		"width get (port = %u, width = %u)", port, *width);
 
 	return 0;
 }

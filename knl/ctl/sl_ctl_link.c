@@ -139,7 +139,7 @@ out:
 	return rtn;
 }
 
-int sl_ctl_link_down_complete_callback(void *tag)
+static int sl_ctl_link_down_complete_callback(void *tag)
 {
 	struct sl_ctl_link *ctl_link;
 
