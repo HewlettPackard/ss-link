@@ -118,29 +118,29 @@ $(SL_NAME)-y += \
 	test/sl_test_common.o
 
 $(SL_NAME)-y += \
-	sysfs/sl_sysfs_ldev.o                 \
-	sysfs/sl_sysfs_lgrp.o                 \
-	sysfs/sl_sysfs_lgrp_policy.o          \
-	sysfs/sl_sysfs_lgrp_config.o          \
-	sysfs/sl_sysfs_link.o                 \
-	sysfs/sl_sysfs_link_policy.o          \
-	sysfs/sl_sysfs_link_fec_mon_policy.o  \
-	sysfs/sl_sysfs_link_fec_up_config.o   \
-	sysfs/sl_sysfs_link_config.o          \
-	sysfs/sl_sysfs_link_caps.o            \
-	sysfs/sl_sysfs_link_fec.o             \
-	sysfs/sl_sysfs_link_fec_current.o     \
-	sysfs/sl_sysfs_link_fec_up.o          \
-	sysfs/sl_sysfs_link_fec_down.o        \
-	sysfs/sl_sysfs_serdes.o               \
-	sysfs/sl_sysfs_serdes_settings.o      \
-	sysfs/sl_sysfs_serdes_eye.o           \
-	sysfs/sl_sysfs_serdes_state.o         \
-	sysfs/sl_sysfs_llr.o                  \
-	sysfs/sl_sysfs_llr_config.o           \
-	sysfs/sl_sysfs_llr_policy.o           \
-	sysfs/sl_sysfs_llr_loop_time.o        \
-	sysfs/sl_sysfs_mac.o                  \
+	sysfs/sl_sysfs_ldev.o               \
+	sysfs/sl_sysfs_lgrp.o               \
+	sysfs/sl_sysfs_lgrp_policy.o        \
+	sysfs/sl_sysfs_lgrp_config.o        \
+	sysfs/sl_sysfs_link.o               \
+	sysfs/sl_sysfs_link_policy.o        \
+	sysfs/sl_sysfs_link_fec_mon_check.o \
+	sysfs/sl_sysfs_link_fec_up_check.o  \
+	sysfs/sl_sysfs_link_config.o        \
+	sysfs/sl_sysfs_link_caps.o          \
+	sysfs/sl_sysfs_link_fec.o           \
+	sysfs/sl_sysfs_link_fec_current.o   \
+	sysfs/sl_sysfs_link_fec_up.o        \
+	sysfs/sl_sysfs_link_fec_down.o      \
+	sysfs/sl_sysfs_serdes.o             \
+	sysfs/sl_sysfs_serdes_settings.o    \
+	sysfs/sl_sysfs_serdes_eye.o         \
+	sysfs/sl_sysfs_serdes_state.o       \
+	sysfs/sl_sysfs_llr.o                \
+	sysfs/sl_sysfs_llr_config.o         \
+	sysfs/sl_sysfs_llr_policy.o         \
+	sysfs/sl_sysfs_llr_loop_time.o      \
+	sysfs/sl_sysfs_mac.o                \
         sysfs/sl_sysfs_media.o
 
 ccflags-y := -I$(M)

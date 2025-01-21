@@ -12,8 +12,8 @@
 #include "sl_ctl_link_priv.h"
 #include "sl_core_link_fec.h"
 #include "sl_test_common.h"
-#include "sl_sysfs_link_fec_mon_policy.h"
-#include "sl_sysfs_link_fec_up_config.h"
+#include "sl_sysfs_link_fec_mon_check.h"
+#include "sl_sysfs_link_fec_up_check.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -275,22 +275,22 @@ int sl_sysfs_link_fec_current_create(struct sl_ctl_link *ctl_link)
 		goto out_current_tail;
 	}
 
-	rtn = sl_sysfs_link_fec_mon_policy_create(ctl_link);
+	rtn = sl_sysfs_link_fec_mon_check_create(ctl_link);
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec mon policy create failed [%d]", rtn);
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec mon check create failed [%d]", rtn);
 		goto out_current_tail;
 	}
 
-	rtn = sl_sysfs_link_fec_up_config_create(ctl_link);
+	rtn = sl_sysfs_link_fec_up_check_create(ctl_link);
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec up config create failed [%d]", rtn);
-		goto out_fec_mon_policy;
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "fec up check create failed [%d]", rtn);
+		goto out_fec_mon_check;
 	}
 
 	return 0;
 
-out_fec_mon_policy:
-	kobject_put(&ctl_link->fec.mon_policy_kobj);
+out_fec_mon_check:
+	kobject_put(&ctl_link->fec.mon_check_kobj);
 out_current_tail:
 	kobject_put(&ctl_link->fec.current_tail_kobj);
 out_current_fecl:
@@ -316,7 +316,7 @@ void sl_sysfs_link_fec_current_delete(struct sl_ctl_link *ctl_link)
 	for (x = 0; x < SL_MAX_LANES; ++x)
 		kobject_put(&ctl_link->fec.current_fecl_kobjs[x].kobj);
 	kobject_put(&ctl_link->fec.current_lane_kobj);
-	kobject_put(&ctl_link->fec.mon_policy_kobj);
-	kobject_put(&ctl_link->fec.up_config_kobj);
+	kobject_put(&ctl_link->fec.mon_check_kobj);
+	kobject_put(&ctl_link->fec.up_check_kobj);
 	kobject_put(&ctl_link->fec.current_kobj);
 }
