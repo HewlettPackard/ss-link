@@ -265,22 +265,11 @@ struct sl_ctl_link *sl_ctl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_link_config *link_config)
 {
-	struct sl_core_link_config  core_link_config;
-	u32                         tech_map;
-	unsigned long               irq_flags;
-	int                         rtn;
+	struct sl_core_link_config core_link_config;
+	unsigned long              irq_flags;
+	int                        rtn;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set cmd");
-
-	spin_lock(&ctl_link->ctl_lgrp->config_lock);
-	tech_map = ctl_link->ctl_lgrp->config.tech_map;
-	spin_unlock(&ctl_link->ctl_lgrp->config_lock);
-
-	if ((!tech_map || hweight_long(tech_map) > 1) &&
-		(link_config->fec_up_ucw_limit < 0 || link_config->fec_up_ccw_limit < 0)) {
-		sl_ctl_log_err(ctl_link, LOG_NAME, "fec_limit_calc unavailable (tech_map = %u)", tech_map);
-		return -EBADRQC;
-	}
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %u",   link_config->link_up_tries_max);
@@ -324,18 +313,8 @@ static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_li
 	/* fec config */
 	core_link_config.fec_up_settle_wait_ms = link_config->fec_up_settle_wait_ms;
 	core_link_config.fec_up_check_wait_ms  = link_config->fec_up_check_wait_ms;
-
-	if (link_config->fec_up_ucw_limit < 0)
-		core_link_config.fec_up_ucw_limit = sl_ctl_link_fec_limit_calc(ctl_link,
-			SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
-	else
-		core_link_config.fec_up_ucw_limit = link_config->fec_up_ucw_limit;
-
-	if (link_config->fec_up_ccw_limit < 0)
-		core_link_config.fec_up_ccw_limit = sl_ctl_link_fec_limit_calc(ctl_link,
-			SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
-	else
-		core_link_config.fec_up_ccw_limit = link_config->fec_up_ccw_limit;
+	core_link_config.fec_up_ucw_limit      = link_config->fec_up_ucw_limit;
+	core_link_config.fec_up_ccw_limit      = link_config->fec_up_ccw_limit;
 
 	/* maps */
 	core_link_config.hpe_map   = link_config->hpe_map;
@@ -407,7 +386,6 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	int                         rtn;
 	unsigned long               irq_flags;
 	u32                         link_state;
-	u32                         tech_map;
 	struct sl_ctl_link         *ctl_link;
 	struct sl_core_link_policy  core_link_policy;
 
@@ -416,18 +394,6 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_ctl_log_err(NULL, LOG_NAME,
 			"policy set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	spin_lock(&ctl_link->ctl_lgrp->config_lock);
-	tech_map = ctl_link->ctl_lgrp->config.tech_map;
-	spin_unlock(&ctl_link->ctl_lgrp->config_lock);
-
-	if ((!tech_map || hweight_long(tech_map) > 1) && (link_policy->fec_mon_ccw_down_limit < 0 ||
-		link_policy->fec_mon_ccw_warn_limit < 0 ||
-		link_policy->fec_mon_ucw_down_limit < 0 ||
-		link_policy->fec_mon_ucw_warn_limit < 0)) {
-		sl_ctl_log_err(ctl_link, LOG_NAME, "fec_limit_calc unavailable (tech_map = %u)", tech_map);
 		return -EBADRQC;
 	}
 
@@ -453,63 +419,6 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_warn_limit = %d", link_policy->fec_mon_ccw_warn_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_period         = %ums", link_policy->fec_mon_period_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  options                = 0x%X", link_policy->options);
-
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
-	if (link_policy->fec_mon_ccw_down_limit < 0) {
-		ctl_link->fec_data.info.monitor.ccw_down_limit =
-			sl_ctl_link_fec_limit_calc(ctl_link,
-				SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
-	} else {
-		ctl_link->fec_data.info.monitor.ccw_down_limit = link_policy->fec_mon_ccw_down_limit;
-	}
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"monitor policy (ccw_down_limit = %d)",
-		ctl_link->fec_data.info.monitor.ccw_down_limit);
-
-	if (link_policy->fec_mon_ccw_warn_limit < 0)
-		ctl_link->fec_data.info.monitor.ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_down_limit >> 1;
-	else
-		ctl_link->fec_data.info.monitor.ccw_warn_limit = link_policy->fec_mon_ccw_warn_limit;
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"monitor policy (ccw_warn_limit = %d)",
-		ctl_link->fec_data.info.monitor.ccw_warn_limit);
-
-	if (ctl_link->fec_data.info.monitor.ccw_down_limit &&
-		(ctl_link->fec_data.info.monitor.ccw_warn_limit > ctl_link->fec_data.info.monitor.ccw_down_limit))
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
-			"CCW warning limit set greater than down limit (%d > %d)",
-			ctl_link->fec_data.info.monitor.ccw_warn_limit, ctl_link->fec_data.info.monitor.ccw_down_limit);
-
-	if (link_policy->fec_mon_ucw_down_limit < 0) {
-		ctl_link->fec_data.info.monitor.ucw_down_limit =
-			sl_ctl_link_fec_limit_calc(ctl_link,
-				SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
-	} else {
-		ctl_link->fec_data.info.monitor.ucw_down_limit = link_policy->fec_mon_ucw_down_limit;
-	}
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"monitor policy (ucw_down_limit = %d)",
-		ctl_link->fec_data.info.monitor.ucw_down_limit);
-
-	if (link_policy->fec_mon_ucw_warn_limit < 0)
-		ctl_link->fec_data.info.monitor.ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_down_limit >> 1;
-	else
-		ctl_link->fec_data.info.monitor.ucw_warn_limit = link_policy->fec_mon_ucw_warn_limit;
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"monitor policy (ucw_warn_limit = %d)",
-		ctl_link->fec_data.info.monitor.ucw_warn_limit);
-
-	if (ctl_link->fec_data.info.monitor.ucw_down_limit &&
-		(ctl_link->fec_data.info.monitor.ucw_warn_limit > ctl_link->fec_data.info.monitor.ucw_down_limit))
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
-			"CCW warning limit set greater than down limit (%d > %d)",
-			ctl_link->fec_data.info.monitor.ucw_warn_limit, ctl_link->fec_data.info.monitor.ucw_down_limit);
-
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 
 	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
 	ctl_link->policy = *link_policy;

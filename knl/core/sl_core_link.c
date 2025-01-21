@@ -237,6 +237,19 @@ int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_cor
 	return 0;
 }
 
+int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_caps *link_caps)
+{
+	struct sl_core_link *core_link;
+
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "caps get");
+
+	*link_caps = core_link->core_lgrp->link_caps[core_link->num];
+
+	return 0;
+}
+
 bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link)
 {
 	bool          is_canceled;

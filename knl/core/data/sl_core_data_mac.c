@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -93,37 +93,39 @@ struct sl_core_mac *sl_core_data_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	return core_mac;
 }
 
-int sl_core_data_mac_settings(struct sl_core_mac *core_mac)
+int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 {
 	struct sl_lgrp_config *lgrp_config;
+	struct sl_link_caps   *link_caps;
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "settings");
+	sl_core_log_dbg(core_mac, LOG_NAME, "tx settings");
 
 	lgrp_config = &(core_mac->core_lgrp->config);
+	link_caps   = &(core_mac->core_lgrp->link_caps[core_mac->num]);
 
-	if (hweight_long(lgrp_config->tech_map) != 1) {
+	if (hweight_long(link_caps->tech_map) != 1) {
 		sl_core_log_err(core_mac, LOG_NAME,
-			"settings - tech map invalid (map = 0x%08X)",
-			lgrp_config->tech_map);
+			"tx settings - tech map invalid (map = 0x%08X)",
+			link_caps->tech_map);
 		return -EINVAL;
 	}
 
-	if (SL_LGRP_CONFIG_TECH_CK_400G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_400G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_400G;
-	if (SL_LGRP_CONFIG_TECH_CK_200G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_200G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_200G;
-	if (SL_LGRP_CONFIG_TECH_CK_100G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CK_100G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
-	if (SL_LGRP_CONFIG_TECH_BS_200G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BS_200G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_200G;
-	if (SL_LGRP_CONFIG_TECH_CD_100G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_100G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
-	if (SL_LGRP_CONFIG_TECH_CD_50G  & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_CD_50G  & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_50G;
-	if (SL_LGRP_CONFIG_TECH_BJ_100G & lgrp_config->tech_map)
+	if (SL_LGRP_CONFIG_TECH_BJ_100G & link_caps->tech_map)
 		core_mac->settings.tx_ifg_adj = SL_CORE_HW_IFG_ADJ_100G;
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "settings (ifg = %u)", core_mac->settings.tx_ifg_adj);
+	sl_core_log_dbg(core_mac, LOG_NAME, "tx settings (ifg = %u)", core_mac->settings.tx_ifg_adj);
 
 	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
 		core_mac->settings.tx_ifg_adj          = SL_CORE_HW_IFG_ADJ_NONE;
@@ -136,8 +138,6 @@ int sl_core_data_mac_settings(struct sl_core_mac *core_mac)
 		core_mac->settings.tx_cdt_init_val     = 72;
 		core_mac->settings.tx_pcs_credits      = 8;
 		core_mac->settings.tx_short_preamble   = 1;
-		core_mac->settings.rx_flit_packing_cnt = 1;
-		core_mac->settings.rx_short_preamble   = 1;
 		core_mac->settings.llr_if_credits      = 8;
 	} else {
 		core_mac->settings.tx_ifg_mode         = 1;
@@ -175,7 +175,24 @@ int sl_core_data_mac_settings(struct sl_core_mac *core_mac)
 			core_mac->settings.llr_if_credits     = 2;
 			break;
 		}
-		core_mac->settings.tx_short_preamble   = 0;
+		core_mac->settings.tx_short_preamble = 0;
+	}
+
+	return 0;
+}
+
+int sl_core_data_mac_rx_settings(struct sl_core_mac *core_mac)
+{
+	struct sl_lgrp_config *lgrp_config;
+
+	sl_core_log_dbg(core_mac, LOG_NAME, "rx settings");
+
+	lgrp_config = &(core_mac->core_lgrp->config);
+
+	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+		core_mac->settings.rx_flit_packing_cnt = 1;
+		core_mac->settings.rx_short_preamble   = 1;
+	} else {
 		core_mac->settings.rx_flit_packing_cnt = 1;
 		core_mac->settings.rx_short_preamble   = 0;
 	}

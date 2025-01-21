@@ -15,6 +15,7 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
+#include "sl_ctl_link.h"
 #include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_intr.h"
 #include "hw/sl_core_hw_link.h"
@@ -525,8 +526,20 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 
 	core_link->fec.settings.up_settle_wait_ms = core_link->config.fec_up_settle_wait_ms;
 	core_link->fec.settings.up_check_wait_ms  = core_link->config.fec_up_check_wait_ms;
-	core_link->fec.settings.up_ccw_limit      = core_link->config.fec_up_ccw_limit;
-	core_link->fec.settings.up_ucw_limit      = core_link->config.fec_up_ucw_limit;
+
+	if (core_link->config.fec_up_ucw_limit < 0)
+		core_link->fec.settings.up_ucw_limit =
+			sl_ctl_link_fec_limit_calc(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+			core_link->core_lgrp->num, core_link->num), SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
+	else
+		core_link->fec.settings.up_ucw_limit = core_link->config.fec_up_ucw_limit;
+
+	if (core_link->config.fec_up_ccw_limit < 0)
+		core_link->fec.settings.up_ccw_limit =
+			sl_ctl_link_fec_limit_calc(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+			core_link->core_lgrp->num, core_link->num), SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
+	else
+		core_link->fec.settings.up_ccw_limit = core_link->config.fec_up_ccw_limit;
 
 	return 0;
 }

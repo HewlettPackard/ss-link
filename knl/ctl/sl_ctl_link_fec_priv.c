@@ -13,6 +13,7 @@
 #include "sl_ctl_link_priv.h"
 #include "sl_ctl_link_counters.h"
 #include "sl_ctl_link_fec_priv.h"
+#include "sl_core_link.h"
 
 #define SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES 1
 #define LOG_NAME SL_CTL_LINK_FEC_LOG_NAME
@@ -95,6 +96,73 @@ void sl_ctl_link_fec_down_cache_store(struct sl_ctl_link *ctl_link,
 	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
 }
 
+static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
+{
+	unsigned long         irq_flags;
+	struct sl_link_policy link_policy;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "mon limits calc");
+
+	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+
+	link_policy = ctl_link->policy;
+
+	if (link_policy.fec_mon_ccw_down_limit < 0) {
+		ctl_link->fec_data.info.monitor.ccw_down_limit =
+			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
+	} else {
+		ctl_link->fec_data.info.monitor.ccw_down_limit = link_policy.fec_mon_ccw_down_limit;
+	}
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"mon limits calc (ccw_down_limit = %d)",
+		ctl_link->fec_data.info.monitor.ccw_down_limit);
+
+	if (link_policy.fec_mon_ccw_warn_limit < 0)
+		ctl_link->fec_data.info.monitor.ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_down_limit >> 1;
+	else
+		ctl_link->fec_data.info.monitor.ccw_warn_limit = link_policy.fec_mon_ccw_warn_limit;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"mon limits calc (ccw_warn_limit = %d)",
+		ctl_link->fec_data.info.monitor.ccw_warn_limit);
+
+	if (ctl_link->fec_data.info.monitor.ccw_down_limit &&
+		(ctl_link->fec_data.info.monitor.ccw_warn_limit > ctl_link->fec_data.info.monitor.ccw_down_limit))
+		sl_ctl_log_warn(ctl_link, LOG_NAME,
+			"CCW warning limit set greater than down limit (%d > %d)",
+			ctl_link->fec_data.info.monitor.ccw_warn_limit, ctl_link->fec_data.info.monitor.ccw_down_limit);
+
+	if (link_policy.fec_mon_ucw_down_limit < 0) {
+		ctl_link->fec_data.info.monitor.ucw_down_limit =
+			sl_ctl_link_fec_limit_calc(ctl_link,
+				SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
+	} else {
+		ctl_link->fec_data.info.monitor.ucw_down_limit = link_policy.fec_mon_ucw_down_limit;
+	}
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"mon limits calc (ucw_down_limit = %d)",
+		ctl_link->fec_data.info.monitor.ucw_down_limit);
+
+	if (link_policy.fec_mon_ucw_warn_limit < 0)
+		ctl_link->fec_data.info.monitor.ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_down_limit >> 1;
+	else
+		ctl_link->fec_data.info.monitor.ucw_warn_limit = link_policy.fec_mon_ucw_warn_limit;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"mon limits calc (ucw_warn_limit = %d)",
+		ctl_link->fec_data.info.monitor.ucw_warn_limit);
+
+	if (ctl_link->fec_data.info.monitor.ucw_down_limit &&
+		(ctl_link->fec_data.info.monitor.ucw_warn_limit > ctl_link->fec_data.info.monitor.ucw_down_limit))
+		sl_ctl_log_warn(ctl_link, LOG_NAME,
+			"CCW warning limit set greater than down limit (%d > %d)",
+			ctl_link->fec_data.info.monitor.ucw_warn_limit, ctl_link->fec_data.info.monitor.ucw_down_limit);
+
+	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+}
+
 void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link)
 {
 	u32           period;
@@ -109,6 +177,8 @@ void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link)
 		sl_ctl_link_fec_mon_stop(ctl_link);
 		return;
 	}
+
+	sl_ctl_link_fec_mon_limits_calc(ctl_link);
 
 	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
 	ctl_link->fec_mon_timer_stop = false;
@@ -455,29 +525,30 @@ void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 #define SL_CTL_LINK_FEC_LIMIT_100 106250000000ULL
 s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp)
 {
-	u64 limit;
-	int x;
-	u32 tech_map;
+	u64                 limit;
+	int                 x;
+	struct sl_link_caps link_caps;
 
-	spin_lock(&ctl_link->ctl_lgrp->config_lock);
-	tech_map = ctl_link->ctl_lgrp->config.tech_map;
-	spin_unlock(&ctl_link->ctl_lgrp->config_lock);
+	sl_core_link_caps_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+		ctl_link->ctl_lgrp->num, ctl_link->num, &link_caps);
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec limit calc (tech_map = %d, mant = %u, exp = %d)", tech_map, mant, exp);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"fec limit calc (tech_map = 0x%X, mant = %u, exp = %d)",
+		link_caps.tech_map, mant, exp);
 
-	if (tech_map & SL_LGRP_CONFIG_TECH_CK_400G)
+	if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_CK_400G)
 		limit = SL_CTL_LINK_FEC_LIMIT_100 << 2;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_CK_200G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_CK_200G)
 		limit = SL_CTL_LINK_FEC_LIMIT_100 << 1;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_BS_200G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_BS_200G)
 		limit = SL_CTL_LINK_FEC_LIMIT_50 << 2;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_CK_100G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_CK_100G)
 		limit = SL_CTL_LINK_FEC_LIMIT_100;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_BJ_100G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_BJ_100G)
 		limit = SL_CTL_LINK_FEC_LIMIT_25 << 2;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_CD_100G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_CD_100G)
 		limit = SL_CTL_LINK_FEC_LIMIT_50 << 1;
-	else if (tech_map & SL_LGRP_CONFIG_TECH_CD_50G)
+	else if (link_caps.tech_map & SL_LGRP_CONFIG_TECH_CD_50G)
 		limit = SL_CTL_LINK_FEC_LIMIT_50;
 	else
 		limit = SL_CTL_LINK_FEC_LIMIT_100;
@@ -489,7 +560,8 @@ s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp)
 	if (limit > INT_MAX)
 		return INT_MAX;
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec limit calc (limit = %llu)", limit);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"fec limit calc (limit = %llu)", limit);
 
 	return limit;
 }

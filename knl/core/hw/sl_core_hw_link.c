@@ -531,7 +531,8 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
-		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME,
+			"up fec check work hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctl_link_fec_data_store(ctl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
