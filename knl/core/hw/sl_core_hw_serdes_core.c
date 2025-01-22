@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -16,7 +16,7 @@
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
-static int sl_core_hw_serdes_core_sbus_reset(struct sl_core_lgrp *core_lgrp)
+int sl_core_hw_serdes_core_sbus_reset(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 	u32 data32;
@@ -80,22 +80,19 @@ out:
 	return rtn;
 }
 
-static int sl_core_hw_serdes_core_uc_reset_set(struct sl_core_lgrp *core_lgrp, u16 stack_size)
+static int sl_core_hw_serdes_core_uc_reset_set(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "uc reset set");
 
-	/* reset registers to default */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 0, 0, 0x0001);
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 1, 0, 0x0001);
-	/* stop CRC calc */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD217, 0, 0, 0x0001);
-	/* set the stack size */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, stack_size, 2, 0x7FFC);
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, 1, 15, 0x8000);
-	/* set the micro inactive */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD101, 0, 1, 0x0002);
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 0, 0, 0x0001); /* set micro reset */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 1, 0, 0x0001); /* clear micro reset */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD217, 0, 0, 0x0001); /* disble CRC checking */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, SL_HW_SERDES_FW_STACK_SIZE, 2, 0x7FFC); /* micro_core_stack_size */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, 1, 15, 0x8000); /* stack enable */
+	// FIXME: this is a RO bit
+	// FIXME: SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD101, 0, 1, 0x0002);
 
 	rtn = 0;
 out:
@@ -111,35 +108,29 @@ static int sl_core_hw_serdes_core_uc_reset_clr(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "uc reset clr");
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 1, 0, 0x0001);
-	/* master clock enable */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD200, 1, 0, 0x0001);
-	/* master clear reset */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD201, 1, 0, 0x0001);
-	/* cRAM enable */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD227, 1, 0, 0x0001);
-	/* init cRAM */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 2, 8, 0x0300);
-	/* wait init done */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD23E, 1, 0, 0x0001); /* clear micro reset */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD200, 1, 0, 0x0001); /* enable micro subsystem clock */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD201, 1, 0, 0x0001); /* clear micro subsystem reset */
+
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD227, 1, 0, 0x0001); /* enable access to code RAM */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 2, 8, 0x0300); /* enable init code RAM */
 	for (x = 0; x < SL_HW_SERDES_WAIT_CRAM_INIT_TRIES; ++x) {
 		usleep_range(1000, 2000);
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD203, 15, 15, &data16);
-		sl_core_log_dbg(core_lgrp, LOG_NAME, "D203 = 0x%X", data16);
+		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD203, 15, 15, &data16); /* check init done */
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "code RAM init D203 = 0x%X", data16);
 		if (data16 != 0)
 			break;
 	}
 	if (x >= SL_HW_SERDES_WAIT_CRAM_INIT_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "wait for cRAM timeout");
+		sl_core_log_err(core_lgrp, LOG_NAME, "code RAM init timeout");
 		rtn = -EIO;
 		goto out;
 	}
-	/* cRAM clear */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 0, 8, 0x0300);
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 0, 8, 0x0300); /* disable code RAM init */
+
 	for (x = 0; x < core_lgrp->serdes.hw_info.num_micros; ++x) {
-		/* clock enable */
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD240, 1, 0, 0x0001);
-		/* core enable */
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD241, 1, 0, 0x0001);
+		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD240, 1, 0, 0x0001); /* enable micro clock */
+		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD241, 1, 0, 0x0001); /* clear micro reset */
 	}
 
 	rtn = 0;
@@ -152,77 +143,62 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 	u16 data16;
-	u16 stack_size;
 	u8  x;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "proc reset");
 
-	/* read the stack size */
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, 1, 3, &stack_size);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "stack size (pmi) = 0x%X", stack_size);
-
-	/* set reset */
-	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp, stack_size);
+	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp);
 	if (rtn) {
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
 		goto out;
 	}
 
-	/* select common clock */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD19D, 1, 6, 0x0040);
-	/* set the broadcast port addr */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xFFDC, 0x1F, 0, 0x001F);
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD19D, 1, 6, 0x0040); /* select common clock */
 
-	/* reset dp lanes */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xFFDC, 0x1F, 0, 0x001F); /* broadcast port addr */
+
 	for (x = 0; x < core_lgrp->serdes.hw_info.num_lanes; ++x)
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, x, 0, 0xD0B1, 0, 0, 0x0001);
+		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, x, 0, 0xD0B1, 0, 0, 0x0001); /* disable lane */
 
 	usleep_range(10, 20);
 
-	/* reset plls */
 	for (x = 0; x < core_lgrp->serdes.hw_info.num_plls; ++x)
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, x, 0xD184, 0, 13, 0x2000);
+		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, x, 0xD184, 0, 13, 0x2000); /* PLL reset */
 
 	usleep_range(10, 20);
 
-	/* assert core reset */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD101, 0, 0, 0x0001);
-	/* deassert core reset */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD101, 1, 0, 0x0001);
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD101, 0, 0, 0x0001); /* set core reset */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD101, 1, 0, 0x0001); /* clear core reset */
 
-	/* isolate ctrl pins */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD182, 1, 1, 0x0002);
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 1, 0xD182, 1, 1, 0x0002);
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD182, 1, 1, 0x0002); /* clear pll0 reset */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 1, 0xD182, 1, 1, 0x0002); /* clear pll1 reset */
 
-	/* set reset */
-	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp, stack_size);
+	rtn = sl_core_hw_serdes_core_uc_reset_set(core_lgrp);
 	if (rtn) {
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_set failed [%d]", rtn);
 		goto out;
 	}
 
-	/* clear reset */
 	rtn = sl_core_hw_serdes_core_uc_reset_clr(core_lgrp);
 	if (rtn) {
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_reset_clr failed [%d]", rtn);
 		goto out;
 	}
 
-	/* uc wait active */
 	for (x = 0; x < SL_HW_SERDES_WAIT_UC_ACTIVE_TRIES; ++x) {
 		usleep_range(1000, 2000);
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD101, 14, 15, &data16);
-		sl_core_log_dbg(core_lgrp, LOG_NAME, "D101 = 0x%X", data16);
-		if (data16 != 1)
+		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD101, 14, 15, &data16); /* all micros init */
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "micro init D101 = 0x%X", data16);
+		if (data16 != 1) /* initialized */
 			continue;
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD21A, 0, 0, &data16);
-		sl_core_log_dbg(core_lgrp, LOG_NAME, "D21A = 0x%X", data16);
-		if ((data16 & 0x3) != 0x3)
+		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD21A, 0, 0, &data16); /* micro status */
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "micro status D21A = 0x%X", data16);
+		if ((data16 & 0x3) != 0x3) /* micro 0 and 1 active */
 			continue;
 		break;
 	}
 	if (x >= SL_HW_SERDES_WAIT_UC_ACTIVE_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "wait uc active timeout");
+		sl_core_log_err(core_lgrp, LOG_NAME, "uc active timeout");
 		rtn = -EIO;
 		goto out;
 	}
@@ -373,11 +349,6 @@ int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "core init");
 
-	rtn = sl_core_hw_serdes_core_sbus_reset(core_lgrp);
-	if (rtn != 0) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_sbus_reset failed [%d]", rtn);
-		goto out;
-	}
 	rtn = sl_core_hw_serdes_core_proc_reset(core_lgrp);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_proc_reset failed [%d]", rtn);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/umh.h>
@@ -18,19 +18,6 @@
 #include "hw/sl_core_hw_serdes.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
-
-#ifdef BUILDSYS_FRAMEWORK_CASSINI
-#define SL_HW_SERDES_FW_FILE          "sl_fw_quad_3.04.bin"
-#define SL_HW_SERDES_FW_IMAGE_CRC     0xA744 /* from the ucode file */
-#define SL_HW_SERDES_FW_STACK_SIZE    0x13E4 /* from the ucode file */
-#else
-#define SL_HW_SERDES_FW_FILE          "sl_fw_octet_3.08.bin"
-#define SL_HW_SERDES_FW_IMAGE_CRC     0x39AA /* from the ucode file */
-#define SL_HW_SERDES_FW_STACK_SIZE    0x13F2 /* from the ucode file */
-#endif /* BUILDSYS_FRAMEWORK_CASSINI */
-
-#define SL_HW_SERDES_INIT_CHECK_TRIES 50
-#define SL_HW_SERDES_UC_ACTIVE_TRIES  100
 
 #define FW_INFO_SIGNATURE                       0x464E49
 #define FW_INFO_NUM_MICROS_OFFSET               0x60
@@ -151,6 +138,7 @@ static int sl_core_hw_serdes_fw_image_get(struct sl_core_lgrp *core_lgrp)
 	return 0;
 }
 
+#define SL_HW_SERDES_INIT_CHECK_TRIES 50
 static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
@@ -239,7 +227,6 @@ out:
 static int sl_core_hw_serdes_fw_load_finish(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
-	int x;
 	u16 data16;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw image finish");
@@ -252,50 +239,9 @@ static int sl_core_hw_serdes_fw_load_finish(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0, 0x00000000); /* disable access to RAM */
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD23E, 1, 0, 0x0001); /* remove micro soft reset */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD201, 1, 0, 0x0001); /* remove micro reset */
-
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 1, 0, 0x0001); /* enable micro access to code RAM */
-
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 2, 8, 0x0300); /* init data RAM to 0s */
-	for (x = 0; x < SL_HW_SERDES_INIT_CHECK_TRIES; ++x) {
-		usleep_range(1000, 2000);
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD203, 15, 15, &data16); /* check init */
-		if (data16 != 0)
-			break;
-	}
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0, 8, 0x0300); /* stop data RAM init */
-	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw image finish - timeout");
-		rtn = -EIO;
-		goto out;
-	}
-
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD21A, 0, 12, &data16);
-	for (x = 0; x < data16; ++x) {
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, x, 0xD240, 1, 0, 0x0001); /* enable micro clock */
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, x, 0xD241, 1, 0, 0x0001); /* remove micro reset */
-	}
-
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD218, 0, 0, &data16); /* read CRC */
 	if (data16 != SL_HW_SERDES_FW_IMAGE_CRC) {
 		sl_core_log_err(core_lgrp, LOG_NAME, "fw image finish - crc check failure");
-		rtn = -EIO;
-		goto out;
-	}
-
-	for (x = 0; x < SL_HW_SERDES_UC_ACTIVE_TRIES; ++x) {
-		usleep_range(1000, 2000);
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD101, 14, 15, &data16); /* read micros initialized */
-		if (data16 != 1)
-			continue;
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD21A, 0, 0, &data16); /* read micros active */
-		if ((data16 & 0x3) != 0x3)
-			continue;
-		break;
-	}
-	if (x >= SL_HW_SERDES_UC_ACTIVE_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw image finish - wait uc active timeout");
 		rtn = -EIO;
 		goto out;
 	}
