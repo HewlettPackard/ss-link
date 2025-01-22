@@ -692,3 +692,52 @@ void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
+void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	core_link->link.is_ccw_warn_limit_crossed = value;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"ccw warn limit crossed set (value = %d %s)", core_link->link.is_ccw_warn_limit_crossed,
+		core_link->link.is_ccw_warn_limit_crossed ? "yes":"no");
+}
+
+void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *value)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	*value = core_link->link.is_ccw_warn_limit_crossed;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"ccw warn limit crossed get (value = %d %s)", *value, *value ? "yes":"no");
+}
+
+void sl_core_data_link_ccw_crit_limit_crossed_set(struct sl_core_link *core_link, bool value)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	core_link->link.is_ccw_crit_limit_crossed = value;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"ccw crit limit crossed set (value = %d %s)", core_link->link.is_ccw_crit_limit_crossed,
+		core_link->link.is_ccw_crit_limit_crossed ? "yes":"no");
+}
+
+void sl_core_data_link_ccw_crit_limit_crossed_get(struct sl_core_link *core_link, bool *value)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	*value = core_link->link.is_ccw_crit_limit_crossed;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"ccw crit limit crossed get (value = %d %s)", *value, *value ? "yes":"no");
+}

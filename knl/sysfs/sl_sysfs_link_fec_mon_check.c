@@ -61,26 +61,26 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
 }
 
-static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t ccw_crit_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link   *ctl_link;
-	s32                   ccw_down_limit;
+	s32                   ccw_crit_limit;
 	u32                   period;
 	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
 	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
-	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
+	ccw_crit_limit = ctl_link->fec_data.info.monitor.ccw_crit_limit;
 	period = ctl_link->policy.fec_mon_period_ms;
 	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_ccw_down_limit show (ccw_down_limit = %d, period = %ums)",
-		ccw_down_limit, period);
+		"fec_mon_ccw_crit_limit show (ccw_crit_limit = %d, period = %ums)",
+		ccw_crit_limit, period);
 
 	if (period)
-		return scnprintf(buf, PAGE_SIZE, "%d\n", ccw_down_limit);
+		return scnprintf(buf, PAGE_SIZE, "%d\n", ccw_crit_limit);
 	else
 		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
 }
@@ -129,14 +129,14 @@ static ssize_t period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 static struct kobj_attribute ucw_down_limit = __ATTR_RO(ucw_down_limit);
 static struct kobj_attribute ucw_warn_limit = __ATTR_RO(ucw_warn_limit);
-static struct kobj_attribute ccw_down_limit = __ATTR_RO(ccw_down_limit);
+static struct kobj_attribute ccw_crit_limit = __ATTR_RO(ccw_crit_limit);
 static struct kobj_attribute ccw_warn_limit = __ATTR_RO(ccw_warn_limit);
 static struct kobj_attribute period_ms      = __ATTR_RO(period_ms);
 
 static struct attribute *link_fec_mon_check_attrs[] = {
 	&ucw_down_limit.attr,
 	&ucw_warn_limit.attr,
-	&ccw_down_limit.attr,
+	&ccw_crit_limit.attr,
 	&ccw_warn_limit.attr,
 	&period_ms.attr,
 	NULL

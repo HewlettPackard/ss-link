@@ -124,6 +124,11 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		return;
 	}
 
+	sl_core_link_ccw_crit_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
+		core_link->num, false);
+	sl_core_link_ccw_warn_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
+		core_link->num, false);
+
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
 		sl_core_hw_an_up_start(core_link);
 	else

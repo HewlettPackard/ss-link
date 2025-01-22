@@ -59,7 +59,7 @@ static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_att
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_warn_limit);
 }
 
-static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t fec_mon_ccw_crit_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link   *ctl_link;
 	struct sl_link_policy policy;
@@ -69,9 +69,9 @@ static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_att
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", policy.fec_mon_ccw_down_limit);
+	    "fec_mon_ccw_crit_limit show (fec_mon_ccw_crit_limit = %d)", policy.fec_mon_ccw_crit_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_down_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_crit_limit);
 }
 
 static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -123,7 +123,7 @@ static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *
 static struct kobj_attribute fec_mon_period_ms      = __ATTR_RO(fec_mon_period_ms);
 static struct kobj_attribute fec_mon_ucw_down_limit = __ATTR_RO(fec_mon_ucw_down_limit);
 static struct kobj_attribute fec_mon_ucw_warn_limit = __ATTR_RO(fec_mon_ucw_warn_limit);
-static struct kobj_attribute fec_mon_ccw_down_limit = __ATTR_RO(fec_mon_ccw_down_limit);
+static struct kobj_attribute fec_mon_ccw_crit_limit = __ATTR_RO(fec_mon_ccw_crit_limit);
 static struct kobj_attribute fec_mon_ccw_warn_limit = __ATTR_RO(fec_mon_ccw_warn_limit);
 static struct kobj_attribute lock                   = __ATTR_RO(lock);
 static struct kobj_attribute keep_serdes_up         = __ATTR_RO(keep_serdes_up);
@@ -132,7 +132,7 @@ static struct attribute *link_policy_attrs[] = {
 	&fec_mon_period_ms.attr,
 	&fec_mon_ucw_down_limit.attr,
 	&fec_mon_ucw_warn_limit.attr,
-	&fec_mon_ccw_down_limit.attr,
+	&fec_mon_ccw_crit_limit.attr,
 	&fec_mon_ccw_warn_limit.attr,
 	&lock.attr,
 	&keep_serdes_up.attr,
