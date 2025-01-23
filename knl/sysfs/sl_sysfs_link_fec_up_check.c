@@ -28,7 +28,7 @@ static ssize_t ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	spin_lock_irqsave(&core_link->data_lock, irq_flags);
-	ucw_limit = core_link->config.fec_up_ucw_limit;
+	ucw_limit = core_link->fec.settings.up_ucw_limit;
 	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
@@ -49,7 +49,7 @@ static ssize_t ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	spin_lock_irqsave(&core_link->data_lock, irq_flags);
-	ccw_limit = core_link->config.fec_up_ccw_limit;
+	ccw_limit = core_link->fec.settings.up_ccw_limit;
 	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
