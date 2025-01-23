@@ -367,10 +367,10 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		ctl_link->fec_ucw_chance = 0;
 		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_UCW);
 		if (rtn) {
-			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+				"data check ctl_link_async_down failed [%d]", rtn);
 			return rtn;
 		}
-
 		return -EIO;
 	}
 
@@ -378,33 +378,33 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"CCW exceeded crit limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
-		sl_core_link_ccw_crit_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, true);
+		sl_core_link_ccw_crit_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, true);
 	}
 
 	if (SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(ucw_warn_limit, &fec_info)) {
-		sl_ctl_log_warn(ctl_link, LOG_NAME,
-			"UCW exceeded warning limit (UCW = %llu, CCW = %llu)",
+		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+			"UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
+		// FIXME: need a UCW warn crossed node?
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-				  SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0, 0);
+			SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0, 0);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-				"ctl_lgrp_notif_enqueue failed [%d]", rtn);
+				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
 	}
 
 	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-			"CCW exceeded warning limit (UCW = %llu, CCW = %llu)",
+			"CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
-		sl_core_link_ccw_warn_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, true);
-
+		sl_core_link_ccw_warn_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, true);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0, 0);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-				"ctl_lgrp_notif_enqueue failed [%d]", rtn);
+				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
 	}
 
 	return 0;

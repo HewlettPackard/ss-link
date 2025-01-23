@@ -550,10 +550,9 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up fec check work link up end failed [%d]", rtn);
 
-	/* UCW has precedence over CCW */
 	if (SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(core_link->fec.settings.up_ucw_limit, &fec_info)) {
-		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"UCW exceeded limit (UCW = %llu CCW = %llu)",
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"UCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 		sl_core_hw_link_off(core_link);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
@@ -566,15 +565,8 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(core_link->fec.settings.up_ccw_limit, &fec_info)) {
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"CCW exceeded limit (UCW = %llu CCW = %llu)",
+			"CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
-		sl_core_hw_link_off(core_link);
-		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
-		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_CCW_HIGH);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CCW);
-		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_hw_link_up_callback(core_link);
-		return;
 	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_OK);
