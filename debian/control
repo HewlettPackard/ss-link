@@ -1,7 +1,7 @@
 Source: sl-driver
 Priority: optional
 Maintainer: hpe.com
-Build-Depends: debhelper, dh-exec, linux-headers-5.10.35-amd64-slingshot [amd64], linux-headers-5.10.35-ls64-slingshot [arm64], rosetta2-headers-dev
+Build-Depends: debhelper, linux-headers-5.10.35-amd64-slingshot [amd64], linux-headers-5.10.35-ls64-slingshot [arm64], rosetta2-headers-dev
 Standards-Version: 4.1.2
 Section: kernel
 Homepage: https://github.hpe.com/hpe/hpc-sshot-sl-driver
