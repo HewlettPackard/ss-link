@@ -325,6 +325,13 @@ int sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking)
 	return 0;
 }
 
+void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+	u32 *up_fail_cause, time64_t *up_fail_time)
+{
+	sl_core_data_link_last_up_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+		up_fail_cause, up_fail_time);
+}
+
 int sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				     u32 *down_cause, time64_t *down_time)
 {

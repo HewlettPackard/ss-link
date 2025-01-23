@@ -67,12 +67,12 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 		(core_link->config.hpe_map & core_link->an.test_caps.hpe_map);
 
 	if (core_link->core_lgrp->link_caps[core_link->num].tech_map == 0) {
-		sl_core_log_err(core_link, LOG_NAME, "up start no match");
+		sl_core_log_err_trace(core_link, LOG_NAME, "up start no match");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up start link up end failed [%d]", rtn);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_callback(core_link);
 		return;
@@ -159,7 +159,7 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_callback(core_link);
 		return;
@@ -204,13 +204,13 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 			return;
 		}
 
-		sl_core_log_err(core_link, LOG_NAME, "up done work auto neg failure");
+		sl_core_log_err_trace(core_link, LOG_NAME, "up done work auto neg failure");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up done work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_callback(core_link);
 		return;

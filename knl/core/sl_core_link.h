@@ -140,6 +140,8 @@ struct sl_core_link {
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   state;
+		u32                                   last_up_fail_cause;
+		time64_t                              last_up_fail_time;
 		u32                                   last_down_cause;
 		time64_t                              last_down_time;
 		struct {
@@ -302,6 +304,8 @@ int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
 int  sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				      u32 *down_cause, time64_t *down_time);
+void  sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+				      u32 *up_fail_cause, time64_t *up_fail_time);
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
 void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);

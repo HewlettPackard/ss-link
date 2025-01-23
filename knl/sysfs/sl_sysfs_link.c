@@ -50,6 +50,61 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_config_tech_str(speed));
 }
 
+static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link *ctl_link;
+	u32                 state;
+	u32                 up_fail_cause;
+	time64_t            up_fail_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_core_link_last_up_fail_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &up_fail_cause, &up_fail_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"last up fail cause show (cause = %u %s)", up_fail_cause, sl_link_down_cause_str(up_fail_cause));
+
+	if (up_fail_cause == SL_LINK_DOWN_CAUSE_INVALID) {
+		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &state);
+		if (state == SL_LINK_STATE_UP)
+			return scnprintf(buf, PAGE_SIZE, "no fail\n");
+		else
+			return scnprintf(buf, PAGE_SIZE, "no record\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_down_cause_str(up_fail_cause));
+}
+
+static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link *ctl_link;
+	u32                 state;
+	u32                 up_fail_cause;
+	time64_t            up_fail_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_core_link_last_up_fail_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &up_fail_cause, &up_fail_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"last up fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+		up_fail_cause, sl_link_down_cause_str(up_fail_cause), up_fail_time, &up_fail_time, &up_fail_time);
+
+	if (up_fail_cause == SL_LINK_DOWN_CAUSE_INVALID) {
+		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &state);
+		if (state == SL_LINK_STATE_UP)
+			return scnprintf(buf, PAGE_SIZE, "no fail\n");
+		else
+			return scnprintf(buf, PAGE_SIZE, "no record\n");
+	}
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
+}
+
 static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link  *ctl_link;
@@ -174,6 +229,8 @@ static ssize_t total_time_ms_show(struct kobject *kobj, struct kobj_attribute *k
 
 static struct kobj_attribute link_state                  = __ATTR_RO(state);
 static struct kobj_attribute link_speed                  = __ATTR_RO(speed);
+static struct kobj_attribute link_last_up_fail_cause     = __ATTR_RO(last_up_fail_cause);
+static struct kobj_attribute link_last_up_fail_time      = __ATTR_RO(last_up_fail_time);
 static struct kobj_attribute link_last_down_cause        = __ATTR_RO(last_down_cause);
 static struct kobj_attribute link_last_down_time         = __ATTR_RO(last_down_time);
 static struct kobj_attribute link_ccw_warn_limit_crossed = __ATTR_RO(ccw_warn_limit_crossed);
@@ -185,6 +242,8 @@ static struct kobj_attribute link_total_time_ms          = __ATTR_RO(total_time_
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
 	&link_speed.attr,
+	&link_last_up_fail_cause.attr,
+	&link_last_up_fail_time.attr,
 	&link_last_down_cause.attr,
 	&link_last_down_time.attr,
 	&link_ccw_warn_limit_crossed.attr,
