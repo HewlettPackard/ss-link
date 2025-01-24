@@ -212,6 +212,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 
 			flush_work(&ctl_link->ctl_lgrp->notif_work);
 			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+			complete_all(&ctl_link->down_complete);
 
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				core_cause, &link_data, core_imap);
@@ -244,6 +245,9 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work core_link_data_get failed [%d]", rtn);
+
+			complete_all(&ctl_link->down_complete);
+
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				SL_LINK_DOWN_CAUSE_UP_TRIES, &link_data, core_imap);
 			if (rtn)
@@ -279,6 +283,9 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work core_link_data_get failed [%d]", rtn);
+
+			complete_all(&ctl_link->down_complete);
+
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				SL_LINK_DOWN_CAUSE_CANCELED, &link_data, core_imap);
 			if (rtn)
@@ -312,6 +319,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			flush_work(&ctl_link->ctl_lgrp->notif_work);
 			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
+			complete_all(&ctl_link->down_complete);
+
 			error = rtn;
 			rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 				SL_LGRP_NOTIF_LINK_ERROR, &error, sizeof(error), core_imap);
@@ -340,6 +349,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 
 		flush_work(&ctl_link->ctl_lgrp->notif_work);
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+
+		complete_all(&ctl_link->down_complete);
 
 		error = -EBADRQC;
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
@@ -407,6 +418,9 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback core_link_data_get failed [%d]", rtn);
+
+		complete_all(&ctl_link->down_complete);
+
 		rtn = sl_ctl_link_async_down_notif_send(ctl_link->ctl_lgrp, ctl_link,
 			core_cause, &link_data, core_imap);
 		if (rtn)
@@ -422,8 +436,9 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 		flush_work(&ctl_link->ctl_lgrp->notif_work);
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
-		error = -EBADRQC;
+		complete_all(&ctl_link->down_complete);
 
+		error = -EBADRQC;
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 			SL_LGRP_NOTIF_LINK_ERROR, &error, sizeof(error), core_imap);
 		if (rtn)
@@ -486,6 +501,8 @@ int sl_ctl_link_down_callback(void *tag)
 	flush_work(&ctl_link->ctl_lgrp->notif_work);
 	sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
+	complete_all(&ctl_link->down_complete);
+
 	rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
 		SL_LGRP_NOTIF_LINK_DOWN, NULL, 0, 0);
 	if (rtn)
@@ -534,6 +551,8 @@ int sl_ctl_link_async_down_callback(void *tag)
 		&down_cause, &down_time);
 	if (rtn)
 		sl_ctl_log_warn(ctl_link, LOG_NAME, "last_down_cause_get failed [%d]", rtn);
+
+	complete_all(&ctl_link->down_complete);
 
 	rtn = sl_ctl_link_async_down_notif_send(ctl_link->ctl_lgrp, ctl_link,
 		down_cause, &link_data, info_map);
