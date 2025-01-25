@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/random.h>
@@ -388,7 +388,7 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	}
 }
 
-void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_link_caps *link_caps)
+int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_link_caps *link_caps)
 {
 	int x;
 	u32 pause_map;
@@ -402,7 +402,11 @@ void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_lin
 		sl_core_log_dbg(core_link, LOG_NAME,
 		"rx pages decode pages (%d = 0x%016llX)", x, core_link->an.rx_pages[x]);
 
-	/* base page deconstruct */
+	/* base page */
+	if (!(core_link->an.rx_pages[0] & SL_CORE_HW_AN_BP_802_3)) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no base page");
+		return -EIO;
+	}
 	pause_map = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_PAUSE_SHIFT);
 	pause_map &= SL_LINK_CONFIG_PAUSE_MASK;
 	pause_map &= core_link->config.pause_map;
@@ -413,20 +417,20 @@ void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_lin
 	fec_map   &= SL_LGRP_CONFIG_FEC_MASK;
 	fec_map   &= core_link->core_lgrp->config.fec_map;
 
-	/* next pages deconstruct */
+	/* next pages */
 	hpe_map = 0;
 	for (x = 1; x < core_link->an.rx_count; ++x) {
 		if (!test_bit(SL_CORE_HW_AN_NP_BIT_MP, (unsigned long *)&(core_link->an.rx_pages[x]))) {
-			sl_core_log_warn(core_link, LOG_NAME, "rx pages decode no next page");
-			continue;
+			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no next page");
+			return -EIO;
 		}
 		if ((core_link->an.rx_pages[x] & SL_CORE_HW_AN_NP_MSG_MASK) != SL_CORE_HW_AN_NP_MSG_OUI_EXTD) {
-			sl_core_log_warn(core_link, LOG_NAME, "rx pages decode oui extended");
-			continue;
+			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no oui extended");
+			return -EIO;
 		}
 		if ((core_link->an.rx_pages[x] & SL_CORE_HW_AN_NP_OUI_HPE_MASK) != SL_CORE_HW_AN_NP_OUI_HPE) {
-			sl_core_log_warn(core_link, LOG_NAME, "rx pages decode no oui hpe");
-			continue;
+			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no oui hpe");
+			return -EIO;
 		}
 
 		x++; /* look ahead */
@@ -442,6 +446,9 @@ void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_lin
 			hpe_map &= SL_LINK_CONFIG_HPE_MASK;
 			hpe_map &= core_link->config.hpe_map;
 			break;
+		default:
+			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode invalid oui version");
+			return -EIO;
 		}
 	}
 
@@ -463,6 +470,8 @@ void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_lin
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"rx pages decode (pause = 0x%X, tech = 0x%X, fec = 0x%X, hpe = 0x%X)",
 		link_caps->pause_map, link_caps->tech_map, link_caps->fec_map, link_caps->hpe_map);
+
+	return 0;
 }
 
 static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)

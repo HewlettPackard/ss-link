@@ -198,25 +198,34 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 			x, core_link->an.rx_pages[x]);
 
 	if (core_link->an.state != SL_CORE_HW_AN_STATE_COMPLETE) {
-		/* keep going if asked to */
+		/* try again if asked to */
 		if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE)) {
 			sl_core_an_up_restart(core_link);
 			return;
 		}
-
-		sl_core_log_err_trace(core_link, LOG_NAME, "up done work auto neg failure");
-		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		if (rtn < 0)
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-				"up done work link up end failed [%d]", rtn);
-		sl_core_hw_serdes_link_down(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);
-		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_an_up_callback(core_link);
-		return;
+		sl_core_log_err_trace(core_link, LOG_NAME, "up done work auto neg not complete");
+		goto out_down;
 	}
 
-	sl_core_hw_an_rx_pages_decode(core_link, &(core_link->core_lgrp->link_caps[core_link->num]));
+	rtn = sl_core_hw_an_rx_pages_decode(core_link, &(core_link->core_lgrp->link_caps[core_link->num]));
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"up done work hw_an_rx_pages_decode failure [%d]", rtn);
+		goto out_down;
+	}
 
 	sl_core_hw_link_up_after_an_start(core_link);
+
+	return;
+
+out_down:
+
+	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+	if (rtn < 0)
+		sl_core_log_warn(core_link, LOG_NAME,
+			"up done work link up timer end failed [%d]", rtn);
+	sl_core_hw_serdes_link_down(core_link);
+	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);
+	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+	sl_core_an_up_callback(core_link);
 }

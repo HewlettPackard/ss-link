@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_AN_H_
 #define _SL_CORE_HW_AN_H_
@@ -76,7 +76,7 @@ void sl_core_hw_an_stop(struct sl_core_link *core_link);
 void sl_core_hw_an_init(struct sl_core_link *core_link);
 void sl_core_hw_an_config(struct sl_core_link *core_link);
 int  sl_core_hw_an_base_page_send(struct sl_core_link *core_link);
-void sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
+int  sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 				   struct sl_link_caps *link_caps);
 
 #endif /* _SL_CORE_HW_AN_H_ */

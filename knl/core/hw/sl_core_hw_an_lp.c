@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -204,12 +204,25 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_serdes_link_down(core_link);
-
-	if (core_link->an.state == SL_CORE_HW_AN_STATE_COMPLETE)
-		sl_core_hw_an_rx_pages_decode(core_link, &(core_link->an.lp_caps));
-
 	sl_core_data_link_state_set(core_link, core_link->an.link_state);
+
+	if (core_link->an.state != SL_CORE_HW_AN_STATE_COMPLETE) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"lp caps get done work not complete");
+		core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_ERROR;
+		goto out;
+	}
+
+	rtn = sl_core_hw_an_rx_pages_decode(core_link, &(core_link->an.lp_caps));
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"lp caps get done work hw_an_rx_pages_decode failure [%d]", rtn);
+		core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_ERROR;
+		goto out;
+	}
+
 	core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_DATA;
 
+out:
 	sl_core_an_lp_caps_get_callback(core_link);
 }
