@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -236,7 +236,7 @@ void usage(char *name)
 
 int main(int argc, char *argv[])
 {
-	char                    opt;
+	int                     opt;
 	int                     idx;
 	int                     cmd;
 	unsigned int            x;

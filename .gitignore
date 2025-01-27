@@ -25,11 +25,13 @@ staging_dir
 *.bin
 
 usr/linktool/linktool
+usr/linktool/linktool.Td
+
+usr/sl_test/sl_test_lgrp_notifs_read
 
 # nvim lsp generated files
 .cache/
 compile_commands.json
-
 .clangd
 
 *.debhelper

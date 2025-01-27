@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright 2023,2024 Hewlett Packard Enterprise Development LP
+# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
 
 include ../config.mak
 
@@ -113,7 +113,7 @@ fw_clean:
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin
 
-stage_install: modules fw
+stage_install: modules fw test_stage_install
 	$(INSTALL) -d $(STAGING_DIR)
 	$(INSTALL) -d $(KNL_MOD_DIR)
 	$(TOUCH) $(KNL_MOD_DIR)/modules.order
@@ -134,7 +134,7 @@ stage_install: modules fw
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin   $(STAGING_DIR)/lib/firmware
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin $(STAGING_DIR)/lib/firmware
 
-stage_uninstall:
+stage_uninstall: test_stage_uninstall
 	$(RM) $(patsubst %,$(STAGING_DIR)/usr/include/uapi/%,$(UAPI_HDRS))
 	$(RM) $(patsubst %,$(STAGING_DIR)/usr/include/linux/%,$(UNINSTALL_LINUX_HDRS))
 	$(RM) $(KNL_MOD_DIR)/sshot/$(MOD_NAME).ko

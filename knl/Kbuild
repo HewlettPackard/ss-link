@@ -10,6 +10,8 @@ $(SL_NAME)-$(SL_TEST) += \
 	sl_test.o                       \
 	ctl/test/sl_ctl_test.o          \
 	ctl/test/sl_ctl_test_fec.o      \
+	ctl/test/sl_ctl_test_ldev.o     \
+	ctl/test/sl_ctl_test_lgrp.o     \
 	core/test/sl_core_test.o        \
 	core/test/sl_core_test_an.o     \
 	core/hw/sl_core_hw_fec_test.o   \

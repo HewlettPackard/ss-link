@@ -23,8 +23,8 @@ Description: Slingshot Link drivers development support
  Provides header files for developing code that accesses a slingshot link
 
 Package: sl-driver-test
-Architecture: all
-Multi-Arch: foreign
+Architecture: any 
+Multi-Arch: same 
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Slingshot Link driver tests
  Provides tests for slingshot link driver

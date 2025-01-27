@@ -1,0 +1,59 @@
+[
+        {
+                "id": 0,
+                "file": "sl_run_init.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 1,
+                "file": "sl_run_link_policy_fec_on.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 2,
+                "file": "sl_run_link_policy_fec_calc.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 3,
+                "file": "sl_run_link_policy_fec_calc_ck400.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 4,
+                "file": "sl_run_link_ucw_down.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 5,
+                "file": "sl_run_link_up_notif_ext_lb.sh",
+                "parameters": {
+                        "arguments": "${SL_TEST_DIR}/systems/connections/oat.sh"
+                }
+        },
+        {
+                "id": 6,
+                "file": "sl_run_link_last_down_cause_match.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 7,
+                "file": "sl_run_link_last_down_cause_command.sh",
+                "parameters": {
+                        "arguments": ""
+                }
+        }
+
+]
