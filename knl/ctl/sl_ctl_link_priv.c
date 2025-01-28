@@ -549,6 +549,8 @@ int sl_ctl_link_async_down_callback(void *tag)
 
 	ctl_link = tag;
 
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async down callback");
+
 	ldev_num = ctl_link->ctl_lgrp->ctl_ldev->num;
 	lgrp_num = ctl_link->ctl_lgrp->num;
 	link_num = ctl_link->num;

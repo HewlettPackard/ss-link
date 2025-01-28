@@ -551,11 +551,11 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	case SL_LINK_STATE_STARTING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already starting");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		return 0;
+		return -EALREADY;
 	case SL_LINK_STATE_UP:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already up");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		return 0;
+		return -EALREADY;
 	case SL_LINK_STATE_STOPPING:
 	case SL_LINK_STATE_INVALID:
 	default:
@@ -624,11 +624,11 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	case SL_LINK_STATE_DOWN:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already down");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		return 0;
+		return -EALREADY;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already stopping");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		return 0;
+		return -EALREADY;
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - invalid (link_state = %u %s)",
