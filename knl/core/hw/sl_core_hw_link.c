@@ -862,7 +862,6 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		return;
 	}
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
 	switch (core_link->num) {
 	case 0:
 		link_down =
@@ -905,13 +904,6 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		break;
 	}
-#else /* Cassini */
-	// FIXME: need to add GETs to cassini headers
-	link_down = 0;
-	remote_fault = 0;
-	local_fault = 0x1;
-	llr_replay_max = 0;
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"fault intr work (llr_replay = 0x%llX, local = 0x%llX, remote = 0x%llX, down = 0x%llX)",
