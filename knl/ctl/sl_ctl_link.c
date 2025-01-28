@@ -486,7 +486,6 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 {
 	int           rtn;
 	unsigned long irq_flags;
-	u32           link_state;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up cmd");
 
@@ -505,18 +504,13 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 		sl_ctl_link_up_callback, ctl_link);
 	if (rtn) {
 
-		if (!sl_ctl_link_state_stopping_set(ctl_link)) {
-			link_state = sl_ctl_link_state_get(ctl_link);
-			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
-				"link_state_stopping_set invalid state (link_state = %u %s)",
-				link_state, sl_link_state_str(link_state));
-		}
-
-		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
-			"core_link_up failed [%d]", rtn);
+		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_STOPPING);
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME, "core_link_up failed [%d]", rtn);
 
 		sl_ctl_link_up_clock_clear(ctl_link);
 		sl_ctl_link_up_attempt_clock_clear(ctl_link);
+
+		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
 		return rtn;
 	}
@@ -550,7 +544,6 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		rtn = sl_ctl_link_up_cmd(ctl_link);
 		if (rtn) {
-			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_up_cmd failed [%d]", rtn);
 			return rtn;
 		}

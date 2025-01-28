@@ -130,6 +130,24 @@ void sl_ctl_link_up_count_zero(struct sl_ctl_link *ctl_link)
 	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
 }
 
+static bool sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link)
+{
+	unsigned long irq_flags;
+	u32           link_state;
+	bool          stopping_set;
+
+	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
+	link_state = ctl_link->state;
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "state_stopping_set (link_state = %u %s)",
+		link_state, sl_link_state_str(link_state));
+	stopping_set = (link_state == SL_LINK_STATE_STARTING) || (link_state == SL_LINK_STATE_UP);
+	if (stopping_set)
+		ctl_link->state = SL_LINK_STATE_STOPPING;
+	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+
+	return stopping_set;
+}
+
 static void sl_ctl_link_up_count_inc(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
@@ -626,39 +644,6 @@ void sl_ctl_link_policy_get(struct sl_ctl_link *ctl_link, struct sl_link_policy 
 	spin_lock(&ctl_link->config_lock);
 	*link_policy = ctl_link->policy;
 	spin_unlock(&ctl_link->config_lock);
-}
-
-//FIXME: This function isn't needed. See SSHOTPLAT-5353.
-int sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link)
-{
-	unsigned long irq_flags;
-	u32           link_state;
-
-	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-	link_state = ctl_link->state;
-	switch (link_state) {
-	case SL_LINK_STATE_STARTING:
-		ctl_link->is_canceled = true;
-		fallthrough;
-	case SL_LINK_STATE_UP:
-		ctl_link->state = SL_LINK_STATE_STOPPING;
-		link_state = ctl_link->state;
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "state_stopping_set - stopping (is_canceled = %d)",
-			ctl_link->is_canceled);
-		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		goto out;
-	case SL_LINK_STATE_STOPPING:
-	case SL_LINK_STATE_DOWN:
-	case SL_LINK_STATE_INVALID:
-	default:
-		sl_ctl_log_err(ctl_link, LOG_NAME, "state_stopping_set - invalid state (link_state = %u %s)",
-			link_state, sl_link_state_str(link_state));
-		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		goto out;
-	}
-
-out:
-	return link_state == SL_LINK_STATE_STOPPING;
 }
 
 void sl_ctl_link_state_set(struct sl_ctl_link *ctl_link, u32 link_state)

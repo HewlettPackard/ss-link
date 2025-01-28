@@ -30,6 +30,5 @@ void sl_ctl_link_policy_get(struct sl_ctl_link *ctl_link, struct sl_link_policy 
 
 void sl_ctl_link_state_set(struct sl_ctl_link *ctl_link, u32 link_state);
 u32  sl_ctl_link_state_get(struct sl_ctl_link *ctl_link);
-int  sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link);
 
 #endif /* _SL_CTL_LINK_PRIV_H_ */
