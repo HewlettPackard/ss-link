@@ -76,7 +76,8 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 	}
 
 	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link->link.state,
-		(core_link->link.state == SL_CORE_LINK_STATE_UP) ? SL_LINK_DOWN_CAUSE_NONE : core_link->link.last_down_cause,
+		(core_link->link.state == SL_CORE_LINK_STATE_UP) ?
+		SL_LINK_DOWN_CAUSE_NONE : core_link->link.last_up_fail_cause,
 		core_link->info_map, core_link->pcs.settings.speed,
 		core_link->fec.settings.mode, core_link->fec.settings.type);
 	if (rtn != 0)

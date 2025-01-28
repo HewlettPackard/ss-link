@@ -28,6 +28,9 @@ static int sl_ctl_link_up_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct sl_ctl
 	link_up_info.fec_mode = fec_mode;
 	link_up_info.fec_type = fec_type;
 
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up notif send (speed = %u %s, fec mode = %u %s, fec type = %u)",
+		speed, sl_lgrp_config_tech_str(speed), fec_mode, sl_lgrp_fec_mode_str(fec_mode), fec_type);
+
 	return sl_ctl_lgrp_notif_enqueue(ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_LINK_UP,
 		&link_up_info, sizeof(struct sl_lgrp_notif_info_link_up), info_map);
 }
@@ -39,6 +42,8 @@ static int sl_ctl_link_up_fail_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct s
 
 	link_up_fail_info.cause     = cause;
 	link_up_fail_info.link_data = *link_data;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause = %u, %s)", cause, sl_link_down_cause_str(cause));
 
 	return sl_ctl_lgrp_notif_enqueue(ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_LINK_UP_FAIL,
 		&link_up_fail_info, sizeof(struct sl_lgrp_notif_info_link_up_fail), info_map);
