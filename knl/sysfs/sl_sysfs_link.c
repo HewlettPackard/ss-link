@@ -56,16 +56,20 @@ static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribu
 	u32                 state;
 	u32                 up_fail_cause;
 	time64_t            up_fail_time;
+	char                cause_str[100];
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
 	sl_core_link_last_up_fail_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &up_fail_cause, &up_fail_time);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail cause show (cause = %u %s)", up_fail_cause, sl_link_down_cause_str(up_fail_cause));
+	sl_link_down_cause_str(up_fail_cause, cause_str, sizeof(cause_str));
 
-	if (up_fail_cause == SL_LINK_DOWN_CAUSE_INVALID) {
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"last up fail cause show (cause = 0x%X %s)",
+		up_fail_cause, cause_str);
+
+	if (up_fail_cause == SL_LINK_DOWN_CAUSE_NONE) {
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
@@ -74,7 +78,7 @@ static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribu
 			return scnprintf(buf, PAGE_SIZE, "no record\n");
 	}
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_down_cause_str(up_fail_cause));
+	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
 }
 
 static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -90,10 +94,10 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 		ctl_link->num, &up_fail_cause, &up_fail_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
-		up_fail_cause, sl_link_down_cause_str(up_fail_cause), up_fail_time, &up_fail_time, &up_fail_time);
+		"last up fail time show (cause = 0x%X, time = %lld %ptTt %ptTd)",
+		up_fail_cause, up_fail_time, &up_fail_time, &up_fail_time);
 
-	if (up_fail_cause == SL_LINK_DOWN_CAUSE_INVALID) {
+	if (up_fail_cause == SL_LINK_DOWN_CAUSE_NONE) {
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
@@ -107,22 +111,23 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 
 static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32                  down_cause;
-	time64_t             down_time;
+	struct sl_ctl_link *ctl_link;
+	u32                 down_cause;
+	time64_t            down_time;
+	char                cause_str[100];
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
 	sl_core_link_last_down_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &down_cause, &down_time);
 
+	sl_link_down_cause_str(down_cause, cause_str, sizeof(cause_str));
+
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last down cause show (cause = %u %s)", down_cause, sl_link_down_cause_str(down_cause));
+		"last down cause show (cause = 0x%X %s)",
+		down_cause, cause_str);
 
-	if (down_cause == SL_LINK_DOWN_CAUSE_INVALID)
-		return scnprintf(buf, PAGE_SIZE, "no record\n");
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_down_cause_str(down_cause));
+	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
 }
 
 static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -137,11 +142,11 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 		ctl_link->num, &down_cause, &down_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last down time show (cause = %u %s, time = %lld %ptTt %ptTd)",
-		down_cause, sl_link_down_cause_str(down_cause), down_time, &down_time, &down_time);
+		"last down time show (cause = 0x%X, time = %lld %ptTt %ptTd)",
+		down_cause, down_time, &down_time, &down_time);
 
-	if (down_cause == SL_LINK_DOWN_CAUSE_INVALID)
-		return scnprintf(buf, PAGE_SIZE, "no record\n");
+	if (down_cause == SL_LINK_DOWN_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &down_time, &down_time);
 }

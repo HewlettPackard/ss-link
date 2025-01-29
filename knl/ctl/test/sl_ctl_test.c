@@ -163,7 +163,7 @@ static const struct sl_ctl_test sl_ctl_tests[] = {
 
 // FIXME: need to correct sl_ctl_test namspace
 
-static enum sl_link_down_cause test_down_cause;
+static u32 test_down_cause;
 
 enum test_link_config {
 	TEST_LINK_CFG_FEC_UP_OFF,

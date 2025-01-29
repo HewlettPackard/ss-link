@@ -218,9 +218,8 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u32 cause, u64 in
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"link up callback (lgrp_num = %u, link_num = %u, state = %s, cause = %s, info_map = %s)\n",
-		test_tag.lgrp_num, test_tag.link_num,
-		sl_core_link_state_str(state), sl_link_down_cause_str(cause), info_map_str);
+		"link up callback (lgrp_num = %u, link_num = %u, state = %s, cause = 0x%X, info_map = %s)\n",
+		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause, info_map_str);
 
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].received   = true;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].info_map   = info_map;
@@ -256,9 +255,8 @@ static int sl_core_test_fault_callback(void *tag, u32 state, u32 cause, u64 info
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"fault callback (lgrp_num = %u, link_num = %u, state = %s, cause = %s, info_map = %s)\n",
-		test_tag.lgrp_num, test_tag.link_num,
-		sl_core_link_state_str(state), sl_link_down_cause_str(cause), info_map_str);
+		"fault callback (lgrp_num = %u, link_num = %u, state = %s, cause = 0x%X, info_map = %s)\n",
+		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause, info_map_str);
 
 	return 0;
 }

@@ -159,6 +159,7 @@ struct sl_core_link {
 		bool                                  is_timed_out;
 		bool                                  is_ccw_warn_limit_crossed;
 		bool                                  is_ccw_crit_limit_crossed;
+		bool                                  is_up_new;
 	} link;
 
 	struct {

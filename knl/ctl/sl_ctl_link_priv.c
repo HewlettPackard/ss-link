@@ -64,7 +64,7 @@ static int sl_ctl_link_up_fail_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct s
 	info.link_up_fail.cause     =  cause;
 	info.link_up_fail.link_data = *link_data;
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause = %u, %s)", cause, sl_link_down_cause_str(cause));
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause = 0x%X)", cause);
 
 	return sl_ctl_lgrp_notif_enqueue(ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_LINK_UP_FAIL,
 		&info, info_map);
@@ -197,8 +197,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"up callback (core_state = %s, core_cause = %s, core_imap = %s (0x%llx))",
-		sl_core_link_state_str(core_state), sl_link_down_cause_str(core_cause), core_imap_str, core_imap);
+		"up callback (core_state = %u %s, core_cause = 0x%X, core_imap = %s (0x%llx))",
+		core_state, sl_core_link_state_str(core_state), core_cause, core_imap_str, core_imap);
 
 	sl_ctl_link_up_attempt_clock_stop(ctl_link);
 
@@ -444,8 +444,8 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"fault callback work (core_state = %s, core_cause = %s, core_imap = %s (0x%llx))",
-		sl_core_link_state_str(core_state), sl_link_down_cause_str(core_cause), core_imap_str, core_imap);
+		"fault callback work (core_state = %u %s, core_cause = 0x%X, core_imap = %s (0x%llx))",
+		core_state, sl_core_link_state_str(core_state), core_cause, core_imap_str, core_imap);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 

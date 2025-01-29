@@ -75,6 +75,9 @@ void sl_core_info_map_str(u64 info_map, char *info_map_str,
 
 	BUILD_BUG_ON(ARRAY_SIZE(sl_core_info_map_str_list) == (SL_CORE_INFO_MAP_NUM_BITS - 1));
 
+	if (!info_map_str)
+		return;
+
 	if (info_map_str_size < SL_CORE_INFO_MAP_STR_MIN)
 		return;
 
@@ -91,7 +94,9 @@ void sl_core_info_map_str(u64 info_map, char *info_map_str,
 			break;
 		}
 		if (str_pos + rtn >= info_map_str_size) {
-			info_map_str[str_pos - 2] = 'X';
+			info_map_str[str_pos - 2] = '.';
+			info_map_str[str_pos - 3] = '.';
+			info_map_str[str_pos - 4] = '.';
 			break;
 		}
 		str_pos += rtn;

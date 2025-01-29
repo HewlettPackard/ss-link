@@ -110,6 +110,7 @@ static int sl_test_lgrp_notif_setup(void)
 static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf, size_t size)
 {
 	struct sl_lgrp_notif_msg *msg;
+	char                      cause_str[100];
 
 	msg = &event->msg;
 
@@ -124,6 +125,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			sl_lgrp_notif_str(msg->type),
 			msg->info.error);
 	case SL_LGRP_NOTIF_LINK_ASYNC_DOWN:
+		sl_link_down_cause_str(msg->info.link_async_down.cause, cause_str, sizeof(cause_str));
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
 			msg->ldev_num,
@@ -131,7 +133,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			sl_link_down_cause_str(msg->info.link_async_down.cause));
+			cause_str);
 	case SL_LGRP_NOTIF_LINK_UP:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
@@ -142,6 +144,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			sl_lgrp_notif_str(msg->type),
 			sl_lgrp_config_tech_str(msg->info.link_up.mode));
 	case SL_LGRP_NOTIF_LINK_UP_FAIL:
+		sl_link_down_cause_str(msg->info.link_up_fail.cause, cause_str, sizeof(cause_str));
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
 			msg->ldev_num,
@@ -149,7 +152,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			sl_link_down_cause_str(msg->info.link_up_fail.cause));
+			cause_str);
 	case SL_LGRP_NOTIF_LINK_DOWN:
 	default:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s none\n",

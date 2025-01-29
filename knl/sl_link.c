@@ -368,52 +368,103 @@ const char *sl_link_policy_opt_str(u32 option)
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
 
-const char *sl_link_down_cause_str(u32 cause)
+void sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_size)
 {
-	switch (cause) {
-	case SL_LINK_DOWN_CAUSE_INVALID:
-		return "invalid";
-	case SL_LINK_DOWN_CAUSE_NONE:
-		return "none";
-	case SL_LINK_DOWN_CAUSE_BAD_EYE:
-		return "bad-eye";
-	case SL_LINK_DOWN_CAUSE_UCW:
-		return "ucw";
-	case SL_LINK_DOWN_CAUSE_CCW:
-		return "ccw";
-	case SL_LINK_DOWN_CAUSE_ALIGN:
-		return "alignment";
-	case SL_LINK_DOWN_CAUSE_LF:
-		return "lcl-fault";
-	case SL_LINK_DOWN_CAUSE_RF:
-		return "rmt-fault";
-	case SL_LINK_DOWN_CAUSE_SERDES:
-		return "serdes";
-	case SL_LINK_DOWN_CAUSE_DOWN:
-		return "down";
-	case SL_LINK_DOWN_CAUSE_UP_TRIES:
-		return "up-tries";
-	case SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH:
-		return "autoneg-nomatch";
-	case SL_LINK_DOWN_CAUSE_AUTONEG_FAIL:
-		return "autoneg-fail";
-	case SL_LINK_DOWN_CAUSE_CONFIG:
-		return "config";
-	case SL_LINK_DOWN_CAUSE_INTR_ENABLE:
-		return "intr-enable";
-	case SL_LINK_DOWN_CAUSE_TIMEOUT:
-		return "timeout";
-	case SL_LINK_DOWN_CAUSE_CANCELED:
-		return "canceled";
-	case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
-		return "unsupported-cable";
-	case SL_LINK_DOWN_CAUSE_COMMAND:
-		return "command";
-	case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
-		return "llr-replay-at-max";
-	default:
-		return "unrecognized";
+	int rtn;
+	int str_pos;
+	int which;
+
+	if (!cause_str)
+		return;
+
+	if (cause_str_size < 32)
+		return;
+
+	if (cause == SL_LINK_DOWN_CAUSE_NONE) {
+		str_pos = snprintf(cause_str, cause_str_size, "none ");
+		goto out;
 	}
+
+	str_pos = 0;
+
+	for_each_set_bit(which, (unsigned long *)&cause, 32) {
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "bit = %d", which);
+
+		switch (BIT(which)) {
+		case SL_LINK_DOWN_CAUSE_BAD_EYE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "bad-eye ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UCW:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ucw ");
+			break;
+		case SL_LINK_DOWN_CAUSE_CCW:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
+			break;
+		case SL_LINK_DOWN_CAUSE_ALIGN:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "alignment ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LF:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
+			break;
+		case SL_LINK_DOWN_CAUSE_RF:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes ");
+			break;
+		case SL_LINK_DOWN_CAUSE_DOWN:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UP_TRIES:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-tries ");
+			break;
+		case SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-nomatch ");
+			break;
+		case SL_LINK_DOWN_CAUSE_AUTONEG_FAIL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-fail ");
+			break;
+		case SL_LINK_DOWN_CAUSE_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_TIMEOUT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "timeout ");
+			break;
+		case SL_LINK_DOWN_CAUSE_CANCELED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "canceled ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_COMMAND:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "llr-replay-at-max ");
+			break;
+		default:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
+			break;
+		}
+
+		if (rtn < 0) {
+			str_pos = snprintf(cause_str, cause_str_size, "error ");
+			goto out;
+		}
+		if (str_pos + rtn >= cause_str_size) {
+			cause_str[str_pos - 2] = '.';
+			cause_str[str_pos - 3] = '.';
+			cause_str[str_pos - 4] = '.';
+			break;
+		}
+		str_pos += rtn;
+	}
+
+out:
+	cause_str[str_pos - 1] = '\0';
 }
 EXPORT_SYMBOL(sl_link_down_cause_str);
 
