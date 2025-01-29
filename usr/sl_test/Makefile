@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright 2023,2024 Hewlett Packard Enterprise Development LP
+# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
 
 include ../../config.mak
 
@@ -18,7 +18,7 @@ SRCS  = sl_test_lgrp_read_notif.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 DEPS = $(patsubst %.c,%.dep,$(SRCS))
 
-default: all
+default test: all
 
 include ../../common/buildsys/common_exe.mak
 include ../../common/buildsys/common.mak

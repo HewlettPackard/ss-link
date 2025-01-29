@@ -96,7 +96,11 @@ test_stage_uninstall:
 test_clean:
 	$(MAKE) -C test clean
 
+# dpkg-buildpackage builds test target.
 test: modules
+	$(MAKE) -C test stage_install
+
+test_framework: modules
 	$(MAKE) -C test modules
 
 clean: test_clean
@@ -113,7 +117,7 @@ fw_clean:
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin
 
-stage_install: modules fw test_stage_install
+stage_install: modules fw
 	$(INSTALL) -d $(STAGING_DIR)
 	$(INSTALL) -d $(KNL_MOD_DIR)
 	$(TOUCH) $(KNL_MOD_DIR)/modules.order

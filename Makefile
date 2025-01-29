@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 #
-# Copyright 2023 Hewlett Packard Enterprise Development LP
+# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
 #
 # Slingshot Link Driver
 #
@@ -19,6 +19,7 @@ MAKECMDGOALS ?= stage_install
 default: all
 
 $(filter-out $(DIRECT_TARGETS),$(MAKECMDGOALS)) :
+	@echo "Running: $@"
 	$(MAKE) -C knl    $(MAKECMDGOALS)
 ifdef SL_BUILD_USR
 	$(MAKE) -C usr    $(MAKECMDGOALS)
