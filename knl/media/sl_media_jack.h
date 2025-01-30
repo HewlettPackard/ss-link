@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_JACK_H_
 #define _SL_MEDIA_JACK_H_
@@ -69,6 +69,16 @@
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID     0
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED   1
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED 2
+
+/*
+ * FIXME: Eventually remove this struct and get this info from cable DB
+ */
+struct sl_media_downshift_info {
+	u32 type;
+	u32 vendor;
+	u8  fw_major_ver;
+	u8  fw_minor_ver;
+};
 
 struct sl_media_serdes_settings {
 	s16 pre1;

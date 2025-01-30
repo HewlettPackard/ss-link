@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include "sl_asic.h"
 #include "sl_media_jack.h"
@@ -18,6 +18,36 @@
 #define SL_MEDIA_CMIS_POWER_UP_ADDR      0x1a
 #define SL_MEDIA_CMIS_POWER_UP_DATA      0x0
 #define SL_MEDIA_XCVR_POWER_UP_WAIT_TIME 10000
+
+/*
+ * FIXME: Eventually remove this struct array and get this info from cable DB
+ */
+static struct sl_media_downshift_info downshift_cable_db[] = {
+		{
+				.type = SL_MEDIA_TYPE_AOC,
+				.vendor = SL_MEDIA_VENDOR_TE,
+				.fw_major_ver = 0x04,
+				.fw_minor_ver = 0x01,
+		},
+		{
+				.type = SL_MEDIA_TYPE_AEC,
+				.vendor = SL_MEDIA_VENDOR_TE,
+				.fw_major_ver = 0x00,
+				.fw_minor_ver = 0x04,
+		},
+		{
+				.type = SL_MEDIA_TYPE_AEC,
+				.vendor = SL_MEDIA_VENDOR_MOLEX,
+				.fw_major_ver = 0x01,
+				.fw_minor_ver = 0x00,
+		},
+		{
+				.type = SL_MEDIA_TYPE_AOC,
+				.vendor = SL_MEDIA_VENDOR_FINISAR,
+				.fw_major_ver = 0x02,
+				.fw_minor_ver = 0x06,
+		},
+};
 
 int sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 {
@@ -126,17 +156,29 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 	return 0;
 }
 
-#define SL_MEDIA_JACK_FIRMWARE_MINOR_VERSION_OFFSET 1
+#define SL_MEDIA_JACK_FW_MAJOR_VER_OFFSET 0
+#define SL_MEDIA_JACK_FW_MINOR_VER_OFFSET 1
 static bool sl_media_jack_cable_firmware_version_check(struct sl_media_lgrp *media_lgrp)
 {
-	u8 fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
+	int i;
+	u32 type;
+	u32 vendor;
+	u8  fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
 
 	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
+	type = sl_media_lgrp_type_get(media_lgrp);
+	vendor = sl_media_lgrp_vendor_get(media_lgrp);
 
-	if (fw_ver[SL_MEDIA_JACK_FIRMWARE_MINOR_VERSION_OFFSET] != 0x04)
-		return false;
+	for (i = 0; i < ARRAY_SIZE(downshift_cable_db); ++i) {
+		if ((downshift_cable_db[i].type == type) &&
+			(downshift_cable_db[i].vendor == vendor) &&
+			(downshift_cable_db[i].fw_major_ver == fw_ver[SL_MEDIA_JACK_FW_MAJOR_VER_OFFSET]) &&
+			(downshift_cable_db[i].fw_minor_ver == fw_ver[SL_MEDIA_JACK_FW_MINOR_VER_OFFSET])) {
+			return true;
+		}
+	}
 
-	return true;
+	return false;
 }
 
 static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
