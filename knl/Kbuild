@@ -84,6 +84,7 @@ $(SL_NAME)-y += \
 	core/hw/sl_core_hw_intr_llr.o       \
 	core/hw/sl_core_hw_sbus.o           \
 	core/hw/sl_core_hw_pmi.o            \
+	core/hw/sl_core_hw_sbus_pmi.o       \
 	core/hw/sl_core_hw_uc_ram.o         \
 	core/hw/sl_core_hw_serdes.o         \
 	core/hw/sl_core_hw_serdes_fw.o      \

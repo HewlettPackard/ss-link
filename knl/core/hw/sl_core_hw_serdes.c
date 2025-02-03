@@ -119,6 +119,7 @@ int sl_core_hw_serdes_start(struct sl_core_lgrp *core_lgrp, u32 clocking)
 				"hw_serdes_swizzles failed [%d]", rtn);
 			return -EIO;
 		}
+// FIXME: move info get during SSHOTPLAT-4509
 		rtn = sl_core_hw_serdes_fw_info_get(core_lgrp);
 		if (rtn != 0) {
 			core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;
@@ -144,6 +145,7 @@ int sl_core_hw_serdes_start(struct sl_core_lgrp *core_lgrp, u32 clocking)
 			"hw_serdes_fw_load failed [%d]", rtn);
 		return -EIO;
 	}
+// FIXME: move info get during SSHOTPLAT-4509
 	rtn = sl_core_hw_serdes_fw_info_get(core_lgrp);
 	if (rtn != 0) {
 		core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_ERROR;

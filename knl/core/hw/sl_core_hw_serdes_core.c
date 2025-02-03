@@ -91,20 +91,16 @@ static int sl_core_hw_serdes_core_uc_reset_set(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD217, 0, 0, 0x0001); /* disble CRC checking */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, SL_HW_SERDES_FW_STACK_SIZE, 2, 0x7FFC); /* micro_core_stack_size */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD22E, 1, 15, 0x8000); /* stack enable */
-	// FIXME: this is a RO bit
-	// FIXME: SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD101, 0, 1, 0x0002);
 
 	rtn = 0;
 out:
 	return rtn;
 }
 
-#define SL_HW_SERDES_WAIT_CRAM_INIT_TRIES 10
 static int sl_core_hw_serdes_core_uc_reset_clr(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 	int x;
-	u16 data16;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "uc reset clr");
 
@@ -112,21 +108,7 @@ static int sl_core_hw_serdes_core_uc_reset_clr(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD200, 1, 0, 0x0001); /* enable micro subsystem clock */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD201, 1, 0, 0x0001); /* clear micro subsystem reset */
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD227, 1, 0, 0x0001); /* enable access to code RAM */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 2, 8, 0x0300); /* enable init code RAM */
-	for (x = 0; x < SL_HW_SERDES_WAIT_CRAM_INIT_TRIES; ++x) {
-		usleep_range(1000, 2000);
-		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD203, 15, 15, &data16); /* check init done */
-		sl_core_log_dbg(core_lgrp, LOG_NAME, "code RAM init D203 = 0x%X", data16);
-		if (data16 != 0)
-			break;
-	}
-	if (x >= SL_HW_SERDES_WAIT_CRAM_INIT_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "code RAM init timeout");
-		rtn = -EIO;
-		goto out;
-	}
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD202, 0, 8, 0x0300); /* disable code RAM init */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD227, 1, 0, 0x0001); /* enable micro access to code RAM */
 
 	for (x = 0; x < core_lgrp->serdes.hw_info.num_micros; ++x) {
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD240, 1, 0, 0x0001); /* enable micro clock */

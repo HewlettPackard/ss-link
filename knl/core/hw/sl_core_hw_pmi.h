@@ -1,8 +1,22 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_PMI_H_
 #define _SL_CORE_HW_PMI_H_
+
+#define PMI_DEV_ID_MASK  0x1F
+#define PMI_DEV_ID_SHIFT 27
+#define PMI_PLL_MASK     0x07
+#define PMI_PLL_SHIFT    24
+#define PMI_LANE_MASK    0xFF
+#define PMI_LANE_SHIFT   16
+#define PMI_ADDR_MASK    0xFFFF
+
+#define PMI_ADDR32(_dev_id, _pll, _lane, _addr)              \
+	(((_dev_id & PMI_DEV_ID_MASK) << PMI_DEV_ID_SHIFT) | \
+	 ((_pll    & PMI_PLL_MASK)    << PMI_PLL_SHIFT)    | \
+	 ((_lane   & PMI_LANE_MASK)   << PMI_LANE_SHIFT)   | \
+	  (_addr   & PMI_ADDR_MASK))
 
 #define SL_CORE_HW_PMI_RD(_lgrp, _dev_id, _lane, _pll, _addr, _shl, _shr, _data)                     \
 	do {                                                                                         \

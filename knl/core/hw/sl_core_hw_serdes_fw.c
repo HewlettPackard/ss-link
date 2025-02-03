@@ -14,6 +14,7 @@
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_sbus.h"
+#include "hw/sl_core_hw_sbus_pmi.h"
 #include "hw/sl_core_hw_uc_ram.h"
 #include "hw/sl_core_hw_serdes.h"
 
@@ -152,12 +153,11 @@ static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
 	usleep_range(1000, 2000);
 	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, 0x1, 1, 0x1); /* POR_H_RSTB_SBUS */
 
-	// FIXME: what part of this if any is actually needed?
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD23E, 0,  0, 0x0001); /* set micro reset */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD23E, 1,  0, 0x0001); /* clear micro reset */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD217, 0,  0, 0x0001); /* disble CRC checking */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, SL_HW_SERDES_FW_STACK_SIZE, 2, 0x7FFC); /* micro_core_stack_size */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, 1, 15, 0x8000); /* stack enable */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, ((SL_HW_SERDES_FW_STACK_SIZE << 2) | (1 << 15)), 0xFFFC); /* stack size and enable */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 0x0001, 0x0001); /* enable writes to code RAM */
 
 	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0, 0x80000000); /* enable access to PRAM */
 
@@ -166,18 +166,33 @@ static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD201, 0, 0, 0x0001); /* set reset to micro */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD201, 1, 0, 0x0001); /* remove reset to micro */
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 1, 0, 0x0001); /* enable mirco access to code RAM */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 0x0000, 0x0002); /* disable micro access to code RAM */
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 1, 8, 0x0300); /* init code RAM to 0s */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0x0100, 0x0300); /* init code RAM */
 	for (x = 0; x < SL_HW_SERDES_INIT_CHECK_TRIES; ++x) {
 		usleep_range(1000, 2000);
 		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD203, 15, 15, &data16); /* check init done */
 		if (data16 != 0)
 			break;
 	}
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0,  8, 0x0300); /* turn off code RAM init */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0x0000, 0x0300); /* disable init */
 	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
 		sl_core_log_err(core_lgrp, LOG_NAME, "fw load setup - timeout");
+		rtn = -EIO;
+		goto out;
+	}
+
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0x0200, 0x0300); /* init data RAM */
+	for (x = 0; x < SL_HW_SERDES_INIT_CHECK_TRIES; ++x) {
+		usleep_range(1000, 2000);
+		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD203, 15, 15, &data16); /* check init done */
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "code RAM init D203 = 0x%X", data16);
+		if (data16 != 0)
+			break;
+	}
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0x0000, 0x0300); /* disable init */
+	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
+		sl_core_log_err(core_lgrp, LOG_NAME, "code RAM init timeout");
 		rtn = -EIO;
 		goto out;
 	}
@@ -188,12 +203,11 @@ static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD217, 0,  1, 0x0002); /* remove init checksum */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD217, 1,  0, 0x0001); /* enable CRC engine */
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 0,  1, 0x0002); /* enable writes to code RAM */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20D, 0,  2, 0xFFFC); /* set start address */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20E, 0,  0, 0xFFFF); /* set start address */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20D, 0x0000, 0xFFFC); /* start address */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20E, 0x0000, 0xFFFF); /* start address */
 
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD201, 1, 15, 0x8000); /* remove reset from PRAM */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20C, 1,  0, 0x0001); /* enable PRAM logic */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20C, 0x0001, 0x0001); /* enable PRAM interface */
 
 	rtn = 0;
 out:
@@ -231,13 +245,12 @@ static int sl_core_hw_serdes_fw_load_finish(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw image finish");
 
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 1,  1, 0x0002); /* disable writes to code RAM */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 0x0002, 0x0002); /* disable writes to code RAM */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD217, 0,  0, 0x0001); /* disable CRC engine */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, SL_HW_SERDES_FW_STACK_SIZE, 2, 0x7FFC); /* set stack size */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, 1, 15, 0x8000); /* set stack location per micro */
-	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20C, 0,  0, 0x0001); /* disable PRAM logic */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD22E, ((SL_HW_SERDES_FW_STACK_SIZE << 2) | (1 << 15)), 0xFFFC); /* stack size and enable */
+	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD20C, 0x0000, 0x0001); /* disable PRAM interface */
 
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0, 0x00000000); /* disable access to RAM */
+	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0, 0x00000000); /* disable access to PRAM */
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD218, 0, 0, &data16); /* read CRC */
 	if (data16 != SL_HW_SERDES_FW_IMAGE_CRC) {

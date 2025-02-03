@@ -42,6 +42,7 @@
 #define SL_CORE_HW_FEC_LOG_NAME           "hw-fec"
 #define SL_CORE_HW_IO_LOG_NAME            "hw-io"
 #define SL_CORE_HW_SBUS_LOG_NAME          "hw-sbus"
+#define SL_CORE_HW_SBUS_PMI_LOG_NAME      "hw-sbpmi"
 #define SL_CORE_HW_PMI_LOG_NAME           "hw-pmi"
 
 #define SL_CORE_TEST_FEC_LOG_NAME         "test-fec"
