@@ -74,6 +74,8 @@ function test_verify {
 
                         up_ucw_limit_config=$(cat "${up_check}/ucw_limit")
                         up_ccw_limit_config=$(cat "${up_check}/ccw_limit")
+                        up_settle_timeout_ms_policy=$(cat "${up_check}/settle_wait_ms")
+                        up_check_timeout_ms_policy=$(cat "${up_check}/check_wait_ms")
 
 			sl_test_debug_log "${FUNCNAME}" \
                                 "(monitor_ucw_down_limit_policy = ${monitor_ucw_down_limit_policy})"
@@ -83,10 +85,15 @@ function test_verify {
                                 "(monitor_ccw_crit_limit_policy = ${monitor_ccw_crit_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
                                 "(monitor_ccw_warn_limit_policy = ${monitor_ccw_warn_limit_policy})"
+
 			sl_test_debug_log "${FUNCNAME}" \
                                 "(up_ucw_limit_config = ${up_ucw_limit_config})"
 			sl_test_debug_log "${FUNCNAME}" \
                                 "(up_ccw_limit_config = ${up_ccw_limit_config})"
+			sl_test_debug_log "${FUNCNAME}" \
+                                "(up_settle_timeout_ms_policy = ${up_settle_timeout_ms_policy})"
+			sl_test_debug_log "${FUNCNAME}" \
+                                "(up_check_timeout_ms_policy = ${up_check_timeout_ms_policy})"
 
 			# All values compared to ck400 calculated values.
 
@@ -141,6 +148,24 @@ function test_verify {
                                         "(${monitor_ccw_warn_limit_policy} != 12750000)"
 				sl_test_error_log "${FUNCNAME}" \
                                         "(monitor_ccw_warn_limit_policy = ${monitor_ccw_warn_limit_policy})"
+				return 1
+			fi
+
+                        if [[ "${up_settle_timeout_ms_policy}" != "250" ]]; then
+				sl_test_error_log "${FUNCNAME}" "fec up mismatch"
+				sl_test_error_log "${FUNCNAME}" \
+                                        "(${up_settle_timeout_ms_policy} != 250)"
+				sl_test_error_log "${FUNCNAME}" \
+                                        "(up_settle_timeout_ms_policy = ${up_settle_timeout_ms_policy})"
+				return 1
+			fi
+
+                        if [[ "${up_check_timeout_ms_policy}" != "500" ]]; then
+				sl_test_error_log "${FUNCNAME}" "fec up mismatch"
+				sl_test_error_log "${FUNCNAME}" \
+                                        "(${up_check_timeout_ms_policy} != 500)"
+				sl_test_error_log "${FUNCNAME}" \
+                                        "(up_check_timeout_ms_policy = ${up_check_timeout_ms_policy})"
 				return 1
 			fi
 		done

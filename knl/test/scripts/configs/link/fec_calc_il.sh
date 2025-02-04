@@ -5,8 +5,8 @@
 
 autoneg=0
 fec_up_ccw_limit=-1
-fec_up_check_wait_ms=1000
-fec_up_settle_wait_ms=250
+fec_up_check_wait_ms=-1
+fec_up_settle_wait_ms=-1
 fec_up_ucw_limit=-1
 headshell_loopback=0
 hpe=0

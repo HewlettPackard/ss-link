@@ -15,7 +15,8 @@
 #include "sl_ctl_link_fec_priv.h"
 #include "sl_core_link.h"
 
-#define SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES 1
+#define SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES 2
+#define SL_CTL_LINK_FEC_MON_PERIOD_MS     500
 #define LOG_NAME SL_CTL_LINK_FEC_LOG_NAME
 
 void sl_ctl_link_fec_data_store(struct sl_ctl_link *ctl_link,
@@ -107,6 +108,9 @@ static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 
 	link_policy = ctl_link->policy;
 
+	ctl_link->fec_data.info.monitor.period_ms = (link_policy.fec_mon_period_ms < 0) ?
+		SL_CTL_LINK_FEC_MON_PERIOD_MS : link_policy.fec_mon_period_ms;
+
 	if (link_policy.fec_mon_ccw_crit_limit < 0) {
 		ctl_link->fec_data.info.monitor.ccw_crit_limit =
 			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
@@ -170,15 +174,15 @@ void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "mon_start");
 
-	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
-	period = ctl_link->policy.fec_mon_period_ms;
-	spin_unlock_irqrestore(&ctl_link->config_lock, irq_flags);
+	sl_ctl_link_fec_mon_limits_calc(ctl_link);
+
+	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	period = ctl_link->fec_data.info.monitor.period_ms;
+	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 	if (!period) {
 		sl_ctl_link_fec_mon_stop(ctl_link);
 		return;
 	}
-
-	sl_ctl_link_fec_mon_limits_calc(ctl_link);
 
 	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
 	ctl_link->fec_mon_timer_stop = false;
@@ -415,7 +419,7 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 	int                                  rtn;
 	struct sl_ctl_link                  *ctl_link;
 	unsigned long                        irq_flags;
-	u32                                  period;
+	s32                                  period;
 	bool                                 stop;
 	struct sl_core_link_fec_cw_cntrs     cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs   lane_cntrs;
@@ -425,9 +429,9 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor timer work");
 
-	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
-	period = ctl_link->policy.fec_mon_period_ms;
-	spin_unlock_irqrestore(&ctl_link->config_lock, irq_flags);
+	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	period = ctl_link->fec_data.info.monitor.period_ms;
+	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 	if (!period) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor period zero");
 		return;
@@ -459,9 +463,9 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
-	period = ctl_link->policy.fec_mon_period_ms;
-	spin_unlock_irqrestore(&ctl_link->config_lock, irq_flags);
+	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	period = ctl_link->fec_data.info.monitor.period_ms;
+	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 	if (!period) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor period zero");
 		return;

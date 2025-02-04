@@ -5,7 +5,7 @@
 
 fec_mon_ccw_crit_limit=-1
 fec_mon_ccw_warn_limit=-1
-fec_mon_period_ms=1000
+fec_mon_period_ms=-1
 fec_mon_ucw_down_limit=-1
 fec_mon_ucw_warn_limit=-1
 keep_serdes_up=0

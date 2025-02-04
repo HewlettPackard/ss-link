@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -24,9 +24,9 @@ static ssize_t fec_mon_period_ms_show(struct kobject *kobj, struct kobj_attribut
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_period_ms show (fec_mon_period_ms = %u)", policy.fec_mon_period_ms);
+	    "fec_mon_period_ms show (fec_mon_period_ms = %d)", policy.fec_mon_period_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", policy.fec_mon_period_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_period_ms);
 }
 
 static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

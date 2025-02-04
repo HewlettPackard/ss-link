@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/completion.h>
 #include <linux/bitops.h>
@@ -934,7 +934,7 @@ static int sl_ctl_test30(struct sl_ctl_test_args test_args)
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	pr_info(SL_CTL_TEST_NAME
-		"fec_mon_period = %ums, ccw_crit_limit = %d, ucw_down_limit = %d, ccw_warn_limit = %d, ucw_warn_limit = %d\n",
+		"fec_mon_period = %dms, ccw_crit_limit = %d, ucw_down_limit = %d, ccw_warn_limit = %d, ucw_warn_limit = %d\n",
 		policy.fec_mon_period_ms,
 		policy.fec_mon_ccw_crit_limit, policy.fec_mon_ucw_down_limit,
 		policy.fec_mon_ccw_warn_limit, policy.fec_mon_ucw_warn_limit);

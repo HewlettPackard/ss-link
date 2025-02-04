@@ -273,8 +273,8 @@ static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_li
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %u",   link_config->link_up_tries_max);
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_settle_wait = %ums", link_config->fec_up_settle_wait_ms);
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_check_wait  = %ums", link_config->fec_up_check_wait_ms);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_settle_wait = %dms", link_config->fec_up_settle_wait_ms);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_check_wait  = %dms", link_config->fec_up_check_wait_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_ucw_limit   = %d",   link_config->fec_up_ucw_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_ccw_limit   = %d",   link_config->fec_up_ccw_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  pause_map          = 0x%X", link_config->pause_map);
@@ -417,7 +417,7 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ucw_warn_limit = %d", link_policy->fec_mon_ucw_warn_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_crit_limit = %d", link_policy->fec_mon_ccw_crit_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_warn_limit = %d", link_policy->fec_mon_ccw_warn_limit);
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_period         = %ums", link_policy->fec_mon_period_ms);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_period         = %dms", link_policy->fec_mon_period_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  options                = 0x%X", link_policy->options);
 
 	spin_lock_irqsave(&ctl_link->config_lock, irq_flags);

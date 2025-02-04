@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -55,9 +55,9 @@ static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attr
 	sl_ctl_link_config_get(ctl_link, &config);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_settle_wait show (fec_up_settle_wait = %ums)", config.fec_up_settle_wait_ms);
+	    "fec_up_settle_wait show (fec_up_settle_wait = %dms)", config.fec_up_settle_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.fec_up_settle_wait_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_settle_wait_ms);
 }
 
 static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -72,7 +72,7 @@ static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attri
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_up_check_wait show (fec_up_check_wait = %ums)", config.fec_up_check_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.fec_up_check_wait_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_check_wait_ms);
 }
 
 static ssize_t fec_up_ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

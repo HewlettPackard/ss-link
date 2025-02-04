@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _UAPI_SL_LINK_H_
 #define _UAPI_SL_LINK_H_
@@ -83,8 +83,8 @@ struct sl_link_config {
 	__u32 link_up_timeout_ms;
 	__u32 link_up_tries_max;
 
-	__u32 fec_up_settle_wait_ms;
-	__u32 fec_up_check_wait_ms;
+	__s32 fec_up_settle_wait_ms;
+	__s32 fec_up_check_wait_ms;
 	__s32 fec_up_ucw_limit;
 	__s32 fec_up_ccw_limit;
 
@@ -114,7 +114,7 @@ struct sl_link_policy {
 	__s32 fec_mon_ucw_warn_limit;
 	__s32 fec_mon_ccw_crit_limit;
 	__s32 fec_mon_ccw_warn_limit;
-	__u32 fec_mon_period_ms;
+	__s32 fec_mon_period_ms;
 
 	__u32 options;
 };

@@ -317,8 +317,8 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 
 	debugfs_create_u32("link_up_timeout_ms", 0644,    config_dir, &link_config.link_up_timeout_ms);
 	debugfs_create_u32("link_up_tries_max", 0644,     config_dir, &link_config.link_up_tries_max);
-	debugfs_create_u32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);
-	debugfs_create_u32("fec_up_check_wait_ms", 0644,  config_dir, &link_config.fec_up_check_wait_ms);
+	sl_test_debugfs_create_s32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);
+	sl_test_debugfs_create_s32("fec_up_check_wait_ms", 0644,  config_dir, &link_config.fec_up_check_wait_ms);
 	sl_test_debugfs_create_s32("fec_up_ccw_limit", 0644,      config_dir, &link_config.fec_up_ccw_limit);
 	sl_test_debugfs_create_s32("fec_up_ucw_limit", 0644,      config_dir, &link_config.fec_up_ucw_limit);
 
@@ -366,7 +366,7 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 
 	sl_test_link_policy_init();
 
-	debugfs_create_u32("fec_mon_period_ms", 0644, policy_dir,
+	sl_test_debugfs_create_s32("fec_mon_period_ms", 0644, policy_dir,
 		    &link_policy.fec_mon_period_ms);
 	sl_test_debugfs_create_s32("fec_mon_ucw_down_limit", 0644, policy_dir,
 		    &link_policy.fec_mon_ucw_down_limit);

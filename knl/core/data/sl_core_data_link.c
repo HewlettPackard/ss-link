@@ -35,6 +35,9 @@
 #define SL_CORE_HW_FEC_CNTRS_OFFSET 0x01002510
 #define SL_CORE_HW_FEC_CNTRS_SIZE   0x110
 
+#define SL_CORE_HW_FEC_UP_SETTLE_WAIT_MS 250
+#define SL_CORE_HW_FEC_UP_CHECK_WAIT_MS  500
+
 static struct sl_core_link *core_links[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(core_links_lock);
 
@@ -524,8 +527,10 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->fec.settings.type     = 0;
 	}
 
-	core_link->fec.settings.up_settle_wait_ms = core_link->config.fec_up_settle_wait_ms;
-	core_link->fec.settings.up_check_wait_ms  = core_link->config.fec_up_check_wait_ms;
+	core_link->fec.settings.up_settle_wait_ms = (core_link->config.fec_up_settle_wait_ms < 0) ?
+		SL_CORE_HW_FEC_UP_SETTLE_WAIT_MS : core_link->config.fec_up_settle_wait_ms;
+	core_link->fec.settings.up_check_wait_ms  = (core_link->config.fec_up_check_wait_ms < 0) ?
+		SL_CORE_HW_FEC_UP_CHECK_WAIT_MS : core_link->config.fec_up_check_wait_ms;
 
 	if (core_link->config.fec_up_ucw_limit < 0)
 		core_link->fec.settings.up_ucw_limit =
@@ -558,8 +563,8 @@ void sl_core_data_link_timeouts(struct sl_core_link *core_link)
 
 	core_link->timers[SL_CORE_TIMER_LINK_UP_CHECK].data.timeout_ms = 100;
 
-	core_link->timers[SL_CORE_TIMER_LINK_UP_FEC_SETTLE].data.timeout_ms = core_link->config.fec_up_settle_wait_ms;
-	core_link->timers[SL_CORE_TIMER_LINK_UP_FEC_CHECK].data.timeout_ms  = core_link->config.fec_up_check_wait_ms;
+	core_link->timers[SL_CORE_TIMER_LINK_UP_FEC_SETTLE].data.timeout_ms = core_link->fec.settings.up_settle_wait_ms;
+	core_link->timers[SL_CORE_TIMER_LINK_UP_FEC_CHECK].data.timeout_ms  = core_link->fec.settings.up_check_wait_ms;
 }
 
 void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)

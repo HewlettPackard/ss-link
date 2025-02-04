@@ -70,7 +70,7 @@ static ssize_t settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	spin_lock_irqsave(&core_link->data_lock, irq_flags);
-	settle_wait_ms = core_link->config.fec_up_settle_wait_ms;
+	settle_wait_ms = core_link->fec.settings.up_settle_wait_ms;
 	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
@@ -91,7 +91,7 @@ static ssize_t check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *k
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	spin_lock_irqsave(&core_link->data_lock, irq_flags);
-	check_wait_ms = core_link->config.fec_up_check_wait_ms;
+	check_wait_ms = core_link->fec.settings.up_check_wait_ms;
 	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,

@@ -102,8 +102,8 @@ struct sl_core_link_config {
 	sl_core_link_fault_callback_t  fault_callback;
 	sl_core_link_fault_intr_hdlr_t fault_intr_hdlr;
 
-	u32                            fec_up_settle_wait_ms;
-	u32                            fec_up_check_wait_ms;
+	s32                            fec_up_settle_wait_ms;
+	s32                            fec_up_check_wait_ms;
 	s32                            fec_up_ucw_limit;
 	s32                            fec_up_ccw_limit;
 
