@@ -635,6 +635,8 @@ void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *core_link,
 	core_link->link.tags.down      = tag;
 	core_link->link.callbacks.down = callback;
 
+	sl_core_log_dbg(core_link, LOG_NAME, "up cancel cmd");
+
 	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_UP_CANCEL);
 }
 

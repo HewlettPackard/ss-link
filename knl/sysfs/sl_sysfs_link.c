@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -314,6 +314,17 @@ int sl_sysfs_link_create(struct sl_ctl_link *ctl_link)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_link_counters_create(ctl_link);
+	if (rtn) {
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_counters_create failed [%d]", rtn);
+		sl_sysfs_link_policy_delete(ctl_link);
+		sl_sysfs_link_config_delete(ctl_link);
+		sl_sysfs_link_fec_delete(ctl_link);
+		sl_sysfs_link_caps_delete(ctl_link);
+		kobject_put(&ctl_link->kobj);
+		return rtn;
+	}
+
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"link create (link_kobj = 0x%p)", &ctl_link->kobj);
 
@@ -331,5 +342,6 @@ void sl_sysfs_link_delete(struct sl_ctl_link *ctl_link)
 	sl_sysfs_link_config_delete(ctl_link);
 	sl_sysfs_link_fec_delete(ctl_link);
 	sl_sysfs_link_caps_delete(ctl_link);
+	sl_sysfs_link_counters_delete(ctl_link);
 	kobject_put(&ctl_link->kobj);
 }

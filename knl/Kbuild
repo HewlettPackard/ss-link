@@ -144,6 +144,7 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_llr_policy.o         \
 	sysfs/sl_sysfs_llr_loop_time.o      \
 	sysfs/sl_sysfs_mac.o                \
-        sysfs/sl_sysfs_media.o
+	sysfs/sl_sysfs_media.o              \
+	sysfs/sl_sysfs_link_counters.o
 
 ccflags-y := -I$(M)

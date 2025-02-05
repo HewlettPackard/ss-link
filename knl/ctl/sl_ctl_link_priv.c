@@ -422,8 +422,6 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 		"fault callback work (core_state = %s, core_cause = %s, core_imap = %s (0x%llx))",
 		sl_core_link_state_str(core_state), sl_link_down_cause_str(core_cause), core_imap_str, core_imap);
 
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_ASYNC_FAULT_NOTIFIER);
-
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
 	sl_ctl_link_up_clock_clear(ctl_link);
@@ -431,7 +429,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u32 core_cause, u64 co
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_ASYNC_DOWN);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_FAULT);
 
 		flush_work(&ctl_link->ctl_lgrp->notif_work);
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
@@ -601,6 +599,7 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u32 down_cause)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
@@ -612,7 +611,6 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u32 down_cause)
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"core_link_down failed [%d]", rtn);
-			SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
 			return rtn;
 		}
 

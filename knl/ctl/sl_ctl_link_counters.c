@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 
@@ -21,27 +21,19 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 	if (!ctl_link->counters)
 		return -ENOMEM;
 
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_START);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_CMD);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_RETRY);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_FAIL);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_NOTIFIER);
 
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN_CLIENT);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN_CMD);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN_FAIL);
 
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET_START);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET_FAIL);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_CANCELED);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET_CMD);
 
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_ASYNC_FAULT_NOTIFIER);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_ASYNC_DOWN);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_FAULT);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RECOVERING);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_AUTO_RESTART_REQ);
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_AUTO_RESTART);
-
-	SL_CTL_LINK_COUNTER_INIT(ctl_link, FEC_MON_START);
 
 	return 0;
 }

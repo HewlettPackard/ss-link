@@ -188,6 +188,7 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
@@ -489,7 +490,7 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up cmd");
 
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_START);
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CMD);
 	sl_ctl_link_up_count_zero(ctl_link);
 	sl_ctl_link_up_clock_start(ctl_link);
 	sl_ctl_link_up_attempt_clock_start(ctl_link);
@@ -503,7 +504,6 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 	rtn = sl_core_link_up(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
 		sl_ctl_link_up_callback, ctl_link);
 	if (rtn) {
-
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_STOPPING);
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME, "core_link_up failed [%d]", rtn);
 
@@ -571,7 +571,7 @@ static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
 	int                 rtn;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down cmd");
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_CLIENT);
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_CMD);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
@@ -580,7 +580,6 @@ static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_FAIL);
 		return rtn;
 	}
 
@@ -609,6 +608,7 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
@@ -648,7 +648,7 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset cmd");
 
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_START);
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_CMD);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 	cancel_work_sync(&ctl_link->fec_mon_timer_work);
@@ -684,8 +684,6 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 
 	sl_core_link_reset(ldev_num, lgrp_num, link_num);
 
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET);
-
 	sl_ctl_link_up_clock_clear(ctl_link);
 	sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
@@ -714,6 +712,7 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;

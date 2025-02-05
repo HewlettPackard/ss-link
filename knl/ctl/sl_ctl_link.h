@@ -66,6 +66,7 @@ struct sl_ctl_link {
 	struct kobject               policy_kobj;
 	struct kobject               config_kobj;
 	struct kobject               caps_kobj;
+	struct kobject               counters_kobj;
 	struct {
 		struct kobject               kobj;
 		struct kobject               current_kobj;

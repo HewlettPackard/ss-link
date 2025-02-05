@@ -480,7 +480,6 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 	}
 
 start_mon:
-	SL_CTL_LINK_COUNTER_INC(ctl_link, FEC_MON_START);
 	mod_timer(&ctl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor started");
 }
