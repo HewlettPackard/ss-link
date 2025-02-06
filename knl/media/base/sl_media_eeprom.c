@@ -71,6 +71,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GBASE_CR4:
 		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 		media_jack->is_ss200_cable = true;
@@ -116,7 +117,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		}
 		break;
 	default:
-		sl_media_log_err(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
+		sl_media_log_dbg(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
 				"invalid host interface (0x%x)", host_interface);
 	}
 }

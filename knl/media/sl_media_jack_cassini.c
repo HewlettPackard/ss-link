@@ -87,8 +87,15 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 					sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
 			}
 		}
+		/*
+		 * disallow BJ100 speed on active cables
+		 */
+		if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC))
+			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
+
 		if (media_jack->is_ss200_cable)
 			media_attr.options |= SL_MEDIA_OPT_SS200_CABLE;
+
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
 			sl_media_log_warn(media_jack, LOG_NAME, "cable validate failed [%d]", rtn);
