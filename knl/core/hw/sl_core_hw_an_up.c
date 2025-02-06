@@ -109,7 +109,7 @@ void sl_core_hw_an_up_start(struct sl_core_link *core_link)
 static void sl_core_hw_an_up(struct sl_core_link *core_link)
 {
 	int                 rtn;
-	struct sl_link_caps link_caps;
+	struct sl_link_caps my_caps;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up");
 
@@ -117,11 +117,11 @@ static void sl_core_hw_an_up(struct sl_core_link *core_link)
 
 	sl_core_hw_an_config(core_link);
 
-	link_caps.tech_map  = core_link->core_lgrp->config.tech_map;
-	link_caps.fec_map   = core_link->core_lgrp->config.fec_map;
-	link_caps.pause_map = core_link->config.pause_map;
-	link_caps.hpe_map   = core_link->config.hpe_map;
-	sl_core_hw_an_tx_pages_encode(core_link, &(link_caps));
+	my_caps.tech_map  = core_link->core_lgrp->config.tech_map;
+	my_caps.fec_map   = core_link->core_lgrp->config.fec_map;
+	my_caps.pause_map = core_link->config.pause_map;
+	my_caps.hpe_map   = core_link->config.hpe_map;
+	sl_core_hw_an_tx_pages_encode(core_link, &(my_caps));
 
 	rtn = sl_core_hw_an_base_page_send(core_link);
 	if (rtn != 0)
@@ -180,6 +180,7 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 	int                  rtn;
 	int                  x;
 	struct sl_core_link *core_link;
+	struct sl_link_caps  my_caps;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_UP_DONE]);
 
@@ -207,7 +208,12 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 		goto out_down;
 	}
 
-	rtn = sl_core_hw_an_rx_pages_decode(core_link, &(core_link->core_lgrp->link_caps[core_link->num]));
+	my_caps.tech_map  = core_link->core_lgrp->config.tech_map;
+	my_caps.fec_map   = core_link->core_lgrp->config.fec_map;
+	my_caps.pause_map = core_link->config.pause_map;
+	my_caps.hpe_map   = core_link->config.hpe_map;
+	rtn = sl_core_hw_an_rx_pages_decode(core_link, &my_caps,
+		&(core_link->core_lgrp->link_caps[core_link->num]));
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up done work hw_an_rx_pages_decode failure [%d]", rtn);

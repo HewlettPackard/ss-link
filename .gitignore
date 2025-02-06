@@ -39,3 +39,9 @@ compile_commands.json
 changelog
 *.buildinfo
 *.changes
+
+debian/files
+debian/sl-driver-dev
+debian/sl-driver-test
+debian/sl-driver
+debian/tmp

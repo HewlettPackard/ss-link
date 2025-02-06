@@ -22,7 +22,7 @@
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
-void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_link_caps *link_caps)
+void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_link_caps *my_caps)
 {
 	int x;
 
@@ -30,12 +30,12 @@ void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_lin
 
 	/* 1 - base page */
 	core_link->an.tx_pages[0] |= SL_CORE_HW_AN_BP_802_3;
-	core_link->an.tx_pages[0] |= ((u64)(link_caps->pause_map & SL_LINK_CONFIG_PAUSE_MASK) <<
+	core_link->an.tx_pages[0] |= ((u64)(my_caps->pause_map & SL_LINK_CONFIG_PAUSE_MASK) <<
 		SL_CORE_HW_AN_BP_PAUSE_SHIFT);
-	core_link->an.tx_pages[0] |= ((u64)(link_caps->tech_map & SL_LGRP_CONFIG_TECH_MASK) <<
+	core_link->an.tx_pages[0] |= ((u64)(my_caps->tech_map & SL_LGRP_CONFIG_TECH_MASK) <<
 		SL_CORE_HW_AN_BP_TECH_SHIFT);
 	// FIXME: for now just allow the RS bit
-	core_link->an.tx_pages[0] |= ((u64)((link_caps->fec_map & SL_LGRP_CONFIG_FEC_MASK) & 0x1) <<
+	core_link->an.tx_pages[0] |= ((u64)((my_caps->fec_map & SL_LGRP_CONFIG_FEC_MASK) & 0x1) <<
 		SL_CORE_HW_AN_BP_FEC_SHIFT);
 
 	/* 2 - OUI message next page */
@@ -47,7 +47,7 @@ void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_lin
 	// FIXME: send version one until we have a SBL fix
 	//core_link->an.tx_pages[2] |= SL_CORE_HW_AN_NP_OUI_VER_0_2;
 	core_link->an.tx_pages[2] |= SL_CORE_HW_AN_NP_OUI_VER_0_1;
-	core_link->an.tx_pages[2] |= ((link_caps->hpe_map & SL_LINK_CONFIG_HPE_MASK) <<
+	core_link->an.tx_pages[2] |= ((my_caps->hpe_map & SL_LINK_CONFIG_HPE_MASK) <<
 		SL_CORE_HW_AN_NP_HPE_SHIFT);
 	// FIXME: get from hardware?
 	core_link->an.tx_pages[2] |= (2ULL << SL_CORE_HW_AN_NP_BIT_OUI_ASIC_VER);
@@ -217,8 +217,8 @@ static void sl_core_hw_an_next_page_write(struct sl_core_link *core_link)
 	core_link->an.toggle = !core_link->an.toggle;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"next page write (port = %u, pg %u = 0x%016llX)",
-		port, core_link->an.page_num, page);
+		"next page write (port = %u, pg %u = 0x%016llX, toggle = %d)",
+		port, core_link->an.page_num, page, core_link->an.toggle);
 
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_AUTONEG_NEXT_PAGE(core_link->num), page);
 
@@ -260,7 +260,7 @@ int sl_core_hw_an_base_page_send(struct sl_core_link *core_link)
 	rtn = sl_core_hw_intr_enable(core_link,
 		core_link->intrs[SL_CORE_HW_INTR_AN_PAGE_RECV].flgs, sl_core_hw_an_intr_hdlr);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page send intr enable failed [%d]", rtn);
 		return rtn;
 	}
@@ -299,7 +299,7 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		port, core_link->an.page_num, data64);
 
 	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_ABILITY_GET(data64) != 1) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store lp ability not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
@@ -307,7 +307,7 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 	}
 
 	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_BASE_PAGE_GET(data64) != 1) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store base page not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
@@ -344,7 +344,6 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 		port, core_link->an.page_num, data64);
 
 	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_BASE_PAGE_GET(data64) != 0) {
-		//FIXME: for now to avoid spam dmesg (need sysfs implementation for this error later)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page store base page set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
@@ -388,7 +387,8 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	}
 }
 
-int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_link_caps *link_caps)
+int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
+	struct sl_link_caps *my_caps, struct sl_link_caps *link_caps)
 {
 	int x;
 	u32 pause_map;
@@ -452,20 +452,18 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link, struct sl_link
 		}
 	}
 
-	/* speed */
+	/* common maps */
+	tech_map &= my_caps->tech_map;
 	for (x = 31; x >= 0; --x) {
 		if (tech_map & BIT(x)) {
 			link_caps->tech_map = BIT_ULL(x);
-			sl_core_log_dbg(core_link, LOG_NAME,
-				"rx pages decode (tech bit = %d)", x);
 			break;
 		}
 	}
-
-	link_caps->pause_map = pause_map;
-	link_caps->fec_map   = fec_map;
+	link_caps->pause_map = pause_map & my_caps->pause_map;
+	link_caps->fec_map   = fec_map & my_caps->fec_map;
 	link_caps->fec_map  |= SL_LGRP_CONFIG_FEC_RS;
-	link_caps->hpe_map   = hpe_map;
+	link_caps->hpe_map   = hpe_map & my_caps->hpe_map;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"rx pages decode (pause = 0x%X, tech = 0x%X, fec = 0x%X, hpe = 0x%X)",
@@ -492,7 +490,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 		sl_core_hw_an_next_page_check(core_link);
 		break;
 	default:
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr invalid (state = %u)", core_link->an.state);
 		goto out;
 	}
@@ -517,7 +515,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	if (core_link->an.state == SL_CORE_HW_AN_STATE_RETRY) {
 		rtn = sl_core_hw_an_next_page_send(core_link);
 		if (rtn != 0) {
-			sl_core_log_err(core_link, LOG_NAME,
+			sl_core_log_err_trace(core_link, LOG_NAME,
 				"page recv intr an next page send retry failed [%d]", rtn);
 			core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 			goto out;
@@ -528,7 +526,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	core_link->an.page_num++;
 
 	if (core_link->an.page_num >= SL_CORE_LINK_AN_MAX_PAGES) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr out of pages");
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		goto out;
@@ -536,7 +534,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_an_next_page_send(core_link);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr an next page send failed [%d]", rtn);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		goto out;
@@ -548,7 +546,7 @@ out:
 	rtn = sl_core_hw_intr_disable(core_link,
 		core_link->intrs[SL_CORE_HW_INTR_AN_PAGE_RECV].flgs, sl_core_hw_an_intr_hdlr);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME, "page recv intr disable failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "page recv intr disable failed [%d]", rtn);
 
 	sl_core_work_link_queue(core_link, core_link->an.done_work_num);
 }

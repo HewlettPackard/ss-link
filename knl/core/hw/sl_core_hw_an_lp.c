@@ -213,7 +213,8 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 		goto out;
 	}
 
-	rtn = sl_core_hw_an_rx_pages_decode(core_link, &(core_link->an.lp_caps));
+	rtn = sl_core_hw_an_rx_pages_decode(core_link,
+		&(core_link->an.my_caps), &(core_link->an.lp_caps));
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get done work hw_an_rx_pages_decode failure [%d]", rtn);
