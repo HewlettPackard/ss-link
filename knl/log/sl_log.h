@@ -28,6 +28,8 @@ void sl_log_err_trace(void *ptr, const char *block,
 void sl_log_warn_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...) __printf(4, 5);
 
+#if defined(CONFIG_DYNAMIC_DEBUG)
+
 void __sl_log_dynamic_dbg(struct _ddebug *desc, void *ptr,
 	const char *block, const char *name, const char *text, ...) __printf(5, 6);
 
@@ -48,6 +50,14 @@ void __sl_log_dynamic_dbg(struct _ddebug *desc, void *ptr,
 
 #define sl_log_dbg(_ptr, _block, _name, _text, ...) \
 	sl_log_dynamic_dbg((_ptr), (_block), (_name), (_text), ##__VA_ARGS__)
+
+#else
+
+#define sl_log_dbg(_ptr, _block, _name, _text, ...) \
+	sl_log((_ptr), KERN_DEBUG, (_block), (_name), (_text), ##__VA_ARGS__)
+
+#endif
+
 #define sl_log_info(_ptr, _block, _name, _text, ...) \
 	sl_log((_ptr), KERN_INFO, (_block), (_name), (_text), ##__VA_ARGS__)
 #define sl_log_warn(_ptr, _block, _name, _text, ...) \
