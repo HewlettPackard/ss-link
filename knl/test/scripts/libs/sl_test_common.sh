@@ -411,6 +411,62 @@ function sl_test_init {
 	return 0
 }
 
+function sl_test_unload {
+	local rtn
+	local options
+	local OPTIND
+	local usage="Usage: ${FUNCNAME} [-h | --help]"
+	local description=$(cat <<-EOF
+	Automatically unload the test framework from the device under test. The device type is automatically determined.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 0 ]]; then
+		sl_test_debug_log "${FUNCNAME}" "incorrect number of parameters"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	eval sl_test_${SL_TEST_DEVICE_TYPE}_unload
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "sl_test_${SL_TEST_DEVICE_TYPE}_unload failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	return 0
+}
+
 function sl_test_exit {
 	local rtn
 	local options

@@ -198,6 +198,42 @@ Run the test directly by invoking the script and bypassing the `sl_run_test` run
 sl_run_init.sh
 ```
 
+### Running from a Diagnostic Container
+
+The diagnostics container is run as part of continuous testing (CT). The
+script `sl_run_test.sh` is executed as part of the container alongside
+other tests.
+
+```sh
+git clone git@github.hpe.com:hpe/hpc-sshot-scimage-diag-container.git
+```
+
+Follow the README.md to build the diagnostic image. Once built tar the image to
+send to the device under test (DUT). In this case I am testing rbt28. Replace
+rbt28 with the system you are testing.
+
+```sh
+DUT="rbt28"
+docker save -o diags.tar scimage-diagnostics
+rsync -az --progress diags.tar ${DUT}:~
+```
+
+On the DUT, load the container you just copied over.
+
+```sh
+sudo docker load -i diags.tar
+```
+
+Run the `test-runner.py` script.
+
+```sh
+DIAGS_IMAGE=scimage-diagnostics:250207174948
+sudo docker run --rm -it --network=host -v /root/${USER}:/root/${USER} \
+        --env http_proxy="" --env https_proxy="" \
+        ${DIAGS_IMAGE} opt/cray/testrunner/bin/test-runner.py \
+        --no-reboot --ct-target-arch r2 --sc-hostname x0c0r0b0
+```
+
 ## Debugging
 
 ### Debugging Test Scripts

@@ -46,6 +46,19 @@ function sl_test_rosetta2_kill_services {
         return 0
 }
 
+function sl_test_rosetta2_unload {
+        local rtn
+
+        rmmod sl-test > /dev/null 2>&1
+        rtn=$?
+        if [[ "${rtn}" != 0 ]]; then
+                sl_test_error_log "${FUNCNAME}" "sl-test remove failed [${rtn}]"
+                return ${rtn}
+        fi
+
+        return 0
+}
+
 function sl_test_rosetta2_unload_modules {
 
         sl_test_debug_log "${FUNCNAME}"

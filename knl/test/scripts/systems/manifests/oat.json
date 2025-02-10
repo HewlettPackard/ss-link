@@ -1,0 +1,9 @@
+[
+        {
+                "id": 5,
+                "file": "sl_run_link_up_notif_ext_lb.sh",
+                "parameters": {
+                        "arguments": "${SL_TEST_DIR}/systems/connections/oat.sh"
+                }
+        }
+]
