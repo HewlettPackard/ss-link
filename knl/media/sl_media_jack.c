@@ -144,7 +144,7 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_UP_PAGE,
 	      SL_MEDIA_CMIS_POWER_UP_ADDR, SL_MEDIA_CMIS_POWER_UP_DATA);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "uc write8 failed [%d]", rtn);
+		sl_media_log_err(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
 		return -EIO;
 	}
 
@@ -244,8 +244,8 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
-	if (sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED &&
-		(sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)) {
+	if (sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED) {
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already downshifted");
 		return 0;
 	}

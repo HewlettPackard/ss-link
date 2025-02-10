@@ -50,7 +50,7 @@
 
 /*
  * These states reflect the state of cable shifting for active cables.
- * For non-active cables, the cable shift state always reflects "upshifted"
+ * For non-active cables, the cable shift state always reflects "invalid"
  */
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID             0
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED           1
