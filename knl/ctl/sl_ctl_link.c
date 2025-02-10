@@ -486,7 +486,6 @@ int sl_ctl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 {
 	int           rtn;
-	unsigned long irq_flags;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up cmd");
 
@@ -495,9 +494,7 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 	sl_ctl_link_up_clock_start(ctl_link);
 	sl_ctl_link_up_attempt_clock_start(ctl_link);
 
-	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-	ctl_link->is_canceled = false;
-	spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+	sl_ctl_link_is_canceled_set(ctl_link, false);
 
 	init_completion(&ctl_link->down_complete);
 

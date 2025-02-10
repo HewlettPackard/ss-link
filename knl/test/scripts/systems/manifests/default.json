@@ -54,6 +54,12 @@
                 "parameters": {
                         "arguments": ""
                 }
+        },
+        {
+                "id": 8,
+                "file": "sl_run_link_up_cancel.sh",
+                "parameters": {
+                        "arguments": ""
+                }
         }
-
 ]

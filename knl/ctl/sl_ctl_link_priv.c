@@ -19,6 +19,27 @@
 
 #define LOG_NAME SL_CTL_LINK_LOG_NAME
 
+void sl_ctl_link_is_canceled_set(struct sl_ctl_link *ctl_link, bool canceled)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&ctl_link->data_lock, flags);
+	ctl_link->is_canceled = canceled;
+	spin_unlock_irqrestore(&ctl_link->data_lock, flags);
+}
+
+bool sl_ctl_link_is_canceled(struct sl_ctl_link *ctl_link)
+{
+	unsigned long flags;
+	bool          is_canceled;
+
+	spin_lock_irqsave(&ctl_link->data_lock, flags);
+	is_canceled = ctl_link->is_canceled;
+	spin_unlock_irqrestore(&ctl_link->data_lock, flags);
+
+	return is_canceled;
+}
+
 static int sl_ctl_link_up_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct sl_ctl_link *ctl_link,
 	u64 info_map, u32 speed, u32 fec_mode, u32 fec_type)
 {
@@ -170,7 +191,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 	int                 rtn;
 	u32                 up_time;
 	u32                 total_time;
-	bool                is_canceled;
 	u32                 link_state;
 
 	ctl_link = tag;
@@ -225,6 +245,9 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 		case SL_LINK_DOWN_CAUSE_UCW:
 		case SL_LINK_DOWN_CAUSE_CCW:
 		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
+
+			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work fatal down cause");
+
 			if (!sl_ctl_link_state_stopping_set(ctl_link)) {
 				link_state = sl_ctl_link_state_get(ctl_link);
 				sl_ctl_log_err_trace(ctl_link, LOG_NAME,
@@ -237,8 +260,47 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 			complete_all(&ctl_link->down_complete);
 
+			rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+				ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"up callback work core_link_data_get failed [%d]", rtn);
+
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				core_cause, &link_data, core_imap);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
+
+			return 0;
+		}
+
+		/* canceled */
+		if (sl_ctl_link_is_canceled(ctl_link)) {
+
+			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up retry canceled");
+
+			if (!sl_ctl_link_state_stopping_set(ctl_link)) {
+				link_state = sl_ctl_link_state_get(ctl_link);
+				sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+					"link_state_stopping_set invalid state (link_state = %u %s)",
+					link_state, sl_link_state_str(link_state));
+			} else {
+				sl_ctl_link_up_clock_clear(ctl_link);
+
+				flush_work(&ctl_link->ctl_lgrp->notif_work);
+				sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+				complete_all(&ctl_link->down_complete);
+			}
+
+			rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+				ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"up callback work core_link_data_get failed [%d]", rtn);
+
+			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
+				SL_LINK_DOWN_CAUSE_CANCELED, &link_data, core_imap);
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
@@ -249,6 +311,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 		/* check up tries */
 		if ((up_count >= max_up_tries) && (max_up_tries != SL_LINK_INFINITE_UP_TRIES)) {
 
+			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work out of up tries");
+
 			if (!sl_ctl_link_state_stopping_set(ctl_link)) {
 				link_state = sl_ctl_link_state_get(ctl_link);
 				sl_ctl_log_err_trace(ctl_link, LOG_NAME,
@@ -257,7 +321,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 				return 0;
 			}
 
-			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work out of up tries");
 			sl_ctl_link_up_clock_clear(ctl_link);
 
 			flush_work(&ctl_link->ctl_lgrp->notif_work);
@@ -273,44 +336,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u32 core_cause, u64 core_
 
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
 				SL_LINK_DOWN_CAUSE_UP_TRIES, &link_data, core_imap);
-			if (rtn)
-				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
-
-
-			return 0;
-		}
-
-		/* canceled */
-		spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
-		is_canceled = ctl_link->is_canceled;
-		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
-		if (is_canceled) {
-
-			if (!sl_ctl_link_state_stopping_set(ctl_link)) {
-				link_state = sl_ctl_link_state_get(ctl_link);
-				sl_ctl_log_err_trace(ctl_link, LOG_NAME,
-					"link_state_stopping_set invalid state (link_state = %u %s)",
-					link_state, sl_link_state_str(link_state));
-				return 0;
-			}
-
-			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up retry canceled");
-			sl_ctl_link_up_clock_clear(ctl_link);
-
-			flush_work(&ctl_link->ctl_lgrp->notif_work);
-			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
-
-			rtn = sl_core_link_data_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-				ctl_link->ctl_lgrp->num, ctl_link->num, &link_data);
-			if (rtn)
-				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-					"up callback work core_link_data_get failed [%d]", rtn);
-
-			complete_all(&ctl_link->down_complete);
-
-			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
-				SL_LINK_DOWN_CAUSE_CANCELED, &link_data, core_imap);
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);

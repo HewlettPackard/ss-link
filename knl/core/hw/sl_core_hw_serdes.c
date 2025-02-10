@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/umh.h>
@@ -401,7 +401,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_CHECK);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "hw_serdes_lanes_up failed [%d]", rtn);
-		return -EIO;
+		return rtn;
 	}
 
 	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_UP);
