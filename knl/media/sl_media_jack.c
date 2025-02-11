@@ -195,14 +195,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "shift check failed - no online cable");
 		return -EFAULT;
 	}
-	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
-		return -EINVAL;
-	}
-
-	spin_lock(&media_lgrp->media_jack->data_lock);
 	for (i = 0; i < SL_MEDIA_MAX_LGRPS_PER_JACK; ++i) {
 		if (media_lgrp->media_jack->cable_info[i].real_cable_status == CABLE_MEDIA_ATTR_STASHED) {
 			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE;
@@ -244,6 +237,11 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
+	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
+		return 0;
+	}
+
 	if (sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED) {
 		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already downshifted");
@@ -282,8 +280,13 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable upshift");
 
-	if ((sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED) &&
-		(sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)) {
+	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
+		return 0;
+	}
+
+	if (sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED) {
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already upshifted");
 		return 0;
 	}
