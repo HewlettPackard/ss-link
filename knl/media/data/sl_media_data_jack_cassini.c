@@ -203,10 +203,45 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
 }
 
-/*
- * TODO: implement upshifting on Cassini
- */
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 {
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable upshift");
+
+	rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset failed [%d]", rtn);
+		return rtn;
+	}
+
+	return 0;
+}
+
+int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable soft reset");
+
+	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x08)", rtn);
+		return rtn;
+	}
+
+	msleep(500);
+
+	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x00)", rtn);
+		return rtn;
+	}
+
+	/*
+	 * waiting for firmware reload
+	 */
+	msleep(5000);
+
 	return 0;
 }
