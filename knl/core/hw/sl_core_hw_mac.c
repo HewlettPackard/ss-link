@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/preempt.h>
@@ -69,8 +69,6 @@ void sl_core_hw_mac_tx_start(struct sl_core_mac *core_mac)
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "tx - start (port = %d)", port);
 
-	preempt_disable();
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), &data64);
 	data64 = SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(data64, 1);
 	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), data64);
@@ -78,9 +76,6 @@ void sl_core_hw_mac_tx_start(struct sl_core_mac *core_mac)
 	sl_core_mac_flush64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num));
 
 	sl_core_data_mac_info_map_set(core_mac, SL_CORE_INFO_MAP_MAC_TX);
-	sl_core_data_mac_tx_state_set(core_mac, SL_CORE_MAC_STATE_ON);
-
-	preempt_enable();
 }
 
 void sl_core_hw_mac_tx_stop(struct sl_core_mac *core_mac)
@@ -92,8 +87,6 @@ void sl_core_hw_mac_tx_stop(struct sl_core_mac *core_mac)
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "tx - stop (port = %d)", port);
 
-	preempt_disable();
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), &data64);
 	data64 = SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(data64, 0);
 	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), data64);
@@ -101,23 +94,21 @@ void sl_core_hw_mac_tx_stop(struct sl_core_mac *core_mac)
 	sl_core_mac_flush64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num));
 
 	sl_core_data_mac_info_map_clr(core_mac, SL_CORE_INFO_MAP_MAC_TX);
-	sl_core_data_mac_tx_state_set(core_mac, SL_CORE_MAC_STATE_OFF);
-
-	preempt_enable();
 }
 
-void sl_core_hw_mac_tx_state_get(struct sl_core_mac *core_mac, u64 *state)
+u64 sl_core_hw_mac_tx_state_get(struct sl_core_mac *core_mac)
 {
 	u64 data64;
 	u32 port;
 
 	port = core_mac->core_lgrp->num;
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "tx state get (port = %d)", port);
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), &data64);
 
-	*state = SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
+	sl_core_log_dbg(core_mac, LOG_NAME, "tx state get (port = %d, state = %llu)",
+		port, SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64));
+
+	return SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
 }
 
 void sl_core_hw_mac_rx_config(struct sl_core_mac *core_mac)
@@ -153,8 +144,6 @@ void sl_core_hw_mac_rx_start(struct sl_core_mac *core_mac)
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "rx - start (port = %d)", port);
 
-	preempt_disable();
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
 	data64 = SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(data64, 1);
 	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), data64);
@@ -162,9 +151,6 @@ void sl_core_hw_mac_rx_start(struct sl_core_mac *core_mac)
 	sl_core_mac_flush64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num));
 
 	sl_core_data_mac_info_map_set(core_mac, SL_CORE_INFO_MAP_MAC_RX);
-	sl_core_data_mac_rx_state_set(core_mac, SL_CORE_MAC_STATE_ON);
-
-	preempt_enable();
 }
 
 void sl_core_hw_mac_rx_stop(struct sl_core_mac *core_mac)
@@ -176,8 +162,6 @@ void sl_core_hw_mac_rx_stop(struct sl_core_mac *core_mac)
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "rx - stop (port = %d)", port);
 
-	preempt_disable();
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
 	data64 = SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(data64, 0);
 	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), data64);
@@ -185,21 +169,19 @@ void sl_core_hw_mac_rx_stop(struct sl_core_mac *core_mac)
 	sl_core_mac_flush64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num));
 
 	sl_core_data_mac_info_map_clr(core_mac, SL_CORE_INFO_MAP_MAC_RX);
-	sl_core_data_mac_rx_state_set(core_mac, SL_CORE_MAC_STATE_OFF);
-
-	preempt_enable();
 }
 
-void sl_core_hw_mac_rx_state_get(struct sl_core_mac *core_mac, u64 *state)
+u64 sl_core_hw_mac_rx_state_get(struct sl_core_mac *core_mac)
 {
 	u64 data64;
 	u32 port;
 
 	port = core_mac->core_lgrp->num;
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "rx state get (port = %d)", port);
-
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
 
-	*state = SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
+	sl_core_log_dbg(core_mac, LOG_NAME, "rx state get (port = %d, state = %llu)",
+		port, SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64));
+
+	return SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
 }

@@ -200,94 +200,32 @@ int sl_core_data_mac_rx_settings(struct sl_core_mac *core_mac)
 	return 0;
 }
 
-void sl_core_data_mac_tx_state_set(struct sl_core_mac *core_mac, u32 tx_state)
-{
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
-	core_mac->tx_state = tx_state;
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
-
-	sl_core_log_dbg(core_mac, LOG_NAME,
-		"set TX state = %s", sl_core_mac_state_str(tx_state));
-}
-
 u32 sl_core_data_mac_tx_state_get(struct sl_core_mac *core_mac)
 {
-	unsigned long irq_flags;
-	u32           tx_state;
-	u64           hw_state;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
-	tx_state = core_mac->tx_state;
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
-
-	sl_core_hw_mac_tx_state_get(core_mac, &hw_state);
-
-	switch (tx_state) {
-	case SL_CORE_MAC_STATE_OFF:
-		if (hw_state != 0)
-			sl_core_log_warn(core_mac, LOG_NAME,
-				"get TX state off mismatch (sl = %u, hw = %llu)",
-				tx_state, hw_state);
-		break;
-	case SL_CORE_MAC_STATE_ON:
-		if (hw_state != 1)
-			sl_core_log_warn(core_mac, LOG_NAME,
-				"get TX state on mismatch (sl = %u, hw = %llu)",
-				tx_state, hw_state);
-		break;
+	switch (sl_core_hw_mac_tx_state_get(core_mac)) {
+	case 0:
+		sl_core_log_dbg(core_mac, LOG_NAME, "get TX OFF");
+		return SL_CORE_MAC_STATE_OFF;
+	case 1:
+		sl_core_log_dbg(core_mac, LOG_NAME, "get TX ON");
+		return SL_CORE_MAC_STATE_ON;
 	}
 
-	sl_core_log_dbg(core_mac, LOG_NAME,
-		"get TX state = %s", sl_core_mac_state_str(tx_state));
-
-	return tx_state;
-}
-
-void sl_core_data_mac_rx_state_set(struct sl_core_mac *core_mac, u32 rx_state)
-{
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
-	core_mac->rx_state = rx_state;
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
-
-	sl_core_log_dbg(core_mac, LOG_NAME,
-		"set RX state = %s", sl_core_mac_state_str(rx_state));
+	return SL_CORE_MAC_STATE_INVALID;
 }
 
 u32 sl_core_data_mac_rx_state_get(struct sl_core_mac *core_mac)
 {
-	unsigned long irq_flags;
-	u32           rx_state;
-	u64           hw_state;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
-	rx_state = core_mac->rx_state;
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
-
-	sl_core_hw_mac_rx_state_get(core_mac, &hw_state);
-
-	switch (rx_state) {
-	case SL_CORE_MAC_STATE_OFF:
-		if (hw_state != 0)
-			sl_core_log_warn(core_mac, LOG_NAME,
-				"get RX state off mismatch (sl = %u, hw = %llu)",
-				rx_state, hw_state);
-		break;
-	case SL_CORE_MAC_STATE_ON:
-		if (hw_state != 1)
-			sl_core_log_warn(core_mac, LOG_NAME,
-				"get RX state on mismatch (sl = %u, hw = %llu)",
-				rx_state, hw_state);
-		break;
+	switch (sl_core_hw_mac_rx_state_get(core_mac)) {
+	case 0:
+		sl_core_log_dbg(core_mac, LOG_NAME, "get RX OFF");
+		return SL_CORE_MAC_STATE_OFF;
+	case 1:
+		sl_core_log_dbg(core_mac, LOG_NAME, "get RX ON");
+		return SL_CORE_MAC_STATE_ON;
 	}
 
-	sl_core_log_dbg(core_mac, LOG_NAME,
-		"get RX state = %s", sl_core_mac_state_str(rx_state));
-
-	return rx_state;
+	return SL_CORE_MAC_STATE_INVALID;
 }
 
 void sl_core_data_mac_info_map_clr(struct sl_core_mac *core_mac, u32 bit_num)
