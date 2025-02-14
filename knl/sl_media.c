@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/sl_media.h>
@@ -125,7 +125,7 @@ const char *sl_media_vendor_str(u32 vendor)
 	case SL_MEDIA_VENDOR_HPE:
 		return "hpe";
 	case SL_MEDIA_VENDOR_CLOUD_LIGHT:
-		return "cloud light";
+		return "cloud_light";
 	case SL_MEDIA_VENDOR_MULTILANE:
 		return "multilane";
 	case SL_MEDIA_VENDOR_AMPHENOL:

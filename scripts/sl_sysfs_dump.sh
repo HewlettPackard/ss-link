@@ -70,6 +70,8 @@ for LGRP in $(/usr/bin/seq ${START} ${END}) ; do
         list /sys/class/cxi/cxi0/device/port/${LGRP}/link 0
         list /sys/class/cxi/cxi0/device/port/${LGRP}/mac 0
         list /sys/class/cxi/cxi0/device/port/${LGRP}/llr 0
+	list /sys/class/cxi/cxi0/device/port/${LGRP}/sl_info 0
+	list /sys/class/cxi/cxi0/device/port/${LGRP}/policies 0
     fi
 done
 
