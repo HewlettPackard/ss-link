@@ -17,12 +17,12 @@ echo 0           > ${DEBUGFS_DIR}/link/num
 echo "down" > ${DEBUGFS_CMD}
 
 # set the params to something that won't work
-echo "1" > ${DEBUGFS_DIR}/serdes/pre1
-echo "2" > ${DEBUGFS_DIR}/serdes/pre2
-echo "3" > ${DEBUGFS_DIR}/serdes/pre3
-echo "4" > ${DEBUGFS_DIR}/serdes/cursor
-echo "5" > ${DEBUGFS_DIR}/serdes/post1
-echo "6" > ${DEBUGFS_DIR}/serdes/post2
+echo "1" > ${DEBUGFS_DIR}/serdes/settings/pre1
+echo "2" > ${DEBUGFS_DIR}/serdes/settings/pre2
+echo "3" > ${DEBUGFS_DIR}/serdes/settings/pre3
+echo "4" > ${DEBUGFS_DIR}/serdes/settings/cursor
+echo "5" > ${DEBUGFS_DIR}/serdes/settings/post1
+echo "6" > ${DEBUGFS_DIR}/serdes/settings/post2
 echo "serdes_params_set" > ${DEBUGFS_CMD}
 
 # bring the link up

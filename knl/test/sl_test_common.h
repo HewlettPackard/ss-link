@@ -68,5 +68,6 @@ int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *pa
 int sl_test_cmds_show(struct seq_file *s, struct cmd_entry *cmd_list, size_t num_cmds);
 
 int sl_test_debugfs_create_s32(const char *name, umode_t mode, struct dentry *parent, s32 *value);
+int sl_test_debugfs_create_s16(const char *name, umode_t mode, struct dentry *parent, s16 *value);
 
 #endif /* _SL_TEST_COMMON_H_ */

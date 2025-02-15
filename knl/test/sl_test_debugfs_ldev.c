@@ -9,7 +9,7 @@
 #include "sl_test_common.h"
 #include "sl_test_debugfs_ldev.h"
 
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "ldev"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
 static struct dentry *ldev_dir;

@@ -12,16 +12,16 @@
 #include "sl_test_debugfs_mac.h"
 #include "sl_test_debugfs_serdes.h"
 
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "start"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
-// NOTE: will show up in /sys/kernel/debug/sl
 
 static struct dentry *sl_test_top_dir;
 
 int sl_test_debugfs_create(void)
 {
-	int            rtn;
+	int rtn;
 
+	/* NOTE: will show up in /sys/kernel/debug/sl */
 	sl_test_top_dir = debugfs_create_dir("sl", NULL);
 	if (!sl_test_top_dir) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,

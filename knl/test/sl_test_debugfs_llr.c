@@ -13,7 +13,7 @@
 #include "sl_test_debugfs_llr.h"
 #include "sl_test_common.h"
 
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "llr"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
 static struct dentry *llr_dir;

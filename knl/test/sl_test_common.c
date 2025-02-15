@@ -10,10 +10,10 @@
 #include "test/sl_ctl_test_ldev.h"
 #include "test/sl_ctl_test_lgrp.h"
 
-#define VAL_LEN  32
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "common"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
+#define VAL_LEN 32
 
 int sl_test_serdes_params_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			      s16 pre1, s16 pre2, s16 pre3, s16 cursor,
@@ -65,17 +65,17 @@ static ssize_t sl_test_option_read(struct file *f, char __user *buf, size_t size
 
 	entry = f->private_data;
 
-	len = snprintf(val_buf, sizeof(val_buf), "%s",
+	len = snprintf(val_buf, sizeof(val_buf), "%s\n",
 		(*entry->options & entry->field) ? "enabled" : "disabled");
 	if (len < 0) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "read_bit snprintf failed [%d]", len);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
 		return len;
 	}
 
 	bytes_read = simple_read_from_buffer(buf, size, pos, val_buf, len);
 	if (bytes_read < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"read_bit simple_read failed [%ld]", bytes_read);
+			"simple_read_from_buffer failed [%ld]", bytes_read);
 		return bytes_read;
 	}
 
@@ -92,19 +92,19 @@ static ssize_t sl_test_option_write(struct file *f, const char __user *buf, size
 
 	/* No partial writes */
 	if (*pos != 0) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "partial write_bit");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "partial write");
 		return 0;
 	}
 
 	if (count > sizeof(val_buf)) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "write_bit too big (count = %ld)", count);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "write too big (count = %ld)", count);
 		return -ENOSPC;
 	}
 
 	len = simple_write_to_buffer(val_buf, sizeof(val_buf), pos, buf, count);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"write_bit simple_write_to_buffer failed [%ld]", len);
+			"simple_write_to_buffer failed [%ld]", len);
 		return len;
 	}
 
@@ -112,7 +112,7 @@ static ssize_t sl_test_option_write(struct file *f, const char __user *buf, size
 
 	rtn = kstrtou8(val_buf, 0, &enable);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "write_bit kstrtou8 failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtou8 failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -140,8 +140,7 @@ int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *pa
 
 	dentry = debugfs_create_file(name, mode, parent, option, &sl_test_option_fops);
 	if (!dentry) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"debugfs create opt failed");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_opt failed");
 		return -ENOMEM;
 	}
 
@@ -154,7 +153,7 @@ int sl_test_cmds_show(struct seq_file *s, struct cmd_entry *cmd_list, size_t num
 	size_t cmd_num;
 
 	for (cmd_num = 0; cmd_num < num_cmds; ++cmd_num)
-		seq_printf(s, "%s:%s\n", cmd_list[cmd_num].cmd, cmd_list[cmd_num].desc);
+		seq_printf(s, "%-30s: %s\n", cmd_list[cmd_num].cmd, cmd_list[cmd_num].desc);
 
 	return 0;
 }
@@ -175,20 +174,20 @@ static ssize_t sl_test_debugfs_s32_write(struct file *f, const char __user *buf,
 
 static ssize_t sl_test_debugfs_s32_read(struct file *f, char __user *buf, size_t size, loff_t *pos)
 {
-	char                        val_buf[VAL_LEN];
-	int                         len;
-	ssize_t                     bytes_read;
+	char    val_buf[VAL_LEN];
+	int     len;
+	ssize_t bytes_read;
 
-	len = snprintf(val_buf, sizeof(val_buf), "%d", *(s32 *)f->private_data);
+	len = snprintf(val_buf, sizeof(val_buf), "%d\n", *(s32 *)f->private_data);
 	if (len < 0) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "read_bit snprintf failed [%d]", len);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
 		return len;
 	}
 
 	bytes_read = simple_read_from_buffer(buf, size, pos, val_buf, len);
 	if (bytes_read < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"read_bit simple_read failed [%ld]", bytes_read);
+			"simple_read_from_buffer failed [%ld]", bytes_read);
 		return bytes_read;
 	}
 
@@ -208,11 +207,66 @@ int sl_test_debugfs_create_s32(const char *name, umode_t mode, struct dentry *pa
 
 	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_fops_s32);
 	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"debugfs_create_s32 failed");
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s32 failed");
 		return -ENOMEM;
 	}
 
 	return 0;
 }
 EXPORT_SYMBOL_GPL(sl_test_debugfs_create_s32);
+
+static ssize_t sl_test_debugfs_s16_write(struct file *f, const char __user *buf, size_t count, loff_t *pos)
+{
+	int rtn;
+
+	rtn = kstrtoint_from_user(buf, count, 0, f->private_data);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtoint_from_user failed [%d]", rtn);
+		return rtn;
+	}
+
+	return count;
+}
+
+static ssize_t sl_test_debugfs_s16_read(struct file *f, char __user *buf, size_t size, loff_t *pos)
+{
+	char    val_buf[VAL_LEN];
+	int     len;
+	ssize_t bytes_read;
+
+	len = snprintf(val_buf, sizeof(val_buf), "%d\n", *(s16 *)f->private_data);
+	if (len < 0) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
+		return len;
+	}
+
+	bytes_read = simple_read_from_buffer(buf, size, pos, val_buf, len);
+	if (bytes_read < 0) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"simple_read_from_buffer failed [%ld]", bytes_read);
+		return bytes_read;
+	}
+
+	return bytes_read;
+}
+
+static const struct file_operations sl_test_fops_s16 = {
+	.owner = THIS_MODULE,
+	.open  = simple_open,
+	.read  = sl_test_debugfs_s16_read,
+	.write = sl_test_debugfs_s16_write,
+};
+
+int sl_test_debugfs_create_s16(const char *name, umode_t mode, struct dentry *parent, s16 *value)
+{
+	struct dentry *dentry;
+
+	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_fops_s16);
+	if (!dentry) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s16 failed");
+		return -ENOMEM;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_create_s16);

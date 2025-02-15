@@ -15,7 +15,7 @@
 #include "sl_test_debugfs_link.h"
 #include "sl_test_common.h"
 
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "link"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
 static struct dentry         *link_dir;
@@ -451,7 +451,7 @@ static int sl_test_link_sysfs_init(u8 lgrp_num, u8 link_num)
 		port_kobj, "%d", link_num);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"kobject_init_and_add failed [%d]\n", rtn);
+			"kobject_init_and_add failed [%d]", rtn);
 		kobject_put(&sl_link_num_dir_kobj[lgrp_num][link_num]);
 		return -ENOMEM;
 	}
@@ -489,7 +489,7 @@ int sl_test_link_new(void)
 	rtn = sl_test_link_sysfs_init(lgrp->num, link_num);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd sl_test_link_sysfs_init failed [%d]\n", rtn);
+			"cmd sl_test_link_sysfs_init failed [%d]", rtn);
 		return rtn;
 	}
 

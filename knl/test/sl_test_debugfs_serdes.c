@@ -6,15 +6,15 @@
 
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
+#include "sl_test_debugfs_link.h"
 #include "sl_test_debugfs_serdes.h"
 #include "sl_test_common.h"
 #include "log/sl_log.h"
 
-#define LOG_BLOCK SL_LOG_BLOCK
+#define LOG_BLOCK "serdes"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
 static struct dentry *sl_test_serdes_dir;
-static u8 serdes_num;
 
 enum serdes_cmd_index {
 	SERDES_PARAMS_SET_CMD,
@@ -23,8 +23,8 @@ enum serdes_cmd_index {
 };
 
 static struct cmd_entry serdes_cmd_list[]  = {
-	[SERDES_PARAMS_SET_CMD]     = { .cmd = "serdes_params_set",   .desc = "set serdes params"                  },
-	[SERDES_PARAMS_UNSET_CMD]   = { .cmd = "serdes_params_unset", .desc = "return serdes params to original"   },
+	[SERDES_PARAMS_SET_CMD]   = { .cmd = "serdes_params_set",   .desc = "set serdes params"                },
+	[SERDES_PARAMS_UNSET_CMD] = { .cmd = "serdes_params_unset", .desc = "return serdes params to original" },
 };
 
 #define SERDES_CMD_MATCH(_index, _str) \
@@ -58,7 +58,7 @@ static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"partial cmd_write");
+			"cmd_write partial not allowed");
 		return 0;
 	}
 
@@ -82,7 +82,7 @@ static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, 
 		rtn = sl_test_serdes_set();
 		if (rtn < 0) {
 			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_serdes_set failed [%d]", rtn);
+				"cmd_write test_serdes_set failed [%d]", rtn);
 			return rtn;
 		}
 		return size;
@@ -93,7 +93,7 @@ static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, 
 		rtn = sl_test_serdes_unset();
 		if (rtn < 0) {
 			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_serdes_unset failed [%d]", rtn);
+				"cmd_write test_serdes_unset failed [%d]", rtn);
 			return rtn;
 		}
 		return size;
@@ -135,7 +135,6 @@ static struct sl_test_serdes_settings settings;
 
 static void sl_test_serdes_init(void)
 {
-	serdes_num        = 0;
 	settings.pre1     = 0;
 	settings.pre2     = 0;
 	settings.pre3     = 0;
@@ -163,28 +162,27 @@ int sl_test_serdes_create(struct dentry *parent)
 
 	sl_test_serdes_dir = debugfs_create_dir("serdes", parent);
 	if (!sl_test_serdes_dir) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "serdes debugfs_create_dir failed");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"serdes debugfs_create_dir failed");
 		return -ENOMEM;
 	}
 
 	sl_test_serdes_init();
 
-	debugfs_create_u8("num",       0644, sl_test_serdes_dir, &serdes_num);
-
 	settings_dir = debugfs_create_dir("settings", sl_test_serdes_dir);
 	if (!sl_test_serdes_dir) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "serdes debugfs_create_dir failed");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"serdes settings debugfs_create_dir failed");
 		return -ENOMEM;
 	}
 
-	debugfs_create_u16("pre1",     0644, settings_dir, &(settings.pre1));
-	debugfs_create_u16("pre2",     0644, settings_dir, &(settings.pre2));
-	debugfs_create_u16("pre3",     0644, settings_dir, &(settings.pre3));
-	debugfs_create_u16("cursor",   0644, settings_dir, &(settings.cursor));
-	debugfs_create_u16("post1",    0644, settings_dir, &(settings.post1));
-	debugfs_create_u16("post2",    0644, settings_dir, &(settings.post2));
+	sl_test_debugfs_create_s16("pre1",   0644, settings_dir, &(settings.pre1));
+	sl_test_debugfs_create_s16("pre2",   0644, settings_dir, &(settings.pre2));
+	sl_test_debugfs_create_s16("pre3",   0644, settings_dir, &(settings.pre3));
+	sl_test_debugfs_create_s16("cursor", 0644, settings_dir, &(settings.cursor));
+	sl_test_debugfs_create_s16("post1",  0644, settings_dir, &(settings.post1));
+	sl_test_debugfs_create_s16("post2",  0644, settings_dir, &(settings.post2));
 	debugfs_create_u16("media",    0644, settings_dir, &(settings.media));
-
 	debugfs_create_u16("osr",      0644, settings_dir, &(settings.osr));
 	debugfs_create_u16("encoding", 0644, settings_dir, &(settings.encoding));
 	debugfs_create_u16("clocking", 0644, settings_dir, &(settings.clocking));
@@ -209,11 +207,6 @@ int sl_test_serdes_create(struct dentry *parent)
 	return 0;
 }
 
-u8 sl_test_debugfs_serdes_num_get(void)
-{
-	return serdes_num;
-}
-
 int sl_test_serdes_set(void)
 {
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "serdes set");
@@ -227,8 +220,8 @@ int sl_test_serdes_set(void)
 		settings.osr, settings.encoding, settings.clocking, settings.width,
 		settings.dfe, settings.scramble);
 
-	return sl_test_serdes_params_set(sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(),
-		sl_test_debugfs_serdes_num_get(),
+	return sl_test_serdes_params_set(sl_test_debugfs_ldev_num_get(),
+		sl_test_debugfs_lgrp_num_get(), sl_test_debugfs_link_num_get(),
 		settings.pre1, settings.pre2, settings.pre3, settings.cursor,
 		settings.post1, settings.post2, settings.media,
 		settings.osr, settings.encoding, settings.clocking, settings.width,
@@ -239,6 +232,6 @@ int sl_test_serdes_unset(void)
 {
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "serdes unset");
 
-	return sl_test_serdes_params_unset(sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(),
-		sl_test_debugfs_serdes_num_get());
+	return sl_test_serdes_params_unset(sl_test_debugfs_ldev_num_get(),
+		sl_test_debugfs_lgrp_num_get(), sl_test_debugfs_link_num_get());
 }
