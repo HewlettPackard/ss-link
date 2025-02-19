@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_SERDES_LANE_H_
 #define _SL_CORE_HW_SERDES_LANE_H_
@@ -43,11 +43,12 @@ struct sl_core_lgrp;
 struct sl_core_serdes_settings;
 struct sl_media_serdes_settings;
 
-#define SL_CORE_HW_SERDES_LANE_ADDR(_addr, _lane_num, _lane_count, _lane_ram_base, _lane_ram_size, _grp_ram_size) \
-	(_lane_ram_base +                              \
-	_addr +                                        \
-	((_lane_num % _lane_count) * _lane_ram_size) + \
-	(_grp_ram_size * (_lane_num >> 1)))
+#define SL_CORE_HW_SERDES_LANE_ADDR(_addr, _lane_num, _lgrp)                                                 \
+	((_lgrp)->core_ldev->serdes.fw_info[LGRP_TO_SERDES((_lgrp)->num)].lane_var_ram_base +                \
+	(_addr) +                                                                                            \
+	(((_lane_num) % (_lgrp)->core_ldev->serdes.fw_info[LGRP_TO_SERDES((_lgrp)->num)].lane_count) *       \
+		(_lgrp)->core_ldev->serdes.fw_info[LGRP_TO_SERDES((_lgrp)->num)].lane_var_ram_size) +        \
+	((_lgrp)->core_ldev->serdes.fw_info[LGRP_TO_SERDES((_lgrp)->num)].grp_ram_size * ((_lane_num) >> 1)))
 
 #define SL_CORE_HW_SERDES_LOOPBACK_SERDES_SETTINGS_SET(_core_link)        \
 	do {                                                              \

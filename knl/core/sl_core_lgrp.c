@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/sl_lgrp.h>
@@ -171,20 +171,4 @@ int sl_core_lgrp_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num,
 int sl_core_lgrp_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower)
 {
 	return sl_core_hw_serdes_eye_lower_get(core_lgrp, asic_lane_num, eye_lower);
-}
-
-const char *sl_core_lgrp_serdes_state_str(u8 state)
-{
-	switch (state) {
-	case SL_CORE_LGRP_SERDES_STATE_UNKNOWN:
-		return "unknown";
-	case SL_CORE_LGRP_SERDES_STATE_INIT:
-		return "init";
-	case SL_CORE_LGRP_SERDES_STATE_READY:
-		return "ready";
-	case SL_CORE_LGRP_SERDES_STATE_ERROR:
-		return "error";
-	default:
-		return "invalid";
-	}
 }

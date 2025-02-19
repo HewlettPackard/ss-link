@@ -22,7 +22,7 @@
 #include "hw/sl_core_hw_mac.h"
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
-#include "hw/sl_core_hw_serdes.h"
+#include "hw/sl_core_hw_serdes_link.h"
 #include "hw/sl_core_hw_settings.h"
 #include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_fec.h"

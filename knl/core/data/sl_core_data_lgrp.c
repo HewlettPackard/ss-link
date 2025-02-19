@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -81,11 +81,6 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 	spin_lock(&core_lgrps_lock);
 	core_lgrps[ldev_num][lgrp_num] = core_lgrp;
 	spin_unlock(&core_lgrps_lock);
-
-	core_lgrp->serdes.state = SL_CORE_LGRP_SERDES_STATE_INIT;
-	rtn = sl_core_hw_serdes_start(core_lgrp, SL_CORE_HW_SERDES_CLOCKING_85);
-	if (rtn)
-		sl_core_log_warn_trace(core_lgrp, LOG_NAME, "new - hw_serdes_start failed [%d]", rtn);
 
 	return 0;
 }

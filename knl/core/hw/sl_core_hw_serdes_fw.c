@@ -8,145 +8,24 @@
 
 #include "sl_kconfig.h"
 #include "sl_asic.h"
-#include "sl_module.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_sbus.h"
 #include "hw/sl_core_hw_sbus_pmi.h"
-#include "hw/sl_core_hw_uc_ram.h"
-#include "hw/sl_core_hw_serdes.h"
+#include "hw/sl_core_hw_serdes_fw.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
-#define FW_INFO_SIGNATURE                       0x464E49
-#define FW_INFO_NUM_MICROS_OFFSET               0x60
-#define FW_INFO_NUM_LANES_OFFSET                0xC
-#define FW_INFO_LANE_STATIC_VAR_RAM_BASE_OFFSET 0x74
-#define FW_INFO_LANE_STATIC_VAR_RAM_SIZE_OFFSET 0x78
-#define FW_INFO_LANE_VAR_RAM_BASE_OFFSET        0x74
-#define FW_INFO_LANE_VAR_RAM_SIZE_OFFSET        0x78
-#define FW_INFO_GRP_RAM_SIZE_OFFSET             0x68
-#define FW_INFO_LANE_MEM_PTR_OFFSET             0x1C
-#define FW_INFO_LANE_MEM_SIZE_OFFSET            0x08
-#define FW_INFO_SIZE                            128
-int sl_core_hw_serdes_fw_info_get(struct sl_core_lgrp *core_lgrp)
-{
-	int rtn;
-	u8  rd_buff[FW_INFO_SIZE];
-	u16 data16;
-	u32 data32;
-
-	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
-		return 0;
-
-	if (core_lgrp->serdes.is_fw_info_valid)
-		return 0;
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw info get");
-
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD21A,  0, 12, &data16);
-	core_lgrp->serdes.hw_info.num_cores = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD10A,  0, 12, &data16);
-	core_lgrp->serdes.hw_info.num_lanes = (data16 & 0xFF);
-	SL_CORE_HW_SBUS_FIELD_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0xFE, 24, 0xF, &data32);
-	core_lgrp->serdes.hw_info.num_plls = (data32 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD100, 10, 10, &data16);
-	core_lgrp->serdes.hw_info.rev_id_1 = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD10E, 12, 12, &data16);
-	core_lgrp->serdes.hw_info.rev_id_2 = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD0D8,  8,  8, &data16);
-	core_lgrp->serdes.hw_info.version = (data16 & 0xFF);
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"rev_id_1 = 0x%02X, rev_id_2 = 0x%02X, version = 0x%02X",
-		core_lgrp->serdes.hw_info.rev_id_1, core_lgrp->serdes.hw_info.rev_id_2,
-		core_lgrp->serdes.hw_info.version);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_cores = %u, num_lanes = %u, num_plls = %u",
-		core_lgrp->serdes.hw_info.num_cores, core_lgrp->serdes.hw_info.num_lanes,
-		core_lgrp->serdes.hw_info.num_plls);
-
-	rtn = sl_core_hw_uc_ram_rd_blk(core_lgrp, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
-	if (rtn) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_ram_rd_blk failed [%d]", rtn);
-		goto out;
-	}
-
-	core_lgrp->serdes.fw_info.signature = (*(u32 *)rd_buff & 0xFFFFFF);
-	core_lgrp->serdes.fw_info.version   = ((*(u32 *)rd_buff >> 24) & 0xFF);
-	if (core_lgrp->serdes.fw_info.signature != FW_INFO_SIGNATURE) {
-		sl_core_log_err(core_lgrp, LOG_NAME,
-			"invalid signature (expected = 0x%X, actual = 0x%X)",
-			FW_INFO_SIGNATURE, core_lgrp->serdes.fw_info.signature);
-		rtn = -EBADRQC;
-		goto out;
-	}
-
-	core_lgrp->serdes.hw_info.num_micros               =
-		(*(u32 *)&rd_buff[FW_INFO_NUM_MICROS_OFFSET] & 0xF);
-	core_lgrp->serdes.fw_info.lane_static_var_ram_base =
-		*(u32 *)&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_BASE_OFFSET];
-	core_lgrp->serdes.fw_info.lane_static_var_ram_size =
-		*(u32 *)&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_SIZE_OFFSET];
-	core_lgrp->serdes.fw_info.lane_var_ram_base        =
-		*(u32 *)&rd_buff[FW_INFO_LANE_MEM_PTR_OFFSET];
-	core_lgrp->serdes.fw_info.lane_var_ram_size        =
-		(*(u32 *)&rd_buff[FW_INFO_LANE_MEM_SIZE_OFFSET] >> 16) & 0xFFFF;
-	core_lgrp->serdes.fw_info.grp_ram_size             =
-		*(u32 *)&rd_buff[FW_INFO_GRP_RAM_SIZE_OFFSET] & 0xFFFF;
-	core_lgrp->serdes.fw_info.lane_count               =
-		*(u32 *)&rd_buff[FW_INFO_NUM_LANES_OFFSET] & 0xFF;
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "signature           = 0x%08X",
-		core_lgrp->serdes.fw_info.signature);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "version             = 0x%02X",
-		core_lgrp->serdes.fw_info.version);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_micros          = %d",
-		core_lgrp->serdes.hw_info.num_micros);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "static var ram base = 0x%08X",
-		core_lgrp->serdes.fw_info.lane_static_var_ram_base);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "static var ram size = 0x%08X",
-		core_lgrp->serdes.fw_info.lane_static_var_ram_size);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "var ram base        = 0x%08X",
-		core_lgrp->serdes.fw_info.lane_var_ram_base);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "var ram size        = 0x%04X",
-		core_lgrp->serdes.fw_info.lane_var_ram_size);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "grp ram size        = 0x%04X",
-		core_lgrp->serdes.fw_info.grp_ram_size);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "lane count          = %u",
-		core_lgrp->serdes.fw_info.lane_count);
-
-	core_lgrp->serdes.is_fw_info_valid = true;
-
-	rtn = 0;
-out:
-	return rtn;
-}
-
-static int sl_core_hw_serdes_fw_image_get(struct sl_core_lgrp *core_lgrp)
-{
-	int rtn;
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw image get \"%s\"", SL_HW_SERDES_FW_FILE);
-
-	rtn = request_firmware(&(core_lgrp->serdes.fw), SL_HW_SERDES_FW_FILE, sl_device_get());
-	if (rtn) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "request_firmware failed [%d]", rtn);
-		return rtn;
-	}
-
-	return 0;
-}
-
 #define SL_HW_SERDES_INIT_CHECK_TRIES 50
-static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
+int sl_core_hw_serdes_fw_setup(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 	int x;
 	u16 data16;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw load setup");
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw setup");
 
 	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, 0x0, 1, 0x1); /* POR_H_RSTB_SBUS */
 	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, 0x1, 2, 0x1); /* POR_H_RSTB_GATE */
@@ -177,7 +56,7 @@ static int sl_core_hw_serdes_fw_load_setup(struct sl_core_lgrp *core_lgrp)
 	}
 	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD202, 0x0000, 0x0300); /* disable init */
 	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw load setup - timeout");
+		sl_core_log_err(core_lgrp, LOG_NAME, "fw setup RAM init timeout");
 		rtn = -EIO;
 		goto out;
 	}
@@ -214,23 +93,23 @@ out:
 	return rtn;
 }
 
-static int sl_core_hw_serdes_fw_image_write(struct sl_core_lgrp *core_lgrp)
+int sl_core_hw_serdes_fw_write(struct sl_core_lgrp *core_lgrp)
 {
 	int                    rtn;
 	u32                    x;
 	u32                    data32;
 	const struct firmware *fw;
 
-	fw = core_lgrp->serdes.fw;
+	fw = core_lgrp->core_ldev->serdes.fw;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw image write (size = %lu bytes)", fw->size);
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw write (size = %lu bytes)", fw->size);
 
 	for (x = 0; x < fw->size; x += 4) {
 		data32 = (fw->data[x] |
 			(fw->data[x+1] << 8) |
 			(fw->data[x+2] << 16) |
 			(fw->data[x+3] << 24));
-		SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 10, data32);
+		SL_CORE_HW_SBUS_WR(core_lgrp, 0xFA, 10, data32);
 	}
 
 	rtn = 0;
@@ -238,12 +117,12 @@ out:
 	return rtn;
 }
 
-static int sl_core_hw_serdes_fw_load_finish(struct sl_core_lgrp *core_lgrp)
+int sl_core_hw_serdes_fw_finish(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
 	u16 data16;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw image finish");
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw finish");
 
 	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD227, 0x0002, 0x0002); /* disable writes to code RAM */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD217, 0,  0, 0x0001); /* disable CRC engine */
@@ -254,53 +133,14 @@ static int sl_core_hw_serdes_fw_load_finish(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD218, 0, 0, &data16); /* read CRC */
 	if (data16 != SL_HW_SERDES_FW_IMAGE_CRC) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw image finish - crc check failure");
+		sl_core_log_err(core_lgrp, LOG_NAME,
+			"fw finish crc check failure (crc = 0x%04X, expected = 0x%04X)",
+			data16, SL_HW_SERDES_FW_IMAGE_CRC);
 		rtn = -EIO;
 		goto out;
 	}
 
 	rtn = 0;
 out:
-	return rtn;
-}
-
-int sl_core_hw_serdes_fw_load(struct sl_core_lgrp *core_lgrp)
-{
-	int rtn;
-
-	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
-		return 0;
-
-	if (core_lgrp->serdes.is_fw_loaded)
-		return 0;
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw load");
-
-	rtn = sl_core_hw_serdes_fw_image_get(core_lgrp);
-	if (rtn != 0) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_image_get failed [%d]", rtn);
-		goto out;
-	}
-	rtn = sl_core_hw_serdes_fw_load_setup(core_lgrp);
-	if (rtn != 0) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_load_setup failed [%d]", rtn);
-		goto out;
-	}
-	rtn = sl_core_hw_serdes_fw_image_write(core_lgrp);
-	if (rtn != 0) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_image_write failed [%d]", rtn);
-		goto out;
-	}
-	rtn = sl_core_hw_serdes_fw_load_finish(core_lgrp);
-	if (rtn != 0) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw load - fw_load_finish failed [%d]", rtn);
-		goto out;
-	}
-
-	core_lgrp->serdes.is_fw_loaded = true;
-
-	rtn = 0;
-out:
-	release_firmware(core_lgrp->serdes.fw);
 	return rtn;
 }

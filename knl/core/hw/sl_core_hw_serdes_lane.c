@@ -517,11 +517,8 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 		}
 	}
 
-	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7,
-		serdes_lane_num, core_lgrp->serdes.fw_info.lane_count,
-		core_lgrp->serdes.fw_info.lane_var_ram_base,
-		core_lgrp->serdes.fw_info.lane_var_ram_size,
-		core_lgrp->serdes.fw_info.grp_ram_size);
+	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
+
 	for (x = 0; x < LANE_UP_QUALITY_CHECK_NUM_TRIES; ++x) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
 			sl_core_log_dbg(core_lgrp, LOG_NAME, "lane up quality check canceled");
@@ -542,11 +539,8 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	if (x >= LANE_UP_QUALITY_CHECK_NUM_TRIES)
 		return -EIO;
 
-	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8,
-		serdes_lane_num, core_lgrp->serdes.fw_info.lane_count,
-		core_lgrp->serdes.fw_info.lane_var_ram_base,
-		core_lgrp->serdes.fw_info.lane_var_ram_size,
-		core_lgrp->serdes.fw_info.grp_ram_size);
+	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
+
 	for (x = 0; x < LANE_UP_QUALITY_CHECK_NUM_TRIES; ++x) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
 			sl_core_log_dbg(core_lgrp, LOG_NAME, "lane up quality check canceled");
@@ -734,11 +728,7 @@ int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 
 	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
 
-	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7,
-		serdes_lane_num, core_lgrp->serdes.fw_info.lane_count,
-		core_lgrp->serdes.fw_info.lane_var_ram_base,
-		core_lgrp->serdes.fw_info.lane_var_ram_size,
-		core_lgrp->serdes.fw_info.grp_ram_size);
+	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
 
 	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_upper);
 
@@ -760,11 +750,7 @@ int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 
 	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
 
-	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8,
-		serdes_lane_num, core_lgrp->serdes.fw_info.lane_count,
-		core_lgrp->serdes.fw_info.lane_var_ram_base,
-		core_lgrp->serdes.fw_info.lane_var_ram_size,
-		core_lgrp->serdes.fw_info.grp_ram_size);
+	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
 
 	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_lower);
 

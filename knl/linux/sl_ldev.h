@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LDEV_H_
 #define _LINUX_SL_LDEV_H_
@@ -117,10 +117,11 @@ struct sl_ldev_attr {
 	__u32 options;
 };
 
-struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map, struct workqueue_struct *workq,
+struct sl_ldev *sl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 			    struct sl_ldev_attr *ldev_attr);
 int             sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent);
-int		sl_ldev_del(struct sl_ldev *ldev);
+int             sl_ldev_serdes_init(struct sl_ldev *ldev);
+int             sl_ldev_del(struct sl_ldev *ldev);
 int             sl_ldev_uc_ops_set(struct sl_ldev *ldev, struct sl_uc_ops *uc_ops,
 				   struct sl_uc_accessor *uc_accessor);
 

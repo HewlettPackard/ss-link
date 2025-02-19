@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -41,7 +41,7 @@ static bool sl_ctl_ldev_is_deleting(struct sl_ctl_ldev *ctl_ldev)
 	return is_deleting;
 }
 
-int sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map, struct workqueue_struct *workq,
+int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		    struct sl_ldev_attr *ldev_attr)
 {
 	int                   rtn;
@@ -58,11 +58,10 @@ int sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map, struct workqueue_struct *workq,
 	if (!ctl_ldev)
 		return -ENOMEM;
 
-	ctl_ldev->magic    = SL_CTL_LDEV_MAGIC;
-	ctl_ldev->ver      = SL_CTL_LDEV_VER;
-	ctl_ldev->num      = ldev_num;
-	ctl_ldev->attr     = *ldev_attr;
-	ctl_ldev->lgrp_map = lgrp_map;
+	ctl_ldev->magic = SL_CTL_LDEV_MAGIC;
+	ctl_ldev->ver   = SL_CTL_LDEV_VER;
+	ctl_ldev->num   = ldev_num;
+	ctl_ldev->attr  = *ldev_attr;
 
 	spin_lock_init(&ctl_ldev->data_lock);
 
@@ -110,6 +109,11 @@ out:
 	kfree(ctl_ldev);
 
 	return rtn;
+}
+
+int sl_ctl_ldev_serdes_init(u8 ldev_num)
+{
+	return sl_core_ldev_serdes_init(ldev_num);
 }
 
 void sl_ctl_ldev_del(u8 ldev_num)

@@ -89,6 +89,7 @@ $(SL_NAME)-y += \
 	core/hw/sl_core_hw_serdes.o         \
 	core/hw/sl_core_hw_serdes_fw.o      \
 	core/hw/sl_core_hw_serdes_core.o    \
+	core/hw/sl_core_hw_serdes_link.o    \
 	core/hw/sl_core_hw_serdes_lane.o    \
 	core/hw/sl_core_hw_serdes_lane_tx.o \
 	core/hw/sl_core_hw_serdes_lane_rx.o \

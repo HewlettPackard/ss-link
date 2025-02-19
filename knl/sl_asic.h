@@ -25,34 +25,36 @@
 #pragma GCC diagnostic pop
 
 #define SL_ASIC_MAX_LDEVS  1
-#define SL_ASIC_MAX_LGRPS 64
+#define SL_ASIC_MAX_LGRPS  64
 #define SL_ASIC_MAX_LINKS  4
 #define SL_ASIC_MAX_LANES  4
+#define SL_ASIC_MAX_SERDES 32
 
 #define SS2_PORT_BASE(port) SS2_PORT_PML_BASE(port)
 
-#define SL_MEDIA_MAX_JACK_NUM           32
-#define SL_MEDIA_MAX_LGRPS_PER_JACK     4
-#define SL_MEDIA_LGRPS_PER_PORT         2
-#define SL_MEDIA_LGRPS_DIVIDE_PER_PORT  (SL_MEDIA_LGRPS_PER_PORT >> 1)
+#define SL_MEDIA_MAX_JACK_NUM          32
+#define SL_MEDIA_MAX_LGRPS_PER_JACK    4
+#define SL_MEDIA_LGRPS_PER_PORT        2
+#define SL_MEDIA_LGRPS_DIVIDE_PER_PORT (SL_MEDIA_LGRPS_PER_PORT >> 1)
 
 #else /* Cassini */
 
 #include "sbl/sbl_pml.h"
 
-#define SL_ASIC_MAX_LDEVS 16
-#define SL_ASIC_MAX_LGRPS 1
-#define SL_ASIC_MAX_LINKS 1
-#define SL_ASIC_MAX_LANES 4
+#define SL_ASIC_MAX_LDEVS  16
+#define SL_ASIC_MAX_LGRPS  1
+#define SL_ASIC_MAX_LINKS  1
+#define SL_ASIC_MAX_LANES  4
+#define SL_ASIC_MAX_SERDES 1
 
 #define PLATFORM_ASIC   C_PLATFORM_ASIC
 #define PLATFORM_NETSIM C_PLATFORM_NETSIM
 #define PLATFORM_Z1     C_PLATFORM_Z1
 
-#define SL_MEDIA_MAX_JACK_NUM               1
-#define SL_MEDIA_MAX_LGRPS_PER_JACK         1
-#define SL_MEDIA_LGRPS_PER_PORT             1
-#define SL_MEDIA_LGRPS_DIVIDE_PER_PORT      0
+#define SL_MEDIA_MAX_JACK_NUM          1
+#define SL_MEDIA_MAX_LGRPS_PER_JACK    1
+#define SL_MEDIA_LGRPS_PER_PORT        1
+#define SL_MEDIA_LGRPS_DIVIDE_PER_PORT 0
 
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 

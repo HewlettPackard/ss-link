@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/workqueue.h>
@@ -181,7 +181,7 @@ int sl_ldev_uc_ops_set(struct sl_ldev *ldev, struct sl_uc_ops *uc_ops,
 EXPORT_SYMBOL(sl_ldev_uc_ops_set);
 #endif /* BUILDSYS_FRAMEWORK_CASSINI */
 
-struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
+struct sl_ldev *sl_ldev_new(u8 ldev_num,
 	struct workqueue_struct *workq, struct sl_ldev_attr *ldev_attr)
 {
 	int rtn;
@@ -197,7 +197,7 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num, u64 phys_lgrp_map,
 		return ERR_PTR(rtn);
 	}
 
-	rtn = sl_ctl_ldev_new(ldev_num, phys_lgrp_map, workq, ldev_attr);
+	rtn = sl_ctl_ldev_new(ldev_num, workq, ldev_attr);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
@@ -245,6 +245,20 @@ int sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent)
 	return 0;
 }
 EXPORT_SYMBOL(sl_ldev_sysfs_parent_set);
+
+int sl_ldev_serdes_init(struct sl_ldev *ldev)
+{
+	int rtn;
+
+	rtn = sl_ldev_check(ldev);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		return rtn;
+	}
+
+	return sl_ctl_ldev_serdes_init(ldev->num);
+}
+EXPORT_SYMBOL(sl_ldev_serdes_init);
 
 int sl_ldev_del(struct sl_ldev *ldev)
 {

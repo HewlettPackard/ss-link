@@ -41,6 +41,11 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"up (link = 0x%p, flags = 0x%08X)", core_link, core_link->config.flags);
 
+	if (!sl_core_ldev_serdes_is_ready(core_link->core_lgrp->core_ldev)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "up serdes isn't ready");
+		return -EIO;
+	}
+
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
 	link_state = core_link->link.state;
 	switch (link_state) {

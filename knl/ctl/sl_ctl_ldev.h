@@ -51,12 +51,13 @@ struct sl_ctl_ldev {
 	struct sl_ctl_ldev_cable_hpe_pn_kobj cable_hpe_pns_kobj[ARRAY_SIZE(cable_db)];
 };
 
-int		    sl_ctl_ldev_new(u8 ldev_num, u64 lgrp_map,
+int                 sl_ctl_ldev_new(u8 ldev_num,
 				    struct workqueue_struct *workq,
 				    struct sl_ldev_attr *ldev_attr);
-void		    sl_ctl_ldev_del(u8 ldev_num);
+int                 sl_ctl_ldev_serdes_init(u8 ldev_num);
+void                sl_ctl_ldev_del(u8 ldev_num);
 struct sl_ctl_ldev *sl_ctl_ldev_get(u8 ldev_num);
 
-void		    sl_ctl_ldev_exit(void);
+void                sl_ctl_ldev_exit(void);
 
 #endif /* _SL_CTL_LDEV_H_ */

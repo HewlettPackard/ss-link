@@ -12,73 +12,11 @@
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_sbus.h"
 #include "hw/sl_core_hw_serdes.h"
+#include "hw/sl_core_hw_serdes_fw.h"
 #include "hw/sl_core_hw_serdes_lane.h"
+#include "hw/sl_core_hw_serdes_core.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
-
-int sl_core_hw_serdes_core_sbus_reset(struct sl_core_lgrp *core_lgrp)
-{
-	int rtn;
-	u32 data32;
-	u32 proc_state;
-	u32 strapping;
-	u16 stack_size;
-	u32 misc_data;
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "sbus reset");
-
-	/* read SMB proc state */
-	SL_CORE_HW_SBUS_RD(core_lgrp, 0xFD, 5, &proc_state);
-	/* single step proc to halt it */
-	SL_CORE_HW_SBUS_WR(core_lgrp, 0xFD, 5, ((proc_state & ~3) | 1));
-	/* set target reg addr to RO */
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0xFF, 0);
-	/* soft reset */
-	SL_CORE_HW_SBUS_RST(core_lgrp, core_lgrp->serdes.dt.dev_addr);
-	/* check out of reset */
-	SL_CORE_HW_SBUS_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, &data32);
-	/* if not out of reset, then force it */
-	if (((data32 & 3) == 0) || ((data32 & 6) == 2))
-		SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, (data32 | 6));
-	/* strapping */
-	SL_CORE_HW_SBUS_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 33, &data32);
-	if (data32 & (1 << 31))
-		strapping = ((data32 >> 24) & 0x1F);
-	else
-		strapping = ((data32 >> 16) & 0x1F);
-	/* stack size */
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 2, (0xD22E | (strapping << 27)));
-	SL_CORE_HW_SBUS_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 4, &data32);
-	stack_size = ((data32 >> 2) & 0x1FFF);
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "stack size (sbus) = 0x%X", stack_size);
-	/* read misc reg */
-	SL_CORE_HW_SBUS_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, &misc_data);
-
-	/* POR */
-	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr,
-		48, 0x0, 1, 0x1); /* POR_H_RSTB_SBUS */
-	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr,
-		48, 0x1, 2, 0x1); /* POR_H_RSTB_GATE */
-	usleep_range(1000, 2000);
-	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr,
-		48, 0x1, 1, 0x1); /* POR_H_RSTB_SBUS */
-
-	/* restore stack size */
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 2, (0xD22E | (strapping << 27)));
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 3, ((stack_size << 18) | 0x8003));
-	/* restore misc reg */
-	SL_CORE_HW_SBUS_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, 48, misc_data);
-	/* restore SMB proc state */
-	SL_CORE_HW_SBUS_WR(core_lgrp, 0xFD, 5, proc_state);
-
-	/* re-gate POR */
-	SL_CORE_HW_SBUS_FIELD_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr,
-		48, 0x3, 1, 0x3); /* POR_H_RSTB_GATE + POR_H_RSTB_SBUS */
-
-	rtn = 0;
-out:
-	return rtn;
-}
 
 static int sl_core_hw_serdes_core_uc_reset_set(struct sl_core_lgrp *core_lgrp)
 {
@@ -110,7 +48,7 @@ static int sl_core_hw_serdes_core_uc_reset_clr(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xD227, 1, 0, 0x0001); /* enable micro access to code RAM */
 
-	for (x = 0; x < core_lgrp->serdes.hw_info.num_micros; ++x) {
+	for (x = 0; x < core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].num_micros; ++x) {
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD240, 1, 0, 0x0001); /* enable micro clock */
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x, 0xD241, 1, 0, 0x0001); /* clear micro reset */
 	}
@@ -139,12 +77,12 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, 0xFFDC, 0x1F, 0, 0x001F); /* broadcast port addr */
 
-	for (x = 0; x < core_lgrp->serdes.hw_info.num_lanes; ++x)
+	for (x = 0; x < core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].num_lanes; ++x)
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, x, 0, 0xD0B1, 0, 0, 0x0001); /* disable lane */
 
 	usleep_range(10, 20);
 
-	for (x = 0; x < core_lgrp->serdes.hw_info.num_plls; ++x)
+	for (x = 0; x < core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].num_plls; ++x)
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, x, 0xD184, 0, 13, 0x2000); /* PLL reset */
 
 	usleep_range(10, 20);
@@ -299,7 +237,7 @@ static int sl_core_hw_serdes_core_lgrp_reset(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "reset");
 
-	for (lane_num = 0; lane_num < core_lgrp->serdes.hw_info.num_lanes; ++lane_num) {
+	for (lane_num = 0; lane_num < core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].num_lanes; ++lane_num) {
 		/* TX */
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, lane_num, 0, 0xD1D1, 0, 0, 0x0001);
 		usleep_range(10, 20);
@@ -326,9 +264,6 @@ int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
 
-	if (core_lgrp->serdes.is_core_init)
-		return 0;
-
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "core init");
 
 	rtn = sl_core_hw_serdes_core_proc_reset(core_lgrp);
@@ -346,8 +281,6 @@ int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_lgrp_reset failed [%d]", rtn);
 		goto out;
 	}
-
-	core_lgrp->serdes.is_core_init = true;
 
 	rtn = 0;
 out:
@@ -426,7 +359,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
 
-	if (core_lgrp->serdes.is_pll_locked && (core_lgrp->serdes.clocking == clocking)) {
+	if (core_lgrp->serdes.clocking == clocking) {
 		sl_core_log_dbg(core_lgrp, LOG_NAME, "pll already locked and clocking already set");
 		return 0;
 	}
@@ -455,8 +388,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 		goto out;
 	}
 
-	core_lgrp->serdes.clocking      = clocking;
-	core_lgrp->serdes.is_pll_locked = true;
+	core_lgrp->serdes.clocking = clocking;
 
 	rtn = 0;
 out:

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -46,9 +46,10 @@ static ssize_t hw_rev_1_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"hw ver show (hw_rev_1 = 0x%X)",
-		core_lgrp->serdes.hw_info.rev_id_1);
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_1);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n", core_lgrp->serdes.hw_info.rev_id_1);
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_1);
 }
 
 static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -64,9 +65,10 @@ static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"hw ver show (hw_rev_2 = 0x%X)",
-		core_lgrp->serdes.hw_info.rev_id_2);
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_2);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n", core_lgrp->serdes.hw_info.rev_id_2);
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_2);
 }
 
 static ssize_t hw_version_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -82,9 +84,10 @@ static ssize_t hw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"hw ver show (hw_version = 0x%X)",
-		core_lgrp->serdes.hw_info.version);
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n", core_lgrp->serdes.hw_info.version);
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 }
 
 static ssize_t fw_signature_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -100,9 +103,10 @@ static ssize_t fw_signature_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"fw signature show (fw_signature = 0x%X)",
-		core_lgrp->serdes.fw_info.signature);
+		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].signature);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n", core_lgrp->serdes.fw_info.signature);
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].signature);
 }
 
 static ssize_t fw_version_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -118,27 +122,10 @@ static ssize_t fw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"fw version show (fw_version = 0x%X)",
-		core_lgrp->serdes.fw_info.version);
+		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n", core_lgrp->serdes.fw_info.version);
-}
-
-static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_ctl_lgrp  *ctl_lgrp;
-	struct sl_core_lgrp *core_lgrp;
-
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
-	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
-
-	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
-
-	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "state show (state = %u %s)",
-		core_lgrp->serdes.state, sl_core_lgrp_serdes_state_str(core_lgrp->serdes.state));
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_core_lgrp_serdes_state_str(core_lgrp->serdes.state));
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 }
 
 static struct kobj_attribute hw_rev_id_1   = __ATTR_RO(hw_rev_1);
@@ -146,7 +133,6 @@ static struct kobj_attribute hw_rev_id_2   = __ATTR_RO(hw_rev_2);
 static struct kobj_attribute hw_version    = __ATTR_RO(hw_version);
 static struct kobj_attribute fw_signature  = __ATTR_RO(fw_signature);
 static struct kobj_attribute fw_version    = __ATTR_RO(fw_version);
-static struct kobj_attribute state         = __ATTR_RO(state);
 
 static struct attribute *serdes_attrs[] = {
 	&hw_rev_id_1.attr,
@@ -154,7 +140,6 @@ static struct attribute *serdes_attrs[] = {
 	&hw_version.attr,
 	&fw_signature.attr,
 	&fw_version.attr,
-	&state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(serdes);

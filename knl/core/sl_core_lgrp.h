@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021,2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021,2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LGRP_H_
 #define _SL_CORE_LGRP_H_
@@ -13,11 +13,6 @@
 #include "uapi/sl_media.h"
 #include "base/sl_core_log.h"
 #include "sl_core_ldev.h"
-
-#define SL_CORE_LGRP_SERDES_STATE_UNKNOWN   0
-#define SL_CORE_LGRP_SERDES_STATE_INIT      1
-#define SL_CORE_LGRP_SERDES_STATE_READY     2
-#define SL_CORE_LGRP_SERDES_STATE_ERROR     3
 
 #define SL_CORE_LGRP_MAGIC 0x736c474D
 struct sl_core_lgrp {
@@ -40,41 +35,15 @@ struct sl_core_lgrp {
 	struct sl_link_caps             link_caps[SL_ASIC_MAX_LINKS];
 
 	struct {
-		u32 state;
-		struct sl_dt_lgrp_info dt;
-		bool is_swizzled;
+		struct sl_dt_lgrp_info  dt;
+		u32                     clocking;
 		struct {
-			u8 num_cores;
-			u8 rev_id_1;
-			u8 rev_id_2;
-			u8 version;
-			u8 num_micros;
-			u8 num_lanes;
-			u8 num_plls;
-		} hw_info;
-		const struct firmware *fw;
-		bool is_fw_loaded;
-		struct {
-			u32 signature;
-			u8  version;
-			u32 lane_static_var_ram_base;
-			u32 lane_static_var_ram_size;
-			u32 lane_var_ram_base;
-			u16 lane_var_ram_size;
-			u16 grp_ram_size;
-			u8  lane_count;
-		} fw_info;
-		bool is_fw_info_valid;
-		bool is_core_init;
-		u32  clocking;
-		bool is_pll_locked;
-		struct {
-			u32 tx;
-			u32 rx;
+			u32             tx;
+			u32             rx;
 		} lane_state[SL_MAX_LANES];
 		struct {
-			u8   low;
-			u8   high;
+			u8              low;
+			u8              high;
 		} eye_limits[SL_MAX_LANES];
 	} serdes;
 
@@ -105,7 +74,5 @@ int sl_core_lgrp_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *w
 int sl_core_lgrp_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *width);
 int sl_core_lgrp_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper);
 int sl_core_lgrp_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower);
-
-const char *sl_core_lgrp_serdes_state_str(u8 state);
 
 #endif /* _SL_CORE_LGRP_H_ */
