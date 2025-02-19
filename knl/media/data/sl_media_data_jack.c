@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/kernel.h>
@@ -179,8 +179,9 @@ void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 
 void sl_media_data_jack_cable_present_send(struct sl_media_lgrp *media_lgrp)
 {
-	int                   rtn;
-	unsigned long         irq_flags;
+	int                       rtn;
+	unsigned long             irq_flags;
+	union sl_lgrp_notif_info  info;
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "present send");
 
@@ -188,9 +189,10 @@ void sl_media_data_jack_cable_present_send(struct sl_media_lgrp *media_lgrp)
 	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED ||
 				media_lgrp->cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
 		spin_unlock_irqrestore(&media_lgrp->media_jack->data_lock, irq_flags);
+		info.media_attr = media_lgrp->cable_info->media_attr;
 		rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
 			SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_PRESENT,
-			&media_lgrp->cable_info->media_attr, sizeof(struct sl_media_attr), 0);
+			&info, 0);
 		if (rtn)
 			sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 				"present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
@@ -206,7 +208,7 @@ void sl_media_data_jack_cable_not_present_send(struct sl_media_lgrp *media_lgrp)
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "not present send");
 
 	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
-		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NOT_PRESENT, NULL, 0, 0);
+		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NOT_PRESENT, NULL, 0);
 	if (rtn)
 		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 			"not_present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
@@ -214,12 +216,14 @@ void sl_media_data_jack_cable_not_present_send(struct sl_media_lgrp *media_lgrp)
 
 void sl_media_data_jack_cable_error_send(struct sl_media_lgrp *media_lgrp, int error)
 {
-	int                   rtn;
+	int                      rtn;
+	union sl_lgrp_notif_info info;
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "error send (error = %d)", error);
 
+	info.error = error;
 	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
-		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_ERROR, &error, sizeof(error), 0);
+		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_ERROR, &info, 0);
 	if (rtn)
 		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 			"error_send ctl_lgrp_notif_enqueue failed [%d]", rtn);

@@ -1034,7 +1034,7 @@ static int sl_ctl_test_notif_matches(const struct sl_ctl_test *test, struct sl_l
 	struct sl_lgrp_notif_info_link_up_fail *msg_up_fail_info;
 
 	if ((test->notif == SL_LGRP_NOTIF_LINK_UP_FAIL) && test_down_cause) {
-		msg_up_fail_info = msg->info;
+		msg_up_fail_info = &msg->info.link_up_fail;
 		pr_debug(SL_CTL_TEST_NAME "[%02u:%u] down_notif (cause = %d)",
 			msg->lgrp_num, msg->link_num, msg_up_fail_info->cause);
 		match = ((test->notif == msg->type) && (test_down_cause == msg_up_fail_info->cause));
@@ -1076,9 +1076,6 @@ static void sl_ctl_test_lgrp_callback_hdlr(void *tag, struct sl_lgrp_notif_msg *
 				msg->lgrp_num, sl_lgrp_notif_str(msg->type), current_test_num);
 		}
 	}
-
-	if (msg->info)
-		sl_ctl_lgrp_notif_info_free(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num, msg->info);
 }
 
 static void sl_ctl_test_init(void)

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
@@ -80,17 +80,12 @@ int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 	spin_lock_init(&ctl_lgrp->log_lock);
 
 	spin_lock_init(&(ctl_lgrp->ctl_notif.lock));
-	ctl_lgrp->ctl_notif.info_cache = KMEM_CACHE(sl_lgrp_notif_info_cache, 0);
-	if (!ctl_lgrp->ctl_notif.info_cache) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "info_cache allocate failed");
-		rtn = -ENOMEM;
-		goto out_free;
-	}
+
 	rtn = kfifo_alloc(&ctl_lgrp->ctl_notif.fifo, SL_CTL_LGRP_NOTIF_FIFO_SIZE, GFP_KERNEL);
 	if (rtn) {
 		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "create notif fifo failed");
 		rtn = -ENOMEM;
-		goto out_kmem_cache_free;
+		goto out_free;
 	}
 	INIT_WORK(&ctl_lgrp->notif_work, sl_ctl_lgrp_notif_work);
 
@@ -129,8 +124,6 @@ out_core_lgrp:
 	sl_core_lgrp_del(ldev_num, lgrp_num);
 out_kfifo_free:
 	kfifo_free(&ctl_lgrp->ctl_notif.fifo);
-out_kmem_cache_free:
-	kmem_cache_destroy(ctl_lgrp->ctl_notif.info_cache);
 out_free:
 	kfree(ctl_lgrp);
 
@@ -169,7 +162,6 @@ void sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 	cancel_work_sync(&ctl_lgrp->notif_work);
 	kfifo_free(&ctl_lgrp->ctl_notif.fifo);
-	kmem_cache_destroy(ctl_lgrp->ctl_notif.info_cache);
 
 	spin_lock(&ctl_lgrps_lock);
 	ctl_lgrps[ldev_num][lgrp_num] = NULL;

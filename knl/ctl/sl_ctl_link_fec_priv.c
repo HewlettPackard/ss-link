@@ -392,7 +392,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			fec_info.ucw, fec_info.ccw);
 		// FIXME: need a UCW warn crossed node?
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-			SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0, 0);
+			SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
@@ -405,7 +405,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		sl_core_link_ccw_warn_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
 			ctl_link->ctl_lgrp->num, ctl_link->num, true);
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0, 0);
+				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);

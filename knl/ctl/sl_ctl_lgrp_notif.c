@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/delay.h>
@@ -126,7 +126,7 @@ int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t c
 }
 
 int sl_ctl_lgrp_notif_enqueue(struct sl_ctl_lgrp *ctl_lgrp, u8 link_num,
-			      u32 type, void *info, int info_size, u64 info_map)
+			      u32 type, union sl_lgrp_notif_info *info, u64 info_map)
 {
 	struct sl_lgrp_notif_msg notif_msg;
 	int                      rtn;
@@ -137,32 +137,28 @@ int sl_ctl_lgrp_notif_enqueue(struct sl_ctl_lgrp *ctl_lgrp, u8 link_num,
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME,
 		"notif enqueue (link_num = %d, type = 0x%X)", link_num, type);
 
-	if (info != NULL) {
-		notif_msg.info = kmem_cache_alloc(ctl_lgrp->ctl_notif.info_cache, GFP_ATOMIC);
-		if (!notif_msg.info)
-			return -ENOMEM;
-		memcpy(notif_msg.info, info, info_size);
-	} else {
-		notif_msg.info = NULL;
+	spin_lock(&ctl_lgrp->ctl_notif.lock);
+	if (kfifo_is_full(&ctl_lgrp->ctl_notif.fifo)) {
+		spin_unlock(&ctl_lgrp->ctl_notif.lock);
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "notification fifo is full");
+		return -ENOSPC;
 	}
+	spin_unlock(&ctl_lgrp->ctl_notif.lock);
+
+	if (info)
+		notif_msg.info = *info;
+	else
+		memset(&notif_msg.info, 0, sizeof(notif_msg.info));
+
 	notif_msg.ldev_num = ctl_lgrp->ctl_ldev->num;
 	notif_msg.lgrp_num = ctl_lgrp->num;
 	notif_msg.link_num = link_num;
 	notif_msg.type     = type;
 	notif_msg.info_map = info_map;
 
-	spin_lock(&ctl_lgrp->ctl_notif.lock);
-	if (kfifo_is_full(&ctl_lgrp->ctl_notif.fifo)) {
-		spin_unlock(&ctl_lgrp->ctl_notif.lock);
-		kmem_cache_free(ctl_lgrp->ctl_notif.info_cache, notif_msg.info);
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "notification fifo is full");
-		return -ENOSPC;
-	}
-	spin_unlock(&ctl_lgrp->ctl_notif.lock);
 	rtn = kfifo_in_spinlocked(&ctl_lgrp->ctl_notif.fifo, &notif_msg, sizeof(notif_msg),
 			&ctl_lgrp->ctl_notif.lock);
 	if (rtn != sizeof(notif_msg)) {
-		kmem_cache_free(ctl_lgrp->ctl_notif.info_cache, notif_msg.info);
 		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "write to kfifo failed");
 		return -EFAULT;
 	}
@@ -212,20 +208,4 @@ out:
 	spin_lock(&ctl_lgrp->ctl_notif.lock);
 	ctl_lgrp->ctl_notif.list_state = SL_CTL_LGRP_NOTIF_LIST_STATE_IDLE;
 	spin_unlock(&ctl_lgrp->ctl_notif.lock);
-}
-
-/*
- * called from client to free msg space in cache which was allocated while enqueue
- */
-void sl_ctl_lgrp_notif_info_free(u8 ldev_num, u8 lgrp_num, void *info)
-{
-	struct sl_ctl_lgrp *ctl_lgrp;
-
-	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
-	if (!ctl_lgrp) {
-		sl_ctl_log_err(NULL, LOG_NAME, "NULL lgrp");
-		return;
-	}
-
-	kmem_cache_free(ctl_lgrp->ctl_notif.info_cache, info);
 }

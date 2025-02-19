@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LGRP_H_
 #define _LINUX_SL_LGRP_H_
 
 #include <linux/sl_link.h>
+#include <linux/sl_llr.h>
 
 #include "uapi/sl_lgrp.h"
+#include "uapi/sl_media.h"
 
 struct sl_ldev;
 struct sl_lgrp;
@@ -41,13 +43,23 @@ struct sl_lgrp_notif_info_link_async_down {
 	struct sl_link_data link_data;
 };
 
+union sl_lgrp_notif_info {
+		struct sl_lgrp_notif_info_link_up         link_up;
+		struct sl_lgrp_notif_info_link_up_fail    link_up_fail;
+		struct sl_lgrp_notif_info_link_async_down link_async_down;
+		struct sl_link_caps                       lp_link_caps;
+		struct sl_llr_data                        llr_data;
+		struct sl_media_attr                      media_attr;
+		int                                       error;
+};
+
 struct sl_lgrp_notif_msg {
-	u8    ldev_num;
-	u8    lgrp_num;
-	u8    link_num;
-	u32   type;
-	void *info;
-	u64   info_map;
+	u8                       ldev_num;
+	u8                       lgrp_num;
+	u8                       link_num;
+	u32                      type;
+	union sl_lgrp_notif_info info;
+	u64                      info_map;
 };
 
 #define SL_MAX_LANES 4
@@ -75,7 +87,6 @@ int sl_lgrp_notif_callback_reg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 			       u32 types, void *tag);
 int sl_lgrp_notif_callback_unreg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 				 u32 types);
-int sl_lgrp_notif_info_free(struct sl_lgrp *lgrp, void *info);
 
 int sl_lgrp_connect_id_set(struct sl_lgrp *lgrp, const char *connect_id);
 

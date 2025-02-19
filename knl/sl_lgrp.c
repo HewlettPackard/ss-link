@@ -251,24 +251,6 @@ int sl_lgrp_notif_callback_unreg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 }
 EXPORT_SYMBOL(sl_lgrp_notif_callback_unreg);
 
-int sl_lgrp_notif_info_free(struct sl_lgrp *lgrp, void *info)
-{
-	int rtn;
-
-	rtn = sl_lgrp_check(lgrp);
-	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "info free fail");
-		return rtn;
-	}
-	if (!info)
-		return 0;
-
-	sl_ctl_lgrp_notif_info_free(lgrp->ldev_num, lgrp->num, info);
-
-	return 0;
-}
-EXPORT_SYMBOL(sl_lgrp_notif_info_free);
-
 int sl_lgrp_connect_id_set(struct sl_lgrp *lgrp, const char *connect_id)
 {
 	int rtn;

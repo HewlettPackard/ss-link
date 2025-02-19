@@ -31,19 +31,9 @@ static struct sl_lgrp_config  lgrp_config;
 static struct sl_lgrp_policy  lgrp_policy;
 static struct kobject        *lgrp_port_dir[SL_ASIC_MAX_LGRPS];
 
-struct lgrp_notif_info {
-	union {
-		struct sl_lgrp_notif_info_link_up         link_up;
-		struct sl_lgrp_notif_info_link_up_fail    link_up_fail;
-		struct sl_lgrp_notif_info_link_async_down link_async_down;
-		int                                       error;
-	};
-};
-
 struct lgrp_notif_event {
 	struct sl_lgrp_notif_msg msg;
 	ktime_t                  timestamp;
-	struct lgrp_notif_info   info;
 };
 
 struct lgrp_notif_interface {
@@ -132,7 +122,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			event->info.error);
+			msg->info.error);
 	case SL_LGRP_NOTIF_LINK_ASYNC_DOWN:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
@@ -141,7 +131,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			sl_link_down_cause_str(event->info.link_async_down.cause));
+			sl_link_down_cause_str(msg->info.link_async_down.cause));
 	case SL_LGRP_NOTIF_LINK_UP:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
@@ -150,7 +140,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			sl_lgrp_config_tech_str(event->info.link_up.mode));
+			sl_lgrp_config_tech_str(msg->info.link_up.mode));
 	case SL_LGRP_NOTIF_LINK_UP_FAIL:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
 			event->timestamp,
@@ -159,7 +149,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->link_num,
 			msg->info_map,
 			sl_lgrp_notif_str(msg->type),
-			sl_link_down_cause_str(event->info.link_up_fail.cause));
+			sl_link_down_cause_str(msg->info.link_up_fail.cause));
 	case SL_LGRP_NOTIF_LINK_DOWN:
 	default:
 		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s none\n",
@@ -267,7 +257,7 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 static unsigned int sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_struct *wait)
 {
 	struct lgrp_notif_interface *interface;
-	unsigned int events;
+	unsigned int                 events;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll");
 
@@ -308,32 +298,14 @@ static const struct file_operations sl_test_lgrp_notifs_fops = {
 static int sl_test_lgrp_notif_push(struct sl_lgrp_notif_msg *msg, ktime_t timestamp)
 {
 	struct lgrp_notif_interface *interface;
-	struct lgrp_notif_event event;
-	int copied;
+	struct lgrp_notif_event      event;
+	int                          copied;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 		"lgrp_notif_push (msg = %p, timestamp = %lld", msg, timestamp);
 
 	event.timestamp = timestamp;
 	event.msg       = *msg;
-
-	switch (msg->type) {
-	case SL_LGRP_NOTIF_LINK_ERROR:
-		event.info.error = *(u64 *)msg->info;
-		break;
-	case SL_LGRP_NOTIF_LINK_ASYNC_DOWN:
-		event.info.link_async_down = *(struct sl_lgrp_notif_info_link_async_down *)msg->info;
-		break;
-	case SL_LGRP_NOTIF_LINK_UP:
-		event.info.link_up = *(struct sl_lgrp_notif_info_link_up *)msg->info;
-		break;
-	case SL_LGRP_NOTIF_LINK_UP_FAIL:
-		event.info.link_up_fail = *(struct sl_lgrp_notif_info_link_up_fail *)msg->info;
-		break;
-	default:
-		event.info.error = 0;
-		break;
-	};
 
 	interface = &lgrp_notif_interfaces[msg->lgrp_num];
 
@@ -364,12 +336,6 @@ static void sl_test_lgrp_notif_callback(void *tag, struct sl_lgrp_notif_msg *msg
 	rtn = sl_test_lgrp_notif_push(msg, ktime_get_real());
 	if (rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_push failed [%d]", rtn);
-
-	//FIXME: This will cause a kernel panic when we unload. Rossw is freeing the same msg->info. Leave out until fix
-	//in SL.
-	// rtn = sl_lgrp_notif_info_free(&notif_lgrp, msg->info);
-	// if (rtn)
-	// 	sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_info_free failed [%d]", rtn);
 }
 
 static ssize_t sl_test_lgrp_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
