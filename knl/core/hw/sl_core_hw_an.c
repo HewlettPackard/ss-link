@@ -22,6 +22,9 @@
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
+#define SL_CORE_HW_AN_STATE_COMPLETE_ACK  5
+#define SL_CORE_HW_AN_STATE_AN_GOOD_CHECK 9
+
 void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_link_caps *my_caps)
 {
 	int x;
@@ -289,16 +292,28 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
+	u64 state;
 
 	port = core_link->core_lgrp->num;
 
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE(core_link->num), &data64);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"base page store (port = %u, pg %u = 0x%016llX)",
-		port, core_link->an.page_num, data64);
+		"base page store (port = %u, pg %u = 0x%016llX, state = %llu)",
+		port, core_link->an.page_num, data64,
+		SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64));
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_ABILITY_GET(data64) != 1) {
+	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
+	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
+		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"base page store bad state (pg %u = 0x%016llX)",
+			core_link->an.page_num, data64);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
+		return;
+	}
+
+	if (!SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_ABILITY_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store lp ability not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
@@ -306,7 +321,7 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		return;
 	}
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_BASE_PAGE_GET(data64) != 1) {
+	if (!SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_BASE_PAGE_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store base page not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
@@ -318,7 +333,7 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_BASE_PAGE_GET(data64);
 	core_link->an.rx_count++;
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_COMPLETE_GET(data64) == 1) {
+	if (SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_COMPLETE_GET(data64)) {
 		core_link->an.state = SL_CORE_HW_AN_STATE_COMPLETE;
 		return;
 	}
@@ -334,16 +349,28 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
+	u64 state;
 
 	port = core_link->core_lgrp->num;
 
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE(core_link->num), &data64);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"next page store (port = %u, pg %u = 0x%016llX)",
-		port, core_link->an.page_num, data64);
+		"next page store (port = %u, pg %u = 0x%016llX, state = %llu)",
+		port, core_link->an.page_num, data64,
+		SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_STATE_GET(data64));
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_BASE_PAGE_GET(data64) != 0) {
+	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
+	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
+		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"next page store bad state (pg %u = 0x%016llX)",
+			core_link->an.page_num, data64);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
+		return;
+	}
+
+	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_BASE_PAGE_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page store base page set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
@@ -355,7 +382,7 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 		SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_LP_NEXT_PAGE_GET(data64);
 	core_link->an.rx_count++;
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_COMPLETE_GET(data64) == 1) {
+	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_COMPLETE_GET(data64)) {
 		core_link->an.state = SL_CORE_HW_AN_STATE_COMPLETE;
 		return;
 	}
@@ -371,6 +398,7 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
+	u64 state;
 
 	port = core_link->core_lgrp->num;
 
@@ -379,9 +407,17 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"next page check (port = %u, data = 0x%016llX)", port, data64);
 
-	// FIXME: any other checks here?
+	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
+	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
+		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+			"next page check bad state (pg %u = 0x%016llX)",
+			core_link->an.page_num, data64);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
+		return;
+	}
 
-	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_COMPLETE_GET(data64) == 1) {
+	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_COMPLETE_GET(data64)) {
 		core_link->an.state = SL_CORE_HW_AN_STATE_COMPLETE;
 		return;
 	}
