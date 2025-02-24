@@ -3,6 +3,7 @@
 
 #include <linux/kobject.h>
 
+#include "sl_sysfs.h"
 #include "sl_ctl_link.h"
 #include "sl_core_link.h"
 #include "sl_ctl_lgrp.h"
