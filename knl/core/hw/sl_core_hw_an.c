@@ -423,6 +423,14 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	}
 }
 
+#define AN_IS_OUI_HPE_EXTD(_page)                                                   \
+	(((_page) & (SL_CORE_HW_AN_NP_MSG_MASK | SL_CORE_HW_AN_NP_OUI_HPE_MASK)) == \
+		(SL_CORE_HW_AN_NP_MSG_OUI_EXTD | SL_CORE_HW_AN_NP_OUI_HPE))
+#define AN_OUI_VER_GET(_page) \
+	((_page) & SL_CORE_HW_AN_NP_OUI_VER_MASK)
+#define AN_HPE_MAP_GET(_page) \
+	(((_page) >> SL_CORE_HW_AN_NP_HPE_SHIFT) & SL_LINK_CONFIG_HPE_MASK)
+
 int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	struct sl_link_caps *my_caps, struct sl_link_caps *link_caps)
 {
@@ -431,7 +439,6 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	u32 tech_map;
 	u32 fec_map;
 	u32 hpe_map;
-	u64 oui_ver;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode (count = %u)", core_link->an.rx_count);
 	for (x = 0; x < core_link->an.tx_count; ++x)
@@ -456,39 +463,22 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	/* next pages */
 	hpe_map = 0;
 	for (x = 1; x < core_link->an.rx_count; ++x) {
-		if (!test_bit(SL_CORE_HW_AN_NP_BIT_MP, (unsigned long *)&(core_link->an.rx_pages[x]))) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no next page");
-break;
-			//return -EIO;
-		}
-		if ((core_link->an.rx_pages[x] & SL_CORE_HW_AN_NP_MSG_MASK) != SL_CORE_HW_AN_NP_MSG_OUI_EXTD) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no oui extended");
-break;
-			//return -EIO;
-		}
-		if ((core_link->an.rx_pages[x] & SL_CORE_HW_AN_NP_OUI_HPE_MASK) != SL_CORE_HW_AN_NP_OUI_HPE) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no oui hpe");
-break;
-			//return -EIO;
-		}
-
-		x++; /* look ahead */
-		oui_ver = (core_link->an.rx_pages[x] & SL_CORE_HW_AN_NP_OUI_VER_MASK);
-		sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode (oui ver = 0x%llX)", oui_ver);
-		switch (oui_ver) {
-		case SL_CORE_HW_AN_NP_OUI_VER_0_2:
-			sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode v2 oui");
-			fallthrough;
-		case SL_CORE_HW_AN_NP_OUI_VER_0_1:
-			sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode v1 oui");
-			hpe_map = (core_link->an.rx_pages[x] >> SL_CORE_HW_AN_NP_HPE_SHIFT);
-			hpe_map &= SL_LINK_CONFIG_HPE_MASK;
-			hpe_map &= core_link->config.hpe_map;
-			break;
-		default:
-			sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode invalid oui version");
-break;
-			//return -EIO;
+		if (AN_IS_OUI_HPE_EXTD(core_link->an.rx_pages[x])) {
+			x++;
+			switch (AN_OUI_VER_GET(core_link->an.rx_pages[x])) {
+			case SL_CORE_HW_AN_NP_OUI_VER_0_2:
+				sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode v2 oui");
+				fallthrough;
+			case SL_CORE_HW_AN_NP_OUI_VER_0_1:
+				sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode v1 oui");
+				hpe_map = AN_HPE_MAP_GET(core_link->an.rx_pages[x]);
+				break;
+			default:
+				sl_core_log_err_trace(core_link, LOG_NAME,
+					"rx pages decode invalid oui (ver = 0x%llX)",
+					AN_OUI_VER_GET(core_link->an.rx_pages[x]));
+				continue;
+			}
 		}
 	}
 
@@ -496,7 +486,7 @@ break;
 	tech_map &= my_caps->tech_map;
 	for (x = 31; x >= 0; --x) {
 		if (tech_map & BIT(x)) {
-			link_caps->tech_map = BIT_ULL(x);
+			link_caps->tech_map = BIT(x);
 			break;
 		}
 	}
