@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/err.h>
@@ -391,17 +391,11 @@ void sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_s
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "bit = %d", which);
 
 		switch (BIT(which)) {
-		case SL_LINK_DOWN_CAUSE_BAD_EYE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "bad-eye ");
-			break;
 		case SL_LINK_DOWN_CAUSE_UCW:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ucw ");
 			break;
 		case SL_LINK_DOWN_CAUSE_CCW:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
-			break;
-		case SL_LINK_DOWN_CAUSE_ALIGN:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "alignment ");
 			break;
 		case SL_LINK_DOWN_CAUSE_LF:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
@@ -442,8 +436,20 @@ void sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_s
 		case SL_LINK_DOWN_CAUSE_COMMAND:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
 			break;
+		case SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "downshift-fail ");
+			break;
 		case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "llr-replay-at-max ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "upshift-fail ");
+			break;
+		case SL_LINK_DOWN_CAUSE_AN_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "an-config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_PCS_FAULT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "pcs-fault ");
 			break;
 		default:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");

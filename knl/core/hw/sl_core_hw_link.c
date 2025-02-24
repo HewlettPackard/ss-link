@@ -222,7 +222,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up after an link up end failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AN_CONFIG);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -471,7 +471,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up check work link up end failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_PCS_FAULT);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;

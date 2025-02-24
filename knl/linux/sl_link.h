@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LINK_H_
 #define _LINUX_SL_LINK_H_
@@ -16,26 +16,26 @@ struct kobject;
 #define SL_LINK_INFINITE_UP_TRIES ~0
 
 #define SL_LINK_DOWN_CAUSE_NONE              0
-#define SL_LINK_DOWN_CAUSE_BAD_EYE           BIT(1)   /* eye limits not good      */
-#define SL_LINK_DOWN_CAUSE_UCW               BIT(2)   /* UCW limit crossed        */
-#define SL_LINK_DOWN_CAUSE_CCW               BIT(3)   /* CCW limit crossed        */
-#define SL_LINK_DOWN_CAUSE_ALIGN             BIT(4)   /* link alignment failure   */
-#define SL_LINK_DOWN_CAUSE_LF                BIT(5)   /* link local fault         */
-#define SL_LINK_DOWN_CAUSE_RF                BIT(6)   /* link remote fault        */
-#define SL_LINK_DOWN_CAUSE_SERDES            BIT(7)   /* serdes problems          */
-#define SL_LINK_DOWN_CAUSE_DOWN              BIT(8)   /* link down                */
-#define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(9)   /* up tries exhaused        */
-#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   BIT(10)  /* no match for autoneg     */
-#define SL_LINK_DOWN_CAUSE_AUTONEG_FAIL      BIT(11)  /* autoneg failure          */
-#define SL_LINK_DOWN_CAUSE_CONFIG            BIT(12)  /* bad config               */
-#define SL_LINK_DOWN_CAUSE_INTR_ENABLE       BIT(13)  /* failure enable interrupt */
-#define SL_LINK_DOWN_CAUSE_TIMEOUT           BIT(14)  /* link action timeout      */
-#define SL_LINK_DOWN_CAUSE_CANCELED          BIT(15)  /* link action cancelled    */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(16)  /* unsuppported cable       */
-#define SL_LINK_DOWN_CAUSE_COMMAND           BIT(17)  /* client command           */
-#define SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED  BIT(18)  /* downshift failed         */
-#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    BIT(19)  /* LLR replay at max        */
-#define SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED    BIT(20)  /* upshift failed           */
+#define SL_LINK_DOWN_CAUSE_UCW               BIT(1)   /* link up or fec mon UCW limit crossed */
+#define SL_LINK_DOWN_CAUSE_CCW               BIT(2)   /* link up or fec mon CCW limit crossed */
+#define SL_LINK_DOWN_CAUSE_LF                BIT(3)   /* link local fault                     */
+#define SL_LINK_DOWN_CAUSE_RF                BIT(4)   /* link remote fault                    */
+#define SL_LINK_DOWN_CAUSE_SERDES            BIT(5)   /* link up serdes problems              */
+#define SL_LINK_DOWN_CAUSE_DOWN              BIT(6)   /* link down fault                      */
+#define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(7)   /* link up tries exhaused               */
+#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   BIT(8)   /* lp_caps autoneg no match             */
+#define SL_LINK_DOWN_CAUSE_AUTONEG_FAIL      BIT(9)   /* autoneg failure                      */
+#define SL_LINK_DOWN_CAUSE_CONFIG            BIT(10)  /* link up bad config                   */
+#define SL_LINK_DOWN_CAUSE_INTR_ENABLE       BIT(11)  /* link up interrupt enable failure     */
+#define SL_LINK_DOWN_CAUSE_TIMEOUT           BIT(12)  /* link up timeout                      */
+#define SL_LINK_DOWN_CAUSE_CANCELED          BIT(13)  /* link up cancelled                    */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(14)  /* unsuppported cable                   */
+#define SL_LINK_DOWN_CAUSE_COMMAND           BIT(15)  /* client command                       */
+#define SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED  BIT(16)  /* link up cable downshift failed       */
+#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    BIT(17)  /* LLR replay at max fault              */
+#define SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED    BIT(18)  /* link up cable upshift failed         */
+#define SL_LINK_DOWN_CAUSE_AN_CONFIG         BIT(19)  /* link up config after an failed       */
+#define SL_LINK_DOWN_CAUSE_PCS_FAULT         BIT(20)  /* link up PCS is not ok                */
 
 #define SL_LINK_DATA_STATUS_BIT_LOCK        BIT(0)
 #define SL_LINK_DATA_STATUS_BIT_ALIGN       BIT(1)
