@@ -16,11 +16,17 @@ function exec_test {
         local test_id
         local test_file
         local test_args
+        local optionals
         local brief
 
         # jq is slow when invoked multiple times. Invoke once
         test_desc="$1"
-        read test_id test_file test_args < <(jq -c -r '[.id,.file,.parameters.arguments] | join(" ")' <<< ${test_desc})
+        IFS=, read test_id test_file test_lgrp_nums test_args < <(jq -c -r '[.id,.file,.parameters.lgrp_nums,.parameters.arguments] | join(",")' <<< ${test_desc})
+        rtn=$?
+        if [[ "${rtn}" != 0 ]]; then
+                sl_test_error_log "${FUNCNAME}" "test_desc parse failed [${rtn}]"
+                return ${rtn}
+        fi
 
         test_args_expanded=($(eval "echo ${test_args}"))
 
@@ -35,10 +41,14 @@ function exec_test {
                 return ${rtn}
         fi
 
+        if [[ -v "${test_lgrp_nums}" ]]; then
+                optionals+="--lgrp_nums ${test_lgrp_nums}"
+        fi
+
         if [[ "${#test_args_expanded[@]}" == 0 ]]; then
-                bash ${test_file}
+                bash ${test_file} ${optionals}
         else
-                bash ${test_file} "${test_args_expanded[@]}"
+                bash ${test_file} ${optionals} "${test_args_expanded[@]}"
         fi
 
         rtn=$?
@@ -58,12 +68,10 @@ function exec_all_tests {
         local rtn
         local manifest
         local test_desc
-        local test_descs
 
         manifest=$1
-        test_descs=($(jq -c ".[]" ${manifest}))
 
-        for test_desc in "${test_descs[@]}"; do
+        while read -r test_desc; do
                 exec_test "${test_desc}"
                 rtn=$?
                 if [[ "${rtn}" != 0 ]]; then
@@ -71,7 +79,7 @@ function exec_all_tests {
                         sl_test_debug_log "${FUNCNAME}" "(test_desc = ${test_desc})"
                         return ${rtn}
                 fi
-        done
+        done <<< $(jq -c ".[]" ${manifest})
 
         return 0
 }
@@ -93,7 +101,7 @@ function exec_test_by_ids {
 
                 test_desc=$(jq -c --arg id "${id}" '.[] | select(.id == ($id | tonumber))' ${manifest})
 
-                exec_test ${test_desc}
+                exec_test "${test_desc}"
                 rtn=$?
                 if [[ "${rtn}" != 0 ]]; then
                         sl_test_error_log "${FUNCNAME}" "exec_test failed [${rtn}]"
@@ -108,7 +116,6 @@ function exec_test_by_names {
         local rtn
         local manifest
         local test_desc
-        local test_descs
         local names
         local name
 
@@ -120,17 +127,14 @@ function exec_test_by_names {
 
                 sl_test_debug_log "${FUNCNAME}" "(name = ${name})"
 
-                test_descs=$(jq -c --arg name "${name}" '.[] | select(.file | contains($name))' ${manifest})
-
-                for test_desc in "${test_descs[@]}"; do
-
-                        exec_test ${test_descs}
+                while read -r test_desc; do
+                        exec_test "${test_descs}"
                         rtn=$?
                         if [[ "${rtn}" != 0 ]]; then
                                 sl_test_error_log "${FUNCNAME}" "exec_test failed [${rtn}]"
                                 return ${rtn}
                         fi
-                done
+                done <<< $(jq -c --arg name "${name}" '.[] | select(.file | contains($name))' ${manifest})
         done
 
         return 0

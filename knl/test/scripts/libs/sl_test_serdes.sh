@@ -6,24 +6,24 @@
 function __sl_test_serdes_check {
 	local rtn
 	local ldev_num=$1
-	local lgrp_num=$2
-	local serdes_num=$3
+	local -n serdes_lgrp_nums=$2
+	local -n serdes_nums=$3
+	local serdes_num
 
-	__sl_test_lgrp_check ${ldev_num} ${lgrp_num}
+	__sl_test_lgrp_check ${ldev_num} serdes_lgrp_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_debug_log "${FUNCNAME}" \
-                        "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num})"
 		sl_test_error_log "${FUNCNAME}" "lgrp_check failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	if (( ${serdes_num} < 0 || ${serdes_num} > 3 )); then
-		sl_test_debug_log "${FUNCNAME}" \
-                        "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num})"
-		sl_test_debug_log "${FUNCNAME}" "invalid serdes"
-		return 1
-	fi
+	for serdes_num in "${serdes_nums[@]}"; do
+		if (( ${serdes_num} < 0 || ${serdes_num} > 3 )); then
+			sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, serdes_num = ${serdes_num})"
+			sl_test_debug_log "${FUNCNAME}" "invalid serdes"
+			return 1
+		fi
+	done
 
 	return 0
 }
@@ -31,37 +31,43 @@ function __sl_test_serdes_check {
 function __sl_test_serdes_cmd {
 	local rtn
 	local ldev_num=$1
-	local lgrp_num=$2
-	local serdes_num=$3
+	local -n cmd_lgrp_nums=$2
+	local -n cmd_serdes_nums=$3
+        local lgrp_num
+	local serdes_num
 	local cmd_str=$4
 
 	echo ${ldev_num} > ${SL_TEST_LDEV_DEBUGFS_NUM}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "ldev_set failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "ldev_set failed (ldev_num = ${ldev_num}) [${rtn}]"
 		return ${rtn}
 	fi
 
-	echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_set failed [${rtn}]"
-		return ${rtn}
-	fi
+	for lgrp_num in "${cmd_lgrp_nums[@]}"; do
+		echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "lgrp_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}) [${rtn}]"
+			return ${rtn}
+		fi
 
-	echo ${serdes_num} > ${SL_TEST_SERDES_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "serdes_set failed [${rtn}]"
-		return ${rtn}
-	fi
+		for serdes_num in "${cmd_serdes_nums[@]}"; do
+			echo ${serdes_num} > ${SL_TEST_SERDES_DEBUGFS_NUM}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" "serdes_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num}) [${rtn}]"
+				return ${rtn}
+			fi
 
-	echo "${cmd_str}" > ${SL_TEST_SERDES_DEBUGFS_CMD}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
-		return ${rtn}
-	fi
+			echo "${cmd_str}" > ${SL_TEST_SERDES_DEBUGFS_CMD}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" "cmd failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num}, cmd_str = ${cmd_str}) [${rtn}]"
+				return ${rtn}
+			fi
+		done
+	done
 
 	return 0
 }
@@ -71,18 +77,18 @@ function sl_test_serdes_cmd {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local serdes_num
+	local lgrp_nums
+	local serdes_nums
 	local cmd_str
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num serdes_num cmd_str"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums serdes_nums cmd_str"
 	local description=$(cat <<-EOF
-	Send a command to the SerDes.
+	Send a command to the SerDes in the link groups.
 
 	Mandatory:
-	ldev_num     Link device number the lgrp_num belongs to.
-	lgrp_num     Link group number the serdes_num belongs to.
-	serdes_num   Serdes number to send the command to.
-	cmd_str      Command to send to the serdes_num.
+	ldev_num     Link device number the lgrp_nums belongs to.
+	lgrp_nums    Link group numbers the serdes_nums belongs to.
+	serdes_nums  Serdes numbers to send the command to.
+	cmd_str      Command to send to the serdes_nums.
 
 	Options:
 	-h, --help This message.
@@ -127,7 +133,11 @@ function sl_test_serdes_cmd {
 		return 0
 	fi
 
-	__sl_test_serdes_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	serdes_nums=($3)
+	cmd_str=$4
+	__sl_test_serdes_check ${ldev_num} lgrp_nums serdes_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "ldev_check failed [${rtn}]"
@@ -135,7 +145,7 @@ function sl_test_serdes_cmd {
 		return ${rtn}
 	fi
 
-	sl_test_cmd_check "serdes" $4
+	sl_test_cmd_check "serdes" ${cmd_str}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "cmd_check failed [${rtn}]"
@@ -143,14 +153,10 @@ function sl_test_serdes_cmd {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	serdes_num=$3
-	cmd_str=$4
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num}, cmd_str = ${cmd_str})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), serdes_nums = (${serdes_nums[*]}), cmd_str = ${cmd_str})"
 
-	__sl_test_serdes_cmd ${ldev_num} ${lgrp_num} ${serdes_num} ${cmd_str}
+	__sl_test_serdes_cmd ${ldev_num} lgrp_nums serdes_nums ${cmd_str}
 	rtn=$?
 
 	return ${rtn}
@@ -161,19 +167,18 @@ function sl_test_serdes_settings_set {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local serdes_num
+	local lgrp_nums
+	local serdes_nums
 	local settings
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num serdes_num settings"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums serdes_nums settings"
 	local description=$(cat <<-EOF
-	Set SerDes parameters.
+	Set SerDes parameters for the SerDes in link groups.
 
 	Mandatory:
-	ldev_num    Link device number the <lgrp_num> belongs to.
-	lgrp_num    Link group number the <serdes_num> belongs to.
-	serdes_num  Serdes number to apply parameters to.
+	ldev_num    Link device number the lgrp_nums belongs to.
+	lgrp_nums   Link group number the serdes_nums belongs to.
+	serdes_nums Serdes numbers to apply parameters to.
 	settings    Serdes parameters file. See ${SL_TEST_SERDES_SETTINGS_DIR}
-
 
 	Options:
 	-h, --help  This message.
@@ -216,7 +221,11 @@ function sl_test_serdes_settings_set {
 	       return 0
 	fi
 
-	__sl_test_serdes_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	serdes_nums=($3)
+	settings=$4
+	__sl_test_serdes_check ${ldev_num} lgrp_nums serdes_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_check failed [${rtn}]"
@@ -224,18 +233,14 @@ function sl_test_serdes_settings_set {
 		return ${rtn}
 	fi
 
-	if [ ! -f "$4" ]; then
+	if [ ! -f "${settings}" ]; then
 		sl_test_error_log "${FUNCNAME}" "missing settings"
 		echo "${usage}"
 		return 1
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	serdes_num=$3
-	settings=$4
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num}, settings = ${settings})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), serdes_nums = (${serdes_nums[*]}), settings = ${settings})"
 
 	source ${settings}
 
@@ -255,7 +260,7 @@ function sl_test_serdes_settings_set {
 		fi
 	done
 
-	__sl_test_serdes_cmd ${ldev_num} ${lgrp_num} ${serdes_num} "serdes_params_set"
+	__sl_test_serdes_cmd ${ldev_num} lgrp_nums serdes_nums "serdes_params_set"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_cmd failed [${rtn}]"
@@ -270,19 +275,19 @@ function sl_test_serdes_settings_unset {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local serdes_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num serdes_num"
+	local lgrp_nums
+	local serdes_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums serdes_nums"
 	local description=$(cat <<-EOF
-	Unset SerDes parameters.
+	Unset SerDes parameters for SerDes in the link groups.
 
 	Mandatory:
-	ldev_num   Link device number the lgrp_num belongs to.
-	lgrp_num   Link group number the serdes_num belongs to.
-	serdes_num Serdes number to unset parameters on.
+	ldev_num    Link device number the lgrp_nums belongs to.
+	lgrp_nums   Link group numbers the serdes_nums belongs to.
+	serdes_nums Serdes numbers to unset parameters on.
 
 	Options:
-	-h, --help This message.
+	-h, --help  This message.
 	EOF
 	)
 
@@ -319,7 +324,10 @@ function sl_test_serdes_settings_unset {
 		return 0
 	fi
 
-	__sl_test_serdes_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	serdes_nums=($3)
+	__sl_test_serdes_check ${ldev_num} lgrp_nums serdes_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_check failed [${rtn}]"
@@ -327,12 +335,9 @@ function sl_test_serdes_settings_unset {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	serdes_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, serdes_num = ${serdes_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), serdes_nums = (${serdes_nums[*]}))"
 
-	__sl_test_serdes_cmd ${ldev_num} ${lgrp_num} ${serdes_num} "serdes_params_unset"
+	__sl_test_serdes_cmd ${ldev_num} lgrp_nums serdes_nums "serdes_params_unset"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_cmd failed [${rtn}]"

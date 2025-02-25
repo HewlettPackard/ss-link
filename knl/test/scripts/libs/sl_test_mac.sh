@@ -6,24 +6,24 @@
 function __sl_test_mac_check {
 	local rtn
 	local ldev_num=$1
-	local lgrp_num=$2
-	local mac_num=$3
+	local -n mac_lgrp_nums=$2
+	local -n check_mac_nums=$3
+	local mac_num
 
-	__sl_test_lgrp_check ${ldev_num} ${lgrp_num}
+	__sl_test_lgrp_check ${ldev_num} mac_lgrp_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_debug_log "${FUNCNAME}" \
-                        "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num})"
 		sl_test_error_log "${FUNCNAME}" "lgrp_check failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	if (( ${mac_num} < 0 || ${mac_num} > 3 )); then
-		sl_test_debug_log "${FUNCNAME}" \
-                        "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num})"
-		sl_test_debug_log "${FUNCNAME}" "invalid mac"
-		return 1
-	fi
+	for mac_num in "${check_mac_nums[@]}"; do
+		if (( ${mac_num} < 0 || ${mac_num} > 3 )); then
+			sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, mac_num = ${mac_num})"
+			sl_test_debug_log "${FUNCNAME}" "invalid mac"
+			return 1
+		fi
+	done
 
 	return 0
 }
@@ -31,37 +31,43 @@ function __sl_test_mac_check {
 function __sl_test_mac_cmd {
 	local rtn
 	local ldev_num=$1
-	local lgrp_num=$2
-	local mac_num=$3
+	local -n cmd_lgrp_nums=$2
+	local -n cmd_mac_nums=$3
 	local cmd_str=$4
+	local lgrp_num
+	local mac_num
 
 	echo ${ldev_num} > ${SL_TEST_LDEV_DEBUGFS_NUM}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "ldev_set failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "lgrp_set failed (ldev_num = ${ldev_num}) [${rtn}]"
 		return ${rtn}
 	fi
 
-	echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_set failed [${rtn}]"
-		return ${rtn}
-	fi
+	for lgrp_num in "${cmd_lgrp_nums[@]}"; do
+		echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "lgrp_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}) [${rtn}]"
+			return ${rtn}
+		fi
 
-	echo ${mac_num} > ${SL_TEST_MAC_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "mac_set failed [${rtn}]"
-		return ${rtn}
-	fi
+		for mac_num in "${cmd_mac_nums[@]}"; do
+			echo ${mac_num} > ${SL_TEST_MAC_DEBUGFS_NUM}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" "mac_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num}) [${rtn}]"
+				return ${rtn}
+			fi
 
-	echo "${cmd_str}" > ${SL_TEST_MAC_DEBUGFS_CMD}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
-		return ${rtn}
-	fi
+			echo "${cmd_str}" > ${SL_TEST_MAC_DEBUGFS_CMD}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" "cmd failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num}, cmd_str = ${cmd_str}) [${rtn}]"
+				return ${rtn}
+			fi
+		done
+	done
 
 	return 0
 }
@@ -71,17 +77,17 @@ function sl_test_mac_cmd {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local mac_num
+	local lgrp_nums
+	local mac_nums
 	local cmd_str
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num mac_num cmd_str"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums mac_nums cmd_str"
 	local description=$(cat <<-EOF
-	Send a command to the MAC.
+	Send a command to the MACs in the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the mac_num belongs to.
-	mac_num    MAC Number to send the command to.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the mac_nums belongs to.
+	mac_nums   MAC Numbers to send the command to.
 	cmd_str    Command to send to the mac.
 
 	Options:
@@ -125,7 +131,11 @@ function sl_test_mac_cmd {
 		return 0
 	fi
 
-	__sl_test_mac_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	mac_nums=($3)
+	cmd_str=$4
+	__sl_test_mac_check ${ldev_num} lgrp_nums mac_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_check failed [${rtn}]"
@@ -133,7 +143,7 @@ function sl_test_mac_cmd {
 		return ${rtn}
 	fi
 
-	sl_test_cmd_check "mac" $4
+	sl_test_cmd_check "mac" ${cmd_str}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "cmd_check failed [${rtn}]"
@@ -141,14 +151,10 @@ function sl_test_mac_cmd {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	mac_num=$3
-	cmd_str=$4
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${llr_num}, cmd_str = ${cmd_str})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), mac_nums = (${mac_nums[*]}), cmd_str = ${cmd_str})"
 
-	__sl_test_mac_cmd ${ldev_num} ${lgrp_num} ${mac_num} ${cmd_str}
+	__sl_test_mac_cmd ${ldev_num} lgrp_nums mac_nums ${cmd_str}
 	rtn=$?
 
 	return ${rtn}
@@ -159,16 +165,16 @@ function sl_test_mac_new {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local mac_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num mac_num"
+	local lgrp_nums
+	local mac_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums mac_nums"
 	local description=$(cat <<-EOF
-	Create a new MAC.
+	Create new MACs for the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the mac_num belongs to.
-	mac_num    MAC Number to create.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the mac_nums belongs to.
+	mac_nums   MAC Numbers to create.
 
 	Options:
 	-h, --help This message.
@@ -208,7 +214,10 @@ function sl_test_mac_new {
 		return 0
 	fi
 
-	__sl_test_mac_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	mac_nums=($3)
+	__sl_test_mac_check ${ldev_num} lgrp_nums mac_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_check failed [${rtn}]"
@@ -216,12 +225,9 @@ function sl_test_mac_new {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	mac_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), mac_nums = (${mac_nums[*]}))"
 
-	__sl_test_mac_cmd ${ldev_num} ${lgrp_num} ${mac_num} "mac_new"
+	__sl_test_mac_cmd ${ldev_num} lgrp_nums mac_nums "mac_new"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_new failed [${rtn}]"
@@ -236,16 +242,16 @@ function sl_test_mac_del {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local mac_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num mac_num"
+	local lgrp_nums
+	local mac_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums mac_nums"
 	local description=$(cat <<-EOF
-	Create a new MAC.
+	Create new MACs for the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the mac_num belongs to.
-	mac_num    MAC Number to delete.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the mac_nums belongs to.
+	mac_nums   MAC Numbers to delete.
 
 	Options:
 	-h, --help This message.
@@ -285,7 +291,10 @@ function sl_test_mac_del {
 		return 0
 	fi
 
-	__sl_test_mac_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	mac_nums=($3)
+	__sl_test_mac_check ${ldev_num} lgrp_nums mac_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_check failed [${rtn}]"
@@ -293,12 +302,9 @@ function sl_test_mac_del {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	mac_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, mac_num = ${mac_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), mac_nums = (${mac_nums[*]}))"
 
-	__sl_test_mac_cmd ${ldev_num} ${lgrp_num} ${mac_num} "mac_del"
+	__sl_test_mac_cmd ${ldev_num} lgrp_nums mac_nums "mac_del"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_del failed [${rtn}]"

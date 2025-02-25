@@ -39,6 +39,7 @@ struct lgrp_notif_event {
 struct lgrp_notif_interface {
 	struct mutex      read_lock;
 	spinlock_t        data_lock;
+	bool              is_pollout_req;
 	wait_queue_head_t wait;
 	DECLARE_KFIFO(lgrp_events, struct lgrp_notif_event, SL_TEST_LGRP_NOTIF_NUM_ENTRIES);
 };
@@ -66,6 +67,24 @@ static struct cmd_entry lgrp_cmd_list[]  = {
 
 #define LGRP_CMD_MATCH(_index, _str) \
 	(strncmp((_str), lgrp_cmd_list[_index].cmd, strlen(lgrp_cmd_list[_index].cmd)) == 0)
+
+static void is_pollout_req_set(struct lgrp_notif_interface *interface, bool pollout)
+{
+	spin_lock(&interface->data_lock);
+	interface->is_pollout_req = pollout;
+	spin_unlock(&interface->data_lock);
+}
+
+static bool is_pollout_req(struct lgrp_notif_interface *interface)
+{
+	bool pollout;
+
+	spin_lock(&interface->data_lock);
+	pollout = interface->is_pollout_req;
+	spin_unlock(&interface->data_lock);
+
+	return pollout;
+}
 
 static void sl_test_lgrp_init(struct sl_lgrp *lgrp, u8 ldev_num, u8 lgrp_num)
 {
@@ -190,10 +209,20 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 
 	do {
 		if (kfifo_is_empty(&interface->lgrp_events)) {
+
+			sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+				"lgrp_notif_read empty fifio (f_flags = %u)", filep->f_flags);
+
 			if (filep->f_flags & O_NONBLOCK) {
 				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 					"lgrp_notif_read empty fifo");
 				return -EAGAIN;
+			}
+
+			if (is_pollout_req(interface)) {
+				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read POLLOUT");
+				wake_up_poll(&interface->wait, POLLOUT);
+				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read waiting");
 			}
 
 			rtn = wait_event_interruptible(interface->wait, !kfifo_is_empty(&interface->lgrp_events));
@@ -202,6 +231,8 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 					"lgrp_notif_read wait failed [%d]", rtn);
 				return rtn;
 			}
+		} else {
+			sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read fifo has data");
 		}
 
 		if (mutex_lock_interruptible(&interface->read_lock)) {
@@ -260,19 +291,31 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 static unsigned int sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_struct *wait)
 {
 	struct lgrp_notif_interface *interface;
-	unsigned int                 events;
-
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll");
+	bool                         empty;
 
 	interface = filep->private_data;
-	events = 0;
 
+	is_pollout_req_set(interface, poll_requested_events(wait) & POLLOUT);
+
+	empty = kfifo_is_empty(&interface->lgrp_events);
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll (empty = %s)", empty ? "true" : "false");
+
+	if (!empty) {
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll data ready");
+		return (POLLIN | POLLRDNORM);
+	}
+
+	if (is_pollout_req(interface)) {
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll POLLOUT requested");
+		return POLLOUT;
+	}
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll waiting");
 	poll_wait(filep, &interface->wait, wait);
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll wait complete");
 
-	if (!kfifo_is_empty(&interface->lgrp_events))
-		events = POLLIN | POLLRDNORM;
-
-	return events;
+	return empty ? 0 : (POLLIN | POLLRDNORM);
 }
 
 static int sl_test_lgrp_notif_open(struct inode *inode, struct file *filep)

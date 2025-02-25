@@ -11,7 +11,7 @@
 #include <string.h>
 #include <poll.h>
 
-#define VERSION              "1.0.0"
+#define VERSION              "1.1.0"
 
 /* Notification */
 #define NOTIF_ENV            "SL_TEST_LGRP_DEBUGFS_NOTIFS"
@@ -31,6 +31,8 @@
 #define CONTINUOUS_SHORT_OPT 'c'
 #define HUMAN_SHORT_OPT      'H'
 #define FILTER_SHORT_OPT     'f'
+#define REMOVE_SHORT_OPT     'r'
+#define EXPECT_SHORT_OPT     'e'
 
 static const char getopt_short_opts[] = {
 	HELP_SHORT_OPT,
@@ -41,11 +43,15 @@ static const char getopt_short_opts[] = {
 	HUMAN_SHORT_OPT,
 	FILTER_SHORT_OPT,
 	':',                  /* Has argument */
+	REMOVE_SHORT_OPT,
+	EXPECT_SHORT_OPT,
+	':',                  /* Has argument */
 };
 
 static const char *lgrp_notifs_filename;
 static int read_timeout = -1; /* Wait indefinitely */
 static char filter_name[FILTER_NAME_LEN];
+static char expect_name[FILTER_NAME_LEN];
 
 enum {
 	OPT_HELP,
@@ -54,11 +60,13 @@ enum {
 	OPT_CONTINUOUS,
 	OPT_HUMAN,
 	OPT_FILTER,
+	OPT_REMOVE,
+	OPT_EXPECT,
 	NUM_OPTS,
 };
 
 //TODO: Maybe this should be common somewhere
-static const char *filter_names[] = {
+static const char *notif_names[] = {
 	"invalid",
 	"link-up",
 	"link-up-fail",
@@ -91,10 +99,12 @@ static const struct cmd_option {
 } cmd_options[] = {
 	[OPT_HELP]       = {HELP_SHORT_OPT,       "help",       "This help message.",                           NULL,      no_argument       },
 	[OPT_VERSION]    = {VERSION_SHORT_OPT,    "version",    "Print the version information.",               NULL,      no_argument       },
-	[OPT_TIMEOUT]    = {TIMEOUT_SHORT_OPT,    "timeout",    "Set the read timeout in seconds.",             "TIMEOUT", required_argument },
+	[OPT_TIMEOUT]    = {TIMEOUT_SHORT_OPT,    "timeout",    "Set the read timeout in milliseconds.",        "TIMEOUT", required_argument },
 	[OPT_CONTINUOUS] = {CONTINUOUS_SHORT_OPT, "continuous", "Continuously append notifications to stdout.", NULL,      no_argument       },
 	[OPT_HUMAN]      = {HUMAN_SHORT_OPT,      "human",      "Human-readable timestamp.",                    NULL,      no_argument       },
 	[OPT_FILTER]     = {FILTER_SHORT_OPT,     "filter",     "Filter notifications by type",                 "FILTER",  required_argument },
+	[OPT_REMOVE]     = {REMOVE_SHORT_OPT,     "remove",     "Remove (flush) all current notifications.",    NULL,      no_argument       },
+	[OPT_EXPECT]     = {EXPECT_SHORT_OPT,     "expect",     "Expect notifications.",                        "EXPECT",  required_argument },
 };
 
 static struct option_desc {
@@ -108,6 +118,8 @@ static struct option_desc {
 	[OPT_CONTINUOUS] = { &cmd_options[OPT_CONTINUOUS],  0,  NULL },
 	[OPT_HUMAN]      = { &cmd_options[OPT_HUMAN],       0,  NULL },
 	[OPT_FILTER]     = { &cmd_options[OPT_FILTER],      0,  filter_name },
+	[OPT_REMOVE]     = { &cmd_options[OPT_REMOVE],      0,  NULL },
+	[OPT_EXPECT]     = { &cmd_options[OPT_EXPECT],      0,  expect_name },
 };
 
 #define LONG_OPTION_FLAG_ONLY(_opt) { cmd_options[(_opt)].long_option, cmd_options[(_opt)].required, &option_descs[(_opt)].flag, cmd_options[(_opt)].short_option}
@@ -125,6 +137,8 @@ static struct option long_options[] = {
 	LONG_OPTION_FLAG_ONLY(OPT_CONTINUOUS),
 	LONG_OPTION_FLAG_ONLY(OPT_HUMAN),
 	LONG_OPTION_WITH_ARG(OPT_FILTER),
+	LONG_OPTION_FLAG_ONLY(OPT_REMOVE),
+	LONG_OPTION_WITH_ARG(OPT_EXPECT),
 	{0, 0, 0, 0}
 };
 
@@ -134,18 +148,19 @@ void sigint_handler(int sig) {
 	}
 }
 
-int read_notifs(int fd, char *notif, size_t len, int *timeout)
+int read_notifs(int fd, char *notif, size_t len, int *timeout, bool remove)
 {
 	int           rtn;
 	struct pollfd rfds;
 	ssize_t       bytes_read;
 
-	if (*timeout < 0) {
-		goto read;
-	}
 
 	rfds.fd = fd;
 	rfds.events = POLLIN;
+
+	/* POLLOUT signifies the notification queue is empty */
+	if (remove)
+		rfds.events |= POLLOUT;
 
 	rtn = poll(&rfds, 1, *timeout);
 	if (rtn == -1) {
@@ -158,18 +173,17 @@ int read_notifs(int fd, char *notif, size_t len, int *timeout)
 	}
 
 	if (rfds.revents & POLLIN) {
-		goto read;
+		bytes_read = read(fd, notif, len);
+		if (bytes_read == -1) {
+			rtn = errno;
+			perror("read failed");
+			return rtn;
+		}
+	} else if (rfds.revents & POLLOUT) {
+		return ENODATA;
 	} else {
 		fprintf(stderr, "wrong event\n");
 		return EINVAL;
-	}
-
-read:
-	bytes_read = read(fd, notif, len);
-	if (bytes_read == -1) {
-		rtn = errno;
-		perror("read failed");
-		return rtn;
 	}
 
 	return 0;
@@ -212,7 +226,7 @@ int convert_timestamp_to_local(char *timestamp_ns, char *timestamp_local, size_t
 	return 0;
 }
 
-int parse_notif(char *notif, bool human_readable, char *filter)
+int parse_notif(char *notif, bool human_readable, char *filter, char *expect)
 {
 	int            rtn;
 	int            count;
@@ -243,17 +257,23 @@ int parse_notif(char *notif, bool human_readable, char *filter)
 		timestamp = local_timestamp;
 	}
 
-	if (!strnlen(filter, FILTER_NAME_LEN)) {
-		printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
-		return 0;
-	}
-
-	if (strncmp(type, filter, strnlen(type, NOTIF_TYPE_SIZE)) == 0) {
-		printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
-		return 0;
-	} else {
+	if (filter && strncmp(type, filter, strnlen(type, NOTIF_TYPE_SIZE))) {
+		fprintf(stderr, "%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
 		return EAGAIN;
 	}
+
+	if (expect) {
+		if (strncmp(type, expect, strnlen(type, NOTIF_TYPE_SIZE)) == 0) {
+			printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+			return 0;
+		} else {
+			fprintf(stderr, "%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+			return ENOENT;
+		}
+	}
+
+	printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+	return 0;
 }
 
 void print_help(char *name)
@@ -282,8 +302,8 @@ void print_help(char *name)
 	}
 
 	printf("\nfilters:\n");
-	for (i = 0; i < (sizeof(filter_names) / sizeof(filter_names[0])); ++i)
-		printf("%s\n", filter_names[i]);
+	for (i = 0; i < (sizeof(notif_names) / sizeof(notif_names[0])); ++i)
+		printf("%s\n", notif_names[i]);
 }
 
 int main(int argc, char *argv[])
@@ -295,9 +315,12 @@ int main(int argc, char *argv[])
 	char    notif[NOTIF_SIZE];
 	bool    again;
 	size_t  i;
+	char   *expect;
+	char   *filter;
 
-	again = false;
 	options_index = 0;
+	expect = NULL;
+	filter = NULL;
 
 	if (signal(SIGINT, sigint_handler) == SIG_ERR) {
 		rtn = errno;
@@ -338,24 +361,57 @@ int main(int argc, char *argv[])
 
 			strncpy(filter_name, optarg, (FILTER_NAME_LEN - 1));
 
-			for (i = 0; i < (sizeof(filter_names) / sizeof(filter_names[0])); ++i) {
-				rtn = strncmp(filter_name, filter_names[i], strnlen(filter_name, FILTER_NAME_LEN));
+			for (i = 0; i < (sizeof(notif_names) / sizeof(notif_names[0])); ++i) {
+				rtn = strncmp(filter_name, notif_names[i], strnlen(filter_name, FILTER_NAME_LEN));
 				if (rtn == 0)
 					break;
 			}
 
 			if (rtn != 0) {
 				fprintf(stderr, "strncmp failed [%d]\n", rtn);
-				fprintf(stderr, "filter not available.\n");
+				fprintf(stderr, "notif not available.\n");
 				print_help(argv[0]);
 				return EINVAL;
 			}
+
+			filter = option_descs[OPT_FILTER].argument;
+
+			break;
+		case REMOVE_SHORT_OPT:
+			SET_OPTION(OPT_REMOVE);
+			break;
+		case EXPECT_SHORT_OPT:
+			SET_OPTION(OPT_EXPECT);
+
+			strncpy(expect_name, optarg, (FILTER_NAME_LEN - 1));
+
+			for (i = 0; i < (sizeof(notif_names) / sizeof(notif_names[0])); ++i) {
+				rtn = strncmp(expect_name, notif_names[i], strnlen(expect_name, FILTER_NAME_LEN));
+				if (rtn == 0)
+					break;
+			}
+
+			if (rtn != 0) {
+				fprintf(stderr, "strncmp failed [%d]\n", rtn);
+				fprintf(stderr, "notif not available.\n");
+				print_help(argv[0]);
+				return EINVAL;
+			}
+
+			expect = option_descs[OPT_EXPECT].argument;
 
 			break;
 		default:
 			fprintf(stderr, "invalid option (opt = %c)\n", opt);
 			print_help(argv[0]);
 			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (filter && expect) {
+		if (strncmp(expect, filter, strnlen(expect, FILTER_NAME_LEN))) {
+			fprintf(stderr, "mismatch (expect = %s, filter = %s)", expect, filter);
+			exit(EINVAL);
 		}
 	}
 
@@ -384,16 +440,26 @@ int main(int argc, char *argv[])
 		exit(rtn);
 	}
 
+	again = OPTION_SET(OPT_CONTINUOUS) || OPTION_SET(OPT_REMOVE);
 	do {
-		rtn = read_notifs(fd, notif, NOTIF_SIZE, option_descs[OPT_TIMEOUT].argument);
-		if (rtn) {
+		rtn = read_notifs(fd, notif, NOTIF_SIZE, option_descs[OPT_TIMEOUT].argument, OPTION_SET(OPT_REMOVE));
+		switch (rtn) {
+		case 0:
+			break;
+		case ENODATA:
+			rtn = 0;
+			again = false;
+			continue;
+		default:
 			fprintf(stderr, "notifs_read failed [%d]\n", rtn);
 			goto out;
 		}
 
-		rtn = parse_notif(notif, OPTION_SET(OPT_HUMAN), option_descs[OPT_FILTER].argument);
+		rtn = parse_notif(notif, OPTION_SET(OPT_HUMAN), filter, expect);
 		switch (rtn) {
 		case 0:
+			break;
+		case ENOENT:
 			again = false;
 			break;
 		case EAGAIN:

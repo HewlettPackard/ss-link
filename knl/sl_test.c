@@ -72,9 +72,7 @@ int sl_test_fec_cntrs_use_set(struct sl_link *link, bool use_test_cntrs)
 	if (rtn)
 		return rtn;
 
-	sl_core_test_fec_cntrs_use_set(link->ldev_num, link->lgrp_num, link->num, use_test_cntrs);
-
-	return 0;
+	return sl_core_test_fec_cntrs_use_set(link->ldev_num, link->lgrp_num, link->num, use_test_cntrs);
 }
 EXPORT_SYMBOL(sl_test_fec_cntrs_use_set);
 

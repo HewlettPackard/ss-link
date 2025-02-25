@@ -15,17 +15,23 @@
 
 #define LOG_NAME SL_CORE_TEST_FEC_LOG_NAME
 
-void sl_core_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool use_test_cntrs)
+int sl_core_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool use_test_cntrs)
 {
 	struct sl_core_link *link;
 
 	link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+	if (!link) {
+		sl_core_log_err(link, LOG_NAME, "NULL link");
+		return -EINVAL;
+	}
 
 	spin_lock(&link->fec.test_lock);
 	link->fec.use_test_cntrs = use_test_cntrs;
 	spin_unlock(&link->fec.test_lock);
 
 	sl_core_log_dbg(link, LOG_NAME, "fec_cntrs_use (use_test_cntrs = %s)", use_test_cntrs ? "true" : "false");
+
+	return 0;
 }
 
 int sl_core_test_fec_cw_cntrs_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_fec_cw_cntrs *cw_cntrs)
@@ -33,6 +39,10 @@ int sl_core_test_fec_cw_cntrs_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct 
 	struct sl_core_link *link;
 
 	link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+	if (!link) {
+		sl_core_log_err(link, LOG_NAME, "NULL link");
+		return -EINVAL;
+	}
 
 	sl_core_log_dbg(link, LOG_NAME, "cntrs set");
 

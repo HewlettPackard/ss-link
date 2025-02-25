@@ -3,6 +3,7 @@
                 "id": 5,
                 "file": "sl_run_link_up_notif_ext_lb.sh",
                 "parameters": {
+                        "lgrp_nums": "",
                         "arguments": "${SL_TEST_DIR}/systems/connections/oat.sh"
                 }
         }

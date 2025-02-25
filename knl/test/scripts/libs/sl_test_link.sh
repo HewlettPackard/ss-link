@@ -5,25 +5,29 @@
 
 function __sl_test_link_check {
 	local rtn
-	local ldev_num=$1
-	local lgrp_num=$2
-	local link_num=$3
+	local ldev_num
+	local link_num
+	local -n link_lgrp_nums
+	local -n check_link_nums
 
-	__sl_test_lgrp_check ${ldev_num} ${lgrp_num}
+	ldev_num=$1
+	link_lgrp_nums=$2
+	check_link_nums=$3
+
+	__sl_test_lgrp_check ${ldev_num} link_lgrp_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_debug_log "${FUNCNAME}" \
-			"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 		sl_test_error_log "${FUNCNAME}" "lgrp_check failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	if (( ${link_num} < 0 || ${link_num} > 3 )); then
-		sl_test_debug_log "${FUNCNAME}" \
-			"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-		sl_test_debug_log "${FUNCNAME}" "invalid link"
-		return 1
-	fi
+	for link_num in "${check_link_nums[@]}"; do
+		if (( ${link_num} < 0 || ${link_num} > 3 )); then
+			sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, link_num = ${link_num})"
+			sl_test_debug_log "${FUNCNAME}" "invalid link"
+			return 1
+		fi
+	done
 
 	return 0
 }
@@ -32,8 +36,8 @@ function __sl_test_link_sysfs_parent_set {
 	local rtn
 	local ldev_num=$1
 	local lgrp_num=$2
-        local lgrp_sysfs_dir
-        local -n sysfs_dir=$3
+	local lgrp_sysfs_dir
+	local -n parent_set_sysfs_dir=$3
 
 	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num})"
 
@@ -44,49 +48,65 @@ function __sl_test_link_sysfs_parent_set {
 		return ${rtn}
 	fi
 
-        #TODO: Need to adjust for Cassini
+	#TODO: Need to adjust for Cassini
 
-        sysfs_dir="${lgrp_sysfs_dir}/${lgrp_num}/${SL_TEST_SYSFS_TOP_LINK_DIR}/"
+	parent_set_sysfs_dir="${lgrp_sysfs_dir}/${lgrp_num}/${SL_TEST_SYSFS_TOP_LINK_DIR}/"
 
-	sl_test_debug_log "${FUNCNAME}" "(sysfs_dir = ${sysfs_dir})"
+	sl_test_debug_log "${FUNCNAME}" "(parent_set_sysfs_dir = ${parent_set_sysfs_dir})"
 
 	return 0
 }
 
 function __sl_test_link_cmd {
 	local rtn
-	local ldev_num=$1
-	local lgrp_num=$2
-	local link_num=$3
-	local cmd_str=$4
+	local cmd_str
+	local ldev_num
+	local lgrp_num
+	local link_num
+	local -n cmd_lgrp_nums
+	local -n cmd_link_nums
+
+	ldev_num=$1
+	cmd_lgrp_nums=$2
+	cmd_link_nums=$3
+	cmd_str=$4
 
 	echo ${ldev_num} > ${SL_TEST_LDEV_DEBUGFS_NUM}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "ldev_set failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" \
+			"ldev_set failed (ldev_num = ${ldev_num}) [${rtn}]"
 		return ${rtn}
 	fi
 
-	echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_set failed [${rtn}]"
-		return ${rtn}
-	fi
+	for lgrp_num in "${cmd_lgrp_nums[@]}"; do
 
-	echo ${link_num} > ${SL_TEST_LINK_DEBUGFS_NUM}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_set failed [${rtn}]"
-		return ${rtn}
-	fi
+		echo ${lgrp_num} > ${SL_TEST_LGRP_DEBUGFS_NUM}
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" \
+				"lgrp_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}) [${rtn}]"
+			return ${rtn}
+		fi
 
-	echo "${cmd_str}" > ${SL_TEST_LINK_DEBUGFS_CMD}
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
-		return ${rtn}
-	fi
+		for link_num in "${cmd_link_nums[@]}"; do
+			echo ${link_num} > ${SL_TEST_LINK_DEBUGFS_NUM}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" \
+					"link_set failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}) [${rtn}]"
+				return ${rtn}
+			fi
+
+			echo "${cmd_str}" > ${SL_TEST_LINK_DEBUGFS_CMD}
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" \
+					"cmd failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, cmd_str = ${cmd_str}) [${rtn}]"
+				return ${rtn}
+			fi
+		done
+	done
 
 	return 0
 }
@@ -97,17 +117,18 @@ function sl_test_link_cmd {
 	local OPTIND
 	local ldev_num
 	local lgrp_num
-	local link_num
+	local link_nums
+	local lgrp_nums
 	local cmd_str
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num cmd_str"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums cmd_str"
 	local description=$(cat <<-EOF
-	Send a command to the link.
+	Send a command to the links in the link groups.
 
 	Mandatory:
 	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to send the cmd_str to
-	cmd_str    Command to send to the link_num.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to send the cmd_str to
+	cmd_str    Command to send to the link_nums.
 
 	Options:
 	-h, --help This message.
@@ -150,7 +171,12 @@ function sl_test_link_cmd {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	cmd_str=$4
+
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -158,7 +184,7 @@ function sl_test_link_cmd {
 		return ${rtn}
 	fi
 
-	sl_test_cmd_check "link" $4
+	sl_test_cmd_check "link" ${cmd_str}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "cmd_check failed [${rtn}]"
@@ -166,14 +192,10 @@ function sl_test_link_cmd {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	cmd_str=$4
 	sl_test_debug_log "${FUNCNAME}" \
-		"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, cmd_str = ${cmd_str})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), cmd_str = ${cmd_str})"
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} ${cmd_str}
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums ${cmd_str}
 	rtn=$?
 
 	return ${rtn}
@@ -184,16 +206,16 @@ function sl_test_link_new {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
 	local description=$(cat <<-EOF
-	Create a new link.
+	Create new links for the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to create.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to create.
 
 	Options:
 	-h, --help This message.
@@ -233,7 +255,11 @@ function sl_test_link_new {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -241,20 +267,17 @@ function sl_test_link_new {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_new"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_new"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_new failed [${rtn}]"
 		return ${rtn}
 	fi
 
-        # Top level directory for ports when created by the test framework
-        SL_TEST_SYSFS_TOP_LINK_DIR="test_port"
+	# Top level directory for ports when created by the test framework
+	SL_TEST_SYSFS_TOP_LINK_DIR="test_port"
 
 	return 0
 }
@@ -264,16 +287,16 @@ function sl_test_link_del {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
 	local description=$(cat <<-EOF
 	Delete a link.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to delete.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to delete.
 
 	Options:
 	-h, --help This message.
@@ -313,7 +336,11 @@ function sl_test_link_del {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -321,15 +348,12 @@ function sl_test_link_del {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_del"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_del"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_new failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "link_del failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -341,16 +365,16 @@ function sl_test_link_up {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
 	local description=$(cat <<-EOF
-	Set the link state up.
+	Set the links state up for the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to set to state up.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to set to state up.
 
 	Options:
 	-h, --help This message.
@@ -390,7 +414,11 @@ function sl_test_link_up {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -398,12 +426,9 @@ function sl_test_link_up {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "up"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "up"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "up failed [${rtn}]"
@@ -418,16 +443,16 @@ function sl_test_link_down {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
 	local description=$(cat <<-EOF
-	Set the link state down.
+	Set the links state down for the link groups.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to set up.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to set down.
 
 	Options:
 	-h, --help This message.
@@ -467,7 +492,10 @@ function sl_test_link_down {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -475,15 +503,12 @@ function sl_test_link_down {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "down"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "down"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "up failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "down failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -495,16 +520,16 @@ function sl_test_link_opt_use_fec_cntr_set {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num use_fec_cntr"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums use_fec_cntr"
 	local description=$(cat <<-EOF
 	Set the link option to use the software FEC counters instead of reading the hardware counters.
 
 	Mandatory:
-	ldev_num     Link Device Number the lgrp_num belongs to.
-	lgrp_num     Link Group Number the link_num belongs to.
-	link_num     Link Number to modify fec cntr usage.
+	ldev_num     Link Device Number the lgrp_nums belongs to.
+	lgrp_nums    Link Group Numbers the link_nums belongs to.
+	link_nums    Link Numbers to modify fec cntr usage.
 	use_fec_cntr Set software FEC counters [on | off].
 
 	Options:
@@ -549,7 +574,10 @@ function sl_test_link_opt_use_fec_cntr_set {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -566,11 +594,8 @@ function sl_test_link_opt_use_fec_cntr_set {
 		return 1
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
 	sl_test_debug_log "${FUNCNAME}" \
-		"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, use_fec_cntr = ${use_fec_cntr})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), use_fec_cntr = ${use_fec_cntr})"
 
 	echo ${use_fec_cntr} > ${SL_TEST_LINK_DEBUGFS_DIR}/test/use_fec_cntr
 	rtn=$?
@@ -579,10 +604,10 @@ function sl_test_link_opt_use_fec_cntr_set {
 		return ${rtn}
 	fi
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_opt_set"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_opt_set"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "link_opt_set failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -594,19 +619,19 @@ function sl_test_link_fec_cntr_set {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
+	local lgrp_nums
+	local link_nums
 	local ucw
 	local ccw
 	local gcw
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num ucw ccw gcw"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums ucw ccw gcw"
 	local description=$(cat <<-EOF
 	Set the rate of the FEC counters.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to set FEC cntr rate for.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to set FEC cntr rate for.
 	ucw        Number of UCW to increment by on each read of the counter.
 	ccw        Number of CCW to increment by on each read of the counter.
 	gcw        Number of GCW to increment by on each read of the counter.
@@ -649,7 +674,10 @@ function sl_test_link_fec_cntr_set {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -664,13 +692,10 @@ function sl_test_link_fec_cntr_set {
 		return 1
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
 	ucw=$4
 	ccw=$5
 	gcw=$6
-	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 	sl_test_debug_log "${FUNCNAME}" "(ucw = ${ucw}, ccw = ${ccw}, gcw = ${gcw})"
 
 	echo ${ucw} > ${SL_TEST_LINK_DEBUGFS_DIR}/test/fec_ucw
@@ -694,10 +719,10 @@ function sl_test_link_fec_cntr_set {
 		return ${rtn}
 	fi
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_fec_cnt_set"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_fec_cnt_set"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "link_fec_cnt_set failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -843,16 +868,16 @@ function sl_test_link_config_set {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num config"
+	local lgrp_nums
+	local link_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums config"
 	local description=$(cat <<-EOF
-	Set configuration for a link.
+	Set configuration for the links in the link groups.
 
 	Mandatory:
-	ldev_num   Link device number the lgrp_num belongs to.
-	lgrp_num   Link group number the link_num belongs to.
-	link_num   Link Number to configure.
+	ldev_num   Link device number the lgrp_nums belongs to.
+	lgrp_nums  Link group numbers the link_nums belongs to.
+	link_nums  Link Numbers to configure.
 	config     Link configuration. See files in ${SL_TEST_LINK_CONFIG_DIR}.
 
 	Options:
@@ -896,7 +921,11 @@ function sl_test_link_config_set {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	config=$4
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -904,18 +933,14 @@ function sl_test_link_config_set {
 		return ${rtn}
 	fi
 
-	if [ ! -f "$4" ]; then
+	if [ ! -f "${config}" ]; then
 		sl_test_error_log "${FUNCNAME}" "missing config"
 		echo "${usage}"
 		return 1
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	config=$4
 	sl_test_debug_log "${FUNCNAME}" \
-		"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, config = ${config})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), config = ${config})"
 
 	source ${config}
 
@@ -935,10 +960,10 @@ function sl_test_link_config_set {
 		fi
 	done
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_config_write"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_config_write"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_cmd failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "link_config_write failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -1072,18 +1097,17 @@ function sl_test_link_policy_set {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
+	local lgrp_nums
+	local link_nums
 	local policy
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num policy"
-	local usage="${FUNCNAME} <ldev_num> <lgrp_num> <link_num> <policy>"
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums policy"
 	local description=$(cat <<-EOF
-	Set the policy for the link.
+	Set the policy for the links in the link groups.
 
 	Mandatory:
-	ldev_num   Link device number the <lgrp_num> belongs to.
-	lgrp_num   Link group number the <link_num> belongs to.
-	link_num   Link Number to set the policy for.
+	ldev_num   Link device number the lgrp_nums belongs to.
+	lgrp_nums  Link group numbers the link_nums belongs to.
+	link_nums  Link Numbers to set the policy for.
 	policy     Link policy. See files in ${SL_TEST_LINK_POLICY_DIR}.
 
 	Options:
@@ -1127,7 +1151,11 @@ function sl_test_link_policy_set {
 		return 0
 	fi
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	policy=$4
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -1135,18 +1163,14 @@ function sl_test_link_policy_set {
 		return ${rtn}
 	fi
 
-	if [ ! -f "$4" ]; then
-		sl_test_error_log "${FUNCNAME}" "missing config"
+	if [ ! -f "${policy}" ]; then
+		sl_test_error_log "${FUNCNAME}" "missing policy"
 		echo "${usage}"
 		return 1
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	policy=$4
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, policy = ${policy})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), policy = ${policy})"
 
 	source ${policy}
 
@@ -1166,10 +1190,10 @@ function sl_test_link_policy_set {
 		fi
 	done
 
-	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_policy_write"
+	__sl_test_link_cmd ${ldev_num} lgrp_nums link_nums "link_policy_write"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_cmd failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "link_policy_write failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -1255,7 +1279,7 @@ function sl_test_link_policy_check {
 	link_num=$3
 	policy=$4
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, policy = ${policy})"
+		"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, policy = ${policy})"
 
 	__sl_test_link_sysfs_parent_set ${ldev_num} ${lgrp_num} link_sysfs_dir
 	rtn=$?
@@ -1264,15 +1288,15 @@ function sl_test_link_policy_check {
 		return ${rtn}
 	fi
 
-        while IFS= read -r line; do
+	while IFS= read -r line; do
 
-                if [[ -z ${line} ]]; then
-                        continue
-                fi
+		if [[ -z ${line} ]]; then
+			continue
+		fi
 
-                if [[ "${line}" =~ ^#.*$ ]]; then
-                        continue
-                fi
+		if [[ "${line}" =~ ^#.*$ ]]; then
+			continue
+		fi
 
 		key_value=(${line//=/ })
 
@@ -1310,18 +1334,18 @@ function sl_test_link_cleanup {
 	local options
 	local OPTIND
 	local ldev_num
-	local lgrp_num
-	local link_num
-	local llr_num
-	local mac_num
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+	local lgrp_nums
+	local link_nums
+	local -n llr_nums
+	local -n mac_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
 	local description=$(cat <<-EOF
-	Cleanup a link and all related objects.
+	Cleanup the links with all related objects.
 
 	Mandatory:
-	ldev_num   Link Device Number the lgrp_num belongs to.
-	lgrp_num   Link Group Number the link_num belongs to.
-	link_num   Link Number to cleanup.
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to cleanup.
 
 	Options:
 	-h, --help This message.
@@ -1354,7 +1378,12 @@ function sl_test_link_cleanup {
 		esac
 	done
 
-	__sl_test_link_check $1 $2 $3
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+	llr_nums=link_nums
+	mac_nums=link_nums
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
@@ -1362,29 +1391,24 @@ function sl_test_link_cleanup {
 		return ${rtn}
 	fi
 
-	ldev_num=$1
-	lgrp_num=$2
-	link_num=$3
-	llr_num=${link_num}
-	mac_num=${link_num}
 	sl_test_debug_log "${FUNCNAME}" \
-                "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num}, llr_num = ${llr_num}, mac_num = ${mac_num})"
+		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), llr_nums = (${llr_nums[*]}), mac_nums = (${mac_nums[*]}))"
 
-	sl_test_mac_del ${ldev_num} ${lgrp_num} ${mac_num}
+	sl_test_mac_del ${ldev_num} "${lgrp_nums[*]}" "${mac_nums[*]}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "mac_del failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	sl_test_llr_del ${ldev_num} ${lgrp_num} ${llr_num}
+	sl_test_llr_del ${ldev_num} "${lgrp_nums[*]}" "${llr_nums[*]}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "llr_del failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	sl_test_link_del ${ldev_num} ${lgrp_num} ${link_num}
+	sl_test_link_del ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "link_del failed [${rtn}]"

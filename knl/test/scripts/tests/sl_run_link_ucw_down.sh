@@ -10,52 +10,13 @@ source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 settings="${SL_TEST_DIR}/systems/settings/ck400_x1_fec_on_il.sh"
-
 ldev_num=0
-lgrp_nums=({0..1})
+lgrp_nums=({0..63})
 
 function test_cleanup {
 	local rtn
-        local lgrp_num
-        local link_num
 
-        for lgrp_num in "${lgrp_nums[@]}"; do
-
-                for link_num in "${sl_test_link_nums[@]}"; do
-
-		        sl_test_info_log "${FUNCNAME}" \
-                                "link_fec_cntr_set zeros (link_num = ${link_num})"
-
-                        sl_test_link_fec_cntr_set ${ldev_num} ${lgrp_num} ${link_num} 0 0 0
-			rtn=$?
-			if [[ "${rtn}" != 0 ]]; then
-				sl_test_error_log "${FUNCNAME}" "fec_cntr_set failed [${rtn}]"
-				return ${rtn}
-			fi
-
-		        sl_test_info_log "${FUNCNAME}" \
-                                "link_opt_use_fec_cntr_set on (link_num = ${link_num})"
-
-                        sl_test_link_opt_use_fec_cntr_set ${ldev_num} ${lgrp_num} ${link_num} off
-			rtn=$?
-			if [[ "${rtn}" != 0 ]]; then
-				sl_test_error_log "${FUNCNAME}" "fec_cntr_set failed [${rtn}]"
-				return ${rtn}
-			fi
-		done
-
-		sl_test_info_log "${FUNCNAME}" "lgrp_notifs_unreg (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num})"
-
-		sl_test_lgrp_notifs_unreg ${ldev_num} ${lgrp_num}
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "lgrp_notifs_unreg failed [${rtn}]"
-			return ${rtn}
-		fi
-	done
-
-
-	sl_test_lgrp_cleanup ${ldev_num} "${lgrp_nums[@]}"
+	sl_test_lgrp_cleanup ${ldev_num} "${lgrp_nums[*]}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_cleanup failed [${rtn}]"
@@ -68,15 +29,15 @@ function test_cleanup {
 function test_verify {
 
 	local found
-        local lgrp_num
+	local lgrp_num
 	local furcation
 	local sl_test_link_nums
 	local notifs
-        local lgrp_sysfs
+	local lgrp_sysfs
 
 	data=$1
 
-        __sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
+	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_sysfs_parent_set failed [${rtn}]"
@@ -88,6 +49,12 @@ function test_verify {
 	for lgrp_num in "${lgrp_nums[@]}"; do
 
 		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
+			return ${rtn}
+		fi
+
 		__sl_test_set_links_from_furcation ${furcation} sl_test_link_nums
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
@@ -102,7 +69,7 @@ function test_verify {
 				notif_lgrp_num=${notif_fields[3]}
 				notif_link_num=${notif_fields[4]}
 				notif_type=${notif_fields[6]}
-                                notif_down_cause=${notif_fields[7]}
+				notif_down_cause=${notif_fields[7]}
 
 				if [[ "${notif_ldev_num}" != ${ldev_num} ]]; then
 					continue
@@ -118,16 +85,16 @@ function test_verify {
 
 				if [[ "${notif_type}" == "link-up-fail" && "${notif_down_cause}" == "ucw" ]]; then
 					sl_test_info_log "${FUNCNAME}" \
-                                                "Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+						"Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 					sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
-                                        found=true
-                                        break
+					found=true
+					break
 				fi
-                        done
+			done
 
 			if [[ "${found}" != true ]]; then
 				sl_test_error_log "${FUNCNAME}" \
-                                        "Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+					"Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 				return 1
 			fi
 
@@ -141,15 +108,10 @@ function test_verify {
 function main {
 
 	local rtn
-	local lgrp_num
-	local link_num
-	local mac_num
-	local llr_num
-	local sl_test_link_nums
 	local lgrp_sysfs
 	local furcation
-        local sl_test_notifs
-        local ucw_limit
+	local sl_test_notifs
+	local ucw_limit
 
 	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
 	rtn=$?
@@ -158,94 +120,108 @@ function main {
 		return ${rtn}
 	fi
 
-        source ${settings}
+	source ${settings}
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "sourced ${settings} failed [${rtn}]"
 		return ${rtn}
 	fi
 
-        source ${link_config}
+	source ${link_config}
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "sourced ${link_config} failed [${rtn}]"
 		return ${rtn}
 	fi
 
-	for lgrp_num in "${lgrp_nums[@]}"; do
+	sl_test_info_log "${FUNCNAME}" \
+		"lgrp_setup (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), settings = ${settings})"
 
-		sl_test_info_log "${FUNCNAME}" \
-                        "lgrp_links_setup (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, settings = ${settings})"
+	sl_test_lgrp_setup ${ldev_num} "${lgrp_nums[*]}" ${settings}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_setup failed [${rtn}]"
+		return ${rtn}
+	fi
 
-		sl_test_lgrp_setup ${ldev_num} ${lgrp_num} ${settings}
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "link_setup failed [${rtn}]"
-			return ${rtn}
-		fi
+	sl_test_info_log "${FUNCNAME}" "lgrp_notifs_reg (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}))"
 
-		sl_test_info_log "${FUNCNAME}" "lgrp_notifs_reg (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num})"
+	sl_test_lgrp_notifs_reg ${ldev_num} "${lgrp_nums[*]}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "lgrp_notifs_reg failed [${rtn}]"
+		return ${rtn}
+	fi
 
-		sl_test_lgrp_notifs_reg ${ldev_num} ${lgrp_num}
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "lgrp_notifs_reg failed [${rtn}]"
-			return ${rtn}
-		fi
+	sl_test_info_log "${FUNCNAME}" \
+		"lgrp_notifs_remove (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}))"
 
-		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
-		sl_test_info_log "${FUNCNAME}" \
-                        "lgrp_links_state_set up (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, furcation = ${furcation})"
+	# Give time for any media-present notifications to arrive. Link groups may or may not receive this notification.
+	# Either way the notification queue must be empty before continuing.
+	sleep 1
 
-		__sl_test_set_links_from_furcation ${furcation} sl_test_link_nums
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
-			return ${rtn}
-		fi
+	sl_test_lgrp_notifs_remove ${ldev_num} "${lgrp_nums[*]}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "lgrp_notifs_remove failed [${rtn}]"
+		return ${rtn}
+	fi
 
-		for link_num in "${sl_test_link_nums[@]}"; do
+	furcation=$(cat ${lgrp_sysfs}/${lgrp_nums[0]}/config/furcation)
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
+		return ${rtn}
+	fi
 
-                        # fec_up_ucw_limit used from ${link_config}
-                        ucw_limit=$((fec_up_ucw_limit + 1))
+	sl_test_info_log "${FUNCNAME}" "(furcation = ${furcation})"
 
-		        sl_test_info_log "${FUNCNAME}" \
-                                "link_fec_cntr_set (link_num = ${link_num}, ucw = ${ucw_limit})"
+	__sl_test_set_links_from_furcation ${furcation} link_nums
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
+		return ${rtn}
+	fi
 
-                        sl_test_link_fec_cntr_set ${ldev_num} ${lgrp_num} ${link_num} ${ucw_limit} 0 0
-			rtn=$?
-			if [[ "${rtn}" != 0 ]]; then
-				sl_test_error_log "${FUNCNAME}" "fec_cntr_set failed [${rtn}]"
-				return ${rtn}
-			fi
+	# fec_up_ucw_limit used from ${link_config} + 10 to tolerate timing variance.
+	ucw_limit=$((fec_up_ucw_limit + 10))
 
-		        sl_test_info_log "${FUNCNAME}" \
-                                "link_opt_use_fec_cntr_set on (link_num = ${link_num})"
+	sl_test_info_log "${FUNCNAME}" \
+		"link_fec_cntr_set (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), ucw = ${ucw_limit})"
 
-                        sl_test_link_opt_use_fec_cntr_set ${ldev_num} ${lgrp_num} ${link_num} on
-			rtn=$?
-			if [[ "${rtn}" != 0 ]]; then
-				sl_test_error_log "${FUNCNAME}" "fec_cntr_set failed [${rtn}]"
-				return ${rtn}
-			fi
+	sl_test_link_fec_cntr_set ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}" ${ucw_limit} 0 0
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "fec_cntr_set failed [${rtn}]"
+		return ${rtn}
+	fi
 
-			sl_test_link_up ${ldev_num} ${lgrp_num} ${link_num}
-			rtn=$?
-			if [[ "${rtn}" != 0 ]]; then
-				sl_test_error_log "${FUNCNAME}" "link_up failed [${rtn}]"
-				return ${rtn}
-			fi
-		done
+	sl_test_info_log "${FUNCNAME}" \
+		"link_opt_use_fec_cntr_set on (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}),)"
 
-		sl_test_info_log "${FUNCNAME}" \
-                        "lgrp_links_notif_wait link-up-fail (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+	sl_test_link_opt_use_fec_cntr_set ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}" on
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_opt_use_fec_cntr_set failed [${rtn}]"
+		return ${rtn}
+	fi
 
-                sl_test_lgrp_links_notif_wait ${ldev_num} ${lgrp_num} \
-                        "link-up-fail" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
-			return ${rtn}
-		fi
-        done
+	sl_test_info_log "${FUNCNAME}" "link_up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
+	sl_test_link_up ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_up failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	sl_test_info_log "${FUNCNAME}" \
+		"lgrp_links_notif_wait link-up-fail (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+
+	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
+		"link-up-fail" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
+		return ${rtn}
+	fi
 
 	sl_test_info_log "${FUNCNAME}" "test_verify"
 	test_verify "${sl_test_notifs}"
@@ -259,17 +235,18 @@ function main {
 
 SCRIPT_NAME=$(basename $0)
 
-usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief]"
+usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief] [-g | --lgrp_nums]"
 description=$(cat <<-EOF
 ${brief}
 
 Options:
--b, --brief Brief test description.
--h, --help  This message.
+-b, --brief	Brief test description.
+-g, --lgrp_nums Link group numbers to test.
+-h, --help	This message.
 EOF
 )
 
-options=$(getopt -o "hb" --long "help,brief" -- "$@")
+options=$(getopt -o "hg:b" --long "help,lgrp_nums:,brief" -- "$@")
 
 if [ "$?" != 0 ]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
@@ -287,10 +264,15 @@ while true; do
 			echo "${description}"
 			exit 0
 			;;
+		-g | --lgrp_nums)
+			lgrp_nums=(${2})
+			shift 2
+			break
+			;;
 		-b | --brief)
-                        echo ${brief}
-                        exit 0
-                        ;;
+			echo ${brief}
+			exit 0
+			;;
 		-- )
 			shift
 			break
@@ -300,6 +282,8 @@ while true; do
 			;;
 	esac
 done
+
+shift
 
 if [[ "$#" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
@@ -314,12 +298,12 @@ main_rtn=$?
 if [[ "${main_rtn}" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "failed [${main_rtn}]"
 else
-        sl_test_info_log "${SCRIPT_NAME}" "cleanup"
-        test_cleanup
-        rtn=$?
-        if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${SCRIPT_NAME}" "test_cleanup failed [${rtn}]"
-        fi
+	sl_test_info_log "${SCRIPT_NAME}" "cleanup"
+	test_cleanup
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${SCRIPT_NAME}" "test_cleanup failed [${rtn}]"
+	fi
 fi
 
 sl_test_info_log "${SCRIPT_NAME}" "exit (main_rtn = ${main_rtn})"

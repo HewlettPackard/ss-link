@@ -112,6 +112,14 @@ depmod -a
 
 ### Running All Tests
 
+```sh
+/usr/bin/sl_test_scripts/sl_run_test.sh
+```
+
+#### Source Environment
+
+You may want to the environment made available in your shell session.
+
 1. Source the test environment.
 
 ```sh
@@ -285,6 +293,12 @@ sl_test_lgrp_new ${ldev_num} ${lgrp_num}
 
 > [!NOTE] The `sysfs_parent` is automatically determined for the device you run on.
 
+You could also call this with a list of link groups.
+
+```sh
+sl_test_lgrp_new 0 "0 1"
+```
+
 First it is necessary to source the testing environment. This is installed as part
 of the sl-driver-test package.
 
@@ -328,16 +342,31 @@ sl_test_link_new -h
 ```
 
 ```text
-Usage: sl_test_link_new [-h | --help] ldev_num lgrp_num link_num
-Create a new link.
+Usage: sl_test_link_new [-h | --help] ldev_num lgrp_nums link_nums
+Create new links for the link groups.
 
 Mandatory:
-ldev_num   Link Device Number the lgrp_num belongs to.
-lgrp_num   Link Group Number the link_num belongs to.
-link_num   Link Number to create.
+ldev_num   Link Device Number the lgrp_nums belongs to.
+lgrp_nums  Link Group Numbers the link_nums belongs to.
+link_nums  Link Numbers to create.
 
 Options:
 -h, --help This message.
+```
+
+##### Examples
+
+```sh
+# Create a new link 0 for link group 0 on link device 0
+sl_test_link_new 0 0 0
+
+# Create 4 new links for link groups 0 and 1 on link device 0
+sl_test_link_new 0 "0 1" "0 1 2 3"
+
+# Create 4 new links for link groups 0 and 1 on link device 0
+lgrps=(0 1)
+links=({0..3})
+sl_test_link_new 0 "${lgrps[*]}" "${links[*]}"
 ```
 
 ### Types of Test Functions
@@ -501,7 +530,7 @@ Example failure.
 
 ```txt
 2025-01-24 17:44:40.76249 (info)     sl_run_test.sh                                  : (Total Available Tests = 8)
-2025-01-24 17:44:40.77367 (info)     sl_run_test.sh                                  : (Manifest = /usr/bin/sl_test_scripts/systems/manifests/default.json)
+2025-01-24 17:44:40.77367 (info)     sl_run_test.sh                                  : (Manifest = /usr/bin/sl_test_scripts/systems/manifests/quick.json)
 2025-01-24 17:44:40.78695 (info)     sl_run_test.sh                                  : (Log File = .test_default.log)
 2025-01-24 17:44:41.08397 (info)     exec_test                                       : running (test_id = 1, test_file = sl_run_link_policy_fec_on.sh)
 2025-01-24 17:44:41.20747 (info)     sl_run_link_policy_fec_on.sh                    : Starting
@@ -539,7 +568,7 @@ Example
 
 ```txt
 2025-01-24 17:49:45.43747 (info)     sl_run_test.sh                                  : (Total Available Tests = 8)
-2025-01-24 17:49:45.45500 (info)     sl_run_test.sh                                  : (Manifest = /usr/bin/sl_test_scripts/systems/manifests/default.json)
+2025-01-24 17:49:45.45500 (info)     sl_run_test.sh                                  : (Manifest = /usr/bin/sl_test_scripts/systems/manifests/quick.json)
 2025-01-24 17:49:45.47169 (info)     sl_run_test.sh                                  : (Log File = .test_default.log)
 2025-01-24 17:49:45.78507 (info)     exec_test                                       : running (test_id = 1, test_file = sl_run_link_policy_fec_on.sh)
 2025-01-24 17:49:45.92045 (info)     sl_run_link_policy_fec_on.sh                    : Starting

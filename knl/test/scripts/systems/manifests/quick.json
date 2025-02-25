@@ -3,6 +3,7 @@
                 "id": 0,
                 "file": "sl_run_init.sh",
                 "parameters": {
+                        "lgrp_nums": "",
                         "arguments": ""
                 }
         },
@@ -10,6 +11,7 @@
                 "id": 1,
                 "file": "sl_run_link_policy_fec_on.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
@@ -17,6 +19,7 @@
                 "id": 2,
                 "file": "sl_run_link_policy_fec_calc.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
@@ -24,6 +27,7 @@
                 "id": 3,
                 "file": "sl_run_link_policy_fec_calc_ck400.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
@@ -31,6 +35,7 @@
                 "id": 4,
                 "file": "sl_run_link_ucw_down.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
@@ -38,6 +43,7 @@
                 "id": 6,
                 "file": "sl_run_link_last_down_cause_match.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
@@ -45,13 +51,23 @@
                 "id": 7,
                 "file": "sl_run_link_last_down_cause_command.sh",
                 "parameters": {
+                        "lgrp_nums": "0",
                         "arguments": ""
                 }
         },
         {
                 "id": 8,
+                "file": "sl_run_link_up_cancel.sh",
+                "parameters": {
+                        "lgrp_nums": "0",
+                        "arguments": ""
+                }
+        },
+        {
+                "id": 9,
                 "file": "sl_run_remove.sh",
                 "parameters": {
+                        "lgrp_nums": "",
                         "arguments": ""
                 }
         }

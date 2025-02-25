@@ -14,7 +14,7 @@ SETTINGS="${SL_TEST_DIR}/systems/settings/bs200_x1_fec_off.sh"
 function test_cleanup {
 	local rtn
 
-	sl_test_lgrp_cleanup ${ldev_num} "${loopback_lgrp_nums[@]}"
+	sl_test_lgrp_cleanup ${ldev_num} "${loopback_lgrp_nums[*]}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_cleanup failed [${rtn}]"
@@ -45,6 +45,12 @@ function test_verify {
 	for lgrp_num in "${loopback_lgrp_nums[@]}"; do
 
 		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
+			return ${rtn}
+		fi
+
 		__sl_test_set_links_from_furcation ${furcation} sl_test_link_nums
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
@@ -126,7 +132,7 @@ function main {
 	for lgrp_num in "${loopback_lgrp_nums[@]}"; do
 
 		sl_test_info_log "${FUNCNAME}" \
-                        "lgrp_links_setup (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, SETTINGS = ${SETTINGS})"
+                        "lgrp_setup (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, SETTINGS = ${SETTINGS})"
 
 		sl_test_lgrp_setup ${ldev_num} ${lgrp_num} ${SETTINGS}
 		rtn=$?
@@ -148,6 +154,12 @@ function main {
 		fi
 
 		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
+			return ${rtn}
+		fi
+
 		sl_test_info_log "${FUNCNAME}" \
                         "lgrp_links_state_set up (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, furcation = ${furcation})"
 

@@ -17,7 +17,7 @@ function __sl_test_ldev_check {
 
 function __sl_test_ldev_sysfs_parent_set {
 	local ldev_num=$1
-	local -n sysfs_dir=$2
+	local -n parent_set_sysfs_dir=$2
 
 	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num})"
 
@@ -27,15 +27,15 @@ function __sl_test_ldev_sysfs_parent_set {
 	fi
 
 	if [ -e "${SL_TEST_SYSFS_ROSSW_TOP_DIR}" ]; then
-		sysfs_dir="${SL_TEST_SYSFS_ROSSW_TOP_DIR}/rossw${ldev_num}/"
+		parent_set_sysfs_dir="${SL_TEST_SYSFS_ROSSW_TOP_DIR}/rossw${ldev_num}/"
 	elif [ -e "${SL_TEST_SYSFS_CXI_TOP_DIR}" ]; then
-		sysfs_dir="${SL_TEST_SYSFS_CXI_TOP_DIR}/cxi${ldev_num}/"
+		parent_set_sysfs_dir="${SL_TEST_SYSFS_CXI_TOP_DIR}/cxi${ldev_num}/"
 	else
 		sl_test_error_log "${FUNCNAME}" "sysfs_parent_set failed"
 		return 1
 	fi
 
-	sl_test_debug_log "${FUNCNAME}" "(sysfs_dir = ${sysfs_dir})"
+	sl_test_debug_log "${FUNCNAME}" "(parent_set_sysfs_dir = ${parent_set_sysfs_dir})"
 
 	return 0
 }

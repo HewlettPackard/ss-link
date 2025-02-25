@@ -115,6 +115,19 @@ export SL_TEST_SYSFS_TOP_LINK_DIR="port"
 export SL_TEST_SYSFS_TOP_DIR
 
 ##########################################################################################
+# SL Number of LGRPS
+##########################################################################################
+if [[ "${SL_TEST_DEVICE_TYPE}" == "cassini2" ]]; then
+	SL_TEST_LGRP_NUM_END=0
+elif [[ "${SL_TEST_DEVICE_TYPE}" == "rosetta2" ]]; then
+	SL_TEST_LGRP_NUM_END=63
+else
+	SL_TEST_LGRP_NUM_END=0
+fi
+
+export SL_TEST_LGRP_NUM_END
+
+##########################################################################################
 # SL test logging
 ##########################################################################################
 
@@ -127,7 +140,12 @@ export SL_TEST_LOG_DIR=${SL_TEST_DIR}/logs/
 export PATH=${PATH}:${SL_TEST_DIR}:${SL_TEST_DIR}/tests/
 
 ##########################################################################################
-# Setup execution path
+# Manifest + Test Parameters to sl_run_test.sh
 ##########################################################################################
 
-export SL_TEST_DEFAULT_MANIFEST=${SL_TEST_DIR}/systems/manifests/default.json
+export SL_TEST_DEFAULT_MANIFEST=${SL_TEST_DIR}/systems/manifests/quick.json
+
+export SL_TEST_LDEV_NUM=${SL_TEST_LDEV_NUM:=0}
+
+[[ -z ${SL_TEST_LGRP_NUMS[@]} ]] || SL_TEST_LGRP_NUMS=({0..63})
+export SL_TEST_LGRP_NUMS
