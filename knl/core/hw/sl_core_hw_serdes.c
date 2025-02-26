@@ -87,10 +87,10 @@ out:
 
 int sl_core_hw_serdes_hw_info_get(struct sl_core_lgrp *core_lgrp)
 {
-	int rtn;
-	u8  rd_buff[FW_INFO_SIZE];
-	u16 data16;
-	u32 data32;
+	int                       rtn;
+	u8                        rd_buff[FW_INFO_SIZE];
+	u16                       data16;
+	u32                       data32;
 	struct sl_serdes_hw_info *hw_info;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
@@ -120,11 +120,7 @@ int sl_core_hw_serdes_hw_info_get(struct sl_core_lgrp *core_lgrp)
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_lanes  = %u", hw_info->num_lanes);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_plls   = %u", hw_info->num_plls);
 
-	rtn = sl_core_hw_uc_ram_rd_blk(core_lgrp, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
-	if (rtn) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_ram_rd_blk failed [%d]", rtn);
-		goto out;
-	}
+	SL_CORE_HW_UC_RAM_RD_BLK(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
 
 	hw_info->num_micros = (*(u32 *)&rd_buff[FW_INFO_NUM_MICROS_OFFSET] & 0xF);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_micros = %d", hw_info->num_micros);
@@ -136,8 +132,8 @@ out:
 
 int sl_core_hw_serdes_fw_info_get(struct sl_core_lgrp *core_lgrp)
 {
-	int rtn;
-	u8  rd_buff[FW_INFO_SIZE];
+	int                       rtn;
+	u8                        rd_buff[FW_INFO_SIZE];
 	struct sl_serdes_fw_info *fw_info;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
@@ -147,11 +143,7 @@ int sl_core_hw_serdes_fw_info_get(struct sl_core_lgrp *core_lgrp)
 
 	fw_info = &(core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)]);
 
-	rtn = sl_core_hw_uc_ram_rd_blk(core_lgrp, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
-	if (rtn) {
-		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc_ram_rd_blk failed [%d]", rtn);
-		goto out;
-	}
+	SL_CORE_HW_UC_RAM_RD_BLK(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
 
 	fw_info->signature = (*(u32 *)rd_buff & 0xFFFFFF);
 	fw_info->version   = ((*(u32 *)rd_buff >> 24) & 0xFF);

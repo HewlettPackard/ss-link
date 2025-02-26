@@ -525,7 +525,7 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 			return -ECANCELED;
 		}
 		msleep(200);
-		SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id,
+		SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id,
 			serdes_lane_num, addr, &eye_upper);
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
 			"lane up quality check (serdes_lane_num = %u, asic_lane_num = %u, eye_upper = %u, low = %u, high = %u)",
@@ -547,7 +547,7 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 			return -ECANCELED;
 		}
 		msleep(200);
-		SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id,
+		SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id,
 			serdes_lane_num, addr, &eye_lower);
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
 			"lane up quality check (serdes_lane_num = %u, asic_lane_num = %u, eye_lower = %u, low = %u, high = %u)",
@@ -730,7 +730,8 @@ int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
 
-	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_upper);
+	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_addr,
+		core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_upper);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"eye upper get (serdes_lane_num = %u, asic_lane_num = %u, eye_upper = %u)",
@@ -752,7 +753,8 @@ int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
 
-	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_lower);
+	SL_CORE_HW_UC_RAM_RD8(core_lgrp, core_lgrp->serdes.dt.dev_addr,
+		core_lgrp->serdes.dt.dev_id, serdes_lane_num, addr, eye_lower);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"eye lower get (serdes_lane_num = %u, asic_lane_num = %u, eye_lower = %u)",
