@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_ASIC_H_
 #define _SL_ASIC_H_
@@ -37,6 +37,11 @@
 #define SL_MEDIA_LGRPS_PER_PORT        2
 #define SL_MEDIA_LGRPS_DIVIDE_PER_PORT (SL_MEDIA_LGRPS_PER_PORT >> 1)
 
+#define SL_SERDES_NUM_MICROS    4
+#define SL_SERDES_ACTIVE_MICROS (BIT(3) | BIT(2) | BIT(1) | BIT(0))
+#define SL_SERDES_NUM_PLLS      1
+#define SL_SERDES_NUM_LANES     8
+
 #else /* Cassini */
 
 #include "sbl/sbl_pml.h"
@@ -55,6 +60,11 @@
 #define SL_MEDIA_MAX_LGRPS_PER_JACK    1
 #define SL_MEDIA_LGRPS_PER_PORT        1
 #define SL_MEDIA_LGRPS_DIVIDE_PER_PORT 0
+
+#define SL_SERDES_NUM_MICROS    2
+#define SL_SERDES_ACTIVE_MICROS (BIT(1) | BIT(0))
+#define SL_SERDES_NUM_PLLS      1
+#define SL_SERDES_NUM_LANES     4
 
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 

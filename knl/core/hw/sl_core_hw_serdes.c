@@ -24,6 +24,9 @@ int sl_core_hw_serdes_init(struct sl_core_lgrp *core_lgrp)
 	u32 addr;
 	u32 data;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
+		return 0;
+
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "init");
 
 	for (lane_num = 0; lane_num < SL_ASIC_MAX_LANES; ++lane_num) {
@@ -48,6 +51,9 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 	u8  which;
 	u16 addr;
 	u16 data;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
+		return 0;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles");
 
