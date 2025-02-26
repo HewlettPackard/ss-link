@@ -403,8 +403,17 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 		case SL_LINK_DOWN_CAUSE_RF:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
 			break;
-		case SL_LINK_DOWN_CAUSE_SERDES:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes ");
+		case SL_LINK_DOWN_CAUSE_SERDES_PLL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-pll ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_SIGNAL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-signal ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_QUALITY:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-quality ");
 			break;
 		case SL_LINK_DOWN_CAUSE_DOWN:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");

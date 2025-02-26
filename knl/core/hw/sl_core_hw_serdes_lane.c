@@ -16,6 +16,7 @@
 #include "hw/sl_core_hw_settings.h"
 #include "data/sl_core_data_lgrp.h"
 #include "hw/sl_core_hw_serdes_addrs.h"
+#include "data/sl_core_data_link.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
@@ -30,7 +31,7 @@ u8 sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 ser
 				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num)
 			return asic_lane_num;
 
-	sl_core_log_err(core_lgrp, LOG_NAME,
+	sl_core_log_err_trace(core_lgrp, LOG_NAME,
 		"RX lane num not found (serdes_lane_num = %u)", serdes_lane_num);
 	return 0;
 }
@@ -44,7 +45,7 @@ u8 sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 ser
 				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num)
 			return asic_lane_num;
 
-	sl_core_log_err(core_lgrp, LOG_NAME,
+	sl_core_log_err_trace(core_lgrp, LOG_NAME,
 		"TX lane num not found (serdes_lane_num = %u)", serdes_lane_num);
 	return 0;
 }
@@ -443,7 +444,7 @@ static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8
 			return 0;
 	}
 
-	sl_core_log_err(core_lgrp, LOG_NAME,
+	sl_core_log_err_trace(core_lgrp, LOG_NAME,
 		"lane up tx check fail (lane = %u, status = 0x%llX)", asic_lane_num, status);
 	return -EIO;
 }
@@ -486,7 +487,7 @@ static int sl_core_hw_serdes_lane_up_rx_check(struct sl_core_link *core_link, u8
 			return 0;
 	}
 
-	sl_core_log_err(core_lgrp, LOG_NAME,
+	sl_core_log_err_trace(core_lgrp, LOG_NAME,
 		"lane up rx check fail (asic_lane_num = %u, status = 0x%llX)", asic_lane_num, status);
 	return -EIO;
 }
@@ -618,6 +619,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 		rtn = sl_core_hw_serdes_lane_up_rx_setup(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_setup failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
@@ -625,26 +627,31 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_setup failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_rx_config(core_link->core_lgrp, core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_config failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_tx_config(core_link->core_lgrp, core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_config failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_rx_start(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_start failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 		rtn = sl_core_hw_serdes_lane_up_tx_start(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_start failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 	}
@@ -656,6 +663,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 		rtn = sl_core_hw_serdes_lane_up_clock_align(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_clock_align failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
 			goto out;
 		}
 	}
@@ -683,11 +691,13 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 			rtn = sl_core_hw_serdes_lane_up_tx_check(core_link, serdes_lane_num);
 			if (rtn) {
 				sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_check failed [%d]", rtn);
+				sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_SIGNAL);
 				goto out;
 			}
 			rtn = sl_core_hw_serdes_lane_up_rx_check(core_link, serdes_lane_num);
 			if (rtn) {
 				sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_check failed [%d]", rtn);
+				sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_SIGNAL);
 				goto out;
 			}
 		}
@@ -699,7 +709,10 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 					continue;
 				rtn = sl_core_hw_serdes_lane_up_quality_check(core_link, serdes_lane_num);
 				if (rtn) {
-					sl_core_log_err(core_link, LOG_NAME, "lane_up_quality_check failed [%d]", rtn);
+					sl_core_log_err_trace(core_link, LOG_NAME,
+						"lane_up_quality_check failed [%d]", rtn);
+					sl_core_data_link_last_up_fail_cause_set(core_link,
+						SL_LINK_DOWN_CAUSE_SERDES_QUALITY);
 					goto out;
 				}
 			}

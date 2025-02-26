@@ -20,7 +20,7 @@ struct kobject;
 #define SL_LINK_DOWN_CAUSE_CCW               BIT(2)   /* link up or fec mon CCW limit crossed */
 #define SL_LINK_DOWN_CAUSE_LF                BIT(3)   /* link local fault                     */
 #define SL_LINK_DOWN_CAUSE_RF                BIT(4)   /* link remote fault                    */
-#define SL_LINK_DOWN_CAUSE_SERDES            BIT(5)   /* link up serdes problems              */
+#define SL_LINK_DOWN_CAUSE_SERDES_PLL        BIT(5)   /* link up serdes PLL problems          */
 #define SL_LINK_DOWN_CAUSE_DOWN              BIT(6)   /* link down fault                      */
 #define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(7)   /* link up tries exhaused               */
 #define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   BIT(8)   /* lp_caps autoneg no match             */
@@ -36,6 +36,9 @@ struct kobject;
 #define SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED    BIT(18)  /* link up cable upshift failed         */
 #define SL_LINK_DOWN_CAUSE_AN_CONFIG         BIT(19)  /* link up config after an failed       */
 #define SL_LINK_DOWN_CAUSE_PCS_FAULT         BIT(20)  /* link up PCS is not ok                */
+#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG     BIT(21)  /* link up serdes config problems       */
+#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     BIT(22)  /* link up serdes signal problems       */
+#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(23)  /* link up serdes quality problems      */
 
 #define SL_LINK_DATA_STATUS_BIT_LOCK        BIT(0)
 #define SL_LINK_DATA_STATUS_BIT_ALIGN       BIT(1)
