@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -22,7 +22,7 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no lane\n");
+		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
 
@@ -42,7 +42,7 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no lane\n");
+		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
 

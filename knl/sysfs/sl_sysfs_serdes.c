@@ -40,7 +40,7 @@ static ssize_t hw_rev_1_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
 	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
+		return scnprintf(buf, PAGE_SIZE, "no_group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
 
@@ -59,7 +59,7 @@ static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
 	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
+		return scnprintf(buf, PAGE_SIZE, "no_group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
 
@@ -78,7 +78,7 @@ static ssize_t hw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
 	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
+		return scnprintf(buf, PAGE_SIZE, "no_group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
 
@@ -97,7 +97,7 @@ static ssize_t fw_signature_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
 	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
+		return scnprintf(buf, PAGE_SIZE, "no_group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
 
@@ -116,7 +116,7 @@ static ssize_t fw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, serdes_kobj);
 	if (!ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no group\n");
+		return scnprintf(buf, PAGE_SIZE, "no_group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
 

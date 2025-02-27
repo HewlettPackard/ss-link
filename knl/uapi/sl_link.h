@@ -81,7 +81,7 @@ struct sl_link_config {
 	__u32 size;
 
 	__u32 link_up_timeout_ms;
-	__u32 link_up_tries_max;
+	__s32 link_up_tries_max;
 
 	__s32 fec_up_settle_wait_ms;
 	__s32 fec_up_check_wait_ms;

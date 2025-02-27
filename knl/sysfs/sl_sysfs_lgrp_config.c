@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -62,37 +62,41 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	struct sl_ctl_lgrp *ctl_lgrp;
 	int                 idx;
 	char                output[50];
+	u32                 tech_map;
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
 
+	tech_map = ctl_lgrp->config.tech_map;
+
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"tech map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, ctl_lgrp->config.tech_map);
+		"tech map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, tech_map);
+
+	if (tech_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_400G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_CK_200G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_200G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_200G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_CK_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_100G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_BS_200G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BS_200G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BS_200G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_CD_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CD_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CD_100G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_CD_50G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CD_50G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CD_50G));
-	if (is_flag_set(ctl_lgrp->config.tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
@@ -102,22 +106,26 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	struct sl_ctl_lgrp *ctl_lgrp;
 	int                 idx;
 	char                output[20];
+	u32                 fec_map;
 
 	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
 
+	fec_map = ctl_lgrp->config.fec_map;
+
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"fec map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, ctl_lgrp->config.fec_map);
+		"fec map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, fec_map);
+
+	if (fec_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(ctl_lgrp->config.fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
+	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS_LL));
-	if (is_flag_set(ctl_lgrp->config.fec_map, SL_LGRP_CONFIG_FEC_RS))
+	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }

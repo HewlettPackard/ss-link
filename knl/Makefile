@@ -134,6 +134,7 @@ stage_install: modules fw
 	$(INSTALL) -d $(STAGING_DIR)/usr/lib/modules-load.d
 	$(INSTALL) -d $(STAGING_DIR)/usr/bin
 	$(INSTALL) -m 755 ../scripts/sl_sysfs_dump.sh $(STAGING_DIR)/usr/bin
+	$(INSTALL) -m 755 ../scripts/slstat $(STAGING_DIR)/usr/bin
 	$(INSTALL) -d $(STAGING_DIR)/lib/firmware
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin   $(STAGING_DIR)/lib/firmware
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin $(STAGING_DIR)/lib/firmware
@@ -145,6 +146,7 @@ stage_uninstall: test_stage_uninstall
 	$(RM) $(KNL_MOD_DIR)/module.symvers.sl
 	$(RM) $(STAGING_DIR)/lib/modules/$(KNL_TARGET)/sshot/$(MOD_NAME).ko
 	$(RM) $(STAGING_DIR)/usr/bin/sl_sysfs_dump.sh
+	$(RM) $(STAGING_DIR)/usr/bin/slstat
 	$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin
 	$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin
 	if [ -f $(KNL_MOD_DIR)/modules.order ] ; then \

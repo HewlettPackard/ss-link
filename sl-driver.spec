@@ -238,6 +238,7 @@ ${postinst} %{name} %{version}-%{release}
 /usr/bin/sl_sysfs_dump.sh
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin
+/usr/bin/slstat
 
 %files dkms -f dkms-files
 

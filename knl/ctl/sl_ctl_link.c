@@ -273,7 +273,7 @@ static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_li
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set cmd");
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %u",   link_config->link_up_tries_max);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  link_up_tries_max  = %d",   link_config->link_up_tries_max);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_settle_wait = %dms", link_config->fec_up_settle_wait_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_check_wait  = %dms", link_config->fec_up_check_wait_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_up_ucw_limit   = %d",   link_config->fec_up_ucw_limit);

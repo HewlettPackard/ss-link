@@ -501,7 +501,7 @@ EXPORT_SYMBOL(sl_link_config_pause_str);
 const char *sl_link_config_hpe_str(u32 config)
 {
 	if (config == SL_LINK_CONFIG_HPE_LINKTRAIN)
-		return "linktrain";
+		return "link-train";
 	if (config == SL_LINK_CONFIG_HPE_PRECODING)
 		return "precode";
 	if (config == SL_LINK_CONFIG_HPE_PCAL)

@@ -40,9 +40,12 @@ static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribut
 	sl_ctl_link_config_get(ctl_link, &config);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-	    "link up tries max show (link_up_tries_max = %u)", config.link_up_tries_max);
+	    "link up tries max show (link_up_tries_max = %d)", config.link_up_tries_max);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.link_up_tries_max);
+	if (config.link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
+		return scnprintf(buf, PAGE_SIZE, "infinite\n");
+	else
+		return scnprintf(buf, PAGE_SIZE, "%d\n", config.link_up_tries_max);
 }
 
 static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -125,22 +128,26 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctl_link *ctl_link;
 	int                 idx;
 	char                output[20];
+	u32                 pause_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
+	pause_map = ctl_link->config.pause_map;
+
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"pause map show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.pause_map);
+		"pause map show (link = 0x%p, map = 0x%X)", ctl_link, pause_map);
+
+	if (pause_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(ctl_link->config.pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
+	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_ASYM));
-	if (is_flag_set(ctl_link->config.pause_map, SL_LINK_CONFIG_PAUSE_SYM))
+	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_SYM))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_SYM));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
@@ -150,40 +157,44 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	struct sl_ctl_link *ctl_link;
 	int                 idx;
 	char                output[80];
+	u32                 hpe_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
+	hpe_map = ctl_link->config.hpe_map;
+
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"hpe map show (link = 0x%p, map = 0x%X)", ctl_link, ctl_link->config.hpe_map);
+		"hpe map show (link = 0x%p, map = 0x%X)", ctl_link, hpe_map);
+
+	if (hpe_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LINKTRAIN));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_PRECODING))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_PRECODING))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_PRECODING));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_PCAL))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_PCAL))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_PCAL));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_R3))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_R3))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R3));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_R2))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_R2))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R2));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_C3))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_C3))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R3));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_C2))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_C2))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R2));
-	if (is_flag_set(ctl_link->config.hpe_map, SL_LINK_CONFIG_HPE_LLR))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LLR))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LLR));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }

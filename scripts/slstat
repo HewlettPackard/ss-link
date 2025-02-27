@@ -1,0 +1,366 @@
+#!/usr/bin/bash
+
+SW_SYSFS=/sys/class/rossw
+NIC_SYSFS=/sys/class/cxi
+
+cmd=$(basename $0)
+function usage {
+        echo "$cmd ldev[:lgrp][:link] [option]"
+        echo "  option: state = only print state"
+        exit;
+}
+
+if [ "$#" -eq 2 ] ; then
+        case $2 in
+                state )
+                        option=state
+                        ;;
+                * )
+                        usage
+                        ;;
+        esac
+elif [ "$#" -ne 1 ] ; then
+        usage
+fi
+
+target=(${1//:/ })
+
+num_args=${#target[@]}
+
+if [ "$num_args" -eq 1 ] ; then
+        LDEV=${target[0]}
+        LGRP=no
+        LINK=no
+elif [ "$num_args" -eq 2 ] ; then
+        LDEV=${target[0]}
+        LGRP=${target[1]}
+        LINK=no
+elif [ "$num_args" -eq 3 ] ; then
+        LDEV=${target[0]}
+        LGRP=${target[1]}
+        LINK=${target[2]}
+else
+        usage
+fi
+
+if [ -e $SW_SYSFS ] ; then
+        LDEV_PATH="${SW_SYSFS}/rossw${LDEV}"
+        LGRP_PATH="${LDEV_PATH}/pgrp/${LGRP}"
+        LINK_PATH="${LGRP_PATH}/port/${LINK}"
+elif [ -e $NIC_SYSFS ] ; then
+        LDEV_PATH="${NIC_SYSFS}/cxi${LDEV}/device/port/${LGRP}"
+        LGRP_PATH="${LDEV_PATH}"
+        LINK_PATH="${LGRP_PATH}"
+else
+        usage
+fi
+
+function print_info {
+        local ver=$(cat ${LDEV_PATH}/sl_info/mod_ver)
+        local hash=$(cat ${LDEV_PATH}/sl_info/mod_hash)
+
+        echo "--------------------------------------------------------------------------------------"
+        printf "SL %-18s %64s\n" "${ver}" "hash: ${hash}"
+        echo "--------+-----------------------------------------------------------------------------"
+}
+
+function print_jack_state {
+        local state=$(cat ${LGRP_PATH}/media/state)
+
+        printf "jack%02d  | state: ${state}\n" ${jack_num}
+}
+
+function print_jack {
+        local jack_num=$(cat ${LGRP_PATH}/media/jack_num)
+        local jack_type=$(cat ${LGRP_PATH}/media/jack_type)
+        local type=$(cat ${LGRP_PATH}/media/type)
+        local vendor=$(cat ${LGRP_PATH}/media/vendor)
+        local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
+        local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
+        local furcation=$(cat ${LGRP_PATH}/media/furcation)
+        local length=$(cat ${LGRP_PATH}/media/length_cm)
+        local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
+        local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
+
+        print_jack_state
+
+        printf "        | furcation: ${furcation}, power: ${shift}\n"
+        printf "        | cable: ${vendor} ${type} ${length}cm, type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
+        printf "        | speeds: "
+        if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
+                printf "cs50 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/bj100G ] ; then
+                printf "bj100 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/cd100G ] ; then
+                printf "cd100 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/bs200G ] ; then
+                printf "bs200 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck100G ] ; then
+                printf "ck100 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck200G ] ; then
+                printf "ck200 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck400G ] ; then
+                printf "ck400 "
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck800G ] ; then
+                printf "ck800 "
+        fi
+        printf "\n"
+        printf "        | max_speed: ${max_speed}\n"
+}
+
+function print_lgrp {
+        local furcation=$(cat ${LGRP_PATH}/config/furcation)
+        local tech_map=$(cat ${LGRP_PATH}/config/tech_map)
+        local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
+
+        printf "lgrp%02d  | furcation: ${furcation}\n" ${LGRP}
+        printf "        | tech: ${tech_map}, fec: ${fec_map}\n" ${LGRP}
+}
+
+function print_link_state {
+        local state=$(cat ${LINK_PATH}/link/state)
+
+        printf "link%d   | state: ${state}, speed: ${speed}, up_time: ${time_str}\n" ${LINK}
+}
+
+function print_link {
+        local speed=$(cat ${LINK_PATH}/link/speed)
+        local up_time=$(cat ${LINK_PATH}/link/up_time_ms)
+        local time_str=$(date -d @${up_time} '+%Hh %Mm %Ss')
+        local down_cause=$(cat ${LINK_PATH}/link/last_down_cause)
+        local down_time=$(cat ${LINK_PATH}/link/last_down_time)
+        local up_fail_cause=$(cat ${LINK_PATH}/link/last_up_fail_cause)
+        local up_fail_time=$(cat ${LINK_PATH}/link/last_up_fail_time)
+        local hpe_map=$(cat ${LINK_PATH}/link/config/hpe_map)
+        local pause_map=$(cat ${LINK_PATH}/link/config/pause_map)
+        local link_up_timeout=$(cat ${LINK_PATH}/link/config/link_up_timeout_ms)
+        local link_up_tries_max=$(cat ${LINK_PATH}/link/config/link_up_tries_max)
+        local autoneg=$(cat ${LINK_PATH}/link/config/autoneg)
+        local loopback=$(cat ${LINK_PATH}/link/config/loopback)
+
+        print_link_state
+
+        printf "        | last_down_cause: ${down_cause}, last_down_time: ${down_time}\n"
+        printf "        | up_fail_cause: ${up_fail_cause}, up_fail_time: ${up_fail_time}\n"
+        printf "        | hpe: ${hpe_map}\n"
+        printf "        | pause: ${pause_map}\n"
+        printf "        | link_up_timeout: ${link_up_timeout}ms, link_up_tries_max: ${link_up_tries_max}\n"
+        printf "        | autoneg: ${autoneg}, loopback: ${loopback}\n"
+}
+
+function print_mac_state {
+        local state_tx=$(cat ${LINK_PATH}/mac/tx_state)
+        local state_rx=$(cat ${LINK_PATH}/mac/rx_state)
+
+        printf "mac%d    | tx_state: ${state_tx}, rx_state: ${state_rx}\n" ${LINK}
+}
+
+function print_mac {
+        print_mac_state
+}
+
+function print_llr_state {
+        local state=$(cat ${LINK_PATH}/llr/state)
+
+        printf "llr%d    | state: ${state}\n" ${LINK}
+}
+
+function print_llr {
+        local calc=$(cat ${LINK_PATH}/llr/loop/calc_ns)
+        local min=$(cat ${LINK_PATH}/llr/loop/min_ns)
+        local max=$(cat ${LINK_PATH}/llr/loop/max_ns)
+        local avg=$(cat ${LINK_PATH}/llr/loop/average_ns)
+        local mode=$(cat ${LINK_PATH}/llr/config/mode)
+        local down_bahavior=$(cat ${LINK_PATH}/llr/config/link_down_behavior)
+        local setup_timeout=$(cat ${LINK_PATH}/llr/config/setup_timeout_ms)
+        local start_timeout=$(cat ${LINK_PATH}/llr/config/start_timeout_ms)
+
+        print_llr_state
+
+        printf "        | loop_calc: ${calc}ns, loop_min: ${min}ns, loop_max: ${max}ns, loop_avg: ${avg}ns\n"
+        printf "        | mode: ${mode}, link_down_bahavior: ${down_bahavior}\n"
+        printf "        | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
+}
+
+function print_serdes {
+        local hw_ver=$(cat ${LGRP_PATH}/serdes/hw_version)
+        local fw_ver=$(cat ${LGRP_PATH}/serdes/fw_version)
+
+        printf "serdes  | hw: ${hw_ver}, fw: ${fw_ver}\n"
+}
+
+function print_col_state {
+        printf " state: tx,rx        | "
+        for lane in {0..3} ; do
+                state_tx=$(cat ${LGRP_PATH}/serdes/lane/${lane}/state/tx)
+                state_rx=$(cat ${LGRP_PATH}/serdes/lane/${lane}/state/rx)
+                printf "%15s " "${state_tx},${state_rx}"
+        done
+        printf "\n"
+}
+
+function print_col_eye_high {
+        printf " eye: high val,limit | "
+        for lane in {0..3} ; do
+                limit_high=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/limit_high)
+                value_up=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/value_upper)
+                printf "%15s " "${value_up},${limit_high}"
+        done
+        printf "\n"
+}
+
+function print_col_eye_low {
+        printf " eye: low  val,limit | "
+        for lane in {0..3} ; do
+                limit_low=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/limit_low)
+                val_low=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/value_lower)
+                printf "%15s " "${val_low},${limit_low}"
+        done
+        printf "\n"
+}
+
+function print_col {
+        local which=$1
+        local str=$2
+
+        printf " %19s | " ${str}
+        for lane in {0..3} ; do
+                state=$(cat ${LGRP_PATH}/serdes/lane/${lane}/${which})
+                printf "%15s " $state
+        done
+        printf "\n"
+}
+
+function print_fec {
+        local up_check_wait=$(cat ${LINK_PATH}/link/fec/up_check/check_wait_ms)
+        local up_settle_wait=$(cat ${LINK_PATH}/link/fec/up_check/settle_wait_ms)
+        local up_check_ccw_limit=$(cat ${LINK_PATH}/link/fec/up_check/ccw_limit)
+        local up_check_ucw_limit=$(cat ${LINK_PATH}/link/fec/up_check/ucw_limit)
+        local mon_period=$(cat ${LINK_PATH}/link/fec/monitor_check/period_ms)
+        local mon_ccw_down_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ccw_crit_limit)
+        local mon_ccw_warn_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ccw_warn_limit)
+        local mon_ucw_down_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ucw_down_limit)
+        local mon_ucw_warn_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ucw_warn_limit)
+
+        printf "fec     | up_check_wait: ${up_check_wait}ms, up_settle_wait: ${up_settle_wait}ms\n"
+        printf "        | up_check_ccw_limit: ${up_check_ccw_limit}ms, up_check_ucw_limit: ${up_check_ucw_limit}ms\n"
+        printf "        | mon_period: ${mon_period}ms\n"
+        printf "        | mon_ccw_down_limit: ${mon_ccw_down_limit}, mon_ccw_warn_limit: ${mon_ccw_warn_limit}\n"
+        printf "        | mon_ucw_down_limit: ${mon_ucw_down_limit}, mon_ucw_warn_limit: ${mon_ucw_warn_limit}\n"
+}
+
+function print_fec_current {
+        local ccw=$(cat ${LINK_PATH}/link/fec/current/ccw)
+        local ucw=$(cat ${LINK_PATH}/link/fec/current/ucw)
+
+        printf "        | current_ccw: ${ccw}, current_ucw: ${ucw}\n"
+        count=$(cat ${LINK_PATH}/link/fec/current/tail/bin00)
+        printf "        | bins: ${count}\n"
+        for bin in {1..9} ; do
+                count=$(cat ${LINK_PATH}/link/fec/current/tail/bin0${bin})
+                printf "                ${count}\n"
+        done
+        for bin in {10..14} ; do
+                count=$(cat ${LINK_PATH}/link/fec/current/tail/bin${bin})
+                printf "                ${count}\n"
+        done
+        printf "                                 fecl0           fecl1           fecl2           fecl3\n"
+        printf "                     +----------------------------------------------------------------\n"
+        for lane in {0..3} ; do
+                printf " %19s | " "lane${lane}"
+                for fecl in {0..3} ; do
+                        fecl=$(cat ${LINK_PATH}/link/fec/current/lane/${lane}/fecl${fecl})
+                        printf "%15s " ${fecl}
+                done
+                printf "\n"
+        done
+        printf "                     +----------------------------------------------------------------\n"
+}
+
+function print_state {
+        if [ -e ${LDEV_PATH} ] ; then
+                print_info
+        fi
+
+        if [ -e ${LGRP_PATH} ] ; then
+                print_jack_state
+        fi
+
+        if [ -e ${LINK_PATH} ] ; then
+                print_link_state
+                print_mac_state
+                print_llr_state
+        fi
+
+        if [ -e ${LGRP_PATH} ] ; then
+                printf "        | lanes:                 lane0           lane1           lane2           lane3\n"
+                printf "                     +----------------------------------------------------------------\n"
+                print_col_state
+                printf "                     +----------------------------------------------------------------\n"
+        fi
+}
+
+function print_full {
+        if [ -e ${LDEV_PATH} ] ; then
+                print_info
+        fi
+
+        if [ -e ${LGRP_PATH} ] ; then
+                print_jack
+                print_lgrp
+        fi
+
+        if [ -e ${LINK_PATH} ] ; then
+                print_link
+                print_mac
+                print_llr
+        fi
+
+        if [ -e ${LGRP_PATH} ] ; then
+                print_serdes
+                printf "        | lanes:                 lane0           lane1           lane2           lane3\n"
+                printf "                     +----------------------------------------------------------------\n"
+                print_col_state
+                print_col_eye_high
+                print_col_eye_low
+                print_col "settings/pre1" "pre1"
+                print_col "settings/pre2" "pre2"
+                print_col "settings/pre3" "pre3"
+                print_col "settings/cursor" "cursor"
+                print_col "settings/post1" "post1"
+                print_col "settings/post2" "post2"
+                print_col "settings/width" "width"
+                print_col "settings/dfe" "dfe"
+                print_col "settings/encoding" "encoding"
+                print_col "settings/link_training" "link_train"
+                print_col "settings/media" "media"
+                print_col "settings/osr" "osr"
+                print_col "settings/scramble" "scramble"
+                printf "                     +----------------------------------------------------------------\n"
+        fi
+
+        if [ -e ${LINK_PATH} ] ; then
+                print_fec
+                print_fec_current
+        fi
+}
+
+## ==================== MAIN ====================
+
+case $option in
+        state )
+                print_state
+                exit
+                ;;
+        * )
+                print_full
+                exit
+                ;;
+esac

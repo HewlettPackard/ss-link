@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -22,41 +22,44 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
 	char                 output[80];
+	u32                  tech_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num);
 	core_lgrp = core_link->core_lgrp;
 
+	tech_map = core_lgrp->link_caps[core_link->num].tech_map;
+
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"tech map show (link = 0x%p, map = 0x%X)",
-		core_link, core_lgrp->link_caps[core_link->num].tech_map);
+		"tech map show (link = 0x%p, map = 0x%X)", core_link, tech_map);
+
+	if (tech_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_400G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_CK_200G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_200G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_200G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_CK_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CK_100G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_BS_200G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BS_200G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BS_200G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_CD_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CD_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CD_100G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_CD_50G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CD_50G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_CD_50G));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
+	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
@@ -68,26 +71,29 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
 	char                 output[20];
+	u32                  pause_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num);
 	core_lgrp = core_link->core_lgrp;
 
+	pause_map = core_lgrp->link_caps[core_link->num].pause_map;
+
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"pause map show (link = 0x%p, map = 0x%X)",
-		core_link, core_lgrp->link_caps[core_link->num].pause_map);
+		"pause map show (link = 0x%p, map = 0x%X)", core_link, pause_map);
+
+	if (pause_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
+	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_ASYM));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].pause_map, SL_LINK_CONFIG_PAUSE_SYM))
+	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_SYM))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_SYM));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
@@ -99,26 +105,29 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
 	char                 output[20];
+	u32                  fec_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num);
 	core_lgrp = core_link->core_lgrp;
 
+	fec_map = core_lgrp->link_caps[core_link->num].fec_map;
+
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"fec map show (link = 0x%p, map = 0x%X)",
-		core_link, core_lgrp->link_caps[core_link->num].fec_map);
+		"fec map show (link = 0x%p, map = 0x%X)", core_link, fec_map);
+
+	if (fec_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
+	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS_LL));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].fec_map, SL_LGRP_CONFIG_FEC_RS))
+	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
@@ -130,44 +139,47 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
 	char                 output[80];
+	u32                  hpe_map;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num);
 	core_lgrp = core_link->core_lgrp;
 
+	hpe_map = core_lgrp->link_caps[core_link->num].hpe_map;
+
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"hpe map show (link = 0x%p, map = 0x%X)",
-		core_link, core_lgrp->link_caps[core_link->num].hpe_map);
+		"hpe map show (link = 0x%p, map = 0x%X)", core_link, hpe_map);
+
+	if (hpe_map == 0)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
 
 	idx = 0;
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LINKTRAIN));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_PRECODING))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_PRECODING))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_PRECODING));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_PCAL))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_PCAL))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_PCAL));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_R3))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_R3))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R3));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_R2))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_R2))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R2));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_C3))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_C3))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R3));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_C2))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_C2))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_R2));
-	if (is_flag_set(core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_LLR))
+	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LLR))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LLR));
-
-	if (idx == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+	output[idx - 1] = '\0';
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }

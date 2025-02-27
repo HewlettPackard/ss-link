@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -97,7 +97,7 @@ static ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribu
 
 	fecl_kobj = container_of(kobj, struct sl_ctl_link_fecl_kobj, kobj);
 	if (!fecl_kobj->ctl_link)
-		return scnprintf(buf, PAGE_SIZE, "no link\n");
+		return scnprintf(buf, PAGE_SIZE, "no_link\n");
 
 	sl_ctl_link_fec_down_cache_lane_cntrs_get(fecl_kobj->ctl_link, &lane_cntrs);
 

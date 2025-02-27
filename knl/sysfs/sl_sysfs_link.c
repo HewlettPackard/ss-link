@@ -45,7 +45,7 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		state, sl_link_state_str(state), speed, sl_lgrp_config_tech_str(speed));
 
 	if (state != SL_LINK_STATE_UP)
-		return scnprintf(buf, PAGE_SIZE, "not up\n");
+		return scnprintf(buf, PAGE_SIZE, "no_link\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_config_tech_str(speed));
 }
@@ -73,9 +73,9 @@ static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribu
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no fail\n");
+			return scnprintf(buf, PAGE_SIZE, "no_fail\n");
 		else
-			return scnprintf(buf, PAGE_SIZE, "no record\n");
+			return scnprintf(buf, PAGE_SIZE, "no_record\n");
 	}
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
@@ -101,9 +101,9 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no fail\n");
+			return scnprintf(buf, PAGE_SIZE, "no_fail\n");
 		else
-			return scnprintf(buf, PAGE_SIZE, "no record\n");
+			return scnprintf(buf, PAGE_SIZE, "no_record\n");
 	}
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
