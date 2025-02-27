@@ -307,9 +307,4 @@ if [[ "${TEST_BRIEF}" == true ]]; then
         SL_TEST_LOG_LEVEL=${CURRENT_LOG_LEVEL};
 fi
 
-################################################################################
-# SSHOTPLAT-5519
-# FIXME: Always succeed. Change back to ${rtn} when CT is stable.
-################################################################################
-
-exit 0
+exit ${rtn}
