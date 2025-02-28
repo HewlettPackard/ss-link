@@ -782,12 +782,19 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 		return;
 	}
 
+	if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work going down");
+		return;
+	}
+
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
 
 	sl_core_log_warn(core_link, LOG_NAME, "high symbol error ratio occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
+			return;
+		if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN)
 			return;
 		usleep_range(10000, 12000);
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
@@ -809,12 +816,19 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 		return;
 	}
 
+	if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation intr work going down");
+		return;
+	}
+
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_MAX_STARVATION);
 
 	sl_core_log_warn(core_link, LOG_NAME, "llr max starvation occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
+			return;
+		if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN)
 			return;
 		usleep_range(10000, 12000);
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
@@ -836,12 +850,19 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 		return;
 	}
 
+	if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "llr starved intr work going down");
+		return;
+	}
+
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_STARVED);
 
 	sl_core_log_warn(core_link, LOG_NAME, "llr starved occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
+			return;
+		if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN)
 			return;
 		usleep_range(10000, 12000);
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
