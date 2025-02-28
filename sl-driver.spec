@@ -236,6 +236,8 @@ ${postinst} %{name} %{version}-%{release}
 %{_includedir}/uapi/sl_media.h
 %{prefix}/src/sl/*/Module.symvers
 /usr/bin/sl_sysfs_dump.sh
+/lib/firmware/sl_fw_quad_3.04.bin
+/lib/firmware/sl_fw_octet_3.08.bin
 
 %files dkms -f dkms-files
 
