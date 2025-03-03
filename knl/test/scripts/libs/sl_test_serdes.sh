@@ -200,7 +200,7 @@ function sl_test_serdes_settings_set {
 	lgrp_nums=($2)
 	link_nums=($3)
 	settings=$4
-	__sl_test_serdes_check ${ldev_num} lgrp_nums link_nums
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_check failed [${rtn}]"
@@ -302,7 +302,7 @@ function sl_test_serdes_settings_unset {
 	ldev_num=$1
 	lgrp_nums=($2)
 	link_nums=($3)
-	__sl_test_serdes_check ${ldev_num} lgrp_nums link_nums
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_check failed [${rtn}]"
