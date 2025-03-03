@@ -66,8 +66,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 };
 
 #define SL_CORE_INFO_MAP_STR_MIN 10
-void sl_core_info_map_str(u64 info_map, char *info_map_str,
-	unsigned int info_map_str_size)
+int sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size)
 {
 	int          rtn;
 	unsigned int x;
@@ -76,10 +75,10 @@ void sl_core_info_map_str(u64 info_map, char *info_map_str,
 	BUILD_BUG_ON(ARRAY_SIZE(sl_core_info_map_str_list) == (SL_CORE_INFO_MAP_NUM_BITS - 1));
 
 	if (!info_map_str)
-		return;
+		return -EINVAL;
 
 	if (info_map_str_size < SL_CORE_INFO_MAP_STR_MIN)
-		return;
+		return -EINVAL;
 
 	str_pos = 0;
 
@@ -106,6 +105,8 @@ void sl_core_info_map_str(u64 info_map, char *info_map_str,
 		str_pos = snprintf(info_map_str, info_map_str_size, "none ");
 
 	info_map_str[str_pos - 1] = '\0';
+
+	return 0;
 }
 
 const char *sl_core_link_state_str(enum sl_core_link_state link_state)

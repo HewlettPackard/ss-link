@@ -368,26 +368,26 @@ const char *sl_link_policy_opt_str(u32 option)
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
 
-void sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_size)
+int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_str_size)
 {
 	int rtn;
 	int str_pos;
 	int which;
 
 	if (!cause_str)
-		return;
+		return -EINVAL;
 
 	if (cause_str_size < 32)
-		return;
+		return -EINVAL;
 
-	if (cause == SL_LINK_DOWN_CAUSE_NONE) {
+	if (cause_map == SL_LINK_DOWN_CAUSE_NONE) {
 		str_pos = snprintf(cause_str, cause_str_size, "none ");
 		goto out;
 	}
 
 	str_pos = 0;
 
-	for_each_set_bit(which, (unsigned long *)&cause, 32) {
+	for_each_set_bit(which, (unsigned long *)&cause_map, 32) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "bit = %d", which);
 
 		switch (BIT(which)) {
@@ -471,19 +471,14 @@ void sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_s
 
 out:
 	cause_str[str_pos - 1] = '\0';
+
+	return 0;
 }
 EXPORT_SYMBOL(sl_link_down_cause_str);
 
 int sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size)
 {
-	if (!info_map_str) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL info_map_str");
-		return -EINVAL;
-	}
-
-	sl_core_info_map_str(info_map, info_map_str, info_map_str_size);
-
-	return 0;
+	return sl_core_info_map_str(info_map, info_map_str, info_map_str_size);
 }
 EXPORT_SYMBOL(sl_link_info_map_str);
 

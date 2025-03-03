@@ -70,7 +70,7 @@ int sl_link_clocks_get(struct sl_link *link, u32 *up_count, u32 *up_time, u32 *t
 const char *sl_link_state_str(u32 state);
 const char *sl_link_config_opt_str(u32 option);
 const char *sl_link_policy_opt_str(u32 option);
-void        sl_link_down_cause_str(u32 cause, char *cause_str, unsigned int cause_str_size);
+int         sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_str_size);
 int         sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size);
 const char *sl_link_config_pause_str(u32 config);
 const char *sl_link_config_hpe_str(u32 config);

@@ -19,7 +19,7 @@
 
 enum sl_link_state {
 	SL_LINK_STATE_INVALID,
-	SL_LINK_STATE_ERROR,    //FIXME: Unused state, remove.
+	SL_LINK_STATE_ERROR,
 	SL_LINK_STATE_DOWN,
 	SL_LINK_STATE_AN,       //FIXME: Unused state, remove.
 	SL_LINK_STATE_STARTING,

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_STR_H_
 #define _SL_CORE_STR_H_
@@ -8,7 +8,7 @@
 #include "sl_core_llr.h"
 #include "sl_core_mac.h"
 
-void sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size);
+int sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size);
 
 const char *sl_core_link_state_str(enum sl_core_link_state link_state);
 
