@@ -196,7 +196,7 @@ struct sl_core_test_callback_data {
 	bool                       received;
 	u64                        info_map;
 	u32                        state;
-	u64                        cause;
+	u64                        cause_map;
 	u32                        speed;
 	u32                        fec_mode;
 	u32                        fec_type;
@@ -207,7 +207,7 @@ struct sl_core_test_callback_data {
 // FIXME: need to add ldevs
 static struct sl_core_test_callback_data
 	sl_core_test_callback_status[SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
-static int sl_core_test_link_up_callback(void *tag, u32 state, u64 cause, u64 info_map,
+static int sl_core_test_link_up_callback(void *tag, u32 state, u64 cause_map, u64 info_map,
 					 u32 speed, u32 fec_mode, u32 fec_type)
 {
 	struct sl_core_test_tag_data test_tag;
@@ -218,36 +218,36 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u64 cause, u64 in
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"link up callback (lgrp_num = %u, link_num = %u, state = %s, cause = 0x%llX, info_map = %s)\n",
-		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause, info_map_str);
+		"link up callback (lgrp_num = %u, link_num = %u, state = %s, cause_map = 0x%llX, info_map = %s)\n",
+		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause_map, info_map_str);
 
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].received   = true;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].info_map   = info_map;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].state      = state;
-	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].cause      = cause;
+	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].cause_map  = cause_map;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].speed      = speed;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].fec_mode   = fec_mode;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].fec_type   = fec_type;
 
 	return 0;
 }
-static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause, u64 info_map)
+static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause_map, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
-	sl_link_down_cause_str(cause, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_str(cause_map, cause_str, sizeof(cause_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"link down callback (lgrp_num = %u, link_num = %u, state = %u %s, cause = 0x%llX %s, info_map = %llu)\n",
+		"link down callback (lgrp_num = %u, link_num = %u, state = %u %s, cause_map = 0x%llX %s, info_map = %llu)\n",
 		test_tag.lgrp_num, test_tag.link_num, state, sl_core_link_state_str(state),
-		cause, cause_str, info_map);
+		cause_map, cause_str, info_map);
 // FIXME
 
 	return 0;
 }
-static int sl_core_test_fault_callback(void *tag, u32 state, u64 cause, u64 info_map)
+static int sl_core_test_fault_callback(void *tag, u32 state, u64 cause_map, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         info_map_str[SL_LINK_INFO_STRLEN];
@@ -256,8 +256,8 @@ static int sl_core_test_fault_callback(void *tag, u32 state, u64 cause, u64 info
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"fault callback (lgrp_num = %u, link_num = %u, state = %s, cause = 0x%llX, info_map = %s)\n",
-		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause, info_map_str);
+		"fault callback (lgrp_num = %u, link_num = %u, state = %s, cause_map = 0x%llX, info_map = %s)\n",
+		test_tag.lgrp_num, test_tag.link_num, sl_core_link_state_str(state), cause_map, info_map_str);
 
 	return 0;
 }

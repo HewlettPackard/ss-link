@@ -139,21 +139,21 @@ function print_link {
         local speed=$(cat ${LINK_PATH}/speed)
         local up_time=$(cat ${LINK_PATH}/up_time_ms)
         local time_str=$(date -d @${up_time} '+%Hh %Mm %Ss')
-        local down_cause=$(cat ${LINK_PATH}/last_down_cause)
-        local down_time=$(cat ${LINK_PATH}/last_down_time)
-        local up_fail_cause=$(cat ${LINK_PATH}/last_up_fail_cause)
-        local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
-        local hpe_map=$(cat ${LINK_PATH}/config/hpe_map)
-        local pause_map=$(cat ${LINK_PATH}/config/pause_map)
-        local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
-        local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
-        local autoneg=$(cat ${LINK_PATH}/config/autoneg)
-        local loopback=$(cat ${LINK_PATH}/config/loopback)
+        local down_cause_map=$(cat ${LINK_PATH}/link/last_down_cause_map)
+        local down_time=$(cat ${LINK_PATH}/link/last_down_time)
+        local up_fail_cause_map=$(cat ${LINK_PATH}/link/last_up_fail_cause_map)
+        local up_fail_time=$(cat ${LINK_PATH}/link/last_up_fail_time)
+        local hpe_map=$(cat ${LINK_PATH}/link/config/hpe_map)
+        local pause_map=$(cat ${LINK_PATH}/link/config/pause_map)
+        local link_up_timeout=$(cat ${LINK_PATH}/link/config/link_up_timeout_ms)
+        local link_up_tries_max=$(cat ${LINK_PATH}/link/config/link_up_tries_max)
+        local autoneg=$(cat ${LINK_PATH}/link/config/autoneg)
+        local loopback=$(cat ${LINK_PATH}/link/config/loopback)
 
         print_link_state
 
-        printf "        | last_down_cause: ${down_cause}, last_down_time: ${down_time}\n"
-        printf "        | up_fail_cause: ${up_fail_cause}, up_fail_time: ${up_fail_time}\n"
+        printf "        | last_down_cause_map: ${down_cause_map}, last_down_time: ${down_time}\n"
+        printf "        | up_fail_cause_map: ${up_fail_cause_map}, up_fail_time: ${up_fail_time}\n"
         printf "        | hpe: ${hpe_map}\n"
         printf "        | pause: ${pause_map}\n"
         printf "        | link_up_timeout: ${link_up_timeout}ms, link_up_tries_max: ${link_up_tries_max}\n"

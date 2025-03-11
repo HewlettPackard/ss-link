@@ -66,35 +66,35 @@ static int sl_ctl_link_up_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct sl_ctl
 }
 
 static int sl_ctl_link_up_fail_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct sl_ctl_link *ctl_link,
-	u64 cause, u64 info_map)
+	u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
 
-	info.link_up_fail.cause = cause;
+	info.link_up_fail.cause_map = cause_map;
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause = 0x%llX)", cause);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause_map = 0x%llX)", cause_map);
 
 	return sl_ctl_lgrp_notif_enqueue(ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_LINK_UP_FAIL,
 		&info, info_map);
 }
 
-static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause, u64 info_map)
+static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
 	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 	u32                      type;
 
-	if (cause & SL_LINK_DOWN_ORIGIN_ASYNC) {
+	if (cause_map & SL_LINK_DOWN_ORIGIN_ASYNC) {
 		type = SL_LGRP_NOTIF_LINK_ASYNC_DOWN;
-		info.link_async_down.cause = cause;
+		info.link_async_down.cause_map = cause_map;
 	} else {
 		type = SL_LGRP_NOTIF_LINK_DOWN;
-		info.link_down.cause = cause;
+		info.link_down.cause_map = cause_map;
 	}
 
-	sl_link_down_cause_str(cause, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_str(cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"down_notif_send (core_cause = 0x%llX %s)", cause, cause_str);
+		"down_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
 
 	return sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num, type, &info, info_map);
 }
@@ -195,7 +195,7 @@ static void sl_ctl_link_up_count_inc(struct sl_ctl_link *ctl_link)
 	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
 }
 
-int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause, u64 core_imap,
+int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap,
 			    u32 core_speed, u32 core_fec_mode, u32 core_fec_type)
 {
 	struct sl_ctl_link       *ctl_link;
@@ -213,8 +213,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause, u64 core_
 
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"up callback (core_state = %u %s, core_cause = 0x%llX, core_imap = %s (0x%llx))",
-		core_state, sl_core_link_state_str(core_state), core_cause, core_imap_str, core_imap);
+		"up callback (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
+		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
 
 	sl_ctl_link_up_attempt_clock_stop(ctl_link);
 
@@ -254,7 +254,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause, u64 core_
 			ctl_link->ctl_lgrp->num, ctl_link->num, &up_count);
 
 		/* check for fatal down causes */
-		if (core_cause & SL_LINK_DOWN_CAUSE_FATAL_MASK) {
+		if (core_cause_map & SL_LINK_DOWN_CAUSE_FATAL_MASK) {
 
 			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work fatal down cause");
 
@@ -271,7 +271,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause, u64 core_
 			complete_all(&ctl_link->down_complete);
 
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
-				core_cause, core_imap);
+				core_cause_map, core_imap);
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
@@ -423,7 +423,7 @@ int sl_ctl_link_fault_intr_hdlr(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause, u64 core_imap)
+int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap)
 {
 	struct sl_ctl_link       *ctl_link;
 	char                      core_imap_str[SL_LINK_INFO_STRLEN];
@@ -437,8 +437,8 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause, u64 co
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"fault callback work (core_state = %u %s, core_cause = 0x%llX, core_imap = %s (0x%llx))",
-		core_state, sl_core_link_state_str(core_state), core_cause, core_imap_str, core_imap);
+		"fault callback work (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
+		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
@@ -448,7 +448,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause, u64 co
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctl_link->down_complete);
 
-		rtn = sl_ctl_link_down_notif_send(ctl_link, core_cause, core_imap);
+		rtn = sl_ctl_link_down_notif_send(ctl_link, core_cause_map, core_imap);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback ctl_lgrp_notif_link_async_down_send failed [%d]", rtn);
@@ -517,7 +517,7 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 	return 0;
 }
 
-int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause, u64 core_info_map)
+int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map)
 {
 	int                 rtn;
 	struct sl_ctl_link *ctl_link;
@@ -525,16 +525,16 @@ int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause, u64 cor
 
 	ctl_link = tag;
 
-	sl_link_down_cause_str(core_cause, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_str(core_cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"down callback (core_state = %u %s, core_cause = 0x%llX %s, core_info_map = %llu)",
-		core_state, sl_core_link_state_str(core_state), core_cause, cause_str, core_info_map);
+		core_state, sl_core_link_state_str(core_state), core_cause_map, cause_str, core_info_map);
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
 		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN);
 
-		if (core_cause == SL_LINK_DOWN_CAUSE_CANCELED)
+		if (core_cause_map == SL_LINK_DOWN_CAUSE_CANCELED)
 			SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 
 		sl_ctl_link_fec_mon_stop(ctl_link);
@@ -546,7 +546,7 @@ int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause, u64 cor
 		sl_ctl_log_dbg(ctl_link, LOG_NAME,
 			"down callback (down_complete = 0x%p)", &ctl_link->down_complete);
 
-		rtn = sl_ctl_link_down_notif_send(ctl_link, core_cause, core_info_map);
+		rtn = sl_ctl_link_down_notif_send(ctl_link, core_cause_map, core_info_map);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"ctl_link_async_down_notif_send failed [%d]", rtn);
@@ -558,15 +558,15 @@ int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause, u64 cor
 	}
 }
 
-int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause)
+int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 {
 	int                  rtn;
 	unsigned long        irq_flags;
 	u32                  link_state;
 	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
-	sl_link_down_cause_str(down_cause, cause_str, sizeof(cause_str));
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down (down_cause = 0x%llX %s)", down_cause, cause_str);
+	sl_link_down_cause_map_str(down_cause_map, cause_str, sizeof(cause_str));
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
 
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
 	link_state = ctl_link->state;
@@ -577,7 +577,7 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause)
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 
 		rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-			sl_ctl_link_down_callback, ctl_link, down_cause);
+			sl_ctl_link_down_callback, ctl_link, down_cause_map);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"core_link_down failed [%d]", rtn);

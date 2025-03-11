@@ -23,7 +23,7 @@
 static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
 {
 	int                   rtn;
-	u64                   up_fail_cause;
+	u64                   up_fail_cause_map;
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fail callback");
@@ -33,21 +33,21 @@ static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
 		return;
 	}
 
-	up_fail_cause = sl_core_data_link_last_up_fail_cause_get(core_link);
+	up_fail_cause_map = sl_core_data_link_last_up_fail_cause_map_get(core_link);
 
 	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
 		SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
-			up_fail_cause &= ~SL_LINK_DOWN_RETRYABLE;
-			up_fail_cause |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
+			up_fail_cause_map &= ~SL_LINK_DOWN_RETRYABLE;
+			up_fail_cause_map |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
 		}
 
-		sl_core_data_link_last_up_fail_cause_set(core_link, up_fail_cause);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, up_fail_cause_map);
 	}
 
 	rtn = core_link->link.callbacks.up(core_link->link.tags.up, sl_core_data_link_state_get(core_link),
-		up_fail_cause, sl_core_data_link_info_map_get(core_link), sl_core_data_link_speed_get(core_link),
+		up_fail_cause_map, sl_core_data_link_info_map_get(core_link), sl_core_data_link_speed_get(core_link),
 		sl_core_data_link_fec_mode_get(core_link), sl_core_data_link_fec_type_get(core_link));
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
@@ -88,7 +88,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up start link up end failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_fail_callback(core_link);
 		return;
@@ -246,7 +246,7 @@ out_down:
 		sl_core_log_warn(core_link, LOG_NAME,
 			"up done work link up timer end failed [%d]", rtn);
 	sl_core_hw_serdes_link_down(core_link);
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
+	sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 	sl_core_an_up_fail_callback(core_link);
 }

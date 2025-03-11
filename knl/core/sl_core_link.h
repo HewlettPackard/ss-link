@@ -168,10 +168,10 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_NUM_BITS /* must be last */
 };
 
-typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
+typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map,
 					  u32 speed, u32 fec_mode, u32 fec_type);
-typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause, u64 info_map);
-typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause, u64 info_map);
+typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
+typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 // FIXME: think about doing link config better
@@ -221,9 +221,9 @@ struct sl_core_link {
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   state;
-		u64                                   last_up_fail_cause;
+		u64                                   last_up_fail_cause_map;
 		time64_t                              last_up_fail_time;
-		u64                                   last_down_cause;
+		u64                                   last_down_cause_map;
 		time64_t                              last_down_time;
 		struct {
 			void                         *up;
@@ -365,7 +365,7 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag);
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause);
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map);
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);
@@ -383,10 +383,10 @@ void sl_core_link_is_timed_out_clr(struct sl_core_link *core_link);
 int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
-void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					   u64 *down_cause, time64_t *down_time);
-void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					 u64 *up_fail_cause, time64_t *up_fail_time);
+void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					       u64 *down_cause_map, time64_t *down_time);
+void sl_core_link_last_up_fail_cause_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					     u64 *up_fail_cause_map, time64_t *up_fail_time);
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
 void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);

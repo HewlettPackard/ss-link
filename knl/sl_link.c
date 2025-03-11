@@ -368,7 +368,7 @@ const char *sl_link_policy_opt_str(u32 option)
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
 
-int sl_link_down_cause_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
+int sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
 {
 	int rtn;
 	int str_pos;
@@ -492,7 +492,7 @@ out:
 
 	return 0;
 }
-EXPORT_SYMBOL(sl_link_down_cause_str);
+EXPORT_SYMBOL(sl_link_down_cause_map_str);
 
 int sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size)
 {

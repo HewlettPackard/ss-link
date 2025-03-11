@@ -693,83 +693,84 @@ u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 	return info_map;
 }
 
-void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u64 up_fail_cause)
+void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.last_up_fail_cause = up_fail_cause;
-	core_link->link.last_up_fail_time  = ktime_get_real_seconds();
+	core_link->link.last_up_fail_cause_map = up_fail_cause_map;
+	core_link->link.last_up_fail_time      = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause set (cause = 0x%llX)", up_fail_cause);
+		"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
 }
 
-void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause,
+void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
 	time64_t *up_fail_time)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	*up_fail_cause = core_link->link.last_up_fail_cause;
-	*up_fail_time  = core_link->link.last_up_fail_time;
+	*up_fail_cause_map = core_link->link.last_up_fail_cause_map;
+	*up_fail_time      = core_link->link.last_up_fail_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (cause = 0x%llX)", *up_fail_cause);
+		"last up fail cause get (cause_map = 0x%llX)", *up_fail_cause_map);
 }
 
-u64 sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link)
+u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
 {
-	u64           up_fail_cause;
+	u64           up_fail_cause_map;
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	up_fail_cause = core_link->link.last_up_fail_cause;
+	up_fail_cause_map = core_link->link.last_up_fail_cause_map;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (cause = 0x%llX)", up_fail_cause);
+		"last up fail cause get (cause_map = 0x%llX)", up_fail_cause_map);
 
-	return up_fail_cause;
+	return up_fail_cause_map;
 }
 
-void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u64 down_cause)
+void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
 	if (core_link->link.is_up_new) {
-		core_link->link.last_down_cause = down_cause;
-		core_link->link.is_up_new       = false;
+		core_link->link.last_down_cause_map = down_cause_map;
+		core_link->link.is_up_new           = false;
 	} else {
-		core_link->link.last_down_cause |= down_cause;
+		core_link->link.last_down_cause_map |= down_cause_map;
 	}
 	core_link->link.last_down_time  = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-void sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u64 *down_cause, time64_t *down_time)
+void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
+						    time64_t *down_time)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	*down_cause = core_link->link.last_down_cause;
-	*down_time  = core_link->link.last_down_time;
+	*down_cause_map = core_link->link.last_down_cause_map;
+	*down_time      = core_link->link.last_down_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-u64 sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link)
+u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 {
-	u64           down_cause;
+	u64           down_cause_map;
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	down_cause = core_link->link.last_down_cause;
+	down_cause_map = core_link->link.last_down_cause_map;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
-	return down_cause;
+	return down_cause_map;
 }
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value)

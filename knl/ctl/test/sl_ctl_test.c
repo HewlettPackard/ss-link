@@ -163,7 +163,7 @@ static const struct sl_ctl_test sl_ctl_tests[] = {
 
 // FIXME: need to correct sl_ctl_test namspace
 
-static u64 test_down_cause;
+static u64 test_down_cause_map;
 
 enum test_link_config {
 	TEST_LINK_CFG_FEC_UP_OFF,
@@ -905,7 +905,7 @@ static int sl_ctl_test27(struct sl_ctl_test_args test_args)
 static int sl_ctl_test28(struct sl_ctl_test_args test_args)
 {
 	/* Set the down cause used in test_notif_matches */
-	test_down_cause = test_args.flags;
+	test_down_cause_map = test_args.flags;
 
 	return 0;
 }
@@ -1033,11 +1033,11 @@ static int sl_ctl_test_notif_matches(const struct sl_ctl_test *test, struct sl_l
 
 	struct sl_lgrp_notif_info_link_up_fail *msg_up_fail_info;
 
-	if ((test->notif == SL_LGRP_NOTIF_LINK_UP_FAIL) && test_down_cause) {
+	if ((test->notif == SL_LGRP_NOTIF_LINK_UP_FAIL) && test_down_cause_map) {
 		msg_up_fail_info = &msg->info.link_up_fail;
-		pr_debug(SL_CTL_TEST_NAME "[%02u:%u] down_notif (cause = 0x%llX)",
-			msg->lgrp_num, msg->link_num, msg_up_fail_info->cause);
-		match = ((test->notif == msg->type) && (test_down_cause == msg_up_fail_info->cause));
+		pr_debug(SL_CTL_TEST_NAME "[%02u:%u] down_notif (cause_map = 0x%llX)",
+			msg->lgrp_num, msg->link_num, msg_up_fail_info->cause_map);
+		match = ((test->notif == msg->type) && (test_down_cause_map == msg_up_fail_info->cause_map));
 		return match;
 	}
 

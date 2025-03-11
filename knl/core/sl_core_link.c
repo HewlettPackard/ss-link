@@ -75,7 +75,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 }
 
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause)
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map)
 {
 	unsigned long        irq_flags;
 	u32                  link_state;
@@ -113,7 +113,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_data_link_last_down_cause_set(core_link, down_cause);
+		sl_core_data_link_last_down_cause_map_set(core_link, down_cause_map);
 		sl_core_hw_link_down_cmd(core_link, callback, tag);
 		return 0;
 	default:
@@ -314,18 +314,18 @@ int sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking)
 	return 0;
 }
 
-void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-	u64 *up_fail_cause, time64_t *up_fail_time)
+void sl_core_link_last_up_fail_cause_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+	u64 *up_fail_cause_map, time64_t *up_fail_time)
 {
 	sl_core_data_link_last_up_fail_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
-		up_fail_cause, up_fail_time);
+		up_fail_cause_map, up_fail_time);
 }
 
-void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					   u64 *down_cause, time64_t *down_time)
+void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					       u64 *down_cause_map, time64_t *down_time)
 {
-	sl_core_data_link_last_down_cause_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
-						   down_cause, down_time);
+	sl_core_data_link_last_down_cause_map_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+						   down_cause_map, down_time);
 }
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value)
