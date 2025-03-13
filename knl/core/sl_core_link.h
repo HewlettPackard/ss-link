@@ -170,10 +170,8 @@ enum sl_core_info_map_bits {
 
 typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
 					  u32 speed, u32 fec_mode, u32 fec_type);
-typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
-					    struct sl_link_data *link_data);
-typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
-					     struct sl_link_data *link_data);
+typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause, u64 info_map);
+typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause, u64 info_map);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 // FIXME: think about doing link config better
@@ -371,7 +369,6 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);
-int sl_core_link_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_data *link_data);
 int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
 int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_config *link_config);
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy);

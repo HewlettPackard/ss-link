@@ -155,22 +155,6 @@ int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_stat
 	return 0;
 }
 
-int sl_core_link_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_data *link_data)
-{
-// FIXME: this is a temporary fault position.
-//        Need to make a data call to get the real stuff.
-
-	link_data->active_lanes = 0;
-	link_data->good_eyes    = 0;
-	link_data->not_idle     = 0;
-	link_data->status       = 0;
-	link_data->status      |= SL_LINK_DATA_STATUS_BIT_HISER;
-	link_data->status      |= SL_LINK_DATA_STATUS_BIT_FAULT;
-	link_data->status      |= SL_LINK_DATA_STATUS_BIT_LOCAL_FAULT;
-
-	return 0;
-}
-
 int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 {
 	struct sl_core_link *core_link;

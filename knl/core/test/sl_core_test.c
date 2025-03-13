@@ -231,8 +231,7 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u64 cause, u64 in
 
 	return 0;
 }
-static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause, u64 info_map,
-	struct sl_link_data *link_data)
+static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
@@ -248,8 +247,7 @@ static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause, u64 
 
 	return 0;
 }
-static int sl_core_test_fault_callback(void *tag, u32 state, u64 cause, u64 info_map,
-	struct sl_link_data *link_data)
+static int sl_core_test_fault_callback(void *tag, u32 state, u64 cause, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         info_map_str[SL_LINK_INFO_STRLEN];

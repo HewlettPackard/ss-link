@@ -43,20 +43,7 @@ struct kobject;
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous    */
 #define SL_LINK_DOWN_ORIGIN_LINK_UP          BIT(63) /* link down before reaching up        */
 
-#define SL_LINK_DATA_STATUS_BIT_LOCK        BIT(0)
-#define SL_LINK_DATA_STATUS_BIT_ALIGN       BIT(1)
-#define SL_LINK_DATA_STATUS_BIT_HISER       BIT(2)
-#define SL_LINK_DATA_STATUS_BIT_FAULT       BIT(3)
-#define SL_LINK_DATA_STATUS_BIT_LOCAL_FAULT BIT(4)
-
 #define SL_LINK_DOWN_CAUSE_STR_SIZE 128
-
-struct sl_link_data {
-	u8 active_lanes;
-	u8 good_eyes;
-	u8 not_idle;
-	u8 status;         /* SL_LINK_DATA_STATUS */
-};
 
 struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *sysfs_parent);
 int             sl_link_del(struct sl_link *link);
