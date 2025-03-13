@@ -65,7 +65,10 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 {
-	int rtn;
+	int                   rtn;
+	u32                   state;
+	u64                   up_fail_cause;
+	struct sl_media_lgrp *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up callback (callback = 0x%p, state = %d)",
 		core_link->link.callbacks.up, core_link->link.state);
@@ -75,18 +78,36 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 		return;
 	}
 
-	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link->link.state,
-		(core_link->link.state == SL_CORE_LINK_STATE_UP) ?
-		SL_LINK_DOWN_CAUSE_NONE : core_link->link.last_up_fail_cause,
-		core_link->info_map, core_link->pcs.settings.speed,
-		core_link->fec.settings.mode, core_link->fec.settings.type);
+	up_fail_cause = SL_LINK_DOWN_CAUSE_NONE;
+	state = sl_core_data_link_state_get(core_link);
+	if (state != SL_CORE_LINK_STATE_UP) {
+
+		up_fail_cause = sl_core_data_link_last_up_fail_cause_get(core_link);
+
+		if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
+			SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+			if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+				up_fail_cause &= ~SL_LINK_DOWN_RETRYABLE;
+				up_fail_cause |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
+			}
+
+			sl_core_data_link_last_up_fail_cause_set(core_link, up_fail_cause);
+		}
+	}
+
+	rtn = core_link->link.callbacks.up(core_link->link.tags.up, state, up_fail_cause,
+		sl_core_data_link_info_map_get(core_link), sl_core_data_link_speed_get(core_link),
+		sl_core_data_link_fec_mode_get(core_link), sl_core_data_link_fec_type_get(core_link));
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
 }
 
 static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 {
-	int                 rtn;
+	int                   rtn;
+	u64                   down_cause;
+	struct sl_media_lgrp *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "down callback (callback = 0x%p)",
 		core_link->link.callbacks.down);
@@ -96,8 +117,20 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 		return;
 	}
 
+	down_cause = sl_core_data_link_last_down_cause_get(core_link);
+
+	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link), SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+			down_cause &= ~SL_LINK_DOWN_RETRYABLE;
+			down_cause |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
+		}
+
+		sl_core_data_link_last_down_cause_set(core_link, down_cause);
+	}
+
 	rtn = core_link->link.callbacks.down(core_link->link.tags.down,
-		sl_core_data_link_state_get(core_link), sl_core_data_link_last_down_cause_get(core_link),
+		sl_core_data_link_state_get(core_link), down_cause,
 		sl_core_data_link_info_map_get(core_link));
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
@@ -885,6 +918,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	struct sl_media_lgrp               *media_lgrp;
+	u64                                 down_cause;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_FAULT_INTR]);
 
@@ -947,25 +982,26 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		"fault intr work (llr_replay = 0x%llX, local = 0x%llX, remote = 0x%llX, down = 0x%llX)",
 		llr_replay_max, local_fault, remote_fault, link_down);
 
+	down_cause = SL_LINK_DOWN_CAUSE_NONE;
 	if (llr_replay_max) {
 		sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
+		down_cause |= SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP;
 	}
 	if (local_fault) {
 		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
+		down_cause |= SL_LINK_DOWN_CAUSE_LF_MAP;
 	}
 	if (remote_fault) {
 		sl_core_log_err(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
+		down_cause |= SL_LINK_DOWN_CAUSE_RF_MAP;
 	}
 	if (link_down) {
 		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		down_cause |= SL_LINK_DOWN_CAUSE_DOWN_MAP;
 	}
 
 	sl_ctl_link_state_set(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
@@ -1007,6 +1043,17 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
 	sl_core_hw_link_off(core_link);
+
+	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
+		SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+			down_cause &= ~SL_LINK_DOWN_RETRYABLE;
+			down_cause |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
+		}
+	}
+
+	sl_core_data_link_last_down_cause_set(core_link, down_cause);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 

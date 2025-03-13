@@ -342,6 +342,20 @@ void sl_core_data_link_config_set(struct sl_core_link *core_link,
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_CONFIGURED);
 }
 
+u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link)
+{
+	u32           flags;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	flags = core_link->config.flags;
+	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "config flags get (flags = 0x%X)", flags);
+
+	return flags;
+}
+
 int sl_core_data_link_settings(struct sl_core_link *core_link)
 {
 	struct sl_lgrp_config *lgrp_config;
@@ -806,4 +820,34 @@ void sl_core_data_link_ccw_crit_limit_crossed_get(struct sl_core_link *core_link
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"ccw crit limit crossed get (value = %d %s)", *value, *value ? "yes":"no");
+}
+
+u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)
+{
+	unsigned long irq_flags;
+	u32           fec_mode;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	fec_mode = core_link->fec.settings.mode;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"fec_mode get = %u", fec_mode);
+
+	return fec_mode;
+}
+
+u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link)
+{
+	unsigned long irq_flags;
+	u32           fec_type;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	fec_type = core_link->fec.settings.type;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"fec_type get = %u", fec_type);
+
+	return fec_type;
 }

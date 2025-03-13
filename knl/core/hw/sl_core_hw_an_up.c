@@ -6,6 +6,7 @@
 #include <linux/workqueue.h>
 
 #include "sl_kconfig.h"
+#include "sl_media_lgrp.h"
 #include "sl_core_link.h"
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
@@ -19,20 +20,35 @@
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
-static void sl_core_an_up_callback(struct sl_core_link *core_link)
+static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
 {
-	int rtn;
+	int                   rtn;
+	u64                   up_fail_cause;
+	struct sl_media_lgrp *media_lgrp;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "up callback");
+	sl_core_log_dbg(core_link, LOG_NAME, "up fail callback");
 
 	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
 		sl_core_log_dbg(core_link, LOG_NAME, "up callback canceled");
 		return;
 	}
 
-	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link->link.state,
-		core_link->link.last_down_cause, core_link->info_map, core_link->pcs.settings.speed,
-		core_link->fec.settings.mode, core_link->fec.settings.type);
+	up_fail_cause = sl_core_data_link_last_up_fail_cause_get(core_link);
+
+	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
+		SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+			up_fail_cause &= ~SL_LINK_DOWN_RETRYABLE;
+			up_fail_cause |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
+		}
+
+		sl_core_data_link_last_up_fail_cause_set(core_link, up_fail_cause);
+	}
+
+	rtn = core_link->link.callbacks.up(core_link->link.tags.up, sl_core_data_link_state_get(core_link),
+		up_fail_cause, sl_core_data_link_info_map_get(core_link), sl_core_data_link_speed_get(core_link),
+		sl_core_data_link_fec_mode_get(core_link), sl_core_data_link_fec_type_get(core_link));
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
 }
@@ -74,7 +90,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 				"up start link up end failed [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_an_up_callback(core_link);
+		sl_core_an_up_fail_callback(core_link);
 		return;
 	}
 
@@ -160,7 +176,7 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 				"up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_an_up_callback(core_link);
+		sl_core_an_up_fail_callback(core_link);
 		return;
 	}
 
@@ -232,5 +248,5 @@ out_down:
 	sl_core_hw_serdes_link_down(core_link);
 	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-	sl_core_an_up_callback(core_link);
+	sl_core_an_up_fail_callback(core_link);
 }

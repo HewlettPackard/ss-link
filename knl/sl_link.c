@@ -466,6 +466,9 @@ int sl_link_down_cause_str(u64 cause_map, char *cause_str, unsigned int cause_st
 		case SL_LINK_DOWN_ORIGIN_LINK_UP:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-up ");
 			break;
+		case SL_LINK_DOWN_CAUSE_NO_MEDIA:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "no-media ");
+			break;
 		default:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
 			break;
