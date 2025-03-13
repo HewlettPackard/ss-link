@@ -231,27 +231,30 @@ static int sl_core_test_link_up_callback(void *tag, u32 state, u32 cause, u64 in
 
 	return 0;
 }
-static int sl_core_test_link_down_callback(void *tag)
+static int sl_core_test_link_down_callback(void *tag, u32 state, u32 cause, u64 info_map,
+	struct sl_link_data *link_data)
 {
 	struct sl_core_test_tag_data test_tag;
+	char                         cause_str[100];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
+	sl_link_down_cause_str(cause, cause_str, sizeof(cause_str));
 
 	pr_info(SL_CORE_TEST_NAME
-		"link down callback (lgrp_num = %u, link_num = %u)\n",
-		test_tag.lgrp_num, test_tag.link_num);
-
+		"link down callback (lgrp_num = %u, link_num = %u, state = %u %s, cause = %u %s, info_map = %llu)\n",
+		test_tag.lgrp_num, test_tag.link_num, state, sl_core_link_state_str(state),
+		cause, cause_str, info_map);
 // FIXME
 
 	return 0;
 }
-static int sl_core_test_fault_callback(void *tag, u32 state, u32 cause, u64 info_map)
+static int sl_core_test_fault_callback(void *tag, u32 state, u32 cause, u64 info_map,
+	struct sl_link_data *link_data)
 {
 	struct sl_core_test_tag_data test_tag;
-	char                         info_map_str[1024];
+	char                         info_map_str[SL_LINK_INFO_STRLEN];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
-
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	pr_info(SL_CORE_TEST_NAME

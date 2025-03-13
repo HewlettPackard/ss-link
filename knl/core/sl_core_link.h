@@ -89,8 +89,10 @@ enum sl_core_info_map_bits {
 
 typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
 					  u32 speed, u32 fec_mode, u32 fec_type);
-typedef int (*sl_core_link_down_callback_t)(void *tag);
-typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u32 cause, u64 info_map);
+typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
+					    struct sl_link_data *link_data);
+typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
+					     struct sl_link_data *link_data);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 // FIXME: think about doing link config better
@@ -303,10 +305,10 @@ void sl_core_link_is_timed_out_clr(struct sl_core_link *core_link);
 int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
-int  sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-				      u32 *down_cause, time64_t *down_time);
-void  sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-				      u32 *up_fail_cause, time64_t *up_fail_time);
+void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					   u32 *down_cause, time64_t *down_time);
+void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					 u32 *up_fail_cause, time64_t *up_fail_time);
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
 void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);

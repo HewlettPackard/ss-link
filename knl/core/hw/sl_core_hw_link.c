@@ -86,7 +86,8 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 
 static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 {
-	int rtn;
+	int                 rtn;
+	struct sl_link_data link_data;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "down callback (callback = 0x%p)",
 		core_link->link.callbacks.down);
@@ -96,7 +97,9 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 		return;
 	}
 
-	rtn = core_link->link.callbacks.down(core_link->link.tags.down);
+	rtn = core_link->link.callbacks.down(core_link->link.tags.down,
+		sl_core_data_link_state_get(core_link), sl_core_data_link_last_down_cause_get(core_link),
+		sl_core_data_link_info_map_get(core_link), &link_data);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
 }
@@ -699,7 +702,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_COMMAND);
+	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED);
 	sl_core_link_is_canceled_clr(core_link);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 	sl_core_hw_link_up_callback(core_link);
@@ -883,6 +886,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	struct sl_link_data                 link_data;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_FAULT_INTR]);
 
@@ -1008,9 +1012,15 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
-	rtn = core_link->config.fault_callback(core_link->link.tags.up,
-		SL_CORE_LINK_STATE_DOWN, core_link->link.last_down_cause,
-		sl_core_data_link_info_map_get(core_link));
+	rtn = sl_core_link_data_get(core_link->core_lgrp->core_ldev->num,
+				core_link->core_lgrp->num, core_link->num, &link_data);
+	if (rtn)
+		sl_core_log_warn_trace(core_link, LOG_NAME,
+			"fault intr work link_data_get failed [%d]", rtn);
+
+	rtn = core_link->config.fault_callback(core_link->link.tags.up, sl_core_data_link_state_get(core_link),
+		sl_core_data_link_last_down_cause_get(core_link),
+		sl_core_data_link_info_map_get(core_link), &link_data);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"fault intr work callback failed [%d]", rtn);

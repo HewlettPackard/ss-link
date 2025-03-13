@@ -337,13 +337,11 @@ void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		up_fail_cause, up_fail_time);
 }
 
-int sl_core_link_last_down_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-				     u32 *down_cause, time64_t *down_time)
+void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					   u32 *down_cause, time64_t *down_time)
 {
-	sl_core_data_link_last_down_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
-		down_cause, down_time);
-
-	return 0;
+	sl_core_data_link_last_down_cause_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+						   down_cause, down_time);
 }
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value)

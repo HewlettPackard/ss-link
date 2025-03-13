@@ -29,6 +29,7 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN_CMD);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_DOWN);
 
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_CANCEL_CMD);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UP_CANCELED);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RESET_CMD);
 

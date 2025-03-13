@@ -43,10 +43,16 @@ struct sl_lgrp_notif_info_link_async_down {
 	struct sl_link_data link_data;
 };
 
+struct sl_lgrp_notif_info_link_down {
+	u32                 cause;
+	struct sl_link_data link_data;
+};
+
 union sl_lgrp_notif_info {
 		struct sl_lgrp_notif_info_link_up         link_up;
 		struct sl_lgrp_notif_info_link_up_fail    link_up_fail;
 		struct sl_lgrp_notif_info_link_async_down link_async_down;
+		struct sl_lgrp_notif_info_link_down       link_down;
 		struct sl_link_caps                       lp_link_caps;
 		struct sl_llr_data                        llr_data;
 		struct sl_media_attr                      media_attr;

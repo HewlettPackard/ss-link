@@ -94,7 +94,7 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_lanes_up failed [%d]", rtn);
-		return -EIO;
+		return rtn;
 	}
 
 	return 0;
@@ -254,7 +254,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_lanes_up failed [%d]", rtn);
-		return -EIO;
+		return rtn;
 	}
 
 	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_UP);

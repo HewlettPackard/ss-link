@@ -31,8 +31,11 @@ void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u3
 void sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link, u32 *up_fail_cause,
 	time64_t *up_fail_time);
 
-void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 down_cause);
-void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *down_cause, time64_t *down_time);
+void     sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 down_cause);
+void     sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u32 *down_cause,
+						    time64_t *down_time);
+u32      sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link);
+time64_t sl_core_data_link_last_down_time_get(struct sl_core_link *core_link);
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value);
 void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *value);

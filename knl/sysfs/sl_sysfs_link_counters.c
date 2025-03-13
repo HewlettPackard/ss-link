@@ -99,14 +99,28 @@ static ssize_t link_down_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 static ssize_t link_up_canceled_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctl_link *ctl_link;
+	u32                 counter;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
 
 	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_CANCELED);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up canceled show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_up_cancel_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link *ctl_link;
+	u32                 counter;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+
+	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_CANCEL_CMD);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up cancel cmd show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -145,6 +159,7 @@ static struct kobj_attribute link_up                   = __ATTR_RO(link_up);
 static struct kobj_attribute link_up_fail              = __ATTR_RO(link_up_fail);
 static struct kobj_attribute link_down_cmd             = __ATTR_RO(link_down_cmd);
 static struct kobj_attribute link_down                 = __ATTR_RO(link_down);
+static struct kobj_attribute link_up_cancel_cmd        = __ATTR_RO(link_up_cancel_cmd);
 static struct kobj_attribute link_up_canceled          = __ATTR_RO(link_up_canceled);
 static struct kobj_attribute link_reset_cmd            = __ATTR_RO(link_reset_cmd);
 static struct kobj_attribute link_fault                = __ATTR_RO(link_fault);
@@ -156,6 +171,7 @@ static struct attribute *link_counters_attrs[] = {
 	&link_up_fail.attr,
 	&link_down_cmd.attr,
 	&link_down.attr,
+	&link_up_cancel_cmd.attr,
 	&link_up_canceled.attr,
 	&link_reset_cmd.attr,
 	&link_fault.attr,

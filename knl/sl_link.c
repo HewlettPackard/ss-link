@@ -394,9 +394,6 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 		case SL_LINK_DOWN_CAUSE_UCW:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ucw ");
 			break;
-		case SL_LINK_DOWN_CAUSE_CCW:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
-			break;
 		case SL_LINK_DOWN_CAUSE_LF:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
 			break;

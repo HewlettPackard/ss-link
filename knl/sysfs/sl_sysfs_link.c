@@ -118,11 +118,10 @@ static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute 
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_core_link_last_down_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+	sl_core_link_last_down_cause_info_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &down_cause, &down_time);
 
 	sl_link_down_cause_str(down_cause, cause_str, sizeof(cause_str));
-
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"last down cause show (cause = 0x%X %s)",
 		down_cause, cause_str);
@@ -138,7 +137,7 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_core_link_last_down_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+	sl_core_link_last_down_cause_info_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &down_cause, &down_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,

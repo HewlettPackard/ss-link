@@ -721,7 +721,7 @@ void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 d
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *down_cause, time64_t *down_time)
+void sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u32 *down_cause, time64_t *down_time)
 {
 	unsigned long irq_flags;
 
@@ -729,6 +729,18 @@ void sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link, u32 *
 	*down_cause = core_link->link.last_down_cause;
 	*down_time  = core_link->link.last_down_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+}
+
+u32 sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link)
+{
+	u32           down_cause;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	down_cause = core_link->link.last_down_cause;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	return down_cause;
 }
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value)

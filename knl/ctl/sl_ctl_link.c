@@ -139,25 +139,6 @@ out:
 	return rtn;
 }
 
-static int sl_ctl_link_down_complete_callback(void *tag)
-{
-	struct sl_ctl_link *ctl_link;
-
-	ctl_link = tag;
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down complete callback");
-
-	cancel_work_sync(&ctl_link->ctl_lgrp->notif_work);
-	sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
-
-	complete_all(&ctl_link->down_complete);
-
-	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"link down complete callback (down_complete = 0x%p)", &ctl_link->down_complete);
-
-	return 0;
-}
-
 void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                 rtn;
@@ -188,7 +169,7 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCEL_CMD);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
@@ -221,7 +202,7 @@ down:
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"del core_link_an_lp_caps_stop failed [%d]", rtn);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_complete_callback,
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_callback,
 		ctl_link, SL_LINK_DOWN_CAUSE_COMMAND);
 	if (rtn)
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
@@ -583,6 +564,25 @@ static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
 	return 0;
 }
 
+static int sl_ctl_link_cancel_cmd(struct sl_ctl_link *ctl_link)
+{
+	int rtn;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "cancel cmd");
+
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCEL_CMD);
+
+	rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
+		sl_ctl_link_down_callback, ctl_link, SL_LINK_DOWN_CAUSE_CANCELED);
+	if (rtn) {
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+			"core_link_down failed [%d]", rtn);
+		return rtn;
+	}
+
+	return 0;
+}
+
 int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                 rtn;
@@ -604,16 +604,23 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	link_state = ctl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
+		ctl_link->state = SL_LINK_STATE_STOPPING;
 		ctl_link->is_canceled = true;
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
-		fallthrough;
+		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
+		rtn = sl_ctl_link_cancel_cmd(ctl_link);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "cancel_cmd failed [%d]", rtn);
+			return rtn;
+		}
+
+		return 0;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - stopping");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		rtn = sl_ctl_link_down_cmd(ctl_link);
 		if (rtn) {
-			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_cmd failed [%d]", rtn);
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "down_cmd failed [%d]", rtn);
 			return rtn;
 		}
 
@@ -666,7 +673,7 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_complete_callback,
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_callback,
 		ctl_link, SL_LINK_DOWN_CAUSE_COMMAND);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
@@ -709,7 +716,7 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctl_link->is_canceled = true;
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCEL_CMD);
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;

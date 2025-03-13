@@ -13,7 +13,8 @@ enum sl_ctl_link_counters {
 	LINK_UP_FAIL,             /* link up failed                 */
 	LINK_DOWN_CMD,            /* command to bring the link down */
 	LINK_DOWN,                /* link is down                   */
-	LINK_UP_CANCELED,         /* link up canceled               */
+	LINK_UP_CANCEL_CMD,       /* link up cancel commanded       */
+	LINK_UP_CANCELED,         /* link up cancel completed       */
 	LINK_RESET_CMD,           /* command to reset the link      */
 	LINK_FAULT,               /* link fault                     */
 	LINK_RECOVERING,          /* FIXME: need to implement this  */
