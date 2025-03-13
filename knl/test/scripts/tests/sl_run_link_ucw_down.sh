@@ -69,7 +69,6 @@ function test_verify {
 				notif_lgrp_num=${notif_fields[3]}
 				notif_link_num=${notif_fields[4]}
 				notif_type=${notif_fields[6]}
-				notif_down_cause=${notif_fields[7]}
 
 				if [[ "${notif_ldev_num}" != ${ldev_num} ]]; then
 					continue
@@ -83,18 +82,20 @@ function test_verify {
 					continue
 				fi
 
-				if [[ "${notif_type}" == "link-up-fail" && "${notif_down_cause}" == "ucw" ]]; then
-					sl_test_info_log "${FUNCNAME}" \
-						"Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-					sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
-					found=true
+				if [[ "${notif_type}" == "link-up-fail" && \
+					"${notif_fields[7]}" == "ucw" && \
+					"${notif_fields[8]}" == "retry" && \
+					"${notif_fields[9]}" == "origin-up" ]]; then
+						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
+						found=true
 					break
 				fi
 			done
 
 			if [[ "${found}" != true ]]; then
-				sl_test_error_log "${FUNCNAME}" \
-					"Expected: \"link-up-fail\" && \"ucw\", Found: \"${notif_type}\" && \"${notif_down_cause}\" (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+				sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+				sl_test_debug_log "${FUNCNAME}" "Expected: link-up-fail ucw retry origin-up"
+				sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
 				return 1
 			fi
 

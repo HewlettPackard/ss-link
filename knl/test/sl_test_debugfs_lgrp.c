@@ -33,7 +33,7 @@ static struct kobject        *lgrp_port_dir[SL_ASIC_MAX_LGRPS];
 
 struct lgrp_notif_event {
 	struct sl_lgrp_notif_msg msg;
-	ktime_t                  timestamp;
+	time64_t                 timestamp;
 };
 
 struct lgrp_notif_interface {
@@ -129,14 +129,15 @@ static int sl_test_lgrp_notif_setup(void)
 static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf, size_t size)
 {
 	struct sl_lgrp_notif_msg *msg;
-	char                      cause_str[100];
+	char                      cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	msg = &event->msg;
 
 	switch (msg->type) {
 	case SL_LGRP_NOTIF_LINK_ERROR:
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %d\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s %d\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -145,8 +146,9 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			msg->info.error);
 	case SL_LGRP_NOTIF_LINK_ASYNC_DOWN:
 		sl_link_down_cause_str(msg->info.link_async_down.cause, cause_str, sizeof(cause_str));
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s %s\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -155,8 +157,9 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			cause_str);
 	case SL_LGRP_NOTIF_LINK_DOWN:
 		sl_link_down_cause_str(msg->info.link_down.cause, cause_str, sizeof(cause_str));
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s %s\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -165,8 +168,9 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			cause_str);
 	case SL_LGRP_NOTIF_LINK_UP_FAIL:
 		sl_link_down_cause_str(msg->info.link_up_fail.cause, cause_str, sizeof(cause_str));
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s %s\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -174,8 +178,9 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			sl_lgrp_notif_str(msg->type),
 			cause_str);
 	case SL_LGRP_NOTIF_LINK_UP:
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s %s\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s %s\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -183,8 +188,9 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 			sl_lgrp_notif_str(msg->type),
 			sl_lgrp_config_tech_str(msg->info.link_up.mode));
 	default:
-		return snprintf(buf, size, "%lld %u %u %u 0x%llx %s none\n",
-			event->timestamp,
+		return scnprintf(buf, size, "%ptTd %ptTt %u %u %u 0x%llx %s none\n",
+			&event->timestamp,
+			&event->timestamp,
 			msg->ldev_num,
 			msg->lgrp_num,
 			msg->link_num,
@@ -350,7 +356,7 @@ static const struct file_operations sl_test_lgrp_notifs_fops = {
 	.llseek = noop_llseek,
 };
 
-static int sl_test_lgrp_notif_push(struct sl_lgrp_notif_msg *msg, ktime_t timestamp)
+static int sl_test_lgrp_notif_push(struct sl_lgrp_notif_msg *msg, time64_t timestamp)
 {
 	struct lgrp_notif_interface *interface;
 	struct lgrp_notif_event      event;
@@ -388,7 +394,7 @@ static void sl_test_lgrp_notif_callback(void *tag, struct sl_lgrp_notif_msg *msg
 		"notif_callback (ldev_num = %u, lgrp_num = %u, type = %u %s)",
 		notif_lgrp.ldev_num, notif_lgrp.num, msg->type, sl_lgrp_notif_str(msg->type));
 
-	rtn = sl_test_lgrp_notif_push(msg, ktime_get_real());
+	rtn = sl_test_lgrp_notif_push(msg, ktime_get_real_seconds());
 	if (rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_push failed [%d]", rtn);
 }

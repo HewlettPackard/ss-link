@@ -17,6 +17,22 @@
 
 #include "sl_ctl_link_fec_priv.h"
 
+#define SL_LINK_DOWN_CAUSE_COMMAND_MAP (      \
+		SL_LINK_DOWN_CAUSE_COMMAND  | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UP_TRIES_MAP (     \
+		SL_LINK_DOWN_CAUSE_UP_TRIES | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_CANCELED_MAP (     \
+		SL_LINK_DOWN_CAUSE_CANCELED | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UCW_MAP (          \
+		SL_LINK_DOWN_CAUSE_UCW      | \
+		SL_LINK_DOWN_RETRYABLE      | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
+
 struct sl_ctl_link_fecl_kobj {
 	struct sl_ctl_link *ctl_link;
 	u8                  lane_num;

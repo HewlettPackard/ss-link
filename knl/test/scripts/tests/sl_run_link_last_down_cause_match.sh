@@ -64,7 +64,7 @@ function test_verify {
 
 		for link_num in "${sl_test_link_nums[@]}"; do
 
-			sysfs_down_cause=$(cat ${lgrp_sysfs}/${lgrp_num}/test_port/${link_num}/link/last_down_cause)
+			sysfs_down_causes=($(cat ${lgrp_sysfs}/${lgrp_num}/test_port/${link_num}/link/last_down_cause))
 
 			IFS=';' read -ra notifs <<< "${data}"
 			for notif in "${notifs[@]}"; do
@@ -73,7 +73,6 @@ function test_verify {
 				notif_lgrp_num=${notif_fields[3]}
 				notif_link_num=${notif_fields[4]}
 				notif_type=${notif_fields[6]}
-				notif_down_cause=${notif_fields[7]}
 
 				if [[ "${notif_ldev_num}" != ${ldev_num} ]]; then
 					continue
@@ -88,22 +87,47 @@ function test_verify {
 				fi
 
 				if [[ "${notif_type}" == "link-async-down" ]]; then
-					if [[ "${notif_down_cause}" == "${sysfs_down_cause}" ]]; then
-						sl_test_info_log "${FUNCNAME}" \
-							"Expected: ${sysfs_down_cause}, Found: ${notif_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
-						found=true
+
+					sl_test_info_log "${FUNCNAME}" \
+						"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+
+					if [[ "${notif_fields[7]}" != "${sysfs_down_causes[0]}" ]]; then
 						break
 					fi
+
+					sl_test_info_log "${FUNCNAME}" \
+						"sysfs: ${sysfs_down_causes[0]}, notif: ${notif_fields[7]}"
+
+					if [[ "${notif_fields[8]}" != "${sysfs_down_causes[1]}" ]]; then
+						break
+					fi
+
+					sl_test_info_log "${FUNCNAME}" \
+						"sysfs: ${sysfs_down_causes[1]}, notif: ${notif_fields[8]}"
+
+					if [[ "${notif_fields[9]}" != "${sysfs_down_causes[2]}" ]]; then
+						break
+					fi
+
+					sl_test_info_log "${FUNCNAME}" \
+						"sysfs: ${sysfs_down_causes[2]}, notif: ${notif_fields[9]}"
+
+					found=true
 				fi
 			done
 
 			if [[ "${found}" != true ]]; then
 				sl_test_error_log "${FUNCNAME}" \
 					"No down_cause match between sysfs and notification."
-				sl_test_error_log "${FUNCNAME}" \
-					"Expected: ${sysfs_down_cause}, Found: ${notif_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-				return 1
+
+				sl_test_info_log "${FUNCNAME}" \
+					"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+
+				for i in {0..2}; do
+					sl_test_info_log "${FUNCNAME}" \
+						"sysfs: ${sysfs_down_causes[$i]}, notif: ${notif_fields[(( 7 + i ))]}"
+					done
+					return 1
 			fi
 
 			found=false
@@ -252,7 +276,7 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-ucw-warn (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
 	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" "link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
 	rtn=$?

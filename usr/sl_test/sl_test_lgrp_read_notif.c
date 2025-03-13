@@ -16,7 +16,7 @@
 /* Notification */
 #define NOTIF_ENV            "SL_TEST_LGRP_DEBUGFS_NOTIFS"
 #define NOTIF_SIZE           1024
-#define NOTIF_TIMESTAMP_SIZE 64
+#define NOTIF_TIMESTAMP_SIZE 32
 #define NOTIF_TYPE_SIZE      64 
 #define NOTIF_INFO_SIZE      256
 #define NOTIF_NUM_FIELDS     7
@@ -29,7 +29,6 @@
 #define VERSION_SHORT_OPT    'v'
 #define TIMEOUT_SHORT_OPT    't'
 #define CONTINUOUS_SHORT_OPT 'c'
-#define HUMAN_SHORT_OPT      'H'
 #define FILTER_SHORT_OPT     'f'
 #define REMOVE_SHORT_OPT     'r'
 #define EXPECT_SHORT_OPT     'e'
@@ -40,7 +39,6 @@ static const char getopt_short_opts[] = {
 	TIMEOUT_SHORT_OPT,
 	':',                  /* Has argument */
 	CONTINUOUS_SHORT_OPT,
-	HUMAN_SHORT_OPT,
 	FILTER_SHORT_OPT,
 	':',                  /* Has argument */
 	REMOVE_SHORT_OPT,
@@ -58,7 +56,6 @@ enum {
 	OPT_VERSION,
 	OPT_TIMEOUT,
 	OPT_CONTINUOUS,
-	OPT_HUMAN,
 	OPT_FILTER,
 	OPT_REMOVE,
 	OPT_EXPECT,
@@ -87,6 +84,7 @@ static const char *notif_names[] = {
 	"an-error",
 	"llr-canceled",
 	"link-down",
+	"link-async-down",
 	"unrecognized",
 };
 
@@ -101,7 +99,6 @@ static const struct cmd_option {
 	[OPT_VERSION]    = {VERSION_SHORT_OPT,    "version",    "Print the version information.",               NULL,      no_argument       },
 	[OPT_TIMEOUT]    = {TIMEOUT_SHORT_OPT,    "timeout",    "Set the read timeout in milliseconds.",        "TIMEOUT", required_argument },
 	[OPT_CONTINUOUS] = {CONTINUOUS_SHORT_OPT, "continuous", "Continuously append notifications to stdout.", NULL,      no_argument       },
-	[OPT_HUMAN]      = {HUMAN_SHORT_OPT,      "human",      "Human-readable timestamp.",                    NULL,      no_argument       },
 	[OPT_FILTER]     = {FILTER_SHORT_OPT,     "filter",     "Filter notifications by type",                 "FILTER",  required_argument },
 	[OPT_REMOVE]     = {REMOVE_SHORT_OPT,     "remove",     "Remove (flush) all current notifications.",    NULL,      no_argument       },
 	[OPT_EXPECT]     = {EXPECT_SHORT_OPT,     "expect",     "Expect notifications.",                        "EXPECT",  required_argument },
@@ -116,7 +113,6 @@ static struct option_desc {
 	[OPT_VERSION]    = { &cmd_options[OPT_VERSION],     0,  NULL },
 	[OPT_TIMEOUT]    = { &cmd_options[OPT_TIMEOUT],     0,  &read_timeout },
 	[OPT_CONTINUOUS] = { &cmd_options[OPT_CONTINUOUS],  0,  NULL },
-	[OPT_HUMAN]      = { &cmd_options[OPT_HUMAN],       0,  NULL },
 	[OPT_FILTER]     = { &cmd_options[OPT_FILTER],      0,  filter_name },
 	[OPT_REMOVE]     = { &cmd_options[OPT_REMOVE],      0,  NULL },
 	[OPT_EXPECT]     = { &cmd_options[OPT_EXPECT],      0,  expect_name },
@@ -135,7 +131,6 @@ static struct option long_options[] = {
 	LONG_OPTION_FLAG_ONLY(OPT_VERSION),
 	LONG_OPTION_WITH_ARG(OPT_TIMEOUT),
 	LONG_OPTION_FLAG_ONLY(OPT_CONTINUOUS),
-	LONG_OPTION_FLAG_ONLY(OPT_HUMAN),
 	LONG_OPTION_WITH_ARG(OPT_FILTER),
 	LONG_OPTION_FLAG_ONLY(OPT_REMOVE),
 	LONG_OPTION_WITH_ARG(OPT_EXPECT),
@@ -189,90 +184,39 @@ int read_notifs(int fd, char *notif, size_t len, int *timeout, bool remove)
 	return 0;
 }
 
-int convert_timestamp_to_local(char *timestamp_ns, char *timestamp_local, size_t len)
+int parse_notif(char *notif, char *filter, char *expect)
 {
-	int                 rtn;
-	struct tm          *local_time;
-	unsigned long long  nanoseconds;
-	struct timespec     timestamp_ts;
-	size_t              count;
-
-	nanoseconds = strtoull(timestamp_ns, NULL, 0);
-
-	timestamp_ts.tv_sec = nanoseconds / 1000000000;
-	timestamp_ts.tv_nsec = nanoseconds % 1000000000;
-
-	local_time = localtime(&timestamp_ts.tv_sec);
-	if (!local_time) {
-		rtn = errno;
-		perror("localtime failed");
-		return rtn;
-	}
-
-	count = strftime(timestamp_local, len, "%F %T", local_time);
-	if (count == 0) {
-		rtn = errno;
-		perror("strftime failed");
-		return rtn;
-	}
-
-	count = snprintf(&timestamp_local[count], len, ".%05ld", timestamp_ts.tv_nsec);
-	if (count == 0) {
-		rtn = errno;
-		perror("snprintf failed");
-		return rtn;
-	}
-	
-	return 0;
-}
-
-int parse_notif(char *notif, bool human_readable, char *filter, char *expect)
-{
-	int            rtn;
 	int            count;
-	char           notif_timestamp[NOTIF_TIMESTAMP_SIZE];
-	char           local_timestamp[NOTIF_TIMESTAMP_SIZE];
-	char          *timestamp;
+	char           notif_date[NOTIF_TIMESTAMP_SIZE];
+	char           notif_time[NOTIF_TIMESTAMP_SIZE];
 	unsigned int   ldev_num;
 	unsigned int   lgrp_num;
 	unsigned int   link_num;
 	unsigned int   info_map;
 	char           type[NOTIF_TYPE_SIZE];
-	char           info[NOTIF_INFO_SIZE];
 
-	timestamp = notif_timestamp;
-
-	count = sscanf(notif, "%s %u %u %u %x %s %s", notif_timestamp, &ldev_num, &lgrp_num, &link_num, &info_map, type, info);
+	count = sscanf(notif, "%s %s %u %u %u %x %s", notif_date, notif_time, &ldev_num, &lgrp_num, &link_num, &info_map, type);
 	if (count != NOTIF_NUM_FIELDS) {
 		fprintf(stderr, "parse failure (count = %d)\n", count);
 		return EINVAL;
 	}
 
-	if (human_readable) {
-		rtn = convert_timestamp_to_local(notif_timestamp, local_timestamp, sizeof(local_timestamp));
-		if (rtn) {
-			fprintf(stderr, "convert_timestamp_to_local failed [%d]\n", rtn);
-			return rtn;
-		}
-		timestamp = local_timestamp;
-	}
-
 	if (filter && strncmp(type, filter, strnlen(type, NOTIF_TYPE_SIZE))) {
-		fprintf(stderr, "%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+		fprintf(stderr, "%s\n", notif);
 		return EAGAIN;
 	}
 
 	if (expect) {
 		if (strncmp(type, expect, strnlen(type, NOTIF_TYPE_SIZE)) == 0) {
-			printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+			printf("%s\n", notif);
 			return 0;
 		} else {
-			fprintf(stderr, "%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+			fprintf(stderr, "%s\n", notif);
 			return ENOENT;
 		}
 	}
 
-	printf("%s %u %u %u 0x%X %s %s\n", timestamp, ldev_num, lgrp_num, link_num, info_map, type, info);
+	printf("%s\n", notif);
 	return 0;
 }
 
@@ -352,9 +296,6 @@ int main(int argc, char *argv[])
 			break;
 		case CONTINUOUS_SHORT_OPT:
 			SET_OPTION(OPT_CONTINUOUS);
-			break;
-		case HUMAN_SHORT_OPT:
-			SET_OPTION(OPT_HUMAN);
 			break;
 		case FILTER_SHORT_OPT:
 			SET_OPTION(OPT_FILTER);
@@ -455,7 +396,7 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 
-		rtn = parse_notif(notif, OPTION_SET(OPT_HUMAN), filter, expect);
+		rtn = parse_notif(notif, filter, expect);
 		switch (rtn) {
 		case 0:
 			break;

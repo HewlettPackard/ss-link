@@ -163,7 +163,7 @@ static const struct sl_ctl_test sl_ctl_tests[] = {
 
 // FIXME: need to correct sl_ctl_test namspace
 
-static u32 test_down_cause;
+static u64 test_down_cause;
 
 enum test_link_config {
 	TEST_LINK_CFG_FEC_UP_OFF,
@@ -1035,7 +1035,7 @@ static int sl_ctl_test_notif_matches(const struct sl_ctl_test *test, struct sl_l
 
 	if ((test->notif == SL_LGRP_NOTIF_LINK_UP_FAIL) && test_down_cause) {
 		msg_up_fail_info = &msg->info.link_up_fail;
-		pr_debug(SL_CTL_TEST_NAME "[%02u:%u] down_notif (cause = %d)",
+		pr_debug(SL_CTL_TEST_NAME "[%02u:%u] down_notif (cause = 0x%llX)",
 			msg->lgrp_num, msg->link_num, msg_up_fail_info->cause);
 		match = ((test->notif == msg->type) && (test_down_cause == msg_up_fail_info->cause));
 		return match;

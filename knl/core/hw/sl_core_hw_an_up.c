@@ -72,7 +72,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up start link up end failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_callback(core_link);
 		return;
@@ -230,7 +230,7 @@ out_down:
 		sl_core_log_warn(core_link, LOG_NAME,
 			"up done work link up timer end failed [%d]", rtn);
 	sl_core_hw_serdes_link_down(core_link);
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_FAIL);
+	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 	sl_core_an_up_callback(core_link);
 }

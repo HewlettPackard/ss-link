@@ -54,9 +54,9 @@ static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribu
 {
 	struct sl_ctl_link *ctl_link;
 	u32                 state;
-	u32                 up_fail_cause;
+	u64                 up_fail_cause;
 	time64_t            up_fail_time;
-	char                cause_str[100];
+	char                cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
@@ -66,7 +66,7 @@ static ssize_t last_up_fail_cause_show(struct kobject *kobj, struct kobj_attribu
 	sl_link_down_cause_str(up_fail_cause, cause_str, sizeof(cause_str));
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail cause show (cause = 0x%X %s)",
+		"last up fail cause show (cause = 0x%llX %s)",
 		up_fail_cause, cause_str);
 
 	if (up_fail_cause == SL_LINK_DOWN_CAUSE_NONE) {
@@ -85,7 +85,7 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 {
 	struct sl_ctl_link *ctl_link;
 	u32                 state;
-	u32                 up_fail_cause;
+	u64                 up_fail_cause;
 	time64_t            up_fail_time;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
@@ -94,7 +94,7 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 		ctl_link->num, &up_fail_cause, &up_fail_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail time show (cause = 0x%X, time = %lld %ptTt %ptTd)",
+		"last up fail time show (cause = 0x%llX, time = %lld %ptTt %ptTd)",
 		up_fail_cause, up_fail_time, &up_fail_time, &up_fail_time);
 
 	if (up_fail_cause == SL_LINK_DOWN_CAUSE_NONE) {
@@ -112,9 +112,9 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link *ctl_link;
-	u32                 down_cause;
+	u64                 down_cause;
 	time64_t            down_time;
-	char                cause_str[100];
+	char                cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
@@ -123,7 +123,7 @@ static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute 
 
 	sl_link_down_cause_str(down_cause, cause_str, sizeof(cause_str));
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last down cause show (cause = 0x%X %s)",
+		"last down cause show (cause = 0x%llX %s)",
 		down_cause, cause_str);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
@@ -132,7 +132,7 @@ static ssize_t last_down_cause_show(struct kobject *kobj, struct kobj_attribute 
 static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link  *ctl_link;
-	u32                  down_cause;
+	u64                  down_cause;
 	time64_t             down_time;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
@@ -141,7 +141,7 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 		ctl_link->num, &down_cause, &down_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"last down time show (cause = 0x%X, time = %lld %ptTt %ptTd)",
+		"last down time show (cause = 0x%llX, time = %lld %ptTt %ptTd)",
 		down_cause, down_time, &down_time, &down_time);
 
 	if (down_cause == SL_LINK_DOWN_CAUSE_NONE)

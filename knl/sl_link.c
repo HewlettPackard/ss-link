@@ -368,7 +368,7 @@ const char *sl_link_policy_opt_str(u32 option)
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
 
-int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_str_size)
+int sl_link_down_cause_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
 {
 	int rtn;
 	int str_pos;
@@ -377,7 +377,7 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 	if (!cause_str)
 		return -EINVAL;
 
-	if (cause_str_size < 32)
+	if (cause_str_size < SL_LINK_DOWN_CAUSE_STR_SIZE)
 		return -EINVAL;
 
 	if (cause_map == SL_LINK_DOWN_CAUSE_NONE) {
@@ -387,7 +387,7 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 
 	str_pos = 0;
 
-	for_each_set_bit(which, (unsigned long *)&cause_map, 32) {
+	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "bit = %d", which);
 
 		switch (BIT(which)) {
@@ -421,7 +421,7 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 		case SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-nomatch ");
 			break;
-		case SL_LINK_DOWN_CAUSE_AUTONEG_FAIL:
+		case SL_LINK_DOWN_CAUSE_AUTONEG:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-fail ");
 			break;
 		case SL_LINK_DOWN_CAUSE_CONFIG:
@@ -442,20 +442,29 @@ int sl_link_down_cause_str(u32 cause_map, char *cause_str, unsigned int cause_st
 		case SL_LINK_DOWN_CAUSE_COMMAND:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
 			break;
-		case SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED:
+		case SL_LINK_DOWN_CAUSE_DOWNSHIFT:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "downshift-fail ");
 			break;
 		case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "llr-replay-at-max ");
 			break;
-		case SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED:
+		case SL_LINK_DOWN_CAUSE_UPSHIFT:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "upshift-fail ");
 			break;
-		case SL_LINK_DOWN_CAUSE_AN_CONFIG:
+		case SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "an-config ");
 			break;
 		case SL_LINK_DOWN_CAUSE_PCS_FAULT:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "pcs-fault ");
+			break;
+		case SL_LINK_DOWN_RETRYABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retry ");
+			break;
+		case SL_LINK_DOWN_ORIGIN_ASYNC:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-async ");
+			break;
+		case SL_LINK_DOWN_ORIGIN_LINK_UP:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-up ");
 			break;
 		default:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");

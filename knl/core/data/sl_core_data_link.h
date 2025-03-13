@@ -27,14 +27,15 @@ void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 void sl_core_data_link_info_map_set(struct sl_core_link *core_link, u32 bit_num);
 u64  sl_core_data_link_info_map_get(struct sl_core_link *core_link);
 
-void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u32 up_fail_cause);
-void sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link, u32 *up_fail_cause,
+void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u64 up_fail_cause);
+u64  sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link);
+void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause,
 	time64_t *up_fail_time);
 
-void     sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 down_cause);
-void     sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u32 *down_cause,
+void     sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u64 down_cause);
+void     sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u64 *down_cause,
 						    time64_t *down_time);
-u32      sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link);
+u64      sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link);
 time64_t sl_core_data_link_last_down_time_get(struct sl_core_link *core_link);
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value);

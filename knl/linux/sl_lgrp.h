@@ -34,17 +34,17 @@ struct sl_lgrp_notif_info_link_up {
 };
 
 struct sl_lgrp_notif_info_link_up_fail {
-	u32                 cause;
+	u64                 cause;
 	struct sl_link_data link_data;
 };
 
 struct sl_lgrp_notif_info_link_async_down {
-	u32                 cause;
+	u64                 cause;
 	struct sl_link_data link_data;
 };
 
 struct sl_lgrp_notif_info_link_down {
-	u32                 cause;
+	u64                 cause;
 	struct sl_link_data link_data;
 };
 

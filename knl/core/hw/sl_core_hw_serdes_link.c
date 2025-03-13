@@ -75,7 +75,7 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_serdes_link_up_an_settings(core_link);
 	if (rtn != 0) {
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_link_up_an_settings failed [%d]", rtn);
 		return rtn;
@@ -84,7 +84,7 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 	rtn = sl_core_hw_serdes_core_pll(core_link->core_lgrp,
 		core_link->serdes.core_serdes_settings.clocking);
 	if (rtn) {
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_core_pll failed [%d]", rtn);
 		return -EIO;
@@ -235,7 +235,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 
 	rtn = sl_core_hw_serdes_link_up_settings(core_link);
 	if (rtn != 0) {
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_link_up_settings failed [%d]", rtn);
 		return rtn;
@@ -244,7 +244,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	rtn = sl_core_hw_serdes_core_pll(core_link->core_lgrp,
 		core_link->serdes.core_serdes_settings.clocking);
 	if (rtn) {
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_core_pll failed [%d]", rtn);
 		return -EIO;

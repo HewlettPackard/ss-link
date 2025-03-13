@@ -122,7 +122,7 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp) &&
 		!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -154,7 +154,7 @@ void sl_core_hw_link_up_start(struct sl_core_link *core_link)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up start data_link_settings failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -225,7 +225,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up after an link up end failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AN_CONFIG);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -293,7 +293,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			if (rtn < 0)
 				sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 			sl_core_hw_serdes_link_down(core_link);
-			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_FAILED);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP);
 			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 			sl_core_hw_link_up_callback(core_link);
 			return;
@@ -307,7 +307,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			if (rtn < 0)
 				sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
 			sl_core_hw_serdes_link_down(core_link);
-			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_FAILED);
+			sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_MAP);
 			sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 			sl_core_hw_link_up_callback(core_link);
 			return;
@@ -326,7 +326,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME, "up work link up end failed [%d]", rtn);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
@@ -353,7 +353,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up work link up end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -392,7 +392,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link high SER enable failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -402,7 +402,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link llr max starvation enable failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -412,7 +412,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link llr starved enable failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -422,7 +422,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link fault enable failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -473,7 +473,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"up check work link up end failed [%d]", rtn);
 		sl_core_hw_link_off(core_link);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_PCS_FAULT);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_PCS_FAULT_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -574,7 +574,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_hw_link_off(core_link);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_UCW_HIGH);
-		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UCW);
+		sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_hw_link_up_callback(core_link);
 		return;
@@ -638,7 +638,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_DONE);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
-	sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_TIMEOUT);
+	sl_core_data_link_last_up_fail_cause_set(core_link, SL_LINK_DOWN_CAUSE_TIMEOUT_MAP);
 	sl_core_link_is_timed_out_clr(core_link);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
@@ -702,7 +702,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
-	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED);
+	sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
 	sl_core_link_is_canceled_clr(core_link);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 	sl_core_hw_link_up_callback(core_link);
@@ -952,22 +952,22 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	if (llr_replay_max) {
 		sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX);
+		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
 	}
 	if (local_fault) {
 		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LF);
+		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	}
 	if (remote_fault) {
 		sl_core_log_err(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_RF);
+		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 	}
 	if (link_down) {
 		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN);
+		sl_core_data_link_last_down_cause_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
 	sl_ctl_link_state_set(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,

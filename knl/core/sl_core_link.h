@@ -26,6 +26,87 @@ struct work_struct;
 
 #define is_flag_set(_flags, _flag) ((_flags & _flag) == _flag)
 
+#define SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP (            \
+		SL_LINK_DOWN_CAUSE_SERDES_PLL        | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP (         \
+		SL_LINK_DOWN_CAUSE_SERDES_CONFIG     | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_MAP (         \
+		SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY_MAP (        \
+		SL_LINK_DOWN_CAUSE_SERDES_QUALITY    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP (           \
+		SL_LINK_DOWN_CAUSE_INTR_ENABLE       | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP (       \
+		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_CONFIG_MAP (                \
+		SL_LINK_DOWN_CAUSE_CONFIG            | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_MAP (               \
+		SL_LINK_DOWN_CAUSE_AUTONEG           | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_TIMEOUT_MAP (               \
+		SL_LINK_DOWN_CAUSE_TIMEOUT           | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP (     \
+		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP (             \
+		SL_LINK_DOWN_CAUSE_DOWNSHIFT         | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UPSHIFT_MAP (               \
+		SL_LINK_DOWN_CAUSE_UPSHIFT           | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (        \
+		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (        \
+		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_PCS_FAULT_MAP (             \
+		SL_LINK_DOWN_CAUSE_PCS_FAULT         | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP (          \
+		SL_LINK_DOWN_CAUSE_UCW               | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_LF_MAP (                    \
+		SL_LINK_DOWN_CAUSE_LF                | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_RF_MAP (                    \
+		SL_LINK_DOWN_CAUSE_RF                | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_DOWN_MAP (                  \
+		SL_LINK_DOWN_CAUSE_DOWN              | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP (        \
+		SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
+
 enum sl_core_info_map_bits {
 	/* Headshell/Transponder */
 	SL_CORE_INFO_MAP_HEADSHELL_SIGNAL = 0,
@@ -87,11 +168,11 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_NUM_BITS /* must be last */
 };
 
-typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
+typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
 					  u32 speed, u32 fec_mode, u32 fec_type);
-typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
+typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
 					    struct sl_link_data *link_data);
-typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u32 cause, u64 info_map,
+typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause, u64 info_map,
 					     struct sl_link_data *link_data);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
@@ -142,9 +223,9 @@ struct sl_core_link {
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   state;
-		u32                                   last_up_fail_cause;
+		u64                                   last_up_fail_cause;
 		time64_t                              last_up_fail_time;
-		u32                                   last_down_cause;
+		u64                                   last_down_cause;
 		time64_t                              last_down_time;
 		struct {
 			void                         *up;
@@ -286,7 +367,7 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag);
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u32 down_cause);
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause);
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);
@@ -306,9 +387,9 @@ int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
 void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					   u32 *down_cause, time64_t *down_time);
+					   u64 *down_cause, time64_t *down_time);
 void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					 u32 *up_fail_cause, time64_t *up_fail_time);
+					 u64 *up_fail_cause, time64_t *up_fail_time);
 
 void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
 void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);

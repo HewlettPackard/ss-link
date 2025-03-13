@@ -679,7 +679,7 @@ u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 	return info_map;
 }
 
-void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u32 up_fail_cause)
+void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u64 up_fail_cause)
 {
 	unsigned long irq_flags;
 
@@ -689,10 +689,10 @@ void sl_core_data_link_last_up_fail_cause_set(struct sl_core_link *core_link, u3
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause set (cause = 0x%X)", up_fail_cause);
+		"last up fail cause set (cause = 0x%llX)", up_fail_cause);
 }
 
-void sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link, u32 *up_fail_cause,
+void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause,
 	time64_t *up_fail_time)
 {
 	unsigned long irq_flags;
@@ -703,10 +703,25 @@ void sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link, u3
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (cause = 0x%X)", *up_fail_cause);
+		"last up fail cause get (cause = 0x%llX)", *up_fail_cause);
 }
 
-void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 down_cause)
+u64 sl_core_data_link_last_up_fail_cause_get(struct sl_core_link *core_link)
+{
+	u64           up_fail_cause;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	up_fail_cause = core_link->link.last_up_fail_cause;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"last up fail cause get (cause = 0x%llX)", up_fail_cause);
+
+	return up_fail_cause;
+}
+
+void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u64 down_cause)
 {
 	unsigned long irq_flags;
 
@@ -721,7 +736,7 @@ void sl_core_data_link_last_down_cause_set(struct sl_core_link *core_link, u32 d
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-void sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u32 *down_cause, time64_t *down_time)
+void sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, u64 *down_cause, time64_t *down_time)
 {
 	unsigned long irq_flags;
 
@@ -731,9 +746,9 @@ void sl_core_data_link_last_down_cause_info_get(struct sl_core_link *core_link, 
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
-u32 sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link)
+u64 sl_core_data_link_last_down_cause_get(struct sl_core_link *core_link)
 {
-	u32           down_cause;
+	u64           down_cause;
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);

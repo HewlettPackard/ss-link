@@ -75,7 +75,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 }
 
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u32 down_cause)
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause)
 {
 	unsigned long        irq_flags;
 	u32                  link_state;
@@ -331,14 +331,14 @@ int sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking)
 }
 
 void sl_core_link_last_up_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-	u32 *up_fail_cause, time64_t *up_fail_time)
+	u64 *up_fail_cause, time64_t *up_fail_time)
 {
-	sl_core_data_link_last_up_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+	sl_core_data_link_last_up_fail_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
 		up_fail_cause, up_fail_time);
 }
 
 void sl_core_link_last_down_cause_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					   u32 *down_cause, time64_t *down_time)
+					   u64 *down_cause, time64_t *down_time)
 {
 	sl_core_data_link_last_down_cause_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
 						   down_cause, down_time);

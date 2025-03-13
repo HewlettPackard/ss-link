@@ -369,7 +369,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			"UCW exceeded down limit (UCW = %llu, CCW = %llu, ucw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctl_link->fec_ucw_chance);
 		ctl_link->fec_ucw_chance = 0;
-		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_UCW);
+		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_UCW_MAP);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"data check ctl_link_async_down failed [%d]", rtn);
