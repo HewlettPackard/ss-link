@@ -46,13 +46,18 @@ fi
 if [ -e $SW_SYSFS ] ; then
         LDEV_PATH="${SW_SYSFS}/rossw${LDEV}"
         LGRP_PATH="${LDEV_PATH}/pgrp/${LGRP}"
-        LINK_PATH="${LGRP_PATH}/port/${LINK}"
+        LINK_PATH="${LGRP_PATH}/port/${LINK}/link"
+        MAC_PATH="${LGRP_PATH}/port/${LINK}/mac"
+        LLR_PATH="${LGRP_PATH}/port/${LINK}/llr"
 elif [ -e $NIC_SYSFS ] ; then
         LDEV_PATH="${NIC_SYSFS}/cxi${LDEV}/device/port/${LGRP}"
         LGRP_PATH="${LDEV_PATH}"
-        LINK_PATH="${LGRP_PATH}"
+        LINK_PATH="${LGRP_PATH}/link"
+        MAC_PATH="${LGRP_PATH}/mac"
+        LLR_PATH="${LGRP_PATH}/llr"
 else
-        usage
+	echo "nothing initialized"
+	exit
 fi
 
 function print_info {
@@ -125,25 +130,25 @@ function print_lgrp {
 }
 
 function print_link_state {
-        local state=$(cat ${LINK_PATH}/link/state)
+        local state=$(cat ${LINK_PATH}/state)
 
         printf "link%d   | state: ${state}, speed: ${speed}, up_time: ${time_str}\n" ${LINK}
 }
 
 function print_link {
-        local speed=$(cat ${LINK_PATH}/link/speed)
-        local up_time=$(cat ${LINK_PATH}/link/up_time_ms)
+        local speed=$(cat ${LINK_PATH}/speed)
+        local up_time=$(cat ${LINK_PATH}/up_time_ms)
         local time_str=$(date -d @${up_time} '+%Hh %Mm %Ss')
-        local down_cause=$(cat ${LINK_PATH}/link/last_down_cause)
-        local down_time=$(cat ${LINK_PATH}/link/last_down_time)
-        local up_fail_cause=$(cat ${LINK_PATH}/link/last_up_fail_cause)
-        local up_fail_time=$(cat ${LINK_PATH}/link/last_up_fail_time)
-        local hpe_map=$(cat ${LINK_PATH}/link/config/hpe_map)
-        local pause_map=$(cat ${LINK_PATH}/link/config/pause_map)
-        local link_up_timeout=$(cat ${LINK_PATH}/link/config/link_up_timeout_ms)
-        local link_up_tries_max=$(cat ${LINK_PATH}/link/config/link_up_tries_max)
-        local autoneg=$(cat ${LINK_PATH}/link/config/autoneg)
-        local loopback=$(cat ${LINK_PATH}/link/config/loopback)
+        local down_cause=$(cat ${LINK_PATH}/last_down_cause)
+        local down_time=$(cat ${LINK_PATH}/last_down_time)
+        local up_fail_cause=$(cat ${LINK_PATH}/last_up_fail_cause)
+        local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
+        local hpe_map=$(cat ${LINK_PATH}/config/hpe_map)
+        local pause_map=$(cat ${LINK_PATH}/config/pause_map)
+        local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
+        local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
+        local autoneg=$(cat ${LINK_PATH}/config/autoneg)
+        local loopback=$(cat ${LINK_PATH}/config/loopback)
 
         print_link_state
 
@@ -156,8 +161,8 @@ function print_link {
 }
 
 function print_mac_state {
-        local state_tx=$(cat ${LINK_PATH}/mac/tx_state)
-        local state_rx=$(cat ${LINK_PATH}/mac/rx_state)
+        local state_tx=$(cat ${MAC_PATH}/tx_state)
+        local state_rx=$(cat ${MAC_PATH}/rx_state)
 
         printf "mac%d    | tx_state: ${state_tx}, rx_state: ${state_rx}\n" ${LINK}
 }
@@ -167,20 +172,20 @@ function print_mac {
 }
 
 function print_llr_state {
-        local state=$(cat ${LINK_PATH}/llr/state)
+        local state=$(cat ${LLR_PATH}/state)
 
         printf "llr%d    | state: ${state}\n" ${LINK}
 }
 
 function print_llr {
-        local calc=$(cat ${LINK_PATH}/llr/loop/calc_ns)
-        local min=$(cat ${LINK_PATH}/llr/loop/min_ns)
-        local max=$(cat ${LINK_PATH}/llr/loop/max_ns)
-        local avg=$(cat ${LINK_PATH}/llr/loop/average_ns)
-        local mode=$(cat ${LINK_PATH}/llr/config/mode)
-        local down_bahavior=$(cat ${LINK_PATH}/llr/config/link_down_behavior)
-        local setup_timeout=$(cat ${LINK_PATH}/llr/config/setup_timeout_ms)
-        local start_timeout=$(cat ${LINK_PATH}/llr/config/start_timeout_ms)
+        local calc=$(cat ${LLR_PATH}/loop/calc_ns)
+        local min=$(cat ${LLR_PATH}/loop/min_ns)
+        local max=$(cat ${LLR_PATH}/loop/max_ns)
+        local avg=$(cat ${LLR_PATH}/loop/average_ns)
+        local mode=$(cat ${LLR_PATH}/config/mode)
+        local down_bahavior=$(cat ${LLR_PATH}/config/link_down_behavior)
+        local setup_timeout=$(cat ${LLR_PATH}/config/setup_timeout_ms)
+        local start_timeout=$(cat ${LLR_PATH}/config/start_timeout_ms)
 
         print_llr_state
 
@@ -239,15 +244,15 @@ function print_col {
 }
 
 function print_fec {
-        local up_check_wait=$(cat ${LINK_PATH}/link/fec/up_check/check_wait_ms)
-        local up_settle_wait=$(cat ${LINK_PATH}/link/fec/up_check/settle_wait_ms)
-        local up_check_ccw_limit=$(cat ${LINK_PATH}/link/fec/up_check/ccw_limit)
-        local up_check_ucw_limit=$(cat ${LINK_PATH}/link/fec/up_check/ucw_limit)
-        local mon_period=$(cat ${LINK_PATH}/link/fec/monitor_check/period_ms)
-        local mon_ccw_down_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ccw_crit_limit)
-        local mon_ccw_warn_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ccw_warn_limit)
-        local mon_ucw_down_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ucw_down_limit)
-        local mon_ucw_warn_limit=$(cat ${LINK_PATH}/link/fec/monitor_check/ucw_warn_limit)
+        local up_check_wait=$(cat ${LINK_PATH}/fec/up_check/check_wait_ms)
+        local up_settle_wait=$(cat ${LINK_PATH}/fec/up_check/settle_wait_ms)
+        local up_check_ccw_limit=$(cat ${LINK_PATH}/fec/up_check/ccw_limit)
+        local up_check_ucw_limit=$(cat ${LINK_PATH}/fec/up_check/ucw_limit)
+        local mon_period=$(cat ${LINK_PATH}/fec/monitor_check/period_ms)
+        local mon_ccw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_crit_limit)
+        local mon_ccw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_warn_limit)
+        local mon_ucw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_down_limit)
+        local mon_ucw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_warn_limit)
 
         printf "fec     | up_check_wait: ${up_check_wait}ms, up_settle_wait: ${up_settle_wait}ms\n"
         printf "        | up_check_ccw_limit: ${up_check_ccw_limit}ms, up_check_ucw_limit: ${up_check_ucw_limit}ms\n"
@@ -257,18 +262,18 @@ function print_fec {
 }
 
 function print_fec_current {
-        local ccw=$(cat ${LINK_PATH}/link/fec/current/ccw)
-        local ucw=$(cat ${LINK_PATH}/link/fec/current/ucw)
+        local ccw=$(cat ${LINK_PATH}/fec/current/ccw)
+        local ucw=$(cat ${LINK_PATH}/fec/current/ucw)
 
         printf "        | current_ccw: ${ccw}, current_ucw: ${ucw}\n"
-        count=$(cat ${LINK_PATH}/link/fec/current/tail/bin00)
+        count=$(cat ${LINK_PATH}/fec/current/tail/bin00)
         printf "        | bins: ${count}\n"
         for bin in {1..9} ; do
-                count=$(cat ${LINK_PATH}/link/fec/current/tail/bin0${bin})
+                count=$(cat ${LINK_PATH}/fec/current/tail/bin0${bin})
                 printf "                ${count}\n"
         done
         for bin in {10..14} ; do
-                count=$(cat ${LINK_PATH}/link/fec/current/tail/bin${bin})
+                count=$(cat ${LINK_PATH}/fec/current/tail/bin${bin})
                 printf "                ${count}\n"
         done
         printf "                                 fecl0           fecl1           fecl2           fecl3\n"
@@ -276,7 +281,7 @@ function print_fec_current {
         for lane in {0..3} ; do
                 printf " %19s | " "lane${lane}"
                 for fecl in {0..3} ; do
-                        fecl=$(cat ${LINK_PATH}/link/fec/current/lane/${lane}/fecl${fecl})
+                        fecl=$(cat ${LINK_PATH}/fec/current/lane/${lane}/fecl${fecl})
                         printf "%15s " ${fecl}
                 done
                 printf "\n"
@@ -288,17 +293,18 @@ function print_state {
         if [ -e ${LDEV_PATH} ] ; then
                 print_info
         fi
-
         if [ -e ${LGRP_PATH} ] ; then
                 print_jack_state
         fi
-
         if [ -e ${LINK_PATH} ] ; then
                 print_link_state
-                print_mac_state
-                print_llr_state
         fi
-
+        if [ -e ${MAC_PATH} ] ; then
+               	print_mac_state
+	fi
+        if [ -e ${LLR_PATH} ] ; then
+               	print_llr_state
+	fi
         if [ -e ${LGRP_PATH} ] ; then
                 printf "        | lanes:                 lane0           lane1           lane2           lane3\n"
                 printf "                     +----------------------------------------------------------------\n"
@@ -311,18 +317,19 @@ function print_full {
         if [ -e ${LDEV_PATH} ] ; then
                 print_info
         fi
-
         if [ -e ${LGRP_PATH} ] ; then
                 print_jack
                 print_lgrp
         fi
-
         if [ -e ${LINK_PATH} ] ; then
                 print_link
-                print_mac
-                print_llr
-        fi
-
+	fi
+       	if [ -e ${MAC_PATH} ] ; then
+               	print_mac
+	fi
+       	if [ -e ${LLR_PATH} ] ; then
+               	print_llr
+	fi
         if [ -e ${LGRP_PATH} ] ; then
                 print_serdes
                 printf "        | lanes:                 lane0           lane1           lane2           lane3\n"
@@ -345,7 +352,6 @@ function print_full {
                 print_col "settings/scramble" "scramble"
                 printf "                     +----------------------------------------------------------------\n"
         fi
-
         if [ -e ${LINK_PATH} ] ; then
                 print_fec
                 print_fec_current
