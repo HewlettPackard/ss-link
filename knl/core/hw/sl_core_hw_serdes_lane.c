@@ -73,7 +73,7 @@ int sl_core_hw_serdes_lane_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL2], &data16);
@@ -94,7 +94,7 @@ int sl_core_hw_serdes_lane_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL1], &data16);
@@ -115,7 +115,7 @@ int sl_core_hw_serdes_lane_pre3_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL0], &data16);
@@ -136,7 +136,7 @@ int sl_core_hw_serdes_lane_cursor_get(struct sl_core_lgrp *core_lgrp, u8 asic_la
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL3], &data16);
@@ -157,7 +157,7 @@ int sl_core_hw_serdes_lane_post1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lan
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL4], &data16);
@@ -178,7 +178,7 @@ int sl_core_hw_serdes_lane_post2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lan
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL5], &data16);
@@ -239,7 +239,7 @@ int sl_core_hw_serdes_lane_encoding_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
 
 	if (SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_OSR_MODE_GET(data64) & 0x40) {
-		serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+		serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 			core_lgrp->core_ldev->serdes.addrs[SERDES_CDR_CONTROL_0], &data16); /* rx_pam4_er_mode */
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
@@ -312,7 +312,7 @@ int sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_FW_API_DATA0], &data16);
@@ -330,7 +330,7 @@ int sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 	u16 data16;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_FW_API_DATA0], &data16);
@@ -749,7 +749,7 @@ int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u32 addr;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
 
@@ -772,7 +772,7 @@ int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u32 addr;
 	u8  serdes_lane_num;
 
-	serdes_lane_num = asic_lane_num + (4 * (core_lgrp->num & BIT(0)));
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
 
