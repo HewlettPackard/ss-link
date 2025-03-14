@@ -13,6 +13,7 @@
 #include "hw/sl_core_hw_sbus.h"
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_uc_ram.h"
+#include "hw/sl_core_hw_serdes_addrs.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
@@ -49,7 +50,6 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 	int rtn;
 	u8  lane_num;
 	u8  which;
-	u16 addr;
 	u16 data;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
@@ -59,13 +59,14 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 
 	for (lane_num = 0; lane_num < SL_ASIC_MAX_LANES; ++lane_num) {
 		which = (lane_num + ((core_lgrp->num & BIT(0)) * 4));
-		addr  = 0xD190 + which;
 		data  = 0x0000 |
 			((core_lgrp->serdes.dt.lane_info[lane_num].tx_source + ((core_lgrp->num & BIT(0)) * 4)) << 8) |
 			(core_lgrp->serdes.dt.lane_info[lane_num].rx_source + ((core_lgrp->num & BIT(0)) * 4));
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
-			"swizzles (which = %d, addr = 0x%04X, data = 0x%04X)", which, addr, data);
-		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0, addr, data, 0, 0x1F1F);
+			"swizzles (which = %d, addr = 0x%04X, data = 0x%04X)",
+			which, core_lgrp->core_ldev->serdes.addrs[SERDES_DIG_COM_B_LANE_ADDR_0] + which, data);
+		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0,
+			core_lgrp->core_ldev->serdes.addrs[SERDES_DIG_COM_B_LANE_ADDR_0] + which, data, 0x1F1F);
 	}
 
 	rtn = 0;
@@ -100,18 +101,23 @@ int sl_core_hw_serdes_hw_info_get(struct sl_core_lgrp *core_lgrp)
 
 	hw_info = &(core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)]);
 
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD21A,  0, 12, &data16);
-		hw_info->num_cores = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD10A,  0, 12, &data16);
-		hw_info->num_lanes = (data16 & 0xFF);
+	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
+		core_lgrp->core_ldev->serdes.addrs[SERDES_MICRO_B_COM_RMI_MICRO_SDK_STATUS0], &data16); /* micro status */
+	hw_info->num_cores = ((data16 >> 12) & 0x000F);
+	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
+		core_lgrp->core_ldev->serdes.addrs[SERDES_DIG_COM_REVID1], &data16); /* multiplicity */
+	hw_info->num_lanes = ((data16 >> 12) & 0x000F);
 	SL_CORE_HW_SBUS_FIELD_RD(core_lgrp, core_lgrp->serdes.dt.dev_addr, 0xFE, 24, 0xF, &data32);
-		hw_info->num_plls = (data32 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD100, 10, 10, &data16);
-		hw_info->rev_id_1 = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD10E, 12, 12, &data16);
-		hw_info->rev_id_2 = (data16 & 0xFF);
-	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0, 0xD0D8,  8,  8, &data16);
-		hw_info->version = (data16 & 0xFF);
+	hw_info->num_plls = (data32 & 0xFF);
+	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
+		core_lgrp->core_ldev->serdes.addrs[SERDES_DIG_COM_REVID0], &data16); /* hardware rev 1 */
+	hw_info->rev_id_1 = (data16 & 0x003F);
+	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
+		core_lgrp->core_ldev->serdes.addrs[SERDES_DIG_COM_REVID2], &data16); /* hardware rev 2 */
+	hw_info->rev_id_2 = (data16 & 0x000F);
+	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
+		core_lgrp->core_ldev->serdes.addrs[SERDES_HW_VERSION], &data16); /* hardware version */
+	hw_info->version = (data16 & 0x00FF);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "rev_id_1   = 0x%02X", hw_info->rev_id_1);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "rev_id_2   = 0x%02X", hw_info->rev_id_2);

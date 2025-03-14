@@ -49,10 +49,11 @@ struct sl_core_ldev {
 	spinlock_t                data_lock;
 
 	struct {
-		const struct firmware   *fw;
-		struct sl_serdes_hw_info hw_info[SL_ASIC_MAX_SERDES];
-		struct sl_serdes_fw_info fw_info[SL_ASIC_MAX_SERDES];
-		bool                     is_ready;
+		const struct firmware    *fw;
+		struct sl_serdes_hw_info  hw_info[SL_ASIC_MAX_SERDES];
+		struct sl_serdes_fw_info  fw_info[SL_ASIC_MAX_SERDES];
+		bool                      is_ready;
+		u16                      *addrs;
 	} serdes;
 
 	struct workqueue_struct  *workqueue;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -15,6 +15,8 @@
 #include "sl_core_lgrp.h"
 #include "data/sl_core_data_ldev.h"
 #include "data/sl_core_data_lgrp.h"
+#include "hw/sl_core_hw_serdes_osprey.h"
+#include "hw/sl_core_hw_serdes_condor.h"
 
 static struct sl_core_ldev *core_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(core_ldevs_lock);
@@ -52,6 +54,9 @@ int sl_core_data_ldev_new(u8 ldev_num, struct sl_accessors *accessors,
 	}
 
 	core_ldev->workqueue = workqueue;
+
+	// FIXME: for now we assume it's R2, so Osprey
+	core_ldev->serdes.addrs = serdes_addrs_osprey;
 
 	sl_core_log_dbg(core_ldev, LOG_NAME, "new (ldev = 0x%p, platform = %u, revision = %u)",
 		core_ldev, core_ldev->platform, core_ldev->revision);

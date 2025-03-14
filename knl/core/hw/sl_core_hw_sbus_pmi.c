@@ -14,13 +14,13 @@
 #define LOG_NAME SL_CORE_HW_SBUS_PMI_LOG_NAME
 
 int sbus_pmi_rd(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
-		u8 pll, u16 addr, u16 mask, u16 *data)
+		u8 sel, u16 addr, u16 mask, u16 *data)
 {
 	int rtn;
 	u32 addr32;
 	u32 data32;
 
-	addr32 = PMI_ADDR32(dev_id, pll, lane, addr);
+	addr32 = PMI_ADDR32(dev_id, sel, lane, addr);
 
 	rtn = sl_core_sbus_wr(core_lgrp, dev_addr, 2, addr32); /* PMI_ADDR */
 	if (rtn) {
@@ -55,13 +55,13 @@ int sbus_pmi_rd(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
 }
 
 int sbus_pmi_wr(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
-		u8 pll, u16 addr, u16 data, u16 mask)
+		u8 sel, u16 addr, u16 data, u16 mask)
 {
 	int rtn;
 	u32 addr32;
 	u32 data32;
 
-	addr32 = PMI_ADDR32(dev_id, pll, lane, addr);
+	addr32 = PMI_ADDR32(dev_id, sel, lane, addr);
 	data32 = (~mask & 0xFFFF) | (data << 16);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
