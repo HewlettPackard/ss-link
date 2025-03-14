@@ -878,6 +878,11 @@ int sl_core_test_exec(u8 ldev_num, u64 lgrp_map,
 
 	/* special test */
 	if (is_flag_set(sl_core_tests[test_num].flags, SL_CORE_TEST_FLAG_SPECIAL)) {
+		test_args.ldev_num = 0;
+		test_args.lgrp_num = 0;
+		test_args.link_num = 0;
+		test_args.flags    = 0;
+		test_args.tag      = NULL;
 		pr_debug(SL_CORE_TEST_NAME "special test\n");
 		rtn = sl_core_tests[test_num].test(test_args);
 		goto out;

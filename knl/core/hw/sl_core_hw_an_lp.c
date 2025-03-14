@@ -25,6 +25,7 @@ static void sl_core_an_lp_caps_get_callback(struct sl_core_link *link)
 
 	sl_core_log_dbg(link, LOG_NAME, "lp caps get callback");
 
+	lp_caps_cache_entry = NULL;
 	if (link->an.lp_caps_state == SL_CORE_LINK_LP_CAPS_DATA) {
 		lp_caps_cache_entry = kmem_cache_alloc(link->an.lp_caps_cache, GFP_ATOMIC);
 		if (lp_caps_cache_entry == NULL)

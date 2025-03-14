@@ -99,7 +99,6 @@ out:
 
 void sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 {
-	int                rtn;
 	struct sl_ctl_mac *ctl_mac;
 
 	ctl_mac = sl_ctl_mac_get(ldev_num, lgrp_num, mac_num);
@@ -118,8 +117,6 @@ void sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_ctl_mac_is_deleting_set(ctl_mac);
 
 	sl_core_mac_del(ldev_num, lgrp_num, mac_num);
-	if (rtn)
-		sl_ctl_log_warn(ctl_mac, LOG_NAME, "core_mac_del failed [%d]", rtn);
 
 	sl_sysfs_mac_delete(ctl_mac);
 

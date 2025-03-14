@@ -183,8 +183,7 @@ static bool sl_media_jack_cable_firmware_version_check(struct sl_media_lgrp *med
 
 static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
 {
-	u8  i;
-	int rtn;
+	u8 i;
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable shift checks");
 
@@ -201,8 +200,8 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
 			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE;
 			spin_unlock(&media_lgrp->media_jack->data_lock);
 			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
-					 "shift check failed [%d] fake cable (lgrp_num = %u)",
-					 rtn, media_lgrp->media_jack->cable_info[i].lgrp_num);
+					 "shift check failed - fake cable (lgrp_num = %u)",
+					 media_lgrp->media_jack->cable_info[i].lgrp_num);
 			return -EFAULT;
 		}
 	}

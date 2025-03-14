@@ -93,7 +93,6 @@ static ssize_t link_fec_up_fecl_show(struct kobject *kobj, struct kobj_attribute
 	struct sl_ctl_link_fecl_kobj       *fecl_kobj;
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
 	u8                                  fecl_num;
-	struct sl_ctl_link                 *ctl_link;
 
 	fecl_kobj = container_of(kobj, struct sl_ctl_link_fecl_kobj, kobj);
 	if (!fecl_kobj->ctl_link)
@@ -103,9 +102,9 @@ static ssize_t link_fec_up_fecl_show(struct kobject *kobj, struct kobj_attribute
 
 	fecl_num = ((4 * fecl_kobj->lane_num) + num);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(fecl_kobj->ctl_link, LOG_BLOCK, LOG_NAME,
 		"current fecl show (link = 0x%p, num = %u, lane_num = %u, fecl %u = %llu)",
-		ctl_link, num, fecl_kobj->lane_num, fecl_num, lane_cntrs.lanes[fecl_num]);
+		fecl_kobj->ctl_link, num, fecl_kobj->lane_num, fecl_num, lane_cntrs.lanes[fecl_num]);
 
 	return scnprintf(buf, PAGE_SIZE, "%llu\n", lane_cntrs.lanes[fecl_num]);
 }

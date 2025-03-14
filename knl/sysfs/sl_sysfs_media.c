@@ -395,7 +395,7 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 	struct sl_media_lgrp_speed_kobject *speed_kobj;
 	struct sl_ctl_lgrp                 *ctl_lgrp;
 	u8                                  media_interface;
-	u8                                  type;
+	u32                                 type;
 
 	speed_kobj = container_of(kobj, struct sl_media_lgrp_speed_kobject, kobj);
 

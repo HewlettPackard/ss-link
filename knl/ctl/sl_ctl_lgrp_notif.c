@@ -45,6 +45,7 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 		"notif callback reg (types = 0x%X, tag = 0x%p)",
 		types, tag);
 
+	counter = 0;
 	while (sl_ctl_lgrp_notif_list_state_get(ctl_lgrp) == SL_CTL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		msleep(20);
 		counter++;
@@ -94,6 +95,7 @@ int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t c
 		return -EBADRQC;
 	}
 
+	counter = 0;
 	while (sl_ctl_lgrp_notif_list_state_get(ctl_lgrp) == SL_CTL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		msleep(20);
 		counter++;
