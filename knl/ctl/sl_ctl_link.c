@@ -793,26 +793,34 @@ void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_cou
 
 int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 {
-	u32                 link_state;
+	int                 rtn;
+	u32                 core_link_state;
 	struct sl_ctl_link *ctl_link;
 
+	*state = SL_LINK_STATE_INVALID;
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctl_link) {
 		sl_ctl_log_dbg(NULL, LOG_NAME,
 			"state get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		*state = SL_LINK_STATE_INVALID;
 		return 0;
 	}
 
-	link_state = sl_ctl_link_state_get(ctl_link);
+	core_link_state = SL_CORE_LINK_STATE_INVALID;
+	rtn = sl_core_link_state_get(ldev_num, lgrp_num, link_num, &core_link_state);
+	if (rtn) {
+		sl_ctl_log_err_trace(NULL, LOG_NAME, "core state get invalid");
+		return 0;
+	}
 
-	*state = link_state;
+	if (core_link_state == SL_CORE_LINK_STATE_AN)
+		*state = SL_LINK_STATE_AN;
+	else
+		*state = sl_ctl_link_state_get(ctl_link);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"state get (state = %u %s, link_state = %u %s)",
-		*state, sl_link_state_str(*state),
-		link_state, sl_core_link_state_str(link_state));
+		"state get (state = %u %s)",
+		*state, sl_link_state_str(*state));
 
 	return 0;
 }

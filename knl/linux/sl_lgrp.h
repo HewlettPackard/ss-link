@@ -33,27 +33,13 @@ struct sl_lgrp_notif_info_link_up {
 	u32 fec_mode;
 };
 
-struct sl_lgrp_notif_info_link_up_fail {
-	u64                 cause_map;
-};
-
-struct sl_lgrp_notif_info_link_async_down {
-	u64                 cause_map;
-};
-
-struct sl_lgrp_notif_info_link_down {
-	u64                 cause_map;
-};
-
 union sl_lgrp_notif_info {
-		struct sl_lgrp_notif_info_link_up         link_up;
-		struct sl_lgrp_notif_info_link_up_fail    link_up_fail;
-		struct sl_lgrp_notif_info_link_async_down link_async_down;
-		struct sl_lgrp_notif_info_link_down       link_down;
-		struct sl_link_caps                       lp_link_caps;
-		struct sl_llr_data                        llr_data;
-		struct sl_media_attr                      media_attr;
-		int                                       error;
+	struct sl_lgrp_notif_info_link_up         link_up;
+	struct sl_link_caps                       lp_link_caps;
+	struct sl_llr_data                        llr_data;
+	struct sl_media_attr                      media_attr;
+	int                                       error;
+	u64                                       cause_map;
 };
 
 struct sl_lgrp_notif_msg {

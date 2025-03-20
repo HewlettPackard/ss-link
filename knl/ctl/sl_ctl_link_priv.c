@@ -70,7 +70,7 @@ static int sl_ctl_link_up_fail_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct s
 {
 	union sl_lgrp_notif_info info;
 
-	info.link_up_fail.cause_map = cause_map;
+	info.cause_map = cause_map;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up fail notif send (cause_map = 0x%llX)", cause_map);
 
@@ -86,13 +86,13 @@ static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_m
 
 	if (cause_map & SL_LINK_DOWN_ORIGIN_ASYNC) {
 		type = SL_LGRP_NOTIF_LINK_ASYNC_DOWN;
-		info.link_async_down.cause_map = cause_map;
+		info.cause_map = cause_map;
 	} else {
 		type = SL_LGRP_NOTIF_LINK_DOWN;
-		info.link_down.cause_map = cause_map;
+		info.cause_map = cause_map;
 	}
 
-	sl_link_down_cause_map_str(cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"down_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
 
@@ -525,7 +525,7 @@ int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64
 
 	ctl_link = tag;
 
-	sl_link_down_cause_map_str(core_cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(core_cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"down callback (core_state = %u %s, core_cause = 0x%llX %s, core_info_map = %llu)",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, cause_str, core_info_map);
@@ -565,7 +565,7 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 	u32                  link_state;
 	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
-	sl_link_down_cause_map_str(down_cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
 
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);

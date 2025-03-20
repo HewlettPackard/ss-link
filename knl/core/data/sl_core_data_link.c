@@ -730,7 +730,7 @@ u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (cause_map = 0x%llX)", up_fail_cause_map);
+		"last up fail cause get (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
 
 	return up_fail_cause_map;
 }
@@ -748,6 +748,9 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 	}
 	core_link->link.last_down_time  = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"last down cause map set (down_cause_map = 0x%llX)", down_cause_map);
 }
 
 void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
@@ -759,6 +762,10 @@ void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_li
 	*down_cause_map = core_link->link.last_down_cause_map;
 	*down_time      = core_link->link.last_down_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
+		*down_cause_map, *down_time, down_time, down_time);
 }
 
 u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
@@ -769,6 +776,9 @@ u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
 	down_cause_map = core_link->link.last_down_cause_map;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"last down cause map get (down_cause_map = 0x%llX)", down_cause_map);
 
 	return down_cause_map;
 }
@@ -833,7 +843,7 @@ u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"fec_mode get = %u", fec_mode);
+		"fec_mode get = %u %s", fec_mode, sl_lgrp_fec_mode_str(fec_mode));
 
 	return fec_mode;
 }
@@ -848,7 +858,7 @@ u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link)
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"fec_type get = %u", fec_type);
+		"fec_type get = %u %s", fec_type, sl_lgrp_config_fec_str(fec_type));
 
 	return fec_type;
 }

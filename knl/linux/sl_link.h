@@ -67,6 +67,7 @@ const char *sl_link_state_str(u32 state);
 const char *sl_link_config_opt_str(u32 option);
 const char *sl_link_policy_opt_str(u32 option);
 int         sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size);
+int         sl_link_down_cause_map_with_info_str(u64 cause_map, char *cause_str, unsigned int cause_str_size);
 int         sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size);
 const char *sl_link_config_pause_str(u32 config);
 const char *sl_link_config_hpe_str(u32 config);

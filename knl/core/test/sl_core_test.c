@@ -237,7 +237,7 @@ static int sl_core_test_link_down_callback(void *tag, u32 state, u64 cause_map, 
 	char                         cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
-	sl_link_down_cause_map_str(cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(cause_map, cause_str, sizeof(cause_str));
 
 	pr_info(SL_CORE_TEST_NAME
 		"link down callback (lgrp_num = %u, link_num = %u, state = %u %s, cause_map = 0x%llX %s, info_map = %llu)\n",

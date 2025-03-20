@@ -318,8 +318,6 @@ const char *sl_link_state_str(u32 state)
 	switch (state) {
 	case SL_LINK_STATE_INVALID:
 		return "invalid";
-	case SL_LINK_STATE_ERROR:
-		return "error";
 	case SL_LINK_STATE_DOWN:
 		return "down";
 	case SL_LINK_STATE_AN:
@@ -368,7 +366,12 @@ const char *sl_link_policy_opt_str(u32 option)
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
 
-int sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
+#define SL_LINK_DOWN_INFO_MASK (     \
+	SL_LINK_DOWN_RETRYABLE      |\
+	SL_LINK_DOWN_ORIGIN_ASYNC   |\
+	SL_LINK_DOWN_ORIGIN_LINK_UP)
+
+int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, unsigned int cause_str_size, u64 mask)
 {
 	int rtn;
 	int str_pos;
@@ -384,6 +387,8 @@ int sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int caus
 		str_pos = snprintf(cause_str, cause_str_size, "none ");
 		goto out;
 	}
+
+	cause_map &= mask;
 
 	str_pos = 0;
 
@@ -492,7 +497,18 @@ out:
 
 	return 0;
 }
+
+int sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
+{
+	return sl_link_down_cause_map_masked_str(cause_map, cause_str, cause_str_size, ~SL_LINK_DOWN_INFO_MASK);
+}
 EXPORT_SYMBOL(sl_link_down_cause_map_str);
+
+int sl_link_down_cause_map_with_info_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)
+{
+	return sl_link_down_cause_map_masked_str(cause_map, cause_str, cause_str_size, ~0ULL);
+}
+EXPORT_SYMBOL(sl_link_down_cause_map_with_info_str);
 
 int sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size)
 {

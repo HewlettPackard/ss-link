@@ -63,7 +63,7 @@ static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_att
 	sl_core_link_last_up_fail_cause_map_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &up_fail_cause_map, &up_fail_time);
 
-	sl_link_down_cause_map_str(up_fail_cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(up_fail_cause_map, cause_str, sizeof(cause_str));
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"last up fail cause show (cause_map = 0x%llX %s)",
@@ -121,7 +121,7 @@ static ssize_t last_down_cause_map_show(struct kobject *kobj, struct kobj_attrib
 	sl_core_link_last_down_cause_map_info_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &down_cause_map, &down_time);
 
-	sl_link_down_cause_map_str(down_cause_map, cause_str, sizeof(cause_str));
+	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"last down cause show (cause_map = 0x%llX %s)",
 		down_cause_map, cause_str);
