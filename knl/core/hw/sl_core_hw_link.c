@@ -161,9 +161,9 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		return;
 	}
 
-	sl_core_link_ccw_crit_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
-		core_link->num, false);
 	sl_core_link_ccw_warn_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
+		core_link->num, false);
+	sl_core_link_ucw_warn_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
 		core_link->num, false);
 
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
@@ -614,9 +614,16 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 	}
 
 	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(core_link->fec.settings.up_ccw_limit, &fec_info)) {
-		sl_core_log_warn_trace(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
+		sl_core_hw_link_off(core_link);
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_CCW_HIGH);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_MAP);
+		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+		sl_core_hw_link_up_callback(core_link);
+		return;
 	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_OK);

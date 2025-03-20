@@ -273,7 +273,7 @@ static void sl_test_link_policy_init(void)
 
 	link_policy.fec_mon_period_ms      = 0;
 	link_policy.fec_mon_ucw_down_limit = 0;
-	link_policy.fec_mon_ccw_crit_limit = 0;
+	link_policy.fec_mon_ccw_down_limit = 0;
 	link_policy.fec_mon_ucw_warn_limit = 0;
 	link_policy.fec_mon_ccw_warn_limit = 0;
 }
@@ -364,8 +364,8 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 		    &link_policy.fec_mon_ucw_down_limit);
 	sl_test_debugfs_create_s32("fec_mon_ucw_warn_limit", 0644, policy_dir,
 		    &link_policy.fec_mon_ucw_warn_limit);
-	sl_test_debugfs_create_s32("fec_mon_ccw_crit_limit", 0644, policy_dir,
-		    &link_policy.fec_mon_ccw_crit_limit);
+	sl_test_debugfs_create_s32("fec_mon_ccw_down_limit", 0644, policy_dir,
+		    &link_policy.fec_mon_ccw_down_limit);
 	sl_test_debugfs_create_s32("fec_mon_ccw_warn_limit", 0644, policy_dir,
 		    &link_policy.fec_mon_ccw_warn_limit);
 

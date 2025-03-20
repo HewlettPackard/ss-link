@@ -540,9 +540,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->fec.settings.up_ucw_limit = core_link->config.fec_up_ucw_limit;
 
 	if (core_link->config.fec_up_ccw_limit < 0)
-		core_link->fec.settings.up_ccw_limit =
-			sl_ctl_link_fec_limit_calc(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, core_link->num), SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
+		core_link->fec.settings.up_ccw_limit = 0;
 	else
 		core_link->fec.settings.up_ccw_limit = core_link->config.fec_up_ccw_limit;
 
@@ -769,54 +767,62 @@ u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 	return down_cause_map;
 }
 
-void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value)
+void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_ccw_warn_limit_crossed = value;
+	core_link->link.is_ccw_warn_limit_crossed = is_limit_crossed;
+	core_link->link.last_ccw_warn_limit_crossed_time  = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ccw warn limit crossed set (value = %d %s)", core_link->link.is_ccw_warn_limit_crossed,
+		"ccw warn limit crossed set (is_limit_crossed = %d %s)", core_link->link.is_ccw_warn_limit_crossed,
 		core_link->link.is_ccw_warn_limit_crossed ? "yes":"no");
 }
 
-void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *value)
+void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+	time64_t *limit_crossed_time)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	*value = core_link->link.is_ccw_warn_limit_crossed;
+	*is_limit_crossed = core_link->link.is_ccw_warn_limit_crossed;
+	*limit_crossed_time = core_link->link.last_ccw_warn_limit_crossed_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ccw warn limit crossed get (value = %d %s)", *value, *value ? "yes":"no");
+		"ccw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
+		*is_limit_crossed ? "yes":"no");
 }
 
-void sl_core_data_link_ccw_crit_limit_crossed_set(struct sl_core_link *core_link, bool value)
+void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_ccw_crit_limit_crossed = value;
+	core_link->link.is_ucw_warn_limit_crossed = is_limit_crossed;
+	core_link->link.last_ucw_warn_limit_crossed_time  = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ccw crit limit crossed set (value = %d %s)", core_link->link.is_ccw_crit_limit_crossed,
-		core_link->link.is_ccw_crit_limit_crossed ? "yes":"no");
+		"ucw warn limit crossed set (is_limit_crossed = %d %s)", core_link->link.is_ucw_warn_limit_crossed,
+		core_link->link.is_ucw_warn_limit_crossed ? "yes":"no");
 }
 
-void sl_core_data_link_ccw_crit_limit_crossed_get(struct sl_core_link *core_link, bool *value)
+void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+	time64_t *limit_crossed_time)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	*value = core_link->link.is_ccw_crit_limit_crossed;
+	*is_limit_crossed = core_link->link.is_ucw_warn_limit_crossed;
+	*limit_crossed_time = core_link->link.last_ucw_warn_limit_crossed_time;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ccw crit limit crossed get (value = %d %s)", *value, *value ? "yes":"no");
+		"ucw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
+		*is_limit_crossed ? "yes":"no");
 }
 
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)

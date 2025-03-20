@@ -93,6 +93,6 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work);
 void sl_ctl_link_fec_mon_timer(struct timer_list *timer);
 void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link);
 
-s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp);
+u32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp);
 
 #endif /* _SL_CTL_LINK_FEC_PRIV_H_ */

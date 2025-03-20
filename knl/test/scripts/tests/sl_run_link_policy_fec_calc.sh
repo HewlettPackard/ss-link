@@ -61,7 +61,7 @@ function test_verify {
 
 			monitor_ucw_down_limit_policy=$(cat "${monitor_check}/ucw_down_limit")
 			monitor_ucw_warn_limit_policy=$(cat "${monitor_check}/ucw_warn_limit")
-			monitor_ccw_crit_limit_policy=$(cat "${monitor_check}/ccw_crit_limit")
+			monitor_ccw_down_limit_policy=$(cat "${monitor_check}/ccw_down_limit")
 			monitor_ccw_warn_limit_policy=$(cat "${monitor_check}/ccw_warn_limit")
 			monitor_period_ms_policy=$(cat "${monitor_check}/period_ms")
 
@@ -70,19 +70,17 @@ function test_verify {
 			sl_test_debug_log "${FUNCNAME}" \
 				"(monitor_ucw_warn_limit_policy = ${monitor_ucw_warn_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
-				"(monitor_ccw_crit_limit_policy = ${monitor_ccw_crit_limit_policy})"
+				"(monitor_ccw_down_limit_policy = ${monitor_ccw_down_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
 				"(monitor_ccw_warn_limit_policy = ${monitor_ccw_warn_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
 				"(monitor_period_ms_policy = ${monitor_period_ms_policy})"
-
 			# All values compared to bs200 calculated values.
 			link_ucw_down_limit_policy=21
 			link_ucw_warn_limit_policy=10
-			link_ccw_crit_limit_policy=4250000
+			link_ccw_down_limit_policy=0
 			link_ccw_warn_limit_policy=2125000
 			link_fec_mon_period_ms_policy=500
-
 			if [[ "${monitor_ucw_down_limit_policy}" != "${link_ucw_down_limit_policy}" ]]; then
 				sl_test_error_log "${FUNCNAME}" "fec monitor mismatch"
 				sl_test_error_log "${FUNCNAME}" \
@@ -105,14 +103,14 @@ function test_verify {
 				return 1
 			fi
 
-			if [[ "${monitor_ccw_crit_limit_policy}" != "${link_ccw_crit_limit_policy}" ]]; then
+			if [[ "${monitor_ccw_down_limit_policy}" != "${link_ccw_down_limit_policy}" ]]; then
 				sl_test_error_log "${FUNCNAME}" "fec monitor mismatch"
 				sl_test_error_log "${FUNCNAME}" \
-					"(${monitor_ccw_crit_limit_policy} != ${link_ccw_crit_limit_policy})"
+					"(${monitor_ccw_down_limit_policy} != ${link_ccw_down_limit_policy})"
 				sl_test_error_log "${FUNCNAME}" \
-					"(monitor_ccw_crit_limit_policy = ${monitor_ccw_crit_limit_policy})"
+					"(monitor_ccw_down_limit_policy = ${monitor_ccw_down_limit_policy})"
 				sl_test_error_log "${FUNCNAME}" \
-					"(link_ccw_crit_limit_policy = ${link_ccw_crit_limit_policy})"
+					"(link_ccw_down_limit_policy = ${link_ccw_down_limit_policy})"
 				return 1
 			fi
 

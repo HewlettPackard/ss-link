@@ -38,11 +38,12 @@ void     sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *cor
 u64      sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link);
 time64_t sl_core_data_link_last_down_time_get(struct sl_core_link *core_link);
 
-void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool value);
-void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *value);
-
-void sl_core_data_link_ccw_crit_limit_crossed_set(struct sl_core_link *core_link, bool value);
-void sl_core_data_link_ccw_crit_limit_crossed_get(struct sl_core_link *core_link, bool *value);
+void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed);
+void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+						  time64_t *limit_crossed_time);
+void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed);
+void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+						  time64_t *limit_crossed_time);
 
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link);

@@ -397,7 +397,7 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "policy set");
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ucw_down_limit = %d", link_policy->fec_mon_ucw_down_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ucw_warn_limit = %d", link_policy->fec_mon_ucw_warn_limit);
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_crit_limit = %d", link_policy->fec_mon_ccw_crit_limit);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_down_limit = %d", link_policy->fec_mon_ccw_down_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_ccw_warn_limit = %d", link_policy->fec_mon_ccw_warn_limit);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  fec_mon_period         = %dms", link_policy->fec_mon_period_ms);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "  options                = 0x%X", link_policy->options);

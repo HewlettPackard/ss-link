@@ -239,7 +239,9 @@ struct sl_core_link {
 		bool                                  is_canceled;
 		bool                                  is_timed_out;
 		bool                                  is_ccw_warn_limit_crossed;
-		bool                                  is_ccw_crit_limit_crossed;
+		time64_t                              last_ccw_warn_limit_crossed_time;
+		bool                                  is_ucw_warn_limit_crossed;
+		time64_t                              last_ucw_warn_limit_crossed_time;
 		bool                                  is_up_new;
 	} link;
 
@@ -388,10 +390,12 @@ void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link
 void sl_core_link_last_up_fail_cause_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 					     u64 *up_fail_cause_map, time64_t *up_fail_time);
 
-void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
-void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);
-void sl_core_link_ccw_crit_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value);
-void sl_core_link_ccw_crit_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value);
+void sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
+					     time64_t *limit_crossed_time);
+void sl_core_link_ucw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool is_limit_crossed);
+void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
+					     time64_t *limit_crossed_time);
+void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool is_limit_crossed);
 
 bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link);
 bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link);

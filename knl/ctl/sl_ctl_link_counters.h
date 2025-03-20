@@ -18,6 +18,8 @@ enum sl_ctl_link_counters {
 	LINK_RESET_CMD,           /* command to reset the link      */
 	LINK_FAULT,               /* link fault                     */
 	LINK_RECOVERING,          /* FIXME: need to implement this  */
+	LINK_CCW_WARN_CROSSED,    /* ccw warn limit crossed         */
+	LINK_UCW_WARN_CROSSED,    /* ucw warn limit crossed         */
 	SL_CTL_LINK_COUNTERS_COUNT
 };
 

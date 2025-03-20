@@ -137,7 +137,7 @@ static const struct sl_ctl_test sl_ctl_tests[] = {
 	SL_CTL_TEST(18, "Sleep for FEC monitor period", SL_CTL_TEST_FLAG_PREREQ_LINK, SL_LGRP_NOTIF_INVALID),
 	SL_CTL_TEST(19, "Verify UCW down notification", SL_CTL_TEST_FLAG_PREREQ_LINK_WAIT,
 	     SL_LGRP_NOTIF_LINK_ASYNC_DOWN),
-	SL_CTL_TEST(20, "Verify CCW crit notification", SL_CTL_TEST_FLAG_PREREQ_LINK_WAIT,
+	SL_CTL_TEST(20, "Verify CCW down notification", SL_CTL_TEST_FLAG_PREREQ_LINK_WAIT,
 	     SL_LGRP_NOTIF_LINK_ASYNC_DOWN),
 	SL_CTL_TEST(21, "Verify UCW warn notification", SL_CTL_TEST_FLAG_PREREQ_LINK_WAIT, SL_LGRP_NOTIF_LINK_UCW_WARN),
 	SL_CTL_TEST(22, "Verify CCW warn notification", SL_CTL_TEST_FLAG_PREREQ_LINK_WAIT, SL_LGRP_NOTIF_LINK_CCW_WARN),
@@ -230,7 +230,7 @@ static struct sl_link_policy test_link_policies[NUM_TEST_LINK_POLICIES] = {
 		.ver             = SL_LINK_POLICY_VER,
 
 		.fec_mon_ucw_down_limit = 42,
-		.fec_mon_ccw_crit_limit = 17000000,
+		.fec_mon_ccw_down_limit = 17000000,
 		.fec_mon_ucw_warn_limit = 31,
 		.fec_mon_ccw_warn_limit = 12750000,
 		.fec_mon_period_ms      = 0,        /* OFF */
@@ -240,7 +240,7 @@ static struct sl_link_policy test_link_policies[NUM_TEST_LINK_POLICIES] = {
 		.ver             = SL_LINK_POLICY_VER,
 
 		.fec_mon_ucw_down_limit = 42,
-		.fec_mon_ccw_crit_limit = 17000000,
+		.fec_mon_ccw_down_limit = 17000000,
 		.fec_mon_ucw_warn_limit = 31,
 		.fec_mon_ccw_warn_limit = 12750000,
 		.fec_mon_period_ms      = 1000,     /* 1s */
@@ -251,7 +251,7 @@ static struct sl_link_policy test_link_policies[NUM_TEST_LINK_POLICIES] = {
 		.ver             = SL_LINK_POLICY_VER,
 
 		.fec_mon_ucw_down_limit = 0,
-		.fec_mon_ccw_crit_limit = 0,
+		.fec_mon_ccw_down_limit = 0,
 		.fec_mon_ucw_warn_limit = 0,
 		.fec_mon_ccw_warn_limit = 12750000,
 		.fec_mon_period_ms      = 1000,     /* 1s */
@@ -315,7 +315,7 @@ static bool sl_ctl_link_policy_fec_eq(struct sl_link_policy *first, struct sl_li
 {
 	return ((first->fec_mon_ucw_down_limit == second->fec_mon_ucw_down_limit) &&
 		(first->fec_mon_ucw_warn_limit == second->fec_mon_ucw_warn_limit) &&
-		(first->fec_mon_ccw_crit_limit == second->fec_mon_ccw_crit_limit) &&
+		(first->fec_mon_ccw_down_limit == second->fec_mon_ccw_down_limit) &&
 		(first->fec_mon_ccw_warn_limit == second->fec_mon_ccw_warn_limit));
 }
 
@@ -934,9 +934,9 @@ static int sl_ctl_test30(struct sl_ctl_test_args test_args)
 	sl_ctl_link_policy_get(ctl_link, &policy);
 
 	pr_info(SL_CTL_TEST_NAME
-		"fec_mon_period = %dms, ccw_crit_limit = %d, ucw_down_limit = %d, ccw_warn_limit = %d, ucw_warn_limit = %d\n",
+		"fec_mon_period = %dms, ccw_down_limit = %d, ucw_down_limit = %d, ccw_warn_limit = %d, ucw_warn_limit = %d\n",
 		policy.fec_mon_period_ms,
-		policy.fec_mon_ccw_crit_limit, policy.fec_mon_ucw_down_limit,
+		policy.fec_mon_ccw_down_limit, policy.fec_mon_ucw_down_limit,
 		policy.fec_mon_ccw_warn_limit, policy.fec_mon_ucw_warn_limit);
 
 	return 0;

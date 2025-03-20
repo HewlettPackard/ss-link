@@ -16,6 +16,7 @@
 #include "sl_core_link.h"
 
 #define SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES 2
+#define SL_CTL_LINK_CCW_LIMIT_MAX_CHANCES 2
 #define SL_CTL_LINK_FEC_MON_PERIOD_MS     500
 #define LOG_NAME SL_CTL_LINK_FEC_LOG_NAME
 
@@ -111,19 +112,18 @@ static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 	ctl_link->fec_data.info.monitor.period_ms = (link_policy.fec_mon_period_ms < 0) ?
 		SL_CTL_LINK_FEC_MON_PERIOD_MS : link_policy.fec_mon_period_ms;
 
-	if (link_policy.fec_mon_ccw_crit_limit < 0) {
-		ctl_link->fec_data.info.monitor.ccw_crit_limit =
-			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP);
-	} else {
-		ctl_link->fec_data.info.monitor.ccw_crit_limit = link_policy.fec_mon_ccw_crit_limit;
-	}
+	if (link_policy.fec_mon_ccw_down_limit < 0)
+		ctl_link->fec_data.info.monitor.ccw_down_limit = 0;
+	else
+		ctl_link->fec_data.info.monitor.ccw_down_limit = link_policy.fec_mon_ccw_down_limit;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"mon limits calc (ccw_crit_limit = %d)",
-		ctl_link->fec_data.info.monitor.ccw_crit_limit);
+		"mon limits calc (ccw_down_limit = %d)",
+		ctl_link->fec_data.info.monitor.ccw_down_limit);
 
 	if (link_policy.fec_mon_ccw_warn_limit < 0)
-		ctl_link->fec_data.info.monitor.ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_crit_limit >> 1;
+		ctl_link->fec_data.info.monitor.ccw_warn_limit =
+			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_CCW_MANT, SL_CTL_LINK_FEC_CCW_EXP) >> 1;
 	else
 		ctl_link->fec_data.info.monitor.ccw_warn_limit = link_policy.fec_mon_ccw_warn_limit;
 
@@ -131,16 +131,15 @@ static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 		"mon limits calc (ccw_warn_limit = %d)",
 		ctl_link->fec_data.info.monitor.ccw_warn_limit);
 
-	if (ctl_link->fec_data.info.monitor.ccw_crit_limit &&
-		(ctl_link->fec_data.info.monitor.ccw_warn_limit > ctl_link->fec_data.info.monitor.ccw_crit_limit))
+	if (ctl_link->fec_data.info.monitor.ccw_down_limit &&
+		(ctl_link->fec_data.info.monitor.ccw_warn_limit > ctl_link->fec_data.info.monitor.ccw_down_limit))
 		sl_ctl_log_warn(ctl_link, LOG_NAME,
 			"CCW warning limit set greater than down limit (%d > %d)",
-			ctl_link->fec_data.info.monitor.ccw_warn_limit, ctl_link->fec_data.info.monitor.ccw_crit_limit);
+			ctl_link->fec_data.info.monitor.ccw_warn_limit, ctl_link->fec_data.info.monitor.ccw_down_limit);
 
 	if (link_policy.fec_mon_ucw_down_limit < 0) {
 		ctl_link->fec_data.info.monitor.ucw_down_limit =
-			sl_ctl_link_fec_limit_calc(ctl_link,
-				SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
+			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP);
 	} else {
 		ctl_link->fec_data.info.monitor.ucw_down_limit = link_policy.fec_mon_ucw_down_limit;
 	}
@@ -150,7 +149,8 @@ static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 		ctl_link->fec_data.info.monitor.ucw_down_limit);
 
 	if (link_policy.fec_mon_ucw_warn_limit < 0)
-		ctl_link->fec_data.info.monitor.ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_down_limit >> 1;
+		ctl_link->fec_data.info.monitor.ucw_warn_limit =
+			sl_ctl_link_fec_limit_calc(ctl_link, SL_CTL_LINK_FEC_UCW_MANT, SL_CTL_LINK_FEC_UCW_EXP) >> 1;
 	else
 		ctl_link->fec_data.info.monitor.ucw_warn_limit = link_policy.fec_mon_ucw_warn_limit;
 
@@ -335,20 +335,32 @@ static bool sl_ctl_link_fec_ucw_chance_limit_check(struct sl_ctl_link *ctl_link,
 	return ctl_link->fec_ucw_chance > SL_CTL_LINK_UCW_LIMIT_MAX_CHANCES;
 }
 
+static bool sl_ctl_link_fec_ccw_chance_limit_check(struct sl_ctl_link *ctl_link, s32 limit, struct sl_fec_info *info)
+{
+	ctl_link->fec_ccw_chance = SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(limit, info) ? ctl_link->fec_ccw_chance + 1 : 0;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fec_ccw_chance_limit_check (limit = %d, CCW = %llu, ccw_chance = %u)",
+		limit, info->ccw, ctl_link->fec_ccw_chance);
+
+	return ctl_link->fec_ccw_chance > SL_CTL_LINK_CCW_LIMIT_MAX_CHANCES;
+}
+
 int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 {
 	int                rtn;
-	s32                ccw_crit_limit;
+	s32                ccw_down_limit;
 	s32                ccw_warn_limit;
 	s32                ucw_down_limit;
 	s32                ucw_warn_limit;
 	struct sl_fec_info fec_info;
 	unsigned long      irq_flags;
+	bool               is_limit_crossed;
+	time64_t           limit_crossed_time;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "data check");
 
 	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
-	ccw_crit_limit = ctl_link->fec_data.info.monitor.ccw_crit_limit;
+	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
 	ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_warn_limit;
 	ucw_down_limit = ctl_link->fec_data.info.monitor.ucw_down_limit;
 	ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_warn_limit;
@@ -357,8 +369,8 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 	fec_info = ctl_link->fec_data.info;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"data check config (ccw_crit = %d, ucw_down = %d, ccw_warn = %d, ucw_warn = %d)",
-		ccw_crit_limit, ucw_down_limit, ccw_warn_limit, ucw_warn_limit);
+		"data check config (ccw_down = %d, ucw_down = %d, ccw_warn = %d, ucw_warn = %d)",
+		ccw_down_limit, ucw_down_limit, ccw_warn_limit, ucw_warn_limit);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"data check info (UCW = %llu, CCW = %llu, GCW = %llu, period = %ums)",
@@ -378,37 +390,53 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 		return -EIO;
 	}
 
-	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(ccw_crit_limit, &fec_info)) {
-		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-			"CCW exceeded crit limit (UCW = %llu, CCW = %llu)",
-			fec_info.ucw, fec_info.ccw);
-		sl_core_link_ccw_crit_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
-			ctl_link->ctl_lgrp->num, ctl_link->num, true);
+	if (sl_ctl_link_fec_ccw_chance_limit_check(ctl_link, ccw_down_limit, &fec_info)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME,
+			"CCW exceeded down limit (UCW = %llu, CCW = %llu, ccw_chance = %u)",
+			fec_info.ucw, fec_info.ccw, ctl_link->fec_ccw_chance);
+		ctl_link->fec_ccw_chance = 0;
+		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_CCW);
+		if (rtn) {
+			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
+			return rtn;
+		}
+		return -EIO;
 	}
 
 	if (SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(ucw_warn_limit, &fec_info)) {
-		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-			"UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-			fec_info.ucw, fec_info.ccw);
-		// FIXME: need a UCW warn crossed node?
-		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-			SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
-		if (rtn)
-			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
+		sl_core_link_ucw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, &is_limit_crossed, &limit_crossed_time);
+		if (!is_limit_crossed) {
+			sl_ctl_log_warn(ctl_link, LOG_NAME,
+				"UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+				fec_info.ucw, fec_info.ccw);
+			rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+				SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
+		}
+		sl_core_link_ucw_warn_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, true);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UCW_WARN_CROSSED);
 	}
 
 	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
-		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-			"CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-			fec_info.ucw, fec_info.ccw);
+		sl_core_link_ccw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, &is_limit_crossed, &limit_crossed_time);
+		if (!is_limit_crossed) {
+			sl_ctl_log_warn(ctl_link, LOG_NAME,
+				"CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+				fec_info.ucw, fec_info.ccw);
+			rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
+		}
 		sl_core_link_ccw_warn_limit_crossed_set(ctl_link->ctl_lgrp->ctl_ldev->num,
 			ctl_link->ctl_lgrp->num, ctl_link->num, true);
-		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
-		if (rtn)
-			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-				"data check ctl_lgrp_notif_enqueue failed [%d]", rtn);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_CCW_WARN_CROSSED);
 	}
 
 	return 0;
@@ -522,7 +550,7 @@ void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 #define SL_CTL_LINK_FEC_LIMIT_25   25781250000ULL
 #define SL_CTL_LINK_FEC_LIMIT_50   53125000000ULL
 #define SL_CTL_LINK_FEC_LIMIT_100 106250000000ULL
-s32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp)
+u32 sl_ctl_link_fec_limit_calc(struct sl_ctl_link *ctl_link, u32 mant, int exp)
 {
 	u64                 limit;
 	int                 x;

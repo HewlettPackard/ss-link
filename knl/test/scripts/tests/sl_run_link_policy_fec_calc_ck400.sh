@@ -62,7 +62,7 @@ function test_verify {
 
 			monitor_ucw_down_limit_policy=$(cat "${mon_check}/ucw_down_limit")
 			monitor_ucw_warn_limit_policy=$(cat "${mon_check}/ucw_warn_limit")
-			monitor_ccw_crit_limit_policy=$(cat "${mon_check}/ccw_crit_limit")
+			monitor_ccw_down_limit_policy=$(cat "${mon_check}/ccw_down_limit")
 			monitor_ccw_warn_limit_policy=$(cat "${mon_check}/ccw_warn_limit")
 
 			up_ucw_limit_config=$(cat "${up_check}/ucw_limit")
@@ -75,7 +75,7 @@ function test_verify {
 			sl_test_debug_log "${FUNCNAME}" \
 				"(monitor_ucw_warn_limit_policy = ${monitor_ucw_warn_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
-				"(monitor_ccw_crit_limit_policy = ${monitor_ccw_crit_limit_policy})"
+				"(monitor_ccw_down_limit_policy = ${monitor_ccw_down_limit_policy})"
 			sl_test_debug_log "${FUNCNAME}" \
 				"(monitor_ccw_warn_limit_policy = ${monitor_ccw_warn_limit_policy})"
 
@@ -117,12 +117,12 @@ function test_verify {
 				return 1
 			fi
 
-			if [[ "${monitor_ccw_crit_limit_policy}" != "8500000" ]]; then
+			if [[ "${monitor_ccw_down_limit_policy}" != "0" ]]; then
 				sl_test_error_log "${FUNCNAME}" "fec monitor mismatch"
 				sl_test_error_log "${FUNCNAME}" \
-					"(${monitor_ccw_crit_limit_policy} != 17000000)"
+					"(${monitor_ccw_down_limit_policy} != 0)"
 				sl_test_error_log "${FUNCNAME}" \
-					"(monitor_ccw_crit_limit_policy = ${monitor_ccw_crit_limit_policy})"
+					"(monitor_ccw_down_limit_policy = ${monitor_ccw_down_limit_policy})"
 				return 1
 			fi
 

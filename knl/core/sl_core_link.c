@@ -328,25 +328,28 @@ void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link
 						   down_cause_map, down_time);
 }
 
-void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value)
+void sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
+	time64_t *limit_crossed_time)
 {
-	sl_core_data_link_ccw_warn_limit_crossed_get(sl_core_link_get(ldev_num, lgrp_num, link_num), value);
+	sl_core_data_link_ucw_warn_limit_crossed_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+		is_limit_crossed, limit_crossed_time);
 }
 
-void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value)
+void sl_core_link_ucw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool is_limit_crossed)
 {
-	sl_core_data_link_ccw_warn_limit_crossed_set(sl_core_link_get(ldev_num, lgrp_num, link_num), value);
+	sl_core_data_link_ucw_warn_limit_crossed_set(sl_core_link_get(ldev_num, lgrp_num, link_num), is_limit_crossed);
 }
 
-
-void sl_core_link_ccw_crit_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *value)
+void sl_core_link_ccw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
+	time64_t *limit_crossed_time)
 {
-	sl_core_data_link_ccw_crit_limit_crossed_get(sl_core_link_get(ldev_num, lgrp_num, link_num), value);
+	sl_core_data_link_ccw_warn_limit_crossed_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+		is_limit_crossed, limit_crossed_time);
 }
 
-void sl_core_link_ccw_crit_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool value)
+void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool is_limit_crossed)
 {
-	sl_core_data_link_ccw_crit_limit_crossed_set(sl_core_link_get(ldev_num, lgrp_num, link_num), value);
+	sl_core_data_link_ccw_warn_limit_crossed_set(sl_core_link_get(ldev_num, lgrp_num, link_num), is_limit_crossed);
 }
 
 bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link)

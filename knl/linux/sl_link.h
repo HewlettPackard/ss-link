@@ -39,6 +39,7 @@ struct kobject;
 #define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     BIT(23) /* link up serdes signal problems       */
 #define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(24) /* link up serdes quality problems      */
 #define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(25) /* no media present                     */
+#define SL_LINK_DOWN_CAUSE_CCW               BIT(26) /* link up or fec mon CCW limit crossed */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible               */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous    */

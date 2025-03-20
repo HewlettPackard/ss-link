@@ -153,33 +153,79 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 static ssize_t ccw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link *ctl_link;
-	bool                value;
+	bool                is_limit_crossed;
+	time64_t            limit_crossed_time;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
 	sl_core_link_ccw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, &value);
+		ctl_link->num, &is_limit_crossed, &limit_crossed_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"ccw warn limit crossed show (value = %d %s)", value, value ? "yes":"no");
+		"ccw warn limit crossed show (is_limit_crossed = %d %s)", is_limit_crossed,
+		is_limit_crossed ? "yes":"no");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", value ? "yes":"no");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_limit_crossed ? "yes":"no");
 }
 
-static ssize_t ccw_crit_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t ccw_warn_limit_last_crossed_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link *ctl_link;
-	bool                value;
+	struct sl_ctl_link  *ctl_link;
+	bool                is_limit_crossed;
+	time64_t            limit_crossed_time;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_core_link_ccw_crit_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, &value);
+	sl_core_link_ccw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &is_limit_crossed, &limit_crossed_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"ccw crit limit crossed show (value = %d %s)", value, value ? "yes":"no");
+		"ccw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTt %ptTd)",
+		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", value ? "yes":"no");
+	if (!is_limit_crossed)
+		return scnprintf(buf, PAGE_SIZE, "not_crossed\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
+}
+
+static ssize_t ucw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link *ctl_link;
+	bool                is_limit_crossed;
+	time64_t            limit_crossed_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_core_link_ucw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &is_limit_crossed, &limit_crossed_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"ucw warn limit crossed show (is_limit_crossed = %d %s)", is_limit_crossed,
+		is_limit_crossed ? "yes":"no");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_limit_crossed ? "yes":"no");
+}
+
+static ssize_t ucw_warn_limit_last_crossed_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	bool                is_limit_crossed;
+	time64_t            limit_crossed_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_core_link_ucw_warn_limit_crossed_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &is_limit_crossed, &limit_crossed_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"ucw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTt %ptTd)",
+		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
+
+	if (!is_limit_crossed)
+		return scnprintf(buf, PAGE_SIZE, "not_crossed\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
 }
 
 static ssize_t up_count_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -231,17 +277,19 @@ static ssize_t total_time_ms_show(struct kobject *kobj, struct kobj_attribute *k
 	return scnprintf(buf, PAGE_SIZE, "%u\n", total_time_ms);
 }
 
-static struct kobj_attribute link_state                  = __ATTR_RO(state);
-static struct kobj_attribute link_speed                  = __ATTR_RO(speed);
-static struct kobj_attribute link_last_up_fail_cause_map = __ATTR_RO(last_up_fail_cause_map);
-static struct kobj_attribute link_last_up_fail_time      = __ATTR_RO(last_up_fail_time);
-static struct kobj_attribute link_last_down_cause_map    = __ATTR_RO(last_down_cause_map);
-static struct kobj_attribute link_last_down_time         = __ATTR_RO(last_down_time);
-static struct kobj_attribute link_ccw_warn_limit_crossed = __ATTR_RO(ccw_warn_limit_crossed);
-static struct kobj_attribute link_ccw_crit_limit_crossed = __ATTR_RO(ccw_crit_limit_crossed);
-static struct kobj_attribute link_up_count               = __ATTR_RO(up_count);
-static struct kobj_attribute link_up_time_ms             = __ATTR_RO(up_time_ms);
-static struct kobj_attribute link_total_time_ms          = __ATTR_RO(total_time_ms);
+static struct kobj_attribute link_state                            = __ATTR_RO(state);
+static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
+static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
+static struct kobj_attribute link_last_up_fail_time                = __ATTR_RO(last_up_fail_time);
+static struct kobj_attribute link_last_down_cause_map              = __ATTR_RO(last_down_cause_map);
+static struct kobj_attribute link_last_down_time                   = __ATTR_RO(last_down_time);
+static struct kobj_attribute link_ccw_warn_limit_crossed           = __ATTR_RO(ccw_warn_limit_crossed);
+static struct kobj_attribute link_ccw_warn_limit_last_crossed_time = __ATTR_RO(ccw_warn_limit_last_crossed_time);
+static struct kobj_attribute link_ucw_warn_limit_crossed           = __ATTR_RO(ucw_warn_limit_crossed);
+static struct kobj_attribute link_ucw_warn_limit_last_crossed_time = __ATTR_RO(ucw_warn_limit_last_crossed_time);
+static struct kobj_attribute link_up_count                         = __ATTR_RO(up_count);
+static struct kobj_attribute link_up_time_ms                       = __ATTR_RO(up_time_ms);
+static struct kobj_attribute link_total_time_ms                    = __ATTR_RO(total_time_ms);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -251,7 +299,9 @@ static struct attribute *link_attrs[] = {
 	&link_last_down_cause_map.attr,
 	&link_last_down_time.attr,
 	&link_ccw_warn_limit_crossed.attr,
-	&link_ccw_crit_limit_crossed.attr,
+	&link_ccw_warn_limit_last_crossed_time.attr,
+	&link_ucw_warn_limit_crossed.attr,
+	&link_ucw_warn_limit_last_crossed_time.attr,
 	&link_up_count.attr,
 	&link_up_time_ms.attr,
 	&link_total_time_ms.attr,

@@ -110,7 +110,7 @@ struct sl_link_policy {
 
 	__s32 fec_mon_ucw_down_limit;
 	__s32 fec_mon_ucw_warn_limit;
-	__s32 fec_mon_ccw_crit_limit;
+	__s32 fec_mon_ccw_down_limit;
 	__s32 fec_mon_ccw_warn_limit;
 	__s32 fec_mon_period_ms;
 

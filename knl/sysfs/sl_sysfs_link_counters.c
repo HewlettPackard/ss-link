@@ -153,6 +153,34 @@ static ssize_t link_fault_show(struct kobject *kobj, struct kobj_attribute *katt
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t link_ccw_warn_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32 counter;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+
+	counter = sl_ctl_link_counters_get(ctl_link, LINK_CCW_WARN_CROSSED);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link ccw warn crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_ucw_warn_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32 counter;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+
+	counter = sl_ctl_link_counters_get(ctl_link, LINK_UCW_WARN_CROSSED);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link ucw warn crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static struct kobj_attribute link_up_cmd               = __ATTR_RO(link_up_cmd);
 static struct kobj_attribute link_up_retry             = __ATTR_RO(link_up_retry);
 static struct kobj_attribute link_up                   = __ATTR_RO(link_up);
@@ -163,6 +191,8 @@ static struct kobj_attribute link_up_cancel_cmd        = __ATTR_RO(link_up_cance
 static struct kobj_attribute link_up_canceled          = __ATTR_RO(link_up_canceled);
 static struct kobj_attribute link_reset_cmd            = __ATTR_RO(link_reset_cmd);
 static struct kobj_attribute link_fault                = __ATTR_RO(link_fault);
+static struct kobj_attribute link_ccw_warn_crossed     = __ATTR_RO(link_ccw_warn_crossed);
+static struct kobj_attribute link_ucw_warn_crossed     = __ATTR_RO(link_ucw_warn_crossed);
 
 static struct attribute *link_counters_attrs[] = {
 	&link_up_cmd.attr,
@@ -175,6 +205,8 @@ static struct attribute *link_counters_attrs[] = {
 	&link_up_canceled.attr,
 	&link_reset_cmd.attr,
 	&link_fault.attr,
+	&link_ccw_warn_crossed.attr,
+	&link_ucw_warn_crossed.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_counters);

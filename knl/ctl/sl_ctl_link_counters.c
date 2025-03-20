@@ -36,6 +36,9 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_FAULT);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_RECOVERING);
 
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_CCW_WARN_CROSSED);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UCW_WARN_CROSSED);
+
 	return 0;
 }
 

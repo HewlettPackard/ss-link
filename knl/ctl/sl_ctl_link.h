@@ -32,6 +32,10 @@
 		SL_LINK_DOWN_CAUSE_UCW      | \
 		SL_LINK_DOWN_RETRYABLE      | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_CCW_MAP (          \
+		SL_LINK_DOWN_CAUSE_CCW      | \
+		SL_LINK_DOWN_RETRYABLE      | \
+		SL_LINK_DOWN_ORIGIN_ASYNC)
 
 struct sl_ctl_link_fecl_kobj {
 	struct sl_ctl_link *ctl_link;
@@ -74,6 +78,7 @@ struct sl_ctl_link {
 	struct sl_ctl_link_fec_cache fec_up_cache;
 	struct sl_ctl_link_fec_cache fec_down_cache;
 	u8                           fec_ucw_chance;
+	u8                           fec_ccw_chance;
 
 	struct sl_ctl_lgrp          *ctl_lgrp;
 
