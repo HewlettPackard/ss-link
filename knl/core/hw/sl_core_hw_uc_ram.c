@@ -44,7 +44,7 @@ int sl_core_hw_uc_ram_rd8(struct sl_core_lgrp *core_lgrp, u8 dev_addr,
 
 	rtn = 0;
 out:
-	return 0;
+	return rtn;
 }
 
 int sl_core_hw_uc_ram_rd_blk(struct sl_core_lgrp *core_lgrp, u8 dev_addr,

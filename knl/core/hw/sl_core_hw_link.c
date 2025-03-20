@@ -977,6 +977,12 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		llr_replay_max =
 		SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_3_GET(core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1]);
 		break;
+	default:
+		link_down      = 0;
+		remote_fault   = 0;
+		local_fault    = 0;
+		llr_replay_max = 0;
+		break;
 	}
 
 	sl_core_log_dbg(core_link, LOG_NAME,

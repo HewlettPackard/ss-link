@@ -30,7 +30,7 @@ struct sl_ctl_test_args {
 	u8              ldev_num;
 	u8              lgrp_num;
 	u8              link_num;
-	u32             flags;
+	unsigned long   flags;
 };
 
 #define SL_CTL_TEST_FUNC(_num) \
@@ -381,7 +381,7 @@ static int sl_ctl_test4(struct sl_ctl_test_args test_args)
 	enum test_link_config config_num;
 
 	if ((test_args.flags > NUM_TEST_LINK_CFGS) || (test_args.flags < 0)) {
-		pr_err(SL_CTL_TEST_NAME "Invalid link config (config_num = 0x%X)", test_args.flags);
+		pr_err(SL_CTL_TEST_NAME "Invalid link config (config_num = 0x%lX)", test_args.flags);
 		return -EINVAL;
 	}
 
@@ -510,7 +510,7 @@ static int sl_ctl_test12(struct sl_ctl_test_args test_args)
 	struct sl_ctl_link    *ctl_link;
 
 	if ((test_args.flags > NUM_TEST_LINK_CFGS) || (test_args.flags < 0)) {
-		pr_err(SL_CTL_TEST_NAME "Invalid link config (config_num = 0x%X)", test_args.flags);
+		pr_err(SL_CTL_TEST_NAME "Invalid link config (config_num = 0x%lX)", test_args.flags);
 		return -EINVAL;
 	}
 
@@ -715,7 +715,7 @@ static int sl_ctl_test14(struct sl_ctl_test_args test_args)
 
 	ctl_link = sl_ctl_link_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 
-	for_each_set_bit(counter, (unsigned long *)&test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
+	for_each_set_bit(counter, &test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
 		link_counters_a[test_args.lgrp_num][test_args.link_num][counter] =
 			sl_ctl_link_counters_get(ctl_link, counter);
 	}
@@ -731,7 +731,7 @@ static int sl_ctl_test15(struct sl_ctl_test_args test_args)
 
 	ctl_link = sl_ctl_link_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 
-	for_each_set_bit(counter, (unsigned long *)&test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
+	for_each_set_bit(counter, &test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
 		link_counters_b[test_args.lgrp_num][test_args.link_num][counter] =
 			sl_ctl_link_counters_get(ctl_link, counter);
 	}
@@ -744,7 +744,7 @@ static int sl_ctl_test16(struct sl_ctl_test_args test_args)
 {
 	int counter;
 
-	for_each_set_bit(counter, (unsigned long *)&test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
+	for_each_set_bit(counter, &test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
 		if (link_counters_b[test_args.lgrp_num][test_args.link_num][counter] -
 			link_counters_a[test_args.lgrp_num][test_args.link_num][counter] != 1) {
 
@@ -764,7 +764,7 @@ static int sl_ctl_test17(struct sl_ctl_test_args test_args)
 {
 	int counter;
 
-	for_each_set_bit(counter, (unsigned long *)&test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
+	for_each_set_bit(counter, &test_args.flags, sizeof(test_args.flags) * BITS_PER_BYTE) {
 		if (link_counters_b[test_args.lgrp_num][test_args.link_num][counter] -
 			link_counters_a[test_args.lgrp_num][test_args.link_num][counter] != 0) {
 
@@ -891,7 +891,7 @@ static int sl_ctl_test27(struct sl_ctl_test_args test_args)
 	enum test_link_policy test_policy;
 
 	if ((test_args.flags > NUM_TEST_LINK_POLICIES) || (test_args.flags < 0)) {
-		pr_err(SL_CTL_TEST_NAME "Invalid link policy (test_policy = 0x%X)", test_args.flags);
+		pr_err(SL_CTL_TEST_NAME "Invalid link policy (test_policy = 0x%lX)", test_args.flags);
 		return -EINVAL;
 	}
 
@@ -997,7 +997,7 @@ static int sl_ctl_test37(struct sl_ctl_test_args test_args)
 	struct sl_ctl_link    *ctl_link;
 
 	if ((test_args.flags > NUM_TEST_LINK_POLICIES) || (test_args.flags < 0)) {
-		pr_err(SL_CTL_TEST_NAME "Invalid link policy (policy_num = 0x%X)", test_args.flags);
+		pr_err(SL_CTL_TEST_NAME "Invalid link policy (policy_num = 0x%lX)", test_args.flags);
 		return -EINVAL;
 	}
 

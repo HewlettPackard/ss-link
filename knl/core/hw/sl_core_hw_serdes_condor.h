@@ -6,7 +6,7 @@
 
 #include "hw/sl_core_hw_serdes_addrs.h"
 
-u16 serdes_addrs_condor[] = {
+static u16 serdes_addrs_condor[] = {
 	// FIXME: fill this in someday
 };
 

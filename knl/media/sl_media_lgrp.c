@@ -35,6 +35,8 @@ void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr
 	struct sl_media_lgrp *media_lgrp;
 	unsigned long         irq_flags;
 
+	memset(media_attr, 0, sizeof(struct sl_media_attr));
+
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 	if (!media_lgrp) {
 		sl_media_log_err(NULL, SL_MEDIA_LGRP_LOG_NAME, "media_data_lgrp_get failed");
@@ -51,8 +53,6 @@ void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr
 	case CABLE_MEDIA_ATTR_STASHED:
 		*media_attr = media_lgrp->cable_info->stashed_media_attr;
 		break;
-	default:
-		memset(media_attr, 0, sizeof(struct sl_media_attr));
 	}
 	spin_unlock_irqrestore(&media_lgrp->media_jack->data_lock, irq_flags);
 }
@@ -75,7 +75,7 @@ bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num)
 	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
 
 	return (media_attr.type == SL_MEDIA_TYPE_AOC ||
-			media_attr.type == SL_MEDIA_TYPE_AEC);
+		media_attr.type == SL_MEDIA_TYPE_AEC);
 }
 
 void sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)

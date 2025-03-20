@@ -16,7 +16,8 @@
 #include "data/sl_core_data_ldev.h"
 #include "data/sl_core_data_lgrp.h"
 #include "hw/sl_core_hw_serdes_osprey.h"
-#include "hw/sl_core_hw_serdes_condor.h"
+// FIXME: include this when we have a condor
+//#include "hw/sl_core_hw_serdes_condor.h"
 
 static struct sl_core_ldev *core_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(core_ldevs_lock);

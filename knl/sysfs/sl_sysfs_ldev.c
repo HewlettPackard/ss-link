@@ -214,9 +214,6 @@ static int sl_sysfs_cable_db_create(struct sl_ctl_ldev *ctl_ldev)
 	int  rtn;
 
 	for (i = 0; i < ARRAY_SIZE(cable_db); ++i) {
-		ctl_ldev->cable_hpe_pns_kobj[i].ctl_ldev = ctl_ldev;
-		ctl_ldev->cable_hpe_pns_kobj[i].cable_idx = i;
-		snprintf(hpe_pn, sizeof(hpe_pn), "%u", cable_db[i].hpe_pn);
 		switch (cable_db[i].type) {
 		case SL_MEDIA_TYPE_PEC:
 			type_kobj_num = SL_CABLE_TYPE_PEC;
@@ -227,7 +224,14 @@ static int sl_sysfs_cable_db_create(struct sl_ctl_ldev *ctl_ldev)
 		case SL_MEDIA_TYPE_AEC:
 			type_kobj_num = SL_CABLE_TYPE_AEC;
 			break;
+		default:
+			sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME,
+				"unknown (type = %u)", cable_db[i].type);
+			continue;
 		}
+		ctl_ldev->cable_hpe_pns_kobj[i].ctl_ldev = ctl_ldev;
+		ctl_ldev->cable_hpe_pns_kobj[i].cable_idx = i;
+		snprintf(hpe_pn, sizeof(hpe_pn), "%u", cable_db[i].hpe_pn);
 		rtn = kobject_init_and_add(&ctl_ldev->cable_hpe_pns_kobj[i].kobj, &cable_hpe_pns_info,
 				&ctl_ldev->cable_vendors_kobj[type_kobj_num][cable_db[i].vendor - 1], hpe_pn);
 		if (rtn) {

@@ -6,7 +6,7 @@
 
 #include "hw/sl_core_hw_serdes_addrs.h"
 
-u16 serdes_addrs_osprey[] = {
+static u16 serdes_addrs_osprey[] = {
 	[SERDES_DIG_COM_B_LANE_ADDR_0]                                         = 0xD190,
 	[SERDES_MICRO_B_COM_RMI_MICRO_SDK_STATUS0]                             = 0xD21A,
 	[SERDES_DIG_COM_REVID0]                                                = 0xD100,

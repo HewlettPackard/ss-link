@@ -551,7 +551,7 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 				core_lgrp->core_ldev->serdes.addrs[SERDES_CDR_CONTROL_0], &extended);
 			sl_core_log_dbg(core_lgrp, LOG_NAME,
 				"extended get (serdes_lane_num = %u, extended = 0x%X)",
-				serdes_lane_num, (data16 & 0x8000));
+				serdes_lane_num, (extended & 0x8000));
 			if (extended & 0x8000) {
 				sl_core_log_dbg(core_lgrp, LOG_NAME, "lane up quality check extended reach");
 				core_link->core_lgrp->serdes.eye_limits[asic_lane_num].low  = 5;
