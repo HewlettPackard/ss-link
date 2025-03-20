@@ -329,7 +329,7 @@ const char *sl_link_state_str(u32 state)
 	case SL_LINK_STATE_STOPPING:
 		return "stopping";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_link_state_str);
@@ -346,7 +346,7 @@ const char *sl_link_config_opt_str(u32 option)
 	case SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE:
 		return "loopback-remote-enable";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_link_config_opt_str);
@@ -359,7 +359,7 @@ const char *sl_link_policy_opt_str(u32 option)
 	case SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE:
 		return "use-unsupported-cable";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_link_policy_opt_str);
@@ -521,7 +521,7 @@ const char *sl_link_config_pause_str(u32 config)
 	if (config == SL_LINK_CONFIG_PAUSE_SYM)
 		return "pause-sym";
 
-	return "unrecognized";
+	return "unknown";
 }
 EXPORT_SYMBOL(sl_link_config_pause_str);
 
@@ -548,6 +548,6 @@ const char *sl_link_config_hpe_str(u32 config)
 	if (config == SL_LINK_CONFIG_HPE_LLR)
 		return "llr";
 
-	return "unrecognized";
+	return "unknown";
 }
 EXPORT_SYMBOL(sl_link_config_hpe_str);

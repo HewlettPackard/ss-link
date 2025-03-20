@@ -247,7 +247,7 @@ const char *sl_llr_state_str(u32 state)
 	case SL_LLR_STATE_RUNNING:
 		return "running";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_llr_state_str);
@@ -262,7 +262,7 @@ const char *sl_llr_link_dn_behavior_str(u32 behavior)
 	case SL_LLR_LINK_DN_BEHAVIOR_BEST_EFFORT:
 		return "best-effort";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_llr_link_dn_behavior_str);

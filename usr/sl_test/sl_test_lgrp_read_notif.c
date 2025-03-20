@@ -85,7 +85,7 @@ static const char *notif_names[] = {
 	"llr-canceled",
 	"link-down",
 	"link-async-down",
-	"unrecognized",
+	"unknown",
 };
 
 static const struct cmd_option {

@@ -286,7 +286,7 @@ const char *sl_lgrp_config_tech_str(u32 config)
 	if (config == SL_LGRP_CONFIG_TECH_BJ_100G)
 		return "bj100G";
 
-	return "unrecognized";
+	return "unknown";
 }
 EXPORT_SYMBOL(sl_lgrp_config_tech_str);
 
@@ -297,7 +297,7 @@ const char *sl_lgrp_config_fec_str(u32 config)
 	if (config == SL_LGRP_CONFIG_FEC_RS)
 		return "reed-soloman";
 
-	return "unrecognized";
+	return "unknown";
 }
 EXPORT_SYMBOL(sl_lgrp_config_fec_str);
 
@@ -310,7 +310,7 @@ const char *sl_lgrp_furcation_str(u32 furcation)
 	if (furcation == SL_MEDIA_FURCATION_X4)
 		return "quadfurcated";
 
-	return "unrecognized";
+	return "unknown";
 }
 EXPORT_SYMBOL(sl_lgrp_furcation_str);
 
@@ -358,7 +358,7 @@ const char *sl_lgrp_notif_str(u32 notif)
 	case SL_LGRP_NOTIF_LINK_DOWN:
 		return "link-down";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_lgrp_notif_str);
@@ -384,7 +384,7 @@ const char *sl_lgrp_fec_mode_str(u32 mode)
 	case SL_LGRP_FEC_MODE_CORRECT:
 		return "correct";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_lgrp_fec_mode_str);
@@ -399,7 +399,7 @@ const char *sl_lgrp_llr_mode_str(u32 mode)
 	case SL_LGRP_LLR_MODE_ON:
 		return "on";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_lgrp_llr_mode_str);

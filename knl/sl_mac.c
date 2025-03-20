@@ -218,7 +218,7 @@ const char *sl_mac_state_str(u32 state)
 	case SL_MAC_STATE_ON:
 		return "on";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_mac_state_str);

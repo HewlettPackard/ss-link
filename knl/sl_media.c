@@ -22,7 +22,7 @@ const char *sl_media_furcation_str(u32 furcation)
 	case SL_MEDIA_FURCATION_X4:
 		return "quadfurcated";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_furcation_str);
@@ -41,7 +41,7 @@ const char *sl_media_state_str(u8 state)
 	case SL_MEDIA_JACK_CABLE_ERROR:
 		return "error";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_state_str);
@@ -64,7 +64,7 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED:
 		return "failed";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_shift_state_str);
@@ -96,9 +96,9 @@ const char *sl_media_type_str(u32 type)
 		if (type == SL_MEDIA_TYPE_AEC)
 			return "AEC";
 		if (type == SL_MEDIA_TYPE_BKP)
-			return "backplane";
+			return "BKP";
 		else
-			return "unrecognized";
+			return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_type_str);
@@ -131,7 +131,7 @@ const char *sl_media_vendor_str(u32 vendor)
 	case SL_MEDIA_VENDOR_AMPHENOL:
 		return "amphenol";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_vendor_str);
@@ -156,7 +156,7 @@ const char *sl_media_speed_str(u32 speed)
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
 		return "cd50G";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_speed_str);
@@ -199,7 +199,7 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 		case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 			return "BJ 100G";
 		default:
-			return "unrecognized";
+			return "unknown";
 		}
 	}
 
@@ -221,7 +221,7 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 		return "BJ 100G";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 
 }
@@ -239,7 +239,7 @@ const char *sl_media_opt_str(u32 option)
 	case SL_MEDIA_OPT_LINKTRAIN:
 		return "linktrain";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 
 }
@@ -259,7 +259,7 @@ const char *sl_media_jack_type_str(u32 jack_type, u32 density)
 	case SL_MEDIA_JACK_TYPE_OSFP:
 		return "osfp";
 	default:
-		return "unrecognized";
+		return "unknown";
 	}
 
 }
