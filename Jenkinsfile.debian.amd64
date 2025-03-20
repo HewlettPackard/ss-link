@@ -5,7 +5,6 @@ import com.cray.scimage.SCImageProject
 def scimageProject_r2_amd64 = new SCImageProject(
         script:            this,         // necessary for scripts within library
         project_name:      'sl-driver',
-        tools_branch:      'release/slingshot-2.9',
         build_steps:       'build_sl_driver',
         slack_channel_failure: '#slingshot-team-platform',
         ct_build_steps:    'build_rosetta2_drivers,build_rosetta2_sdk',
