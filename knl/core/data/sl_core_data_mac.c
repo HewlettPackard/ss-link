@@ -127,7 +127,7 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "tx settings (ifg = %u)", core_mac->settings.tx_ifg_adj);
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 		core_mac->settings.tx_ifg_adj          = SL_CORE_HW_IFG_ADJ_NONE;
 		core_mac->settings.tx_ifg_mode         = 0;
 		core_mac->settings.tx_pad_idle_thresh  = 10;
@@ -189,7 +189,7 @@ int sl_core_data_mac_rx_settings(struct sl_core_mac *core_mac)
 
 	lgrp_config = &(core_mac->core_lgrp->config);
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 		core_mac->settings.rx_flit_packing_cnt = 1;
 		core_mac->settings.rx_short_preamble   = 1;
 	} else {

@@ -84,8 +84,8 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 
 		up_fail_cause_map = sl_core_data_link_last_up_fail_cause_map_get(core_link);
 
-		if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
-			SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 			if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 				up_fail_cause_map &= ~SL_LINK_DOWN_RETRYABLE;
@@ -119,7 +119,8 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 
 	down_cause_map = sl_core_data_link_last_down_cause_map_get(core_link);
 
-	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link), SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+		SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 			down_cause_map &= ~SL_LINK_DOWN_RETRYABLE;
@@ -1044,8 +1045,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	sl_core_hw_link_off(core_link);
 
-	if (!is_flag_set(sl_core_data_link_config_flags_get(core_link),
-		SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+		SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 			down_cause &= ~SL_LINK_DOWN_RETRYABLE;

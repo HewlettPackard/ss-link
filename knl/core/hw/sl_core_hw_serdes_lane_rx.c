@@ -17,15 +17,17 @@
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
-int sl_core_hw_serdes_lane_up_rx_setup(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num)
+int sl_core_hw_serdes_lane_up_rx_setup(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	int rtn;
-	u64 data64;
-	u32 port;
-	u8  asic_lane_num;
+	int                  rtn;
+	u64                  data64;
+	u32                  port;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
 
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up rx setup (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
@@ -81,16 +83,17 @@ out:
 	return rtn;
 }
 
-int sl_core_hw_serdes_lane_up_rx_config(struct sl_core_lgrp *core_lgrp,
-	struct sl_core_link *core_link, u8 serdes_lane_num)
+int sl_core_hw_serdes_lane_up_rx_config(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	int rtn;
-	u64 data64;
-	u32 port;
-	u8  asic_lane_num;
+	int                  rtn;
+	u64                  data64;
+	u32                  port;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
 
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up rx config (port = %u, serdes_lane_num = %u, asic_lane_num = %u, hpe_map = 0x%X)",
@@ -132,7 +135,7 @@ int sl_core_hw_serdes_lane_up_rx_config(struct sl_core_lgrp *core_lgrp,
 	}
 
 	/* digital loopback */
-	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
 			"lane up rx config loopback on (logical = %u)", serdes_lane_num);
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
@@ -151,15 +154,17 @@ out:
 	return rtn;
 }
 
-int sl_core_hw_serdes_lane_up_rx_start(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num)
+int sl_core_hw_serdes_lane_up_rx_start(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	int rtn;
-	u64 data64;
-	u32 port;
-	u8  asic_lane_num;
+	int                  rtn;
+	u64                  data64;
+	u32                  port;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
 
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up rx start (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
@@ -181,15 +186,17 @@ out:
 	return rtn;
 }
 
-void sl_core_hw_serdes_lane_down_rx_stop(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num)
+void sl_core_hw_serdes_lane_down_rx_stop(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	int rtn;
-	u64 data64;
-	u32 port;
-	u8  asic_lane_num;
+	int                  rtn;
+	u64                  data64;
+	u32                  port;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
 
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane down rx stop (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",

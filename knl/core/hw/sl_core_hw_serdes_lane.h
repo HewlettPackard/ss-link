@@ -61,10 +61,10 @@ struct sl_media_serdes_settings;
 		(_core_link)->serdes.media_serdes_settings.media  = 1;    \
 	} while (0)
 
-u8   sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-u8   sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-u8   sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
-u8   sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
+u8   sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num);
+u8   sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num);
+u8   sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num);
+u8   sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num);
 
 int  sl_core_hw_serdes_lane_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre1);
 int  sl_core_hw_serdes_lane_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre2);
@@ -85,20 +85,16 @@ int  sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 lane_num,
 int  sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble);
 
 int  sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check);
-
-int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-int  sl_core_hw_serdes_lane_up_tx_config(struct sl_core_lgrp *core_lgrp,
-					 struct sl_core_link *core_link, u8 serdes_lane_num);
-int  sl_core_hw_serdes_lane_up_tx_start(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-
-int  sl_core_hw_serdes_lane_up_rx_setup(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-int  sl_core_hw_serdes_lane_up_rx_config(struct sl_core_lgrp *core_lgrp,
-					 struct sl_core_link *core_link, u8 serdes_lane_num);
-int  sl_core_hw_serdes_lane_up_rx_start(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_tx_config(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_tx_start(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_rx_setup(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_rx_config(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lane_up_rx_start(struct sl_core_link *core_link, u8 serdes_lane_num);
 
 void sl_core_hw_serdes_lanes_down(struct sl_core_link *core_link);
-void sl_core_hw_serdes_lane_down_rx_stop(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
-void sl_core_hw_serdes_lane_down_tx_stop(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num);
+void sl_core_hw_serdes_lane_down_rx_stop(struct sl_core_link *core_link, u8 serdes_lane_num);
+void sl_core_hw_serdes_lane_down_tx_stop(struct sl_core_link *core_link, u8 serdes_lane_num);
 
 int  sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper);
 int  sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower);

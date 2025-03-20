@@ -47,6 +47,4 @@ void sl_core_data_link_ccw_crit_limit_crossed_get(struct sl_core_link *core_link
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link);
 
-u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link);
-
 #endif /* _SL_CORE_DATA_LINK_H_ */

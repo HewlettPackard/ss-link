@@ -57,6 +57,23 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles");
 
+	if (is_flag_set(core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles setting for loopback");
+		core_lgrp->serdes.dt.lane_info[0].tx_source = 0;
+		core_lgrp->serdes.dt.lane_info[1].tx_source = 1;
+		core_lgrp->serdes.dt.lane_info[2].tx_source = 2;
+		core_lgrp->serdes.dt.lane_info[3].tx_source = 3;
+		core_lgrp->serdes.dt.lane_info[0].rx_source = 0;
+		core_lgrp->serdes.dt.lane_info[1].rx_source = 1;
+		core_lgrp->serdes.dt.lane_info[2].rx_source = 2;
+		core_lgrp->serdes.dt.lane_info[3].rx_source = 3;
+	} else {
+		rtn = core_lgrp->core_ldev->ops.dt_info_get(core_lgrp->core_ldev->accessors.dt,
+			core_lgrp->core_ldev->num, core_lgrp->num, &(core_lgrp->serdes.dt));
+		if (rtn)
+			sl_core_log_warn(core_lgrp, LOG_NAME, "swizzles dt_info_get failed [%d}", rtn);
+	}
+
 	for (lane_num = 0; lane_num < SL_ASIC_MAX_LANES; ++lane_num) {
 		which = (lane_num + ((core_lgrp->num & BIT(0)) * 4));
 		data  = 0x0000 |

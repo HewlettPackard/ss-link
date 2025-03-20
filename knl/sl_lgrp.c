@@ -363,6 +363,17 @@ const char *sl_lgrp_notif_str(u32 notif)
 }
 EXPORT_SYMBOL(sl_lgrp_notif_str);
 
+const char *sl_lgrp_config_opt_str(u32 option)
+{
+	switch (option) {
+	case SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE:
+		return "loopback-serdes-enable";
+	default:
+		return "unrecognized";
+	}
+}
+EXPORT_SYMBOL(sl_lgrp_config_opt_str);
+
 const char *sl_lgrp_fec_mode_str(u32 mode)
 {
 	switch (mode) {

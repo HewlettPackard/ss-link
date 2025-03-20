@@ -112,7 +112,7 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		sl_core_log_warn(core_link, LOG_NAME,
 			"cable not supported - using default serdes settings");
 
-	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		sl_core_log_dbg(core_link, LOG_NAME, "link up settings loopback");
 		SL_CORE_HW_SERDES_LOOPBACK_SERDES_SETTINGS_SET(core_link);
 	} else {

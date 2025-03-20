@@ -92,6 +92,10 @@
 #define SL_LGRP_LLR_MODE_MONITOR BIT(1)
 #define SL_LGRP_LLR_MODE_ON      BIT(2)
 
+#define SL_LGRP_CONFIG_OPT_FABRIC                 BIT(0) /* fabric link     */
+#define SL_LGRP_CONFIG_OPT_R1                     BIT(1) /* connected to R1 */
+#define SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE BIT(2) /* serdes loopback */
+
 #define SL_LGRP_CONFIG_MAGIC 0x6c676366
 #define SL_LGRP_CONFIG_VER   1
 struct sl_lgrp_config {
@@ -108,9 +112,6 @@ struct sl_lgrp_config {
 
 	__u32 options;
 };
-
-#define SL_LGRP_OPT_FABRIC BIT(0) /* fabric link */
-#define SL_LGRP_OPT_R1     BIT(1) /* connected to R1 */
 
 #define SL_LGRP_POLICY_MAGIC 0x6c67706f
 #define SL_LGRP_POLICY_VER   1

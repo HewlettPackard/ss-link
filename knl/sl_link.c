@@ -341,8 +341,6 @@ const char *sl_link_config_opt_str(u32 option)
 		return "autoneg-enable";
 	case SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE:
 		return "autoneg-continuous";
-	case SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE:
-		return "loopback-serdes-enable";
 	case SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE:
 		return "loopback-headshell-enable";
 	case SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE:

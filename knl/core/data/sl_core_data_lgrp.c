@@ -186,11 +186,40 @@ void sl_core_data_lgrp_hw_attr_set(struct sl_core_lgrp *core_lgrp, struct sl_hw_
 
 void sl_core_data_lgrp_config_set(struct sl_core_lgrp *core_lgrp, struct sl_lgrp_config *lgrp_config)
 {
+	int  rtn;
+	bool need_swizzled;
+
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "config set");
 
 	/* if furcation changes, then we have to reset */
 	if (lgrp_config->furcation != core_lgrp->config.furcation)
 		sl_core_hw_reset_lgrp(core_lgrp);
 
+	/* if loopback enable changes, then we have to swizzle */
+	if ((lgrp_config->options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE) !=
+		(core_lgrp->config.options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
+		need_swizzled = true;
+
 	core_lgrp->config = *lgrp_config;
+
+	if (need_swizzled) {
+		rtn = sl_core_hw_serdes_swizzles(core_lgrp);
+		if (rtn)
+			sl_core_log_warn_trace(core_lgrp, LOG_NAME,
+				"hw_serdes_swizzles failed [%d]", rtn);
+	}
+}
+
+u32 sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp)
+{
+	u32           flags;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_lgrp->data_lock, irq_flags);
+	flags = core_lgrp->config.options;
+	spin_unlock_irqrestore(&core_lgrp->data_lock, irq_flags);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "config flags get (flags = 0x%X)", flags);
+
+	return flags;
 }

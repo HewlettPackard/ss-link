@@ -490,19 +490,26 @@ static const struct file_operations sl_test_lgrp_cmd_fops = {
 	.write = sl_test_lgrp_cmd_write,
 };
 
+#define STATIC_OPT_ENTRY(_name, _bit_field) static struct options_field_entry option_##_name = { \
+	.options = &lgrp_config.options,                                                         \
+	.field   = SL_LGRP_OPT_##_bit_field,                                                     \
+}
+
 #define STATIC_CONFIG_OPT_ENTRY(_name, _bit_field) static struct options_field_entry config_option_##_name = { \
 	.options = &lgrp_config.options,                                                                       \
-	.field   = SL_LGRP_OPT_##_bit_field,                                                                   \
+	.field   = SL_LGRP_CONFIG_OPT_##_bit_field,                                                            \
 }
 
 #define STATIC_POLICY_OPT_ENTRY(_name, _bit_field) static struct options_field_entry policy_option_##_name = { \
 	.options = &lgrp_policy.options,                                                                       \
-	.field   = SL_LGRP_OPT_##_bit_field,                                                                   \
+	.field   = SL_LGRP_POLICY_OPT_##_bit_field,                                                            \
 }
 
-STATIC_CONFIG_OPT_ENTRY(lock,        LOCK);
-STATIC_POLICY_OPT_ENTRY(fabric_link, FABRIC);
-STATIC_POLICY_OPT_ENTRY(r1_partner,  R1);
+STATIC_OPT_ENTRY(lock, LOCK);
+
+STATIC_CONFIG_OPT_ENTRY(fabric_link,     FABRIC);
+STATIC_CONFIG_OPT_ENTRY(r1_partner,      R1);
+STATIC_CONFIG_OPT_ENTRY(serdes_loopback, SERDES_LOOPBACK_ENABLE);
 
 static void sl_test_lgrp_config_init(void)
 {
@@ -568,10 +575,31 @@ int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 	debugfs_create_u32("tech_map",  0644, config_dir, &lgrp_config.tech_map);
 	debugfs_create_u32("furcation", 0644, config_dir, &lgrp_config.furcation);
 
-	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &config_option_lock);
+	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &option_lock);
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"lgrp config lock debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("fabric_link", 0644, config_dir, &config_option_fabric_link);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"lgrp config fabric_link debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("r1_partner", 0644, config_dir, &config_option_r1_partner);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"lgrp config r1_partner debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("serdes_loopback", 0644, config_dir, &config_option_serdes_loopback);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"lgrp config serdes_loopback debugfs_create_file failed");
 		return -ENOMEM;
 	}
 
@@ -581,20 +609,6 @@ int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 	if (!policies_dir) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"lgrp policies debugfs_create_dir failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("fabric_link", 0644, policies_dir, &policy_option_fabric_link);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config fabric_link debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("r1_partner", 0644, policies_dir, &policy_option_r1_partner);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config r1_partner debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

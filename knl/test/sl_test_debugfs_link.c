@@ -218,7 +218,6 @@ static struct kobj_type sl_test_link_kobj_type = {
 
 STATIC_CONFIG_OPT_ENTRY(lock,               LOCK);
 STATIC_CONFIG_OPT_ENTRY(autoneg,            AUTONEG_ENABLE);
-STATIC_CONFIG_OPT_ENTRY(serdes_loopback,    SERDES_LOOPBACK_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(headshell_loopback, HEADSHELL_LOOPBACK_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(remote_loopback,    REMOTE_LOOPBACK_ENABLE);
 
@@ -333,13 +332,6 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"link config autoneg debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("serdes_loopback", 0644, config_dir, &config_option_serdes_loopback);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link config serdes_loopback debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

@@ -281,7 +281,7 @@ int sl_core_data_llr_settings(struct sl_core_llr *core_llr)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "settings (bytes = %u)", core_llr->settings.bytes_per_ns);
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 		core_llr->settings.max_cap_data   = 0x800ULL;
 		core_llr->settings.max_cap_seq    = 0x800ULL;
 	} else {

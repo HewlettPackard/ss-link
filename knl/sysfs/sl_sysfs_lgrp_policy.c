@@ -16,40 +16,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
-static ssize_t fabric_link_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_ctl_lgrp *ctl_lgrp;
-
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, policy_kobj);
-
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"fabric link show (lgrp = 0x%p, fabric link = %s)",
-		ctl_lgrp, (ctl_lgrp->policy.options & SL_LGRP_OPT_FABRIC) ? "enabled" : "disabled");
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(ctl_lgrp->policy.options & SL_LGRP_OPT_FABRIC) ? "enabled" : "disabled");
-}
-
-static ssize_t r1_partner_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_ctl_lgrp *ctl_lgrp;
-
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, policy_kobj);
-
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"r1 partner show (lgrp = 0x%p, r1 partner = %s)",
-		ctl_lgrp, (ctl_lgrp->policy.options & SL_LGRP_OPT_R1) ? "enabled" : "disabled");
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(ctl_lgrp->policy.options & SL_LGRP_OPT_R1) ? "enabled" : "disabled");
-}
-
-static struct kobj_attribute lgrp_fabric_link = __ATTR_RO(fabric_link);
-static struct kobj_attribute lgrp_r1_partner  = __ATTR_RO(r1_partner);
-
 static struct attribute *lgrp_policy_attrs[] = {
-	&lgrp_fabric_link.attr,
-	&lgrp_r1_partner.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(lgrp_policy);

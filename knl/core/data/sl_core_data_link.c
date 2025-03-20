@@ -342,20 +342,6 @@ void sl_core_data_link_config_set(struct sl_core_link *core_link,
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_CONFIGURED);
 }
 
-u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link)
-{
-	u32           flags;
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
-	flags = core_link->config.flags;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
-
-	sl_core_log_dbg(core_link, LOG_NAME, "config flags get (flags = 0x%X)", flags);
-
-	return flags;
-}
-
 int sl_core_data_link_settings(struct sl_core_link *core_link)
 {
 	struct sl_lgrp_config *lgrp_config;
@@ -403,7 +389,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_400G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CK_400G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CK_400G;
-		if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+		if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 			core_link->pcs.settings.tx_gearbox_credits         = 12;
@@ -445,7 +431,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_BS_200G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_BS_200G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_BS_200G;
-		if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+		if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
 			core_link->pcs.settings.tx_gearbox_credits         = 12;
@@ -458,7 +444,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 			core_link->pcs.settings.tx_gearbox_credits         = 8;
 			core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
 			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
-			if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_R1))
+			if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_R1))
 				core_link->pcs.settings.cw_gap             = 24;
 			else
 				core_link->pcs.settings.cw_gap             = 6;
@@ -498,7 +484,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.cw_gap                     = 6;
 	}
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_OPT_FABRIC)) {
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 		core_link->pcs.settings.mac_tx_credits = 8;
 	} else {
 		switch (lgrp_config->furcation) {

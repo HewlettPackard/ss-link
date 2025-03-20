@@ -241,7 +241,7 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	}
 	llr_data.loop.average = DIV_ROUND_UP(total_time, SL_CORE_LLR_MAX_LOOP_TIME_COUNT);
 
-	if (core_llr->core_lgrp->config.options & SL_LGRP_OPT_FABRIC) {
+	if (core_llr->core_lgrp->config.options & SL_LGRP_CONFIG_OPT_FABRIC) {
 		calc_data = 0x800; /* reset value */
 	} else {
 		bytes = (llr_data.loop.average * core_llr->settings.bytes_per_ns) +

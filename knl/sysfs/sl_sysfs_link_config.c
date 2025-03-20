@@ -225,8 +225,6 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"loopback show (link = 0x%p)", ctl_link);
 
-	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-serdes\n");
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled-headshell\n");
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))

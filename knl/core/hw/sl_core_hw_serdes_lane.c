@@ -20,11 +20,12 @@
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
-#define SL_MAX_SERDES_LANES 8
-
-u8 sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num)
+u8 sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	u8 asic_lane_num;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
 
 	for (asic_lane_num = 0; asic_lane_num < SL_MAX_LANES; ++asic_lane_num)
 		if (core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source +
@@ -36,9 +37,12 @@ u8 sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 ser
 	return 0;
 }
 
-u8 sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 serdes_lane_num)
+u8 sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
-	u8 asic_lane_num;
+	u8                   asic_lane_num;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
 
 	for (asic_lane_num = 0; asic_lane_num < SL_MAX_LANES; ++asic_lane_num)
 		if (core_lgrp->serdes.dt.lane_info[asic_lane_num].tx_source +
@@ -50,8 +54,12 @@ u8 sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 ser
 	return 0;
 }
 
-u8 sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
+u8 sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num)
 {
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"RX lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
 		core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source + (4 * (core_lgrp->num & BIT(0))));
@@ -59,8 +67,12 @@ u8 sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 a
 	return core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source + (4 * (core_lgrp->num & BIT(0)));
 }
 
-u8 sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
+u8 sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num)
 {
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"TX lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
 		core_lgrp->serdes.dt.lane_info[asic_lane_num].tx_source + (4 * (core_lgrp->num & BIT(0))));
@@ -70,11 +82,13 @@ u8 sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 a
 
 int sl_core_hw_serdes_lane_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre1)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL2], &data16);
@@ -91,11 +105,13 @@ out:
 
 int sl_core_hw_serdes_lane_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre2)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL1], &data16);
@@ -112,11 +128,13 @@ out:
 
 int sl_core_hw_serdes_lane_pre3_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre3)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL0], &data16);
@@ -133,11 +151,13 @@ out:
 
 int sl_core_hw_serdes_lane_cursor_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *cursor)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL3], &data16);
@@ -154,11 +174,13 @@ out:
 
 int sl_core_hw_serdes_lane_post1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *post1)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL4], &data16);
@@ -175,11 +197,13 @@ out:
 
 int sl_core_hw_serdes_lane_post2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *post2)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_FED_TXFIR_TAP_CONTROL5], &data16);
@@ -229,18 +253,20 @@ int sl_core_hw_serdes_lane_osr_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_
 
 int sl_core_hw_serdes_lane_encoding_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *encoding)
 {
-	int rtn;
-	u64 data64;
-	u32 port;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u64                  data64;
+	u32                  port;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	port = core_lgrp->num;
+	core_link = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	port      = core_lgrp->num;
 
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
 
 	if (SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_OSR_MODE_GET(data64) & 0x40) {
-		serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+		serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link, asic_lane_num);
 		SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 			core_lgrp->core_ldev->serdes.addrs[SERDES_CDR_CONTROL_0], &data16); /* rx_pam4_er_mode */
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
@@ -309,11 +335,13 @@ u16 sl_core_hw_serdes_config(struct sl_core_lgrp *core_lgrp,
 
 int sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *dfe)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_FW_API_DATA0], &data16);
@@ -327,11 +355,13 @@ out:
 
 int sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble)
 {
-	int rtn;
-	u16 data16;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u16                  data16;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_FW_API_DATA0], &data16);
@@ -422,10 +452,9 @@ static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8
 	u8                   asic_lane_num;
 	struct sl_core_lgrp *core_lgrp;
 
-	core_lgrp = core_link->core_lgrp;
-
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up tx check (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
@@ -465,10 +494,9 @@ static int sl_core_hw_serdes_lane_up_rx_check(struct sl_core_link *core_link, u8
 	u8                   asic_lane_num;
 	struct sl_core_lgrp *core_lgrp;
 
-	core_lgrp = core_link->core_lgrp;
-
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up rx check (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
@@ -507,10 +535,9 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	u16                  extended;
 	u64                  data64;
 
-	core_lgrp = core_link->core_lgrp;
-
-	port = core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_lgrp, serdes_lane_num);
+	core_lgrp     = core_link->core_lgrp;
+	port          = core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane up quality check (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
@@ -614,41 +641,41 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
 		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
 			continue;
-		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].rx = SL_CORE_HW_SERDES_LANE_STATE_BUSY;
-		rtn = sl_core_hw_serdes_lane_up_rx_setup(core_link->core_lgrp, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_rx_setup(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_setup failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].tx = SL_CORE_HW_SERDES_LANE_STATE_BUSY;
-		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link->core_lgrp, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_setup failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_lane_up_rx_config(core_link->core_lgrp, core_link, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_rx_config(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_config failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_lane_up_tx_config(core_link->core_lgrp, core_link, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_tx_config(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_config failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_lane_up_rx_start(core_link->core_lgrp, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_rx_start(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_start failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_lane_up_tx_start(core_link->core_lgrp, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_tx_start(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_start failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
@@ -704,7 +731,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 			}
 		}
 		/* quality check */
-		if (!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 			sl_core_log_dbg(core_link, LOG_NAME, "loopback off so check quality");
 			for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
 				if (((lane_map >> serdes_lane_num) & 0x1) == 0)
@@ -725,9 +752,9 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
 		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
 			continue;
-		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].tx = SL_CORE_HW_SERDES_LANE_STATE_UP;
-		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].rx = SL_CORE_HW_SERDES_LANE_STATE_UP;
 	}
 
@@ -749,22 +776,24 @@ void sl_core_hw_serdes_lanes_down(struct sl_core_link *core_link)
 	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
 		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
 			continue;
-		sl_core_hw_serdes_lane_down_tx_stop(core_link->core_lgrp, serdes_lane_num);
-		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		sl_core_hw_serdes_lane_down_tx_stop(core_link, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].tx = SL_CORE_HW_SERDES_LANE_STATE_DOWN;
-		sl_core_hw_serdes_lane_down_rx_stop(core_link->core_lgrp, serdes_lane_num);
-		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link->core_lgrp, serdes_lane_num);
+		sl_core_hw_serdes_lane_down_rx_stop(core_link, serdes_lane_num);
+		asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 		core_link->core_lgrp->serdes.lane_state[asic_lane_num].rx = SL_CORE_HW_SERDES_LANE_STATE_DOWN;
 	}
 }
 
 int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper)
 {
-	int rtn;
-	u32 addr;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u32                  addr;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
 
@@ -783,11 +812,13 @@ out:
 
 int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower)
 {
-	int rtn;
-	u32 addr;
-	u8  serdes_lane_num;
+	int                  rtn;
+	u32                  addr;
+	u8                   serdes_lane_num;
+	struct sl_core_link *core_link;
 
-	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
+	core_link       = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, asic_lane_num);
+	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_link, asic_lane_num);
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
 
