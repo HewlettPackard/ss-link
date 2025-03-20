@@ -1,4 +1,4 @@
-@Library(['dst-shared@master', 'scimage-jenkins-library@release/slingshot-2.9']) _
+@Library(["dst-shared@master", "scimage-jenkins-library@main"]) _
 
 import com.cray.scimage.SCImageProject
 
