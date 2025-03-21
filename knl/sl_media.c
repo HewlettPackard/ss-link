@@ -54,17 +54,17 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED:
 		return "downshifted";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE:
-		return "failed - no cable";
+		return "failed_no_cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE:
-		return "failed - fake cable";
+		return "failed_fake_cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT:
-		return "failed - no support";
+		return "failed_no_support";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO:
-		return "failed - invalid info";
+		return "failed_invalid_info";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED:
 		return "failed";
 	default:
-		return "unknown";
+		return "not_shifted";
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_shift_state_str);
