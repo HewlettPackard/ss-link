@@ -242,14 +242,26 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 	return -EFAULT;
 }
 
+static bool is_valid_char(char c)
+{
+	return c >= 33 && c <= 126;
+}
+
 #define HPE_PN_OFFSET 228
 static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe_pn, char *hpe_pn_str)
 {
 	const char *pn_ptr;
-	int i;
+	int         i;
+	int         counter;
 
-	memcpy(hpe_pn_str, &(media_jack->eeprom_page0[HPE_PN_OFFSET]), SL_MEDIA_HPE_PN_SIZE - 1);
-	hpe_pn_str[SL_MEDIA_HPE_PN_SIZE - 1] = '\0';
+	counter = 0;
+	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE; ++i) {
+		if (is_valid_char(media_jack->eeprom_page0[HPE_PN_OFFSET + i])) {
+			hpe_pn_str[counter] = media_jack->eeprom_page0[HPE_PN_OFFSET + i];
+			counter++;
+		}
+	}
+	hpe_pn_str[counter] = '\0';
 
 	pn_ptr = &(media_jack->eeprom_page0[HPE_PN_OFFSET]);
 	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
@@ -264,8 +276,17 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 #define SERIAL_NUM_OFFSET 166
 static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, char *serial_num_str)
 {
-	memcpy(serial_num_str, &(media_jack->eeprom_page0[SERIAL_NUM_OFFSET]), SL_MEDIA_SERIAL_NUM_SIZE - 1);
-	serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE - 1] = '\0';
+	int i;
+	int counter;
+
+	counter = 0;
+	for (i = 0; i < SL_MEDIA_SERIAL_NUM_SIZE; ++i) {
+		if (is_valid_char(media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i])) {
+			serial_num_str[counter] = media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i];
+			counter++;
+		}
+	}
+	serial_num_str[counter] = '\0';
 
 	return 0;
 }
