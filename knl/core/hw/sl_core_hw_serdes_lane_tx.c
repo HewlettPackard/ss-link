@@ -34,6 +34,9 @@ int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes
 		"lane up tx setup (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
 		port, serdes_lane_num, asic_lane_num);
 
+	sl_core_hw_serdes_tx_lane_state_set(core_lgrp,
+		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_SETUP);
+
 	/* clock gate */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TX_CKRST_CTRL_TX_CLOCK_N_RESET_DEBUG_CONTROL],
@@ -111,6 +114,9 @@ int sl_core_hw_serdes_lane_up_tx_config(struct sl_core_link *core_link, u8 serde
 		"lane up tx config (port = %u, serdes_lane_num = %u, asic_lane_num = %u, hpe_map = 0x%X)",
 		port, serdes_lane_num, asic_lane_num,
 		core_link->core_lgrp->link_caps[core_link->num].hpe_map);
+
+	sl_core_hw_serdes_tx_lane_state_set(core_lgrp,
+		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_CONFIG);
 
 	/* OSR */
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
@@ -227,6 +233,9 @@ int sl_core_hw_serdes_lane_up_tx_start(struct sl_core_link *core_link, u8 serdes
 		"lane up tx start (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
 		port, serdes_lane_num, asic_lane_num);
 
+	sl_core_hw_serdes_tx_lane_state_set(core_lgrp,
+		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_START);
+
 	/* enable DP */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TXCOM_CKRST_CTRL_TXCOM_LANE_CLK_RESET_N_POWERDOWN_CONTROL],
@@ -263,6 +272,9 @@ void sl_core_hw_serdes_lane_down_tx_stop(struct sl_core_link *core_link, u8 serd
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"lane down tx stop (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
 		port, serdes_lane_num, asic_lane_num);
+
+	sl_core_hw_serdes_tx_lane_state_set(core_lgrp,
+		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_STOP);
 
 	/* disable TX */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,

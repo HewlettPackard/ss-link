@@ -7,16 +7,22 @@ cmd=$(basename $0)
 function usage {
         echo "$cmd ldev_num[:lgrp_num][:link_num] [option]"
         echo "  target:"
-        echo "    ldev_num = link device number"
-        echo "    lgrp_num = link group number"
-        echo "    link_num = link number"
+        echo "    ldev_num = link device number (0)"
+        echo "    lgrp_num = link group number (0-63)"
+        echo "    link_num = link number (0-3)"
         echo "  option:"
-	echo "    state    = print state for target"
-	echo "    counters = print counters for link target"
+	echo "    state    = print state for the target"
+	echo "    counters = print counters for a link target (requires #:#:#)"
         exit;
 }
 
-if [ "$#" -eq 2 ] ; then
+if [ "$#" -eq 1 ] ; then
+	if [ $1 = "-h" ] ; then
+		usage
+	elif [ $1 = "--help" ] ; then
+		usage
+	fi
+elif [ "$#" -eq 2 ] ; then
         case $2 in
                 state )
                         option=state
@@ -28,7 +34,7 @@ if [ "$#" -eq 2 ] ; then
                         usage
                         ;;
         esac
-elif [ "$#" -ne 1 ] ; then
+else
         usage
 fi
 
@@ -138,10 +144,10 @@ function print_counters {
         for counter in ${LINK_PATH}/counters/* ; do
                 val=$(cat ${counter})
 		if [ ${first} -eq 0 ] ; then
-                	printf " %20s = ${val}\n" $(basename "${counter}")
+                	printf " %30s = ${val}\n" $(basename "${counter}")
 			first=1
 		else
-                	printf "           | %20s = ${val}\n" $(basename "${counter}")
+                	printf "           | %30s = ${val}\n" $(basename "${counter}")
 		fi
         done
 }
@@ -357,7 +363,7 @@ function print_fec {
         local up_check_ccw_limit=$(cat ${LINK_PATH}/fec/up_check/ccw_limit)
         local up_check_ucw_limit=$(cat ${LINK_PATH}/fec/up_check/ucw_limit)
         local mon_period=$(cat ${LINK_PATH}/fec/monitor_check/period_ms)
-        local mon_ccw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_crit_limit)
+        local mon_ccw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_down_limit)
         local mon_ccw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_warn_limit)
         local mon_ucw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_down_limit)
         local mon_ucw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_warn_limit)

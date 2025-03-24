@@ -32,7 +32,7 @@ static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 		ucw_down_limit, period_ms);
 
 	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
+		return scnprintf(buf, PAGE_SIZE, "not_monitoring\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", ucw_down_limit);
 }
@@ -56,7 +56,7 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 		ucw_warn_limit, period_ms);
 
 	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
+		return scnprintf(buf, PAGE_SIZE, "not_monitoring\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", ucw_warn_limit);
 }
@@ -80,7 +80,7 @@ static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 		ccw_down_limit, period_ms);
 
 	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
+		return scnprintf(buf, PAGE_SIZE, "not_monitoring\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", ccw_down_limit);
 }
@@ -104,7 +104,7 @@ static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 		ccw_warn_limit, period_ms);
 
 	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "monitor not running\n");
+		return scnprintf(buf, PAGE_SIZE, "not_monitoring\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", ccw_warn_limit);
 }

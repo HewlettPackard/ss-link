@@ -202,8 +202,16 @@ const char *sl_core_serdes_lane_state_str(u8 lane_state)
 	switch (lane_state) {
 	case SL_CORE_HW_SERDES_LANE_STATE_DOWN:
 		return "down";
-	case SL_CORE_HW_SERDES_LANE_STATE_BUSY:
-		return "busy";
+	case SL_CORE_HW_SERDES_LANE_STATE_SETUP:
+		return "setup";
+	case SL_CORE_HW_SERDES_LANE_STATE_CONFIG:
+		return "config";
+	case SL_CORE_HW_SERDES_LANE_STATE_START:
+		return "start";
+	case SL_CORE_HW_SERDES_LANE_STATE_CHECK:
+		return "check";
+	case SL_CORE_HW_SERDES_LANE_STATE_STOP:
+		return "stop";
 	case SL_CORE_HW_SERDES_LANE_STATE_UP:
 		return "up";
 	default:

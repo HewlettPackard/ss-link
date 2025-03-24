@@ -11,6 +11,7 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_str.h"
 #include "sl_sysfs_serdes_state.h"
+#include "hw/sl_core_hw_serdes_lane.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -19,40 +20,40 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	u32                              state;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
+	state     = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state tx show (asic_lane_num = %u, state = %u %s)",
-		lane_kobj->asic_lane_num, core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].tx,
-		sl_core_serdes_lane_state_str(core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].tx));
+		lane_kobj->asic_lane_num, state, sl_core_serdes_lane_state_str(state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_core_serdes_lane_state_str(core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].tx));
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_serdes_lane_state_str(state));
 }
 
 static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	u32                              state;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
+	state     = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state rx show (asic_lane_num = %u, state = %u %s)",
-		lane_kobj->asic_lane_num, core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].rx,
-		sl_core_serdes_lane_state_str(core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].rx));
+		lane_kobj->asic_lane_num, state, sl_core_serdes_lane_state_str(state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_core_serdes_lane_state_str(core_lgrp->serdes.lane_state[lane_kobj->asic_lane_num].rx));
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_serdes_lane_state_str(state));
 }
 
 static struct kobj_attribute state_tx = __ATTR_RO(tx);

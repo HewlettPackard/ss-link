@@ -211,7 +211,7 @@ static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-continuous\n");
+		return scnprintf(buf, PAGE_SIZE, "enabled_continuous\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
 }
@@ -226,9 +226,9 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		"loopback show (link = 0x%p)", ctl_link);
 
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-headshell\n");
+		return scnprintf(buf, PAGE_SIZE, "enabled_headshell\n");
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-remote\n");
+		return scnprintf(buf, PAGE_SIZE, "enabled_remote\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
 }

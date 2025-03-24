@@ -5,8 +5,12 @@
 #define _SL_CORE_HW_SERDES_LANE_H_
 
 #define SL_CORE_HW_SERDES_LANE_STATE_DOWN    0
-#define SL_CORE_HW_SERDES_LANE_STATE_BUSY    1
-#define SL_CORE_HW_SERDES_LANE_STATE_UP      2
+#define SL_CORE_HW_SERDES_LANE_STATE_SETUP   1
+#define SL_CORE_HW_SERDES_LANE_STATE_CONFIG  2
+#define SL_CORE_HW_SERDES_LANE_STATE_START   3
+#define SL_CORE_HW_SERDES_LANE_STATE_CHECK   4
+#define SL_CORE_HW_SERDES_LANE_STATE_STOP    5
+#define SL_CORE_HW_SERDES_LANE_STATE_UP      6
 
 #define SL_CORE_HW_SERDES_ENCODING_NRZ     2
 #define SL_CORE_HW_SERDES_ENCODING_PAM4_NR 4
@@ -63,8 +67,6 @@ struct sl_media_serdes_settings;
 
 u8   sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num);
 u8   sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_link *core_link, u8 serdes_lane_num);
-u8   sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num);
-u8   sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_link *core_link, u8 asic_lane_num);
 
 int  sl_core_hw_serdes_lane_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre1);
 int  sl_core_hw_serdes_lane_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre2);
@@ -98,5 +100,10 @@ void sl_core_hw_serdes_lane_down_tx_stop(struct sl_core_link *core_link, u8 serd
 
 int  sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper);
 int  sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower);
+
+void sl_core_hw_serdes_tx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 state);
+u32  sl_core_hw_serdes_tx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
+void sl_core_hw_serdes_rx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 state);
+u32  sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
 
 #endif /* _SL_CORE_HW_SERDES_LANE_H_ */
