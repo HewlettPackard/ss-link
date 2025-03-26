@@ -300,7 +300,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 			complete_all(&ctl_link->down_complete);
 
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
-				SL_LINK_DOWN_CAUSE_CANCELED_MAP, core_imap);
+				core_cause_map, core_imap);
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
@@ -323,13 +323,17 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 
 			sl_ctl_link_up_clock_clear(ctl_link);
 
+			core_cause_map |= SL_LINK_DOWN_CAUSE_UP_TRIES_MAP;
+			sl_core_link_last_up_fail_cause_map_set(ctl_link->ctl_lgrp->ctl_ldev->num,
+				ctl_link->ctl_lgrp->num, ctl_link->num, core_cause_map);
+
 			flush_work(&ctl_link->ctl_lgrp->notif_work);
 			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
 			complete_all(&ctl_link->down_complete);
 
 			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
-				SL_LINK_DOWN_CAUSE_UP_TRIES_MAP, core_imap);
+				core_cause_map, core_imap);
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);

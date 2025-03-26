@@ -328,6 +328,12 @@ void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link
 						   down_cause_map, down_time);
 }
 
+void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map)
+{
+	sl_core_data_link_last_up_fail_cause_map_set(sl_core_link_get(ldev_num, lgrp_num, link_num),
+					      up_fail_cause_map);
+}
+
 void sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
 	time64_t *limit_crossed_time)
 {
