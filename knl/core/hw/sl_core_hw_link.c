@@ -928,11 +928,16 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 	struct sl_media_lgrp               *media_lgrp;
 	u64                                 down_cause;
+	u64                                 data64;
+	u64                                 replay_ct_max;
+	u32                                 port;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_FAULT_INTR]);
+	port      = core_link->core_lgrp->num;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"fault intr work (flgs = 0x%016llX, 0x%016llX, 0x%016llX, 0x%016llX)",
+		"fault intr work (port = %u, flgs = 0x%016llX, 0x%016llX, 0x%016llX, 0x%016llX)",
+		port,
 		core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[0],
 		core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[1],
 		core_link->intrs[SL_CORE_HW_INTR_LINK_FAULT].source[2],
@@ -997,10 +1002,19 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		llr_replay_max, local_fault, remote_fault, link_down);
 
 	down_cause = SL_LINK_DOWN_CAUSE_NONE;
+
 	if (llr_replay_max) {
-		sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
-		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
-		down_cause |= SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP;
+		sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SM(core_link->num), &data64);
+		replay_ct_max = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_GET(data64);
+		if (replay_ct_max == 0xFF) {
+			sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred, ignored");
+			if (!local_fault && !remote_fault && !link_down)
+				return;
+		} else {
+			sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
+			sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
+			down_cause |= SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP;
+		}
 	}
 	if (local_fault) {
 		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
