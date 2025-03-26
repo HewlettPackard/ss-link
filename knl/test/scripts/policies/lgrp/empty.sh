@@ -3,5 +3,5 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-fabric_link=0 # disabled
-r1_partner=1  # disabled
+# TODO: When we get lgrp policies put them here.
+

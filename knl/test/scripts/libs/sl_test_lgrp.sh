@@ -681,7 +681,13 @@ function sl_test_lgrp_policy_set {
 
 	source ${policy}
 
-	for filename in ${SL_TEST_LGRP_DEBUGFS_POLICY_DIR}/* ; do
+	debugfs_files=($(find ${SL_TEST_LGRP_DEBUGFS_POLICY_DIR} -type f))
+	if [[ "${#debugfs_files[@]}" == 0 ]]; then
+		sl_test_debug_log "${FUNCNAME}" "no debugfs files"
+		return 0
+	fi
+
+	for filename in "${debugfs_files[@]}" ; do
 		item=$(basename ${filename})
 		if [ -z "${!item}" ]; then
 			sl_test_error_log "${FUNCNAME}" "policy missing (item = ${item})"

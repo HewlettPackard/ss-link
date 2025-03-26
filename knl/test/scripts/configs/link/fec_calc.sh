@@ -16,4 +16,3 @@ link_up_tries_max=0
 lock=0
 pause=0
 remote_loopback=0
-serdes_loopback=1

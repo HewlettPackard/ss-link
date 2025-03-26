@@ -7,7 +7,7 @@
 brief="Verify the FEC monitor policy matches the calculated link policy for ck400"
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
-settings="${SL_TEST_DIR}/systems/settings/ck400_x1_fec_calc_il.sh"
+settings="${SL_TEST_DIR}/systems/settings/ck400_x1_il_fec_calc.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 ldev_num=0
@@ -126,10 +126,10 @@ function test_verify {
 				return 1
 			fi
 
-			if [[ "${up_ccw_limit_config}" != "8500000" ]]; then
+			if [[ "${up_ccw_limit_config}" != "0" ]]; then
 				sl_test_error_log "${FUNCNAME}" "fec up mismatch"
 				sl_test_error_log "${FUNCNAME}" \
-					"(${up_ccw_limit_config} != 42)"
+					"(${up_ccw_limit_config} != 0)"
 				sl_test_error_log "${FUNCNAME}" \
 					"(up_ccw_limit_config = ${up_ccw_limit_config})"
 				return 1

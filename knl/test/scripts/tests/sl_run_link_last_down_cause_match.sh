@@ -10,7 +10,7 @@ matching last down cause in sysfs."
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/ck400_x1_fec_on_il.sh"
+settings="${SL_TEST_DIR}/systems/settings/ck400_x1_il_fec_on.sh"
 ldev_num=0
 lgrp_nums=({0..63})
 

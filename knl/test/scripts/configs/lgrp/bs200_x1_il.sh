@@ -10,5 +10,5 @@ furcation=0x1         # SL_MEDIA_FURCATION_X1
 lock=0
 mfs=1500
 r1_partner=0
-serdes_loopback=0
+serdes_loopback=1
 tech_map=$((1 << 15)) # SL_LGRP_CONFIG_TECH_BS_200G
