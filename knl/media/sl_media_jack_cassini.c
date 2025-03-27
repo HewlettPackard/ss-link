@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/sl_media.h>
 #include <linux/string.h>
@@ -81,10 +81,13 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			if (sl_media_jack_is_cable_format_invalid(media_jack)) {
 				memset(&media_attr, 0, sizeof(struct sl_media_attr));
 				media_attr.options |= SL_MEDIA_OPT_CABLE_FORMAT_INVALID;
+				media_jack->cable_info[0].ldev_num = ldev_num;
+				media_jack->cable_info[0].lgrp_num = lgrp_num;
 				rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0],
 									&media_attr);
 				if (rtn)
 					sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
+				sl_media_lgrp_real_cable_if_invalid_error_send(ldev_num, lgrp_num);
 			}
 		}
 		/*
@@ -127,6 +130,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	/*
 	 * only first element is valid in cable_info since single lgrp on cassini
 	 */
+	media_jack->cable_info[0].ldev_num = ldev_num;
+	media_jack->cable_info[0].lgrp_num = lgrp_num;
 	rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0], &media_attr);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);

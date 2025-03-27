@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_DATA_JACK_H_
 #define _SL_MEDIA_DATA_JACK_H_
@@ -30,6 +30,6 @@ void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 
 void sl_media_data_jack_cable_present_send(struct sl_media_lgrp *media_lgrp);
 void sl_media_data_jack_cable_not_present_send(struct sl_media_lgrp *media_lgrp);
-void sl_media_data_jack_cable_error_send(struct sl_media_lgrp *media_lgrp, int error);
+void sl_media_data_jack_cable_error_send(struct sl_media_lgrp *media_lgrp);
 
 #endif /* _SL_MEDIA_DATA_JACK_H_ */

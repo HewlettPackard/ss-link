@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -89,8 +89,17 @@ void sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num)
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if present send");
-	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED)
-		sl_media_data_jack_cable_present_send(media_lgrp);
+	sl_media_data_jack_cable_present_send(media_lgrp);
+}
+
+void sl_media_lgrp_real_cable_if_invalid_error_send(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if invalid error send");
+	if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+		sl_media_data_jack_cable_error_send(media_lgrp);
 }
 
 u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)

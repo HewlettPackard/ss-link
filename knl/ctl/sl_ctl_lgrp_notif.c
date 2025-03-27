@@ -79,6 +79,9 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 	if (types & SL_LGRP_NOTIF_MEDIA_PRESENT)
 		sl_media_lgrp_real_cable_if_present_send(ldev_num, lgrp_num);
 
+	if (types & SL_LGRP_NOTIF_MEDIA_ERROR)
+		sl_media_lgrp_real_cable_if_invalid_error_send(ldev_num, lgrp_num);
+
 	return 0;
 }
 
