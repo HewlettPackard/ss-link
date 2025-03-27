@@ -5,7 +5,6 @@
 #include <linux/spinlock.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
-#include <linux/preempt.h>
 
 #include "sl_kconfig.h"
 #include "sl_ctl_link.h"
@@ -20,6 +19,7 @@
 #include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_link.h"
 #include "hw/sl_core_hw_mac.h"
+#include "hw/sl_core_hw_llr.h"
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_serdes_link.h"
@@ -35,16 +35,24 @@
 static void sl_core_hw_link_off(struct sl_core_link *core_link)
 {
 	struct sl_core_mac *core_mac;
+	struct sl_core_llr *core_llr;
 	u64                 rx_state;
 	u64                 tx_state;
 
 	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
 				   core_link->core_lgrp->num, core_link->num);
+	core_llr = sl_core_llr_get(core_link->core_lgrp->core_ldev->num,
+				   core_link->core_lgrp->num, core_link->num);
+
 	if (core_mac) {
 		rx_state = sl_core_hw_mac_rx_state_get(core_mac);
 		tx_state = sl_core_hw_mac_tx_state_get(core_mac);
+		/* stop TX mac before PCS so we don't lock up PCS */
 		sl_core_hw_mac_tx_stop(core_mac);
 	}
+
+	if (core_llr)
+		sl_core_hw_llr_stop_cmd(core_llr, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
 
 	sl_core_hw_pcs_stop(core_link);
 
@@ -53,6 +61,7 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	sl_core_hw_serdes_link_down(core_link);
 
+	/* reset LLR to reset ordered sets */
 	sl_core_hw_reset_link(core_link);
 
 	if (core_mac) {

@@ -2,7 +2,6 @@
 /* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
-#include <linux/preempt.h>
 
 #include "sl_kconfig.h"
 

@@ -7,7 +7,6 @@
 #include <linux/workqueue.h>
 #include <linux/spinlock.h>
 #include <linux/kobject.h>
-#include <linux/mutex.h>
 #include <linux/wait.h>
 
 #include "sl_asic.h"
