@@ -510,6 +510,9 @@ int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 
+	if (media_lgrp->speeds_kobj_init)
+		return 0;
+
 	media_lgrp->supported_speeds_num = 0;
 	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) {
 		for_each_set_bit(i, (unsigned long *)&media_lgrp->cable_info->media_attr.speeds_map, 32) {
@@ -545,6 +548,8 @@ int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 		}
 	}
 
+	media_lgrp->speeds_kobj_init = true;
+
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "media speed nodes created");
 
 	return 0;
@@ -566,9 +571,12 @@ void sl_sysfs_media_delete(struct sl_ctl_lgrp *ctl_lgrp)
 		return;
 	}
 
-	for (i = 0; i < media_lgrp->supported_speeds_num; ++i)
-		kobject_put(&media_lgrp->speeds_kobj[i].kobj);
+	if (media_lgrp->speeds_kobj_init) {
+		for (i = 0; i < media_lgrp->supported_speeds_num; ++i)
+			kobject_put(&media_lgrp->speeds_kobj[i].kobj);
+	}
 
+	media_lgrp->speeds_kobj_init = false;
 	kobject_put(&media_lgrp->parent_speed_kobj);
 	kobject_put(&media_lgrp->kobj);
 }

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_LGRP_H_
 #define _SL_MEDIA_LGRP_H_
@@ -36,6 +36,7 @@ struct sl_media_lgrp {
 	struct kobject                      parent_speed_kobj;
 	struct sl_media_lgrp_speed_kobject  speeds_kobj[SL_MEDIA_MAX_SUPPORTED_SPEEDS];
 	u8                                  supported_speeds_num;
+	bool                                speeds_kobj_init;
 
 	spinlock_t                          log_lock;
 	char                                connect_id[SL_LOG_CONNECT_ID_LEN + 1];

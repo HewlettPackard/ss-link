@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -41,6 +41,8 @@ int sl_media_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 	media_lgrp->magic       = SL_MEDIA_LGRP_MAGIC;
 	media_lgrp->num         = lgrp_num;
 	media_lgrp->media_ldev  = sl_media_data_ldev_get(ldev_num);
+
+	media_lgrp->speeds_kobj_init = false;
 	spin_lock_init(&media_lgrp->log_lock);
 	snprintf(media_lgrp->connect_id, sizeof(media_lgrp->connect_id), "lgrp%02u", lgrp_num);
 
