@@ -56,6 +56,8 @@ static int sl_core_hw_serdes_link_up_an_settings(struct sl_core_link *core_link)
 	case SL_MEDIA_FURCATION_X4:
 		core_link->serdes.lane_map = BIT(core_link->num);
 		break;
+	default:
+		core_link->serdes.lane_map = 0;
 	}
 	core_link->serdes.lane_map <<= (4 * (core_link->core_lgrp->num & BIT(0)));
 	sl_core_log_dbg(core_link, LOG_NAME, "link up an settings (lane_map = 0x%02X)",
@@ -166,6 +168,8 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 	case SL_MEDIA_FURCATION_X4:
 		core_link->serdes.lane_map = BIT(core_link->num);
 		break;
+	default:
+		core_link->serdes.lane_map = 0;
 	}
 	core_link->serdes.lane_map <<= (4 * (core_link->core_lgrp->num & BIT(0)));
 	sl_core_log_dbg(core_link, LOG_NAME, "link up settings (lane_map = 0x%02X)",

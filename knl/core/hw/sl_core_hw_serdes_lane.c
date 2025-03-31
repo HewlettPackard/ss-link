@@ -609,18 +609,17 @@ out:
 
 int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 {
-	int rtn;
-	u8  lane_map;
-	u8  serdes_lane_num;
+	int           rtn;
+	unsigned long lane_map;
+	u8            serdes_lane_num;
 
 	lane_map = core_link->serdes.lane_map;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "lanes up (lane_map = 0x%02X)", lane_map);
+	sl_core_log_dbg(core_link, LOG_NAME, "lanes up (lane_map = 0x%02lX)", lane_map);
 
 	/* start */
-	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-			continue;
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
+		sl_core_log_dbg(core_link, LOG_NAME, "lanes up (serdes_lane_num = %u)", serdes_lane_num);
 		rtn = sl_core_hw_serdes_lane_up_rx_setup(core_link, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_setup failed [%d]", rtn);
@@ -660,9 +659,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	}
 
 	/* clock align */
-	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-			continue;
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 		rtn = sl_core_hw_serdes_lane_up_clock_align(core_link->core_lgrp, serdes_lane_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_clock_align failed [%d]", rtn);
@@ -688,9 +685,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 #endif
 
 	if (check) {
-		for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-			if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-				continue;
+		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 			rtn = sl_core_hw_serdes_lane_up_tx_check(core_link, serdes_lane_num);
 			if (rtn) {
 				sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_check failed [%d]", rtn);
@@ -709,9 +704,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 		/* quality check */
 		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 			sl_core_log_dbg(core_link, LOG_NAME, "loopback off so check quality");
-			for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-				if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-					continue;
+			for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 				rtn = sl_core_hw_serdes_lane_up_quality_check(core_link, serdes_lane_num);
 				if (rtn) {
 					sl_core_log_err_trace(core_link, LOG_NAME,
@@ -725,9 +718,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	}
 
 	/* up */
-	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-			continue;
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 		sl_core_hw_serdes_tx_lane_state_set(core_link->core_lgrp,
 			sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num),
 			SL_CORE_HW_SERDES_LANE_STATE_UP);
@@ -743,23 +734,19 @@ out:
 
 void sl_core_hw_serdes_lanes_down(struct sl_core_link *core_link)
 {
-	u8 lane_map;
-	u8 serdes_lane_num;
+	unsigned long lane_map;
+	u8            serdes_lane_num;
 
 	lane_map = core_link->serdes.lane_map;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "lanes down (lane_map = 0x%02X)", lane_map);
+	sl_core_log_dbg(core_link, LOG_NAME, "lanes down (lane_map = 0x%02lX)", lane_map);
 
-	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-			continue;
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 		sl_core_hw_serdes_lane_down_tx_stop(core_link, serdes_lane_num);
 		sl_core_hw_serdes_lane_down_rx_stop(core_link, serdes_lane_num);
 	}
 
-	for (serdes_lane_num = 0; serdes_lane_num < SL_MAX_SERDES_LANES; ++serdes_lane_num) {
-		if (((lane_map >> serdes_lane_num) & 0x1) == 0)
-			continue;
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 		sl_core_hw_serdes_tx_lane_state_set(core_link->core_lgrp,
 			sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num),
 			SL_CORE_HW_SERDES_LANE_STATE_DOWN);
