@@ -83,6 +83,7 @@ static u16 serdes_addrs_osprey[] = {
 	[SERDES_MICRO_A_COM_AHB_RDADDR_MSW]                                    = 0xD209,
 	[SERDES_MICRO_A_COM_AHB_RDADDR_LSW]                                    = 0xD208,
 	[SERDES_MICRO_A_COM_AHB_RDDATA_LSW]                                    = 0xD20A,
+	[SERDES_DIG_COM_TOP_USER_CONTROL_0]                                    = 0xD104,
 };
 
 #endif /* _SL_CORE_HW_SERDES_OSPREY_H_ */

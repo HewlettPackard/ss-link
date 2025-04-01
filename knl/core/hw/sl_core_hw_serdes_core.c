@@ -119,6 +119,9 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 	}
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "uc active");
 
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, x,
+		addrs[SERDES_DIG_COM_TOP_USER_CONTROL_0], 0x04E2, 0xFFF); /* set heartbeat_count */
+
 	rtn = 0;
 out:
 	return rtn;

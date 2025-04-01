@@ -60,7 +60,7 @@ int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes
 	sl_core_lgrp_write64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), data64);
 	sl_core_lgrp_flush64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
-	data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 0); /* match sbus effect */
+	data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 1);
 	sl_core_lgrp_write64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), data64);
 	sl_core_lgrp_flush64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
 

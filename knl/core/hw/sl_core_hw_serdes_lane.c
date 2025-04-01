@@ -13,6 +13,7 @@
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_sbus.h"
+#include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_uc_ram.h"
 #include "hw/sl_core_hw_settings.h"
 #include "data/sl_core_data_lgrp.h"
@@ -607,6 +608,23 @@ out:
 	return rtn;
 }
 
+void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	u64 data64;
+	u32 port;
+	u8  asic_lane_num;
+
+	port = core_link->core_lgrp->num;
+	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "pmd_tx_enable (port = %u)", port);
+
+	sl_core_lgrp_read64(core_link->core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
+	data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 0);
+	sl_core_lgrp_write64(core_link->core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), data64);
+	sl_core_lgrp_flush64(core_link->core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
+}
+
 int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 {
 	int           rtn;
@@ -671,10 +689,8 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 #if 0 // FIXME: removed for now, but leave here just in case.
 	/* link training check */
 	if (is_flag_set(flags, SL_CORE_LINK_CFG_FLAG_LINKTRAIN_ON)) {
-		for (lane_num = 0; lane_num < SL_MAX_LANES; ++lane_num) {
-			if (((lane_map >> lane_num) & 0x1) == 0)
-				continue;
-			rtn = sl_core_hw_serdes_lane_up_linktrain_check(core_link->core_lgrp, lane_num);
+		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
+			rtn = sl_core_hw_serdes_lane_up_linktrain_check(core_link->core_lgrp, serdes_lane_num);
 			if (rtn) {
 				sl_core_log_err(core_link, LOG_NAME,
 					"lane_up_linktrain_check failed [%d]", rtn);
@@ -693,6 +709,19 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 					SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_MAP);
 				goto out;
 			}
+		}
+	}
+
+	/* sleep to give last lane time to settle */
+	msleep(20);
+
+	sl_core_hw_pcs_tx_start(core_link);
+
+	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES)
+		sl_core_hw_pmd_tx_enable(core_link, serdes_lane_num);
+
+	if (check) {
+		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 			rtn = sl_core_hw_serdes_lane_up_rx_check(core_link, serdes_lane_num);
 			if (rtn) {
 				sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_rx_check failed [%d]", rtn);
@@ -701,6 +730,9 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 				goto out;
 			}
 		}
+	}
+
+	if (check) {
 		/* quality check */
 		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 			sl_core_log_dbg(core_link, LOG_NAME, "loopback off so check quality");

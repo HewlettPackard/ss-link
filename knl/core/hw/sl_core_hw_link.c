@@ -356,8 +356,6 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		}
 	}
 
-	sl_core_hw_pcs_tx_start(core_link);
-
 	rtn = sl_core_hw_serdes_link_up(core_link);
 	switch (rtn) {
 	case 0:
