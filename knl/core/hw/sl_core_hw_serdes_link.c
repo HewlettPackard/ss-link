@@ -92,7 +92,7 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 		return -EIO;
 	}
 
-	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_NO_CHECK);
+	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_AUTONEG);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_lanes_up failed [%d]", rtn);
@@ -254,7 +254,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 		return -EIO;
 	}
 
-	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_CHECK);
+	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_ATSPEED);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"serdes_lanes_up failed [%d]", rtn);

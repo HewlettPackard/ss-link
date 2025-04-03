@@ -31,11 +31,15 @@ u8 sl_core_hw_serdes_rx_asic_lane_num_get(struct sl_core_link *core_link, u8 ser
 
 	for (asic_lane_num = 0; asic_lane_num < SL_MAX_LANES; ++asic_lane_num)
 		if (core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source +
-				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num)
+				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num) {
+			sl_core_log_dbg(core_lgrp, LOG_NAME,
+				"RX asic lane get (asic_lane_num = %u, serdes_lane_num = %u)",
+				asic_lane_num, serdes_lane_num);
 			return asic_lane_num;
+		}
 
 	sl_core_log_err_trace(core_lgrp, LOG_NAME,
-		"RX lane num not found (serdes_lane_num = %u)", serdes_lane_num);
+		"RX asic lane get not found (serdes_lane_num = %u)", serdes_lane_num);
 	return 0;
 }
 
@@ -48,18 +52,22 @@ u8 sl_core_hw_serdes_tx_asic_lane_num_get(struct sl_core_link *core_link, u8 ser
 
 	for (asic_lane_num = 0; asic_lane_num < SL_MAX_LANES; ++asic_lane_num)
 		if (core_lgrp->serdes.dt.lane_info[asic_lane_num].tx_source +
-				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num)
+				(4 * (core_lgrp->num & BIT(0))) == serdes_lane_num) {
+			sl_core_log_dbg(core_lgrp, LOG_NAME,
+				"TX asic lane get (asic_lane_num = %u, serdes_lane_num = %u)",
+				asic_lane_num, serdes_lane_num);
 			return asic_lane_num;
+		}
 
 	sl_core_log_err_trace(core_lgrp, LOG_NAME,
-		"TX lane num not found (serdes_lane_num = %u)", serdes_lane_num);
+		"TX asic lane get not found (serdes_lane_num = %u)", serdes_lane_num);
 	return 0;
 }
 
 static u8 sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
 {
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"RX lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
+		"RX serdes lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
 		core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source + (4 * (core_lgrp->num & BIT(0))));
 
 	return core_lgrp->serdes.dt.lane_info[asic_lane_num].rx_source + (4 * (core_lgrp->num & BIT(0)));
@@ -68,7 +76,7 @@ static u8 sl_core_hw_serdes_rx_serdes_lane_num_get(struct sl_core_lgrp *core_lgr
 static u8 sl_core_hw_serdes_tx_serdes_lane_num_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
 {
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"TX lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
+		"TX serdes lane get (asic_lane_num = %u, serdes_lane_num = %lu)", asic_lane_num,
 		core_lgrp->serdes.dt.lane_info[asic_lane_num].tx_source + (4 * (core_lgrp->num & BIT(0))));
 
 	return core_lgrp->serdes.dt.lane_info[asic_lane_num].tx_source + (4 * (core_lgrp->num & BIT(0)));
@@ -614,10 +622,12 @@ void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_lane_num
 	u32 port;
 	u8  asic_lane_num;
 
-	port = core_link->core_lgrp->num;
+	port          = core_link->core_lgrp->num;
 	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
 
-	sl_core_log_dbg(core_link, LOG_NAME, "pmd_tx_enable (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"pmd_tx_enable (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
+		port, serdes_lane_num, asic_lane_num);
 
 	sl_core_lgrp_read64(core_link->core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
 	data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 0);
@@ -625,7 +635,7 @@ void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_lane_num
 	sl_core_lgrp_flush64(core_link->core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
 }
 
-int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
+int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg)
 {
 	int           rtn;
 	unsigned long lane_map;
@@ -633,7 +643,8 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 
 	lane_map = core_link->serdes.lane_map;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "lanes up (lane_map = 0x%02lX)", lane_map);
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"lanes up (lane_map = 0x%02lX, is_autoneg = %d)", lane_map, is_autoneg);
 
 	/* start */
 	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
@@ -644,7 +655,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link, serdes_lane_num);
+		rtn = sl_core_hw_serdes_lane_up_tx_setup(core_link, serdes_lane_num, is_autoneg);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_tx_setup failed [%d]", rtn);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP);
@@ -700,7 +711,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	}
 #endif
 
-	if (check) {
+	if (!is_autoneg) {
 		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 			rtn = sl_core_hw_serdes_lane_up_tx_check(core_link, serdes_lane_num);
 			if (rtn) {
@@ -715,12 +726,12 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 	/* sleep to give last lane time to settle */
 	msleep(20);
 
-	sl_core_hw_pcs_tx_start(core_link);
+	if (!is_autoneg) {
+		sl_core_hw_pcs_tx_start(core_link);
 
-	for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES)
-		sl_core_hw_pmd_tx_enable(core_link, serdes_lane_num);
+		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES)
+			sl_core_hw_pmd_tx_enable(core_link, serdes_lane_num);
 
-	if (check) {
 		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 			rtn = sl_core_hw_serdes_lane_up_rx_check(core_link, serdes_lane_num);
 			if (rtn) {
@@ -730,10 +741,7 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check)
 				goto out;
 			}
 		}
-	}
 
-	if (check) {
-		/* quality check */
 		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 			sl_core_log_dbg(core_link, LOG_NAME, "loopback off so check quality");
 			for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {

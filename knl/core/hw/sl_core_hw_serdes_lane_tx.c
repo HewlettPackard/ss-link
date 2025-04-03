@@ -18,7 +18,7 @@
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
-int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num)
+int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num, bool is_autoneg)
 {
 	int                  rtn;
 	u64                  data64;
@@ -31,8 +31,8 @@ int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes
 	asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"lane up tx setup (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
-		port, serdes_lane_num, asic_lane_num);
+		"lane up tx setup (port = %u, serdes_lane_num = %u, asic_lane_num = %u, is_autoneg = %d)",
+		port, serdes_lane_num, asic_lane_num, is_autoneg);
 
 	sl_core_hw_serdes_tx_lane_state_set(core_lgrp,
 		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_SETUP);
@@ -60,7 +60,10 @@ int sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes
 	sl_core_lgrp_write64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), data64);
 	sl_core_lgrp_flush64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
-	data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 1);
+	if (is_autoneg)
+		data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 0);
+	else
+		data64 = SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_DISABLE_UPDATE(data64, 1);
 	sl_core_lgrp_write64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), data64);
 	sl_core_lgrp_flush64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num));
 

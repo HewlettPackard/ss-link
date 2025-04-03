@@ -34,8 +34,8 @@
 #define SL_CORE_HW_SERDES_DFE_DISABLE 0
 #define SL_CORE_HW_SERDES_DFE_ENABLE  1
 
-#define SL_CORE_HW_SERDES_NO_CHECK false
-#define SL_CORE_HW_SERDES_CHECK    true
+#define SL_CORE_HW_SERDES_AUTONEG true
+#define SL_CORE_HW_SERDES_ATSPEED false
 
 /* NOTES
  *   asic_lane_num   = lane indicated on the asic (0-3)
@@ -86,8 +86,8 @@ u16  sl_core_hw_serdes_config(struct sl_core_lgrp *core_lgrp,
 int  sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 lane_num, u8 *dfe);
 int  sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble);
 
-int  sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool check);
-int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num);
+int  sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg);
+int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num, bool is_autoneg);
 int  sl_core_hw_serdes_lane_up_tx_config(struct sl_core_link *core_link, u8 serdes_lane_num);
 int  sl_core_hw_serdes_lane_up_tx_start(struct sl_core_link *core_link, u8 serdes_lane_num);
 int  sl_core_hw_serdes_lane_up_rx_setup(struct sl_core_link *core_link, u8 serdes_lane_num);

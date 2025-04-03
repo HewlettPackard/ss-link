@@ -131,20 +131,20 @@ void sl_core_hw_pcs_config_swizzles(struct sl_core_link *core_link)
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_TX_PCS, data64);
 }
 
-void sl_core_hw_pcs_tx_start(struct sl_core_link *link)
+void sl_core_hw_pcs_tx_start(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
 
-	port = link->core_lgrp->num;
+	port = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(link, LOG_NAME, "tx start (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME, "tx start (port = %u)", port);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num), &data64);
 	data64 = SS2_PORT_PML_CFG_PCS_SUBPORT_PCS_ENABLE_UPDATE(data64, 1);
-	sl_core_write64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num), data64);
 
-	sl_core_flush64(link, SS2_PORT_PML_CFG_RX_PCS);
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
 }
 
 void sl_core_hw_pcs_rx_start(struct sl_core_link *link)
