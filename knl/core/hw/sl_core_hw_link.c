@@ -838,7 +838,7 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
 
-	sl_core_log_warn(core_link, LOG_NAME, "high symbol error ratio occurred");
+	sl_core_log_warn_trace(core_link, LOG_NAME, "high symbol error ratio occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))

@@ -32,7 +32,7 @@ static int sl_core_hw_serdes_link_up_an_settings(struct sl_core_link *core_link)
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp))
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"cable not supported - using default serdes settings");
 
 	sl_media_lgrp_media_serdes_settings_get(core_link->core_lgrp->core_ldev->num,
@@ -111,7 +111,7 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp))
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"cable not supported - using default serdes settings");
 
 	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
