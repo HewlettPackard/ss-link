@@ -6,6 +6,7 @@
 
 int             sl_test_debugfs_lgrp_create(struct dentry *top_dir);
 struct kobject *sl_test_port_sysfs_kobj_get(u8 lgrp_num);
+void            sl_test_port_sysfs_exit(u8 ldev_num);
 
 int             sl_test_lgrp_new(void);
 int             sl_test_lgrp_del(void);

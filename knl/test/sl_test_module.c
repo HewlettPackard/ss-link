@@ -9,6 +9,7 @@
 
 #include "sl_test.h"
 #include "sl_test_debugfs.h"
+#include "sl_test_debugfs_ldev.h"
 
 #define tostr(x)             #x
 #define version_str(a, b, c) tostr(a.b.c)
@@ -71,6 +72,8 @@ static void __exit sl_test_exit(void)
 	pr_info("%s: exit\n", module_name(THIS_MODULE));
 
 	sl_test_debugfs_destroy();
+
+	sl_test_ldev_exit();
 }
 module_exit(sl_test_exit);
 

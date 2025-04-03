@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
-#include "linux/kernel.h"
+#include <linux/kernel.h>
 #include <linux/debugfs.h>
 
+#include "sl_asic.h"
 #include "sl_ldev.h"
 #include "log/sl_log.h"
 #include "sl_test_common.h"
 #include "sl_test_debugfs_ldev.h"
+#include "sl_test_debugfs_lgrp.h"
 
 #define LOG_BLOCK "ldev"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
@@ -178,5 +180,15 @@ int sl_test_ldev_new(void)
 int sl_test_ldev_del(void)
 {
 	//TODO: Delete ldev object.
+	return 0;
+}
+
+int sl_test_ldev_exit(void)
+{
+	u8 ldev_num;
+
+	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num)
+		sl_test_port_sysfs_exit(ldev_num);
+
 	return 0;
 }

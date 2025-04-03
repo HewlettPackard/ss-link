@@ -17,6 +17,7 @@
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
+#include "sl_test_debugfs_link.h"
 #include "sl_test_common.h"
 
 #define LOG_BLOCK "lgrp"
@@ -665,6 +666,19 @@ static void sl_test_port_sysfs_remove(u8 lgrp_num)
 	if (lgrp_port_dir[lgrp_num]) {
 		kobject_put(lgrp_port_dir[lgrp_num]);
 		lgrp_port_dir[lgrp_num] = NULL;
+	}
+}
+
+void sl_test_port_sysfs_exit(u8 ldev_num)
+{
+	u8 lgrp_num;
+	u8 link_num;
+
+	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
+		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num)
+			sl_test_link_remove(ldev_num, lgrp_num, link_num);
+
+		sl_test_port_sysfs_remove(lgrp_num);
 	}
 }
 

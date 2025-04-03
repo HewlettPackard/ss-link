@@ -6,6 +6,8 @@
 
 int sl_test_debugfs_link_create(struct dentry *top_dir);
 
+void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num);
+
 int sl_test_link_new(void);
 int sl_test_link_del(void);
 

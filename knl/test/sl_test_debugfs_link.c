@@ -236,14 +236,14 @@ static void sl_test_options_init(void)
 	test_option_use_fec_cntr.field = SL_TEST_OPT_USE_FEC_CNTR;
 }
 
-static void sl_test_link_init(void)
+static void sl_test_link_init(struct sl_link *link, u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
-	link.magic    = SL_LINK_MAGIC;
-	link.ver      = SL_LINK_VER;
-	link.size     = sizeof(link);
-	link.ldev_num = sl_test_debugfs_ldev_num_get();
-	link.lgrp_num = sl_test_debugfs_lgrp_num_get();
-	link.num      = 0;
+	link->magic    = SL_LINK_MAGIC;
+	link->ver      = SL_LINK_VER;
+	link->size     = sizeof(*link);
+	link->ldev_num = ldev_num;
+	link->lgrp_num = lgrp_num;
+	link->num      = link_num;
 }
 
 static void sl_test_link_config_init(void)
@@ -301,7 +301,7 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 		return -ENOMEM;
 	}
 
-	sl_test_link_init();
+	sl_test_link_init(&link, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
 	debugfs_create_u8("num", 0644, link_dir, &link.num);
 
@@ -453,7 +453,7 @@ static int sl_test_link_sysfs_init(u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-static void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
+void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
 {
 	if (sl_link_num_dir[lgrp_num][link_num]) {
 		kobject_put(sl_link_num_dir[lgrp_num][link_num]);
@@ -461,6 +461,20 @@ static void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
 		memset(&sl_link_num_dir_kobj[lgrp_num][link_num], 0, sizeof(sl_link_num_dir_kobj[lgrp_num][link_num]));
 		sl_link_num_dir[lgrp_num][link_num] = NULL;
 	}
+}
+
+void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	int            rtn;
+	struct sl_link sl_link;
+
+	sl_test_link_init(&sl_link, ldev_num, lgrp_num, link_num);
+
+	rtn = sl_link_del(&sl_link);
+	if (rtn)
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
+
+	sl_test_link_sysfs_remove(sl_link.lgrp_num, sl_link.num);
 }
 
 static struct kobject *sl_test_link_sysfs_get(u8 lgrp_num, u8 link_num)
