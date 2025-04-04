@@ -616,7 +616,7 @@ out:
 	return rtn;
 }
 
-void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_lane_num)
+static void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
 	u64 data64;
 	u32 port;

@@ -369,7 +369,7 @@ EXPORT_SYMBOL(sl_link_policy_opt_str);
 	SL_LINK_DOWN_ORIGIN_ASYNC   |\
 	SL_LINK_DOWN_ORIGIN_LINK_UP)
 
-int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, unsigned int cause_str_size, u64 mask)
+static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, unsigned int cause_str_size, u64 mask)
 {
 	int rtn;
 	int str_pos;

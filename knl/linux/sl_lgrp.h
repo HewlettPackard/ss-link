@@ -83,6 +83,7 @@ const char *sl_lgrp_config_tech_str(u32 config);
 const char *sl_lgrp_config_fec_str(u32 config);
 const char *sl_lgrp_furcation_str(u32 furcation);
 const char *sl_lgrp_notif_str(u32 notif);
+const char *sl_lgrp_config_opt_str(u32 option);
 const char *sl_lgrp_fec_mode_str(u32 mode);
 const char *sl_lgrp_llr_mode_str(u32 mode);
 
