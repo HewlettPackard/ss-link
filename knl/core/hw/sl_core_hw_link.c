@@ -82,7 +82,7 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "up callback (callback = 0x%p, state = %d)",
 		core_link->link.callbacks.up, core_link->link.state);
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+	if (sl_core_link_is_canceled(core_link)) {
 		sl_core_log_dbg(core_link, LOG_NAME, "up callback canceled");
 		return;
 	}

@@ -239,6 +239,21 @@ int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_
 	return 0;
 }
 
+bool sl_core_link_is_canceled(struct sl_core_link *core_link)
+{
+	bool          is_canceled;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	is_canceled  = core_link->link.is_canceled;
+	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"is_canceled = %s", is_canceled ? "true" : "false");
+
+	return is_canceled;
+}
+
 bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link)
 {
 	bool          is_canceled;

@@ -376,6 +376,7 @@ int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_cor
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy);
 int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_caps *link_caps);
 
+bool sl_core_link_is_canceled(struct sl_core_link *core_link);
 bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link);
 void sl_core_link_is_canceled_set(struct sl_core_link *core_link);
 void sl_core_link_is_canceled_clr(struct sl_core_link *core_link);

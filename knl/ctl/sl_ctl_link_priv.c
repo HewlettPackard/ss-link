@@ -243,6 +243,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		return 0;
 
 	case SL_CORE_LINK_STATE_DOWN:
+	case SL_CORE_LINK_STATE_TIMEOUT:
 		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_FAIL);
 
 		spin_lock_irqsave(&ctl_link->config_lock, irq_flags);
@@ -387,7 +388,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		}
 
 		sl_ctl_log_err(ctl_link, LOG_NAME,
-			"up callback work invalid (core_state = %u, core_imap = %s)", core_state, core_imap_str);
+			"up callback work invalid (core_state = %u %s, core_imap = %s)",
+			core_state, sl_core_link_state_str(core_state), core_imap_str);
 		sl_ctl_link_up_clock_clear(ctl_link);
 		sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
