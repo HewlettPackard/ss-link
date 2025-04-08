@@ -1,15 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LINK_AN_H_
 #define _SL_CORE_LINK_AN_H_
 
 struct sl_link_caps;
 
-#define SL_CORE_LINK_LP_CAPS_RUNNING BIT(0)
-#define SL_CORE_LINK_LP_CAPS_DATA    BIT(1)
-#define SL_CORE_LINK_LP_CAPS_TIMEOUT BIT(2)
-#define SL_CORE_LINK_LP_CAPS_ERROR   BIT(3)
+#define SL_CORE_LINK_LP_CAPS_RUNNING     BIT(0)
+#define SL_CORE_LINK_LP_CAPS_DATA        BIT(1)
+#define SL_CORE_LINK_LP_CAPS_TIMEOUT     BIT(2)
+#define SL_CORE_LINK_LP_CAPS_ERROR       BIT(3)
+#define SL_CORE_LINK_LP_CAPS_NOT_RUNNING BIT(4)
 
 #define SL_CORE_LINK_AN_MAX_PAGES 10
 
@@ -23,5 +24,7 @@ int  sl_core_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 int  sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num);
 void sl_core_link_an_lp_caps_free(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				  struct sl_link_caps *caps);
+
+u32  sl_core_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 #endif /* _SL_CORE_LINK_AN_H_ */

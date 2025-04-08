@@ -824,3 +824,20 @@ int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 
 	return 0;
 }
+
+int sl_ctl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
+{
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"an lp caps state get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return -EINVAL;
+	}
+
+	*state = sl_core_link_an_lp_caps_state_get(ldev_num, lgrp_num, link_num);
+
+	return 0;
+}

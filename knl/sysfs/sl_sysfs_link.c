@@ -277,6 +277,23 @@ static ssize_t total_time_ms_show(struct kobject *kobj, struct kobj_attribute *k
 	return scnprintf(buf, PAGE_SIZE, "%u\n", total_time_ms);
 }
 
+static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	u32                  lp_caps_state;
+	struct sl_ctl_link  *ctl_link;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	rtn = sl_ctl_link_an_lp_caps_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &lp_caps_state);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "an lp caps state show (lp_caps_state = %u %s)",
+		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_an_lp_caps_state_str(lp_caps_state));
+}
+
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
 static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
@@ -290,6 +307,7 @@ static struct kobj_attribute link_ucw_warn_limit_last_crossed_time = __ATTR_RO(u
 static struct kobj_attribute link_up_count                         = __ATTR_RO(up_count);
 static struct kobj_attribute link_up_time_ms                       = __ATTR_RO(up_time_ms);
 static struct kobj_attribute link_total_time_ms                    = __ATTR_RO(total_time_ms);
+static struct kobj_attribute link_lp_caps_state                    = __ATTR_RO(lp_caps_state);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -305,6 +323,7 @@ static struct attribute *link_attrs[] = {
 	&link_up_count.attr,
 	&link_up_time_ms.attr,
 	&link_total_time_ms.attr,
+	&link_lp_caps_state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link);

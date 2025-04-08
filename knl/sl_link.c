@@ -334,6 +334,25 @@ const char *sl_link_state_str(u32 state)
 }
 EXPORT_SYMBOL(sl_link_state_str);
 
+const char *sl_link_an_lp_caps_state_str(u32 lp_caps_state)
+{
+	switch (lp_caps_state) {
+	case SL_CORE_LINK_LP_CAPS_NOT_RUNNING:
+		return "not_running";
+	case SL_CORE_LINK_LP_CAPS_RUNNING:
+		return "running";
+	case SL_CORE_LINK_LP_CAPS_DATA:
+		return "data";
+	case SL_CORE_LINK_LP_CAPS_TIMEOUT:
+		return "timeout";
+	case SL_CORE_LINK_LP_CAPS_ERROR:
+		return "error";
+	default:
+		return "unknown";
+	}
+}
+EXPORT_SYMBOL(sl_link_an_lp_caps_state_str);
+
 const char *sl_link_config_opt_str(u32 option)
 {
 	switch (option) {

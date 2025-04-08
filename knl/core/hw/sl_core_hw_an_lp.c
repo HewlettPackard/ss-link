@@ -41,52 +41,52 @@ static void sl_core_an_lp_caps_get_callback(struct sl_core_link *link)
 			"lp caps get callback - failed [%d]", rtn);
 }
 
-void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *link, u32 link_state,
+void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *core_link, u32 link_state,
 	sl_core_link_an_callback_t callback, void *tag, struct sl_link_caps *caps,
 	u32 timeout_ms, u32 flags)
 {
 	int rtn;
 
-	sl_core_log_dbg(link, LOG_NAME, "lp caps get cmd");
+	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get cmd");
 
-	sl_core_hw_an_stop(link);
+	sl_core_hw_an_stop(core_link);
 
-	link->an.link_state             = link_state;
-	link->an.tag                    = tag;
-	link->an.lp_caps_get_timeout_ms = timeout_ms;
-	link->an.callbacks.lp_caps_get  = callback;
-	link->an.lp_caps_state          = SL_CORE_LINK_LP_CAPS_RUNNING;
-	link->an.done_work_num          = SL_CORE_WORK_LINK_AN_LP_CAPS_GET_DONE;
-	link->an.my_caps                = *caps;
+	core_link->an.link_state             = link_state;
+	core_link->an.tag                    = tag;
+	core_link->an.lp_caps_get_timeout_ms = timeout_ms;
+	core_link->an.callbacks.lp_caps_get  = callback;
+	core_link->an.done_work_num          = SL_CORE_WORK_LINK_AN_LP_CAPS_GET_DONE;
+	core_link->an.my_caps                = *caps;
+	sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_RUNNING);
 
 	/* test check */
-	if (link->an.use_test_caps) {
-		sl_core_log_warn(link, LOG_NAME,
+	if (core_link->an.use_test_caps) {
+		sl_core_log_warn(core_link, LOG_NAME,
 			"lp caps get cmd - using test caps");
-		link->an.lp_caps       = link->an.test_caps;
-		link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_DATA;
-		sl_core_data_link_state_set(link, link->an.link_state);
-		sl_core_an_lp_caps_get_callback(link);
+		core_link->an.lp_caps       = core_link->an.test_caps;
+		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_DATA);
+		sl_core_data_link_state_set(core_link, core_link->an.link_state);
+		sl_core_an_lp_caps_get_callback(core_link);
 		return;
 	}
 
-	memset(&(link->an.lp_caps), 0, sizeof(link->an.lp_caps));
-	link->an.lp_caps.magic = SL_CORE_LINK_AN_MAGIC;
+	memset(&(core_link->an.lp_caps), 0, sizeof(core_link->an.lp_caps));
+	core_link->an.lp_caps.magic = SL_CORE_LINK_AN_MAGIC;
 
-	if (!SL_PLATFORM_IS_HARDWARE(link->core_lgrp->core_ldev)) {
-		sl_core_data_link_state_set(link, link->an.link_state);
-		sl_core_an_lp_caps_get_callback(link);
+	if (!SL_PLATFORM_IS_HARDWARE(core_link->core_lgrp->core_ldev)) {
+		sl_core_data_link_state_set(core_link, core_link->an.link_state);
+		sl_core_an_lp_caps_get_callback(core_link);
 		return;
 	}
 
-	sl_core_timer_link_begin(link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
+	sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 
-	rtn = sl_core_hw_intr_flgs_disable(link, SL_CORE_HW_INTR_AN_PAGE_RECV);
+	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn_trace(link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get cmd - an page recv disable failed [%d]", rtn);
 
-	sl_core_work_link_queue(link, SL_CORE_WORK_LINK_AN_LP_CAPS_GET);
+	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_AN_LP_CAPS_GET);
 }
 
 void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
@@ -115,7 +115,7 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 				"lp caps get work lp caps get end failed [%d]", rtn);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, core_link->an.link_state);
-		core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_ERROR;
+		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_ERROR);
 		sl_core_an_lp_caps_get_callback(core_link);
 		return;
 	}
@@ -131,23 +131,29 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get work an base page send failed [%d]", rtn);
 }
-void sl_core_hw_an_lp_caps_stop_cmd(struct sl_core_link *link)
+void sl_core_hw_an_lp_caps_stop_cmd(struct sl_core_link *core_link)
 {
 	int rtn;
 
-	sl_core_log_dbg(link, LOG_NAME, "lp caps stop cmd");
+	sl_core_log_dbg(core_link, LOG_NAME, "lp caps stop cmd");
 
-	rtn = sl_core_hw_intr_flgs_disable(link, SL_CORE_HW_INTR_AN_PAGE_RECV);
+	if (sl_core_data_link_an_lp_caps_state_get(core_link) == SL_CORE_LINK_LP_CAPS_NOT_RUNNING) {
+		sl_core_log_dbg(core_link, LOG_NAME, "lp caps stop cmd - already stopped");
+		return;
+	}
+
+	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	if (rtn != 0)
-		sl_core_log_warn_trace(link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps stop cmd - an page recv disable failed [%d]", rtn);
 
-	cancel_work_sync(&link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]);
-	cancel_work_sync(&link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]);
+	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]);
+	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]);
 
-	sl_core_timer_link_end(link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 
-	sl_core_data_link_state_set(link, link->an.link_state);
+	sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_NOT_RUNNING);
+	sl_core_data_link_state_set(core_link, core_link->an.link_state);
 }
 
 void sl_core_hw_an_lp_caps_get_timeout_work(struct work_struct *work)
@@ -173,7 +179,7 @@ void sl_core_hw_an_lp_caps_get_timeout_work(struct work_struct *work)
 	sl_core_hw_serdes_link_down(core_link);
 
 	sl_core_data_link_state_set(core_link, core_link->an.link_state);
-	core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_TIMEOUT;
+	sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_TIMEOUT);
 
 	sl_core_an_lp_caps_get_callback(core_link);
 }
@@ -210,7 +216,7 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 	if (core_link->an.state != SL_CORE_HW_AN_STATE_COMPLETE) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get done work not complete");
-		core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_ERROR;
+		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_ERROR);
 		goto out;
 	}
 
@@ -219,11 +225,11 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get done work hw_an_rx_pages_decode failure [%d]", rtn);
-		core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_ERROR;
+		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_ERROR);
 		goto out;
 	}
 
-	core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_DATA;
+	sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_DATA);
 
 out:
 	sl_core_an_lp_caps_get_callback(core_link);

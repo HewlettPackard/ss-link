@@ -65,6 +65,7 @@ int sl_link_reset(struct sl_link *link);
 int sl_link_clocks_get(struct sl_link *link, u32 *up_count, u32 *up_time, u32 *total_time);
 
 const char *sl_link_state_str(u32 state);
+const char *sl_link_an_lp_caps_state_str(u32 lp_caps_state);
 const char *sl_link_config_opt_str(u32 option);
 const char *sl_link_policy_opt_str(u32 option);
 int         sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size);

@@ -127,6 +127,7 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	/* ----- an ----- */
 
 	spin_lock_init(&(core_link->an.data_lock));
+	core_link->an.lp_caps_state = SL_CORE_LINK_LP_CAPS_NOT_RUNNING;
 
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_AN_LP_CAPS_GET].timer),
 		sl_core_timer_link_timeout, 0);
@@ -853,4 +854,31 @@ u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link)
 		"fec_type get = %u %s", fec_type, sl_lgrp_config_fec_str(fec_type));
 
 	return fec_type;
+}
+
+u32 sl_core_data_link_an_lp_caps_state_get(struct sl_core_link *core_link)
+{
+	u32           lp_caps_state;
+	unsigned long flags;
+
+	spin_lock_irqsave(&core_link->an.data_lock, flags);
+	lp_caps_state = core_link->an.lp_caps_state;
+	spin_unlock_irqrestore(&core_link->an.data_lock, flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "lp caps state get (lp_caps_state = %u %s)",
+		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
+
+	return lp_caps_state;
+}
+
+void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 lp_caps_state)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&core_link->an.data_lock, flags);
+	core_link->an.lp_caps_state = lp_caps_state;
+	spin_unlock_irqrestore(&core_link->an.data_lock, flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "lp caps state set (lp_caps_state = %u %s)",
+		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
 }

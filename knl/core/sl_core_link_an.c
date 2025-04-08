@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -7,6 +7,7 @@
 
 #include "sl_kconfig.h"
 
+#include "data/sl_core_data_link.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "base/sl_core_log.h"
@@ -44,6 +45,11 @@ int sl_core_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 		return -EBADRQC;
 	}
+}
+
+u32 sl_core_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	return sl_core_data_link_an_lp_caps_state_get(sl_core_link_get(ldev_num, lgrp_num, link_num));
 }
 
 int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)

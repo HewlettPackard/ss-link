@@ -48,4 +48,7 @@ void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link);
 
+u32 sl_core_data_link_an_lp_caps_state_get(struct sl_core_link *core_link);
+void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 lp_caps_state);
+
 #endif /* _SL_CORE_DATA_LINK_H_ */
