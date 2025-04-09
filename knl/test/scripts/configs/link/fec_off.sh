@@ -4,16 +4,16 @@
 #
 
 autoneg=0
+extended_reach_force=0
 fec_up_ccw_limit=17000000
 fec_up_check_wait_ms=0    # OFF
 fec_up_settle_wait_ms=0   # OFF
 fec_up_ucw_limit=42
 headshell_loopback=0
-hpe=0
+hpe_map=0
 lane_map=0
 link_up_timeout_ms=18000
 link_up_tries_max=0
 lock=0
-pause=0
+pause_map=0
 remote_loopback=0
-serdes_loopback=0

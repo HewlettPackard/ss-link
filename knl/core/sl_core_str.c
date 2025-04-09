@@ -219,7 +219,7 @@ const char *sl_core_serdes_lane_state_str(u8 lane_state)
 	}
 }
 
-const char *sl_core_serdes_lane_encoding_str(u8 encoding)
+const char *sl_core_serdes_lane_encoding_str(u16 encoding)
 {
 	switch (encoding) {
 	case SL_CORE_HW_SERDES_ENCODING_NRZ:
@@ -233,7 +233,7 @@ const char *sl_core_serdes_lane_encoding_str(u8 encoding)
 	}
 }
 
-const char *sl_core_serdes_lane_clocking_str(u8 clocking)
+const char *sl_core_serdes_lane_clocking_str(u16 clocking)
 {
 	switch (clocking) {
 	case SL_CORE_HW_SERDES_CLOCKING_82P5:
@@ -245,13 +245,15 @@ const char *sl_core_serdes_lane_clocking_str(u8 clocking)
 	}
 }
 
-const char *sl_core_serdes_lane_osr_str(u8 osr)
+const char *sl_core_serdes_lane_osr_str(u16 osr)
 {
 	switch (osr) {
 	case SL_CORE_HW_SERDES_OSR_OSX1:
 		return "OSX1";
 	case SL_CORE_HW_SERDES_OSR_OSX2:
 		return "OSX2";
+	case SL_CORE_HW_SERDES_OSR_OSX4:
+		return "OSX4";
 	case SL_CORE_HW_SERDES_OSR_OSX42P5:
 		return "OSX42P5";
 	default:
@@ -259,7 +261,7 @@ const char *sl_core_serdes_lane_osr_str(u8 osr)
 	}
 }
 
-const char *sl_core_serdes_lane_width_str(u8 width)
+const char *sl_core_serdes_lane_width_str(u16 width)
 {
 	switch (width) {
 	case SL_CORE_HW_SERDES_WIDTH_40:

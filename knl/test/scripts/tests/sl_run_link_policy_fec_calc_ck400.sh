@@ -7,7 +7,7 @@
 brief="Verify the FEC monitor policy matches the calculated link policy for ck400"
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
-settings="${SL_TEST_DIR}/systems/settings/ck400_x1_il_fec_calc.sh"
+settings="${SL_TEST_DIR}/systems/settings/ck400_x1_lb_fec_calc.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 ldev_num=0

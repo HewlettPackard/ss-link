@@ -216,13 +216,15 @@ static struct kobj_type sl_test_link_kobj_type = {
 	.field   = SL_LINK_POLICY_OPT_##_bit_field,                                                            \
 }
 
-STATIC_CONFIG_OPT_ENTRY(lock,               LOCK);
-STATIC_CONFIG_OPT_ENTRY(autoneg,            AUTONEG_ENABLE);
-STATIC_CONFIG_OPT_ENTRY(headshell_loopback, HEADSHELL_LOOPBACK_ENABLE);
-STATIC_CONFIG_OPT_ENTRY(remote_loopback,    REMOTE_LOOPBACK_ENABLE);
+STATIC_CONFIG_OPT_ENTRY(lock,                 LOCK);
+STATIC_CONFIG_OPT_ENTRY(autoneg,              AUTONEG_ENABLE);
+STATIC_CONFIG_OPT_ENTRY(headshell_loopback,   HEADSHELL_LOOPBACK_ENABLE);
+STATIC_CONFIG_OPT_ENTRY(remote_loopback,      REMOTE_LOOPBACK_ENABLE);
+STATIC_CONFIG_OPT_ENTRY(extended_reach_force, EXTENDED_REACH_FORCE);
 
-STATIC_POLICY_OPT_ENTRY(lock,               LOCK);
-STATIC_POLICY_OPT_ENTRY(keep_serdes_up,     KEEP_SERDES_UP);
+STATIC_POLICY_OPT_ENTRY(lock,                  LOCK);
+STATIC_POLICY_OPT_ENTRY(keep_serdes_up,        KEEP_SERDES_UP);
+STATIC_POLICY_OPT_ENTRY(use_unsupported_cable, USE_UNSUPPORTED_CABLE);
 
 static u64 fec_ucw;
 static u64 fec_ccw;
@@ -314,12 +316,15 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 
 	sl_test_link_config_init();
 
-	debugfs_create_u32("link_up_timeout_ms", 0644,    config_dir, &link_config.link_up_timeout_ms);
-	debugfs_create_u32("link_up_tries_max", 0644,     config_dir, &link_config.link_up_tries_max);
+	debugfs_create_u32("link_up_timeout_ms", 0644, config_dir, &link_config.link_up_timeout_ms);
+	debugfs_create_u32("link_up_tries_max",  0644, config_dir, &link_config.link_up_tries_max);
+	debugfs_create_u32("hpe_map",            0644, config_dir, &link_config.hpe_map);
+	debugfs_create_u32("pause_map",          0644, config_dir, &link_config.pause_map);
+
 	sl_test_debugfs_create_s32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);
-	sl_test_debugfs_create_s32("fec_up_check_wait_ms", 0644,  config_dir, &link_config.fec_up_check_wait_ms);
-	sl_test_debugfs_create_s32("fec_up_ccw_limit", 0644,      config_dir, &link_config.fec_up_ccw_limit);
-	sl_test_debugfs_create_s32("fec_up_ucw_limit", 0644,      config_dir, &link_config.fec_up_ucw_limit);
+	sl_test_debugfs_create_s32("fec_up_check_wait_ms",  0644, config_dir, &link_config.fec_up_check_wait_ms);
+	sl_test_debugfs_create_s32("fec_up_ccw_limit",      0644, config_dir, &link_config.fec_up_ccw_limit);
+	sl_test_debugfs_create_s32("fec_up_ucw_limit",      0644, config_dir, &link_config.fec_up_ucw_limit);
 
 	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &config_option_lock);
 	if (rtn) {
@@ -346,6 +351,13 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"link config remote_loopback debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("extended_reach_force", 0644, config_dir, &config_option_extended_reach_force);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"link config extended_reach_force debugfs_create_file failed");
 		return -ENOMEM;
 	}
 
@@ -380,6 +392,14 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"link policy keep_serdes_up debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("use_unsupported_cable", 0644, policy_dir,
+		&policy_option_use_unsupported_cable);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"link policy use_unsupported_cable debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

@@ -545,3 +545,42 @@ function __sl_test_set_links_from_furcation {
 
 	return 0
 }
+
+
+function __sl_test_parse_config {
+	local config=$1
+
+	mapfile -t lines < "${config}"
+
+	for line in "${lines[@]}"; do
+		if [[ "${line}" =~ ^#.*$ || -z "${line}" ]]; then
+			continue
+		fi
+
+		IFS="=" read -r key value <<< "${line}"
+
+		key="${key// /}"
+		value="${value// /}"
+
+		export "$key"="$value"
+
+		sl_test_debug_log "${FUNCNAME}" "${key}=${!key}"
+	done
+}
+
+function __sl_test_s16_check {
+	local name=$1
+	local value=$2
+
+	if ! [[ $value =~ ^-?[0-9]+$ ]]; then
+		sl_test_error_log "${FUNCNAME}" "${name} not a number"
+		return 1
+	fi
+
+	if (( value < -32768 || value > 32767 )); then
+		sl_test_error_log "${FUNCNAME}" "(${name} = ${value}) out of range"
+		return 1
+	fi
+
+	return 0
+}

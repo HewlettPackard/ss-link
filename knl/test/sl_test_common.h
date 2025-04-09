@@ -33,6 +33,21 @@ struct options_field_entry {
 	u32  field;
 };
 
+struct str_conv_u16 {
+	int (*to_u16)(const char *str, u16 *value);
+	const char* (*to_str)(u16 value);
+	void (*opts)(char *buf, size_t size);
+	u16 *value;
+
+};
+
+struct str_conv_u32 {
+	int (*to_u32)(const char *str, u32 *value);
+	const char* (*to_str)(u32 value);
+	void (*opts)(char *buf, size_t size);
+	u32 *value;
+};
+
 /* Config Admin Options */
 #define SL_LINK_CONFIG_OPT_LOCK        BIT(30) /* Lock configuration from modification */
 #define SL_LINK_CONFIG_OPT_ADMIN       BIT(31) /* Perform admin level operation        */
@@ -56,6 +71,23 @@ int sl_test_serdes_params_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			      u16 clocking, u16 width, u16 dfe, u16 scramble, u32 options);
 
 int sl_test_serdes_params_unset(u8 ldev_num, u8 lgrp_num, u8 link_num);
+
+const char *sl_test_state_str(u16 state);
+const char *sl_test_serdes_lane_encoding_str(u16 encoding);
+const char *sl_test_serdes_lane_clocking_str(u16 clocking);
+const char *sl_test_serdes_lane_osr_str(u16 osr);
+const char *sl_test_serdes_lane_width_str(u16 width);
+const char *sl_test_media_type_str(u32 type);
+
+int sl_test_state_from_str(const char *str, u16 *state);
+int sl_test_serdes_lane_encoding_from_str(const char *str, u16 *encoding);
+int sl_test_serdes_lane_clocking_from_str(const char *str, u16 *clocking);
+int sl_test_serdes_lane_osr_from_str(const char *str, u16 *osr);
+int sl_test_serdes_lane_width_from_str(const char *str, u16 *width);
+int sl_test_media_type_from_str(const char *str, u32 *type);
+
+void sl_test_state_opts(char *buf, size_t size);
+
 struct kobject *sl_test_ldev_kobj_get(u8 ldev_num);
 struct kobject *sl_test_lgrp_kobj_get(u8 ldev_num, u8 lgrp_num);
 
@@ -69,5 +101,10 @@ int sl_test_cmds_show(struct seq_file *s, struct cmd_entry *cmd_list, size_t num
 
 int sl_test_debugfs_create_s32(const char *name, umode_t mode, struct dentry *parent, s32 *value);
 int sl_test_debugfs_create_s16(const char *name, umode_t mode, struct dentry *parent, s16 *value);
+
+int sl_test_debugfs_create_str_conv_u16(const char *name, umode_t mode, struct dentry *parent,
+					struct str_conv_u16 *option);
+int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct dentry *parent,
+					struct str_conv_u32 *option);
 
 #endif /* _SL_TEST_COMMON_H_ */

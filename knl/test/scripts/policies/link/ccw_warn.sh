@@ -10,3 +10,4 @@ fec_mon_ucw_down_limit=0
 fec_mon_ucw_warn_limit=0
 keep_serdes_up=0
 lock=0
+use_unsupported_cable=0

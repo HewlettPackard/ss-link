@@ -137,6 +137,35 @@ function sl_test_serdes_cmd {
 	return ${rtn}
 }
 
+function __sl_test_serdes_settings_check {
+	local setting=$1
+	local value=$2
+
+	if [ -z "${value}" ]; then
+		sl_test_error_log "${FUNCNAME}" "${setting} missing"
+		return 1
+	fi
+
+	options=($(cat ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/${setting}_options))
+	for choice in ${options[@]}; do
+		if [ "${value}" == "${choice}" ]; then
+			return 0
+		fi
+	done
+
+	sl_test_error_log "${FUNCNAME}" "${setting} check failed (${setting} = ${value}, options = ${options[*]})"
+
+	return 1
+}
+
+function __sl_test_serdes_settings_options_get {
+	local setting=$1
+
+	options=$(cat ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/${setting}_options)
+
+	echo ${options} | awk '{ gsub (" ", " | ", $0); print}'
+}
+
 function sl_test_serdes_settings_set {
 	local rtn
 	local options
@@ -158,7 +187,22 @@ function sl_test_serdes_settings_set {
 	Options:
 	-h, --help  This message.
 
-	Settings:
+	Settings Options:
+	clocking = $(__sl_test_serdes_settings_options_get "clocking")
+	cursor   = -32,768 < cursor < 32,767
+	dfe      = $(__sl_test_serdes_settings_options_get "dfe")
+	encoding = $(__sl_test_serdes_settings_options_get "encoding")
+	media    = $(__sl_test_serdes_settings_options_get "media")
+	osr      = $(__sl_test_serdes_settings_options_get "osr")
+	post1    = -32,768 < post1 < 32,767
+	post2    = -32,768 < post2 < 32,767
+	pre1     = -32,768 < pre1 < 32,767
+	pre2     = -32,768 < pre2 < 32,767
+	pre3     = -32,768 < pre3 < 32,767
+	scramble = $(__sl_test_serdes_settings_options_get "scramble")
+	width    = $(__sl_test_serdes_settings_options_get "width")
+
+	Settings File:
 	$(find ${SL_TEST_SERDES_SETTINGS_DIR} -type f)
 	EOF
 	)
@@ -217,23 +261,112 @@ function sl_test_serdes_settings_set {
 	sl_test_debug_log "${FUNCNAME}" \
 		"(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}), settings = ${settings})"
 
-	source ${settings}
+	__sl_test_parse_config ${settings}
 
-	for filename in ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/* ; do
-		item=$(basename ${filename})
-		if [ -z "${!item}" ]; then
-			sl_test_error_log "${FUNCNAME}" "settings missing (item = ${item})"
-			sl_test_error_log "${FUNCNAME}" "serdes_params failed"
-			return 1
-		fi
+	__sl_test_serdes_settings_check "clocking" "${clocking}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
+		return ${rtn}
+	fi
 
-		echo ${!item} > ${filename}
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "serdes_params ${item} failed [${rtn}]"
-			return ${rtn}
-		fi
-	done
+        __sl_test_s16_check "cursor" ${cursor}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "dfe" "${dfe}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "encoding" "${encoding}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "media" "${media}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "osr" "${osr}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+        __sl_test_s16_check "post1" ${post1}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_s16_check "post2" ${post2}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_s16_check "pre1" ${pre1}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_s16_check "pre2" ${pre2}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_s16_check "pre3" ${pre3}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "s16_check failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "scramble" "${scramble}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed (encoding = ${scramble}) [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_serdes_settings_check "width" "${width}"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed (encoding = ${width}) [${rtn}]"
+		return ${rtn}
+	fi
+
+	echo -n ${clocking} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/clocking
+	echo -n ${cursor} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/cursor
+	echo -n ${dfe} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/dfe
+	echo -n ${encoding} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/encoding
+	echo -n ${osr} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/osr
+	echo -n ${post1} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/post1
+	echo -n ${post2} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/post2
+	echo -n ${pre1} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre1
+	echo -n ${pre2} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre2
+	echo -n ${pre3} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre3
+	echo -n ${scramble} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/scramble
+	echo -n ${width} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/width
+	echo -n ${media} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/media
 
 	__sl_test_serdes_cmd ${ldev_num} lgrp_nums link_nums "serdes_params_set"
 	rtn=$?

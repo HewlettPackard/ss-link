@@ -10,4 +10,14 @@ int sl_core_test_serdes_settings_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				     u16 clocking, u16 width, u16 dfe, u16 scramble, u32 options);
 int sl_core_test_serdes_settings_unset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
+const char *sl_core_test_serdes_lane_encoding_str(u16 encoding);
+const char *sl_core_test_serdes_lane_clocking_str(u16 clocking);
+const char *sl_core_test_serdes_lane_osr_str(u16 osr);
+const char *sl_core_test_serdes_lane_width_str(u16 width);
+
+int sl_core_test_serdes_lane_encoding_from_str(const char *str, u16 *encoding);
+int sl_core_test_serdes_lane_clocking_from_str(const char *str, u16 *clocking);
+int sl_core_test_serdes_lane_osr_from_str(const char *str, u16 *osr);
+int sl_core_test_serdes_lane_width_from_str(const char *str, u16 *width);
+
 #endif /* _SL_CORE_TEST_SERDES_H_ */

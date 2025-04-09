@@ -8,7 +8,7 @@
 
 #define SL_TEST_VERSION_MAJOR 1
 #define SL_TEST_VERSION_MINOR 1
-#define SL_TEST_VERSION_INC   2
+#define SL_TEST_VERSION_INC   3
 
 void  sl_test_version_get(int *major, int *minor, int *inc);
 char *sl_test_git_hash_str_get(void);

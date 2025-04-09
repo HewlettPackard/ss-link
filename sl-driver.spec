@@ -247,6 +247,6 @@ ${postinst} %{name} %{version}-%{release}
 %exclude /lib/modules/modules.order
 
 %changelog
-* Tue Apr 08 2025 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.15
+* Wed Apr 09 2025 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.15
 
 %{_git_hash}

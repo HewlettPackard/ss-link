@@ -18,9 +18,9 @@ const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state);
 const char *sl_core_llr_flag_str(unsigned int llr_flag);
 
 const char *sl_core_serdes_lane_state_str(u8 lane_state);
-const char *sl_core_serdes_lane_encoding_str(u8 encoding);
-const char *sl_core_serdes_lane_clocking_str(u8 clocking);
-const char *sl_core_serdes_lane_osr_str(u8 osr);
-const char *sl_core_serdes_lane_width_str(u8 width);
+const char *sl_core_serdes_lane_encoding_str(u16 encoding);
+const char *sl_core_serdes_lane_clocking_str(u16 clocking);
+const char *sl_core_serdes_lane_osr_str(u16 osr);
+const char *sl_core_serdes_lane_width_str(u16 width);
 
 #endif /* _SL_CORE_STR_H_ */

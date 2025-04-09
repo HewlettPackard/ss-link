@@ -308,6 +308,9 @@ u16 sl_core_hw_serdes_config(struct sl_core_lgrp *core_lgrp,
 	config |= ((core_serdes_settings->scramble & 0x1) << 8);
 
 	switch (core_serdes_settings->encoding) {
+	case SL_CORE_HW_SERDES_ENCODING_PAM4_ER:
+		config |= (1 << 11);
+		break;
 	case SL_CORE_HW_SERDES_ENCODING_PAM4_NR:
 		config |= (1 << 14);
 		break;
