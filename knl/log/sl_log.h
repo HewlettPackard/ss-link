@@ -28,7 +28,8 @@ void sl_log_err_trace(void *ptr, const char *block,
 void sl_log_warn_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...) __printf(4, 5);
 
-#if defined(CONFIG_DYNAMIC_DEBUG)
+#if defined(CONFIG_DYNAMIC_DEBUG) || \
+	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
 
 void __sl_log_dynamic_dbg(struct _ddebug *desc, void *ptr,
 	const char *block, const char *name, const char *text, ...) __printf(5, 6);
