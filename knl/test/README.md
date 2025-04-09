@@ -6,11 +6,12 @@
 1. [Testing Guidelines](#testing-guidelines)
 1. [Building](#building)
 1. [Installation](#installation)
-1. [Goals](goals)
 1. [Testing Guidelines](testing-guidelines)
+1. [Getting Ready to Test](#getting-ready-to-test)
 1. [Running Tests](#running-tests)
 1. [Debugging](#debugging)
 1. [Further Reading](#further-reading)
+1. [SerDes Testing](#serdes-testing)
 1. [FAQS](#faqs)
 
 ## Goals
@@ -106,6 +107,126 @@ VERSION=1.19.3 # Replace with your version
 BUILD=0        # Replace with your build number
 dpkg -i ./sl-driver-test_${VERSION}-${BUILD}_arm64.deb
 depmod -a
+```
+
+## Getting Ready to Test
+
+This section assumes you have already [installed](#installation) the SL test
+Framework or are using an image that has the package already
+installed. If not please see the [Installation](#installation) section.
+
+The intent of this section is to familiarize yourself with a few basic operations
+for testing. This is not an exhaustive explanation of testing and focuses on
+the process of bringing a link up, which is one of the most common testing
+operations.
+
+### Learning Outcomes
+
+1. Understand [Test Environment Initialization](test-environment-initialization).
+1. Understand [Link Group Configuration](link-group-configuration).
+1. Understand [Link Up](#link-up).
+1. Understand [Link Group Cleanup](#link-group-cleanup).
+
+### Test Environment Initialization
+
+The first step in testing is to source the test environment.
+
+```sh
+source /usr/bin/sl_test_scripts/sl_test_env.sh
+```
+
+This provides [common environment variables](#environment-variables) and sets
+up your path to run tests and bash test functions. One
+such function `sl_test_init` is the next step in
+initialization.
+
+```sh
+sl_test_init
+```
+
+This test will prepare the device under test. This involves a few basic steps
+depending on the type of device (either switch or NIC).
+
+1. End processes using kernel modules
+1. Unload kernel modules
+1. Load kernel modules
+1. (Switch Only) Initialize device. e.g `swtest init`.
+
+### Link Group Configuration
+
+Once the we have completed [test environment initialization](#test-environment-initialization)
+you can continue to configure the link group. This is the first step in
+bringing links up.
+
+```sh
+sl_test_lgrp_setup ldev_num lgrp_nums settings
+```
+
+For further details on this function please see `sl_test_lgrp_setup -h`.
+The purpose of this function is the following.
+
+1. Create sl objects; `sl_ldev`, `sl_lgrp`, `sl_link`, `sl_mac`, `sl_llr`.
+1. Set configurations for all the objects in 1.
+1. Set the policies for all the objects in 1.
+
+#### Link Group Configuration Example
+
+```sh
+sl_test_lgrp_setup 0 "8 9 40 41" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_il_fec_calc.sh
+```
+
+### Link Up
+
+Once we have completed both;
+
+1. [Test Environment Initialization](#test-environment-initialization)
+1. [Link Group Configuration](link-group-configuration)
+
+We can continue to bring a link up. This will result in a command to the sl-driver
+to bring the link up.
+
+```sh
+sl_test_link_up ldev_num lgrp_nums link_nums
+```
+
+#### Link Up Example
+
+```sh
+sl_test_link_up 0 "8 9 40 41" 0
+```
+
+### Link Group Cleanup
+
+Cleanup is a common process when running a test. It ensures we are starting
+from a clean slate. Cleanup involves the following steps.
+
+1. Removing all outstanding notifications for the link group.
+1. Unregistering for link group notifications.
+1. Turning off test features e.g software FEC counters.
+1. Deleting SL objects; `sl_ldev`, `sl_lgrp`, `sl_link`, `sl_mac`, `sl_llr`.
+
+```sh
+sl_test_lgrp_cleanup ldev_num lgrp_nums
+```
+
+#### Link Group Cleanup Example
+
+```sh
+sl_test_lgrp_cleanup 0 "8 9 40 41"
+```
+
+### Full Link Up Example
+
+It is recommended that you begin the section [Test Environment Initialization](#test-environment-initialization)
+to further explain the full example provided here.
+
+```sh
+lgrps=(8 9 40 41)
+
+sl_test_init
+sl_test_lgrp_setup 0 "${lgrps[*]}" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_il_fec_calc.sh
+sl_test_link_up 0 "${lgrps[*]}"
+sl_test_lgrp_cleanup 0 "${lgrps[*]}"
 ```
 
 ## Running Tests
@@ -521,6 +642,193 @@ register for notifications for multiple links at once.
 
 It is important to remember to unregister from notifications using
 `sl_test_lgrp_notif_unreg`.
+
+## SerDes Testing
+
+This section covers using sl-test to change the SerDes settings for a link.
+We will cover;
+
+1. [SerDes Settings File](#serdes-settings-file)
+1. [Set SerDes Settings for a Link](#set-serdes-settings-for-a-link)
+1. [Set SerDes Settings Full Example](#set-serdes-settings-full-example)
+
+If you haven't already, you should read the section on [Getting Ready to Test](#getting-ready-to-test).
+This section will cover how to bring a link up which is a requirement for
+testing SerDes settings.
+
+### SerDes Settings File
+
+Below is an example of the default SerDes settings file. Taken from a link on oat-cf2.
+
+```txt
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
+#
+
+clocking = 85/170
+cursor   = 168
+dfe      = enabled
+encoding = PAM4_normal
+media    = headshell
+osr      = OSX1
+post1    = 0
+post2    = 0
+pre1     = 0
+pre2     = 0
+pre3     = 0
+scramble = disabled
+width    = 160
+```
+
+The options available for non-numeric values can be found in the help for
+`sl_test_serdes_settings_set`. i.e `sl_test_serdes_settings_set -h`.
+
+#### Example sl_test_serdes_settings_set Help Output
+
+```txt
+root@x0c0r4b0:~# sl_test_serdes_settings_set -h
+Usage: sl_test_serdes_settings_set [-h | --help] ldev_num lgrp_nums link_nums settings
+Set SerDes parameters for the SerDes in link groups.
+
+Mandatory:
+ldev_num  Link device number the lgrp_nums belongs to.
+lgrp_nums Link group number the link_nums belongs to.
+link_nums Link Numbers to set serdes settings for.
+settings  Serdes parameters file. See /usr/bin/sl_test_scripts/settings/serdes/
+
+Options:
+-h, --help  This message.
+
+Settings Options:
+clocking = 82.5/165 | 85/170
+cursor   = -32,768 < cursor < 32,767
+dfe      = enabled | disabled
+encoding = NRZ | PAM4_normal | PAM4_extended
+media    = headshell | backplane | electrical | optical | passive | active | analog | digital | AOC | PEC | AEC | BKP
+osr      = OSX1 | OSX2 | OSX4 | OSX42P5
+post1    = -32,768 < post1 < 32,767
+post2    = -32,768 < post2 < 32,767
+pre1     = -32,768 < pre1 < 32,767
+pre2     = -32,768 < pre2 < 32,767
+pre3     = -32,768 < pre3 < 32,767
+scramble = enabled | disabled
+width    = 40 | 80 | 160
+
+Settings File:
+/usr/bin/sl_test_scripts/settings/serdes/default.config
+```
+
+### Set SerDes Settings for a Link
+
+SerDes settings are made per link, and later used in the SerDes lanes.
+Settings can only be made on a link that is down (See command `sl_test_link_down`)
+
+```sh
+sl_test_serdes_settings_set ${ldev_num} ${lgrp_nums} ${link_nums} ${settings}
+```
+
+#### Example Set SerDes Settings
+
+The following example will use the default SerDes settings for link 0 in link
+group 22 for link device 0.
+
+```sh
+sl_test_serdes_settings_set 0 22 0 /usr/bin/sl_test_scripts/settings/serdes/default.sh
+```
+
+You can then print out the SerDes settings being used per lane. In our
+example we print out lane 0.
+
+```sh
+lgrp=22
+lane=0
+for f in /sys/class/rossw/rossw0/pgrp/${lgrp}/serdes/lane/${lane}/settings/*; do echo "$(basename $f): $(cat $f)"; done
+```
+
+```txt
+clocking: 85/170
+cursor: 168
+dfe: enabled
+encoding: PAM4_normal
+link_training: disabled
+media: headshell
+osr: OSX1
+post1: 0
+post2: 0
+pre1: 0
+pre2: 0
+pre3: 0
+scramble: disabled
+width: 160
+```
+
+##### Debugfs Settings
+
+If you need to see the configuration held in debugfs you can do so with the
+following command.
+
+```sh
+for f in $(find /sys/kernel/debug/sl/serdes/settings/ -type f -not -name "*_options"); do echo "$(basename $f): $(cat $f)"; done
+```
+
+```txt
+scramble: disabled
+dfe: enabled
+media: headshell
+width: 160
+osr: OSX1
+clocking: 85/170
+encoding: PAM4_normal
+post2: 0
+post1: 0
+cursor: 168
+pre3: 0
+pre2: 0
+pre1: 0
+```
+
+## Set SerDes Settings Full Example
+
+The following example will setup link 0 in link group 0 with the default
+SerDes settings, then wait for the link to go up. If the link goes up the
+SerDes settings used are printed.
+
+```sh
+source /usr/bin/sl_test_scripts/sl_test_env.sh
+
+sl_test_init
+sl_test_lgrp_setup 0 0 /usr/bin/sl_test_scripts/systems//settings/ck400_x1_il_fec_calc.sh
+sl_test_serdes_settings_set 0 0 0 /usr/bin/sl_test_scripts/settings/serdes/default.config
+sl_test_link_up 0 0 0
+
+sleep 10
+
+state=$(cat /sys/class/rossw/rossw0/pgrp/0/test_port/0/link/state)
+
+if [[ "${state}" == "up" ]]; then
+        for f in /sys/class/rossw/rossw0/pgrp/0/serdes/lane/0/settings/*; do
+                echo "$(basename $f): $(cat $f)";
+        done
+fi
+```
+
+```txt
+clocking: 85/170
+cursor: 168
+dfe: enabled
+encoding: PAM4_normal
+link_training: disabled
+media: headshell
+osr: OSX1
+post1: 0
+post2: 0
+pre1: 0
+pre2: 0
+pre3: 0
+scramble: disabled
+width: 160
+```
 
 ## FAQS
 
