@@ -6,7 +6,7 @@
 
 #define SL_VERSION_MAJOR 1
 #define SL_VERSION_MINOR 26
-#define SL_VERSION_INC   18
+#define SL_VERSION_INC   19
 
 void  sl_version_get(int *major, int *minor, int *inc);
 char *sl_git_hash_str_get(void);

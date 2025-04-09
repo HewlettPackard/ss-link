@@ -4,6 +4,7 @@
 #include <linux/types.h>
 #include <linux/slab.h>
 #include <linux/workqueue.h>
+#include <linux/delay.h>
 
 #include "sl_kconfig.h"
 #include "sl_media_lgrp.h"
@@ -19,6 +20,9 @@
 #include "hw/sl_core_hw_link.h"
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
+
+#define SL_CORE_HW_AN_RESTART_DELAY_MS     200
+#define SL_CORE_HW_AN_RESTART_DELAY_MS_MAX (SL_CORE_HW_AN_RESTART_DELAY_MS * 10)
 
 static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
 {
@@ -65,7 +69,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 	core_link->core_lgrp->link_caps[core_link->num].tech_map  =
 		(core_link->core_lgrp->config.tech_map & core_link->an.test_caps.tech_map);
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"up start input (tech map = 0x%08X, 0x%08X, 0x%08X)",
+		"up start test caps input (tech map = 0x%08X, 0x%08X, 0x%08X)",
 		core_link->core_lgrp->config.tech_map,
 		core_link->an.test_caps.tech_map,
 		core_link->core_lgrp->link_caps[core_link->num].tech_map);
@@ -76,18 +80,19 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 		core_link->core_lgrp->link_caps[core_link->num].tech_map = BIT(bit);
 	}
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"up start result (tech map = 0x%08X)", core_link->core_lgrp->link_caps[core_link->num].tech_map);
+		"up start test caps result (tech map = 0x%08X)",
+			core_link->core_lgrp->link_caps[core_link->num].tech_map);
 	core_link->core_lgrp->link_caps[core_link->num].fec_map =
 		(core_link->core_lgrp->config.fec_map & core_link->an.test_caps.fec_map);
 	core_link->core_lgrp->link_caps[core_link->num].hpe_map =
 		(core_link->config.hpe_map & core_link->an.test_caps.hpe_map);
 
 	if (core_link->core_lgrp->link_caps[core_link->num].tech_map == 0) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "up start no match");
+		sl_core_log_err_trace(core_link, LOG_NAME, "up start test caps no match");
 		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		if (rtn < 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
-				"up start link up end failed [%d]", rtn);
+				"up start test caps link up end failed [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_fail_callback(core_link);
@@ -180,6 +185,8 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 		return;
 	}
 
+	core_link->an.restart_sleep_ms = SL_CORE_HW_AN_RESTART_DELAY_MS;
+
 	sl_core_hw_an_up(core_link);
 }
 
@@ -216,6 +223,12 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 	if (core_link->an.state != SL_CORE_HW_AN_STATE_COMPLETE) {
 		/* try again if asked to */
 		if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE)) {
+			sl_core_log_dbg(core_link, LOG_NAME,
+				"up done work restart (delay = %dms)", core_link->an.restart_sleep_ms);
+			msleep(core_link->an.restart_sleep_ms);
+			if ((core_link->an.restart_sleep_ms) &&
+				(core_link->an.restart_sleep_ms < SL_CORE_HW_AN_RESTART_DELAY_MS_MAX))
+				core_link->an.restart_sleep_ms += SL_CORE_HW_AN_RESTART_DELAY_MS;
 			sl_core_an_up_restart(core_link);
 			return;
 		}

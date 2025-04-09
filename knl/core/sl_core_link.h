@@ -267,6 +267,7 @@ struct sl_core_link {
 		u32                                   done_work_num;
 		struct sl_link_caps                   test_caps;
 		bool                                  use_test_caps;
+		u16                                   restart_sleep_ms;
 	} an;
 
 	struct {
