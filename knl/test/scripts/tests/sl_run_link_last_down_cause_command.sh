@@ -4,7 +4,7 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-brief="Test the link-down notification is sent and the last_down_cause is set to command in sysfs."
+brief="Test the link-async-down notification is sent and the last_down_cause is set to command in sysfs."
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
@@ -85,8 +85,8 @@ function test_verify {
 					continue
 				fi
 
-				if [[ "${notif_type}" == "link-down" ]]; then
-					if [[ "${sysfs_down_cause}" == "command retry" ]]; then
+				if [[ "${notif_type}" == "link-async-down" ]]; then
+					if [[ "${sysfs_down_cause}" == "command retry origin-async" ]]; then
 						sl_test_info_log "${FUNCNAME}" \
 							"Expected: command, Found: ${sysfs_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 						found=true
@@ -201,10 +201,10 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
 	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-		"link-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_down_notifs
+		"link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_down_notifs
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"

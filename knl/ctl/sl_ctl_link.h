@@ -17,6 +17,7 @@
 #include "sl_ctl_link_fec_priv.h"
 
 #define SL_LINK_DOWN_CAUSE_COMMAND_MAP (      \
+		SL_LINK_DOWN_ORIGIN_ASYNC   | \
 		SL_LINK_DOWN_CAUSE_COMMAND  | \
 		SL_LINK_DOWN_RETRYABLE)
 #define SL_LINK_DOWN_CAUSE_UP_TRIES_MAP (     \

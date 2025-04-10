@@ -82,21 +82,15 @@ static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_m
 {
 	union sl_lgrp_notif_info info;
 	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
-	u32                      type;
 
-	if (cause_map & SL_LINK_DOWN_ORIGIN_ASYNC) {
-		type = SL_LGRP_NOTIF_LINK_ASYNC_DOWN;
-		info.cause_map = cause_map;
-	} else {
-		type = SL_LGRP_NOTIF_LINK_DOWN;
-		info.cause_map = cause_map;
-	}
+	info.cause_map = cause_map;
 
 	sl_link_down_cause_map_with_info_str(cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"down_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
 
-	return sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num, type, &info, info_map);
+	return sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+		SL_LGRP_NOTIF_LINK_ASYNC_DOWN, &info, info_map);
 }
 
 void sl_ctl_link_up_clock_start(struct sl_ctl_link *ctl_link)
