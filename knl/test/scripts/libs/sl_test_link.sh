@@ -277,7 +277,7 @@ function sl_test_link_new {
 	fi
 
 	# Top level directory for ports when created by the test framework
-	SL_TEST_SYSFS_TOP_LINK_DIR="test_port"
+	export SL_TEST_SYSFS_TOP_LINK_DIR="test_port"
 
 	return 0
 }
@@ -1416,4 +1416,129 @@ function sl_test_link_cleanup {
 	fi
 
 	return 0
+}
+
+function __sl_test_link_field_get {
+	local rtn
+	local ldev_num
+	local lgrp_nums
+	local lgrp_num
+	local link_nums
+	local link_num
+	local link_sysfs_dir
+	local field
+	local -n link_fields_str
+
+	ldev_num=$1
+	lgrp_nums=$2
+	link_nums=$3
+	field=$4
+	link_fields_str=$5
+
+	link_fields_str=""
+
+	lgrps_link_states=""
+	link_fields=()
+	for lgrp_num in ${lgrp_nums[@]}; do
+
+		__sl_test_link_sysfs_parent_set ${ldev_num} ${lgrp_num} link_sysfs_dir
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "link_sysfs_parent_set failed [${rtn}]"
+			return ${rtn}
+		fi
+
+		link_fields_str+="${lgrp_num}:"
+
+		for link_num in ${link_nums[@]}; do
+			if [ -e "${link_sysfs_dir}/${link_num}/link/${field}" ]; then
+				link_fields+=$(cat "${link_sysfs_dir}/${link_num}/link/${field}")
+			fi
+		done
+
+		link_fields_str+="${link_fields[*]};"
+		link_fields=()
+
+	done
+
+	return 0
+}
+
+function sl_test_link_state_get {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_nums
+	local link_nums
+	local link_sysfs_dir
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums link_nums"
+	local description=$(cat <<-EOF
+	Get the links state for the link groups.
+
+	Mandatory:
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the link_nums belongs to.
+	link_nums  Link Numbers to get state for.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	ldev_num=$1
+	lgrp_nums=($2)
+	link_nums=($3)
+
+	__sl_test_link_check ${ldev_num} lgrp_nums link_nums
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
+
+	__sl_test_link_field_get ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}" "state" lgrps_link_states
+
+	IFS=';' read -ra lgrp_link_states_map <<< "${lgrps_link_states}"
+
+	for lgrp_link_states in ${lgrp_link_states_map[@]}; do
+		IFS=':' read -r lgrp link_states <<< "${lgrp_link_states}"
+		printf "%02d: %s\n" ${lgrp} "${link_states}"
+	done
 }
