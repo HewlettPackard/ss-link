@@ -342,8 +342,8 @@ function sl_test_cmd_check {
 
 	found=false
 	while IFS= read -r line; do
-		cmd=$(echo ${line} | cut -d ':' -f1)
-		if [[ "${cmd_str}" == "${cmd}" ]]; then
+		fields=(${line//:/ })
+		if [[ "${cmd_str}" == "${fields[0]}" ]]; then
 			found=true
 		fi
 	done < "${SL_TEST_DEBUGFS_TOP_DIR}/${cmd_type}/cmds"

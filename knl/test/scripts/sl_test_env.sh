@@ -93,6 +93,7 @@ source "${SL_TEST_LIBS_DIR}/sl_test_link.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_llr.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_mac.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_serdes.sh"
+source "${SL_TEST_LIBS_DIR}/sl_test_media.sh"
 
 ##########################################################################################
 # SL Test sysfs Directories

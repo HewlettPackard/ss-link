@@ -40,6 +40,14 @@
                 }
         },
         {
+                "id": 5,
+                "file": "sl_run_link_up_cabled.sh",
+                "parameters": {
+                        "lgrp_nums": "",
+                        "arguments": "-m 1"
+                }
+        },
+        {
                 "id": 6,
                 "file": "sl_run_link_last_down_cause_match.sh",
                 "parameters": {
@@ -61,6 +69,14 @@
                 "parameters": {
                         "lgrp_nums": "0",
                         "arguments": ""
+                }
+        },
+        {
+                "id": 10,
+                "file": "sl_run_link_up_autoneg_cabled.sh",
+                "parameters": {
+                        "lgrp_nums": "",
+                        "arguments": "-m 1"
                 }
         },
         {
