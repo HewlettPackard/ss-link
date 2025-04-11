@@ -172,7 +172,7 @@ The purpose of this function is the following.
 #### Link Group Configuration Example
 
 ```sh
-sl_test_lgrp_setup 0 "8 9 40 41" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_il_fec_calc.sh
+sl_test_lgrp_setup 0 "8 9 40 41" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_lb_fec_calc.sh
 ```
 
 ### Link Up
@@ -224,7 +224,7 @@ to further explain the full example provided here.
 lgrps=(8 9 40 41)
 
 sl_test_init
-sl_test_lgrp_setup 0 "${lgrps[*]}" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_il_fec_calc.sh
+sl_test_lgrp_setup 0 "${lgrps[*]}" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_lb_fec_calc.sh
 sl_test_link_up 0 "${lgrps[*]}"
 sl_test_lgrp_cleanup 0 "${lgrps[*]}"
 ```
@@ -667,18 +667,18 @@ Below is an example of the default SerDes settings file. Taken from a link on oa
 #
 
 clocking = 85/170
-cursor   = 168
+cursor   = 100
 dfe      = enabled
 encoding = PAM4_normal
 media    = headshell
-osr      = OSX1
+osr      = OSX2
 post1    = 0
 post2    = 0
 pre1     = 0
 pre2     = 0
 pre3     = 0
 scramble = disabled
-width    = 160
+width    = 80
 ```
 
 The options available for non-numeric values can be found in the help for
@@ -790,44 +790,49 @@ pre1: 0
 
 ## Set SerDes Settings Full Example
 
-The following example will setup link 0 in link group 0 with the default
-SerDes settings, then wait for the link to go up. If the link goes up the
-SerDes settings used are printed.
+The following example was run on oat-cf2 where link groups 8,9,40,41 are connected
+together. The links will be brought up with the default SerDes config and if the
+link is up after 10 seconds the SerDes settings will be printed.
 
 ```sh
 source /usr/bin/sl_test_scripts/sl_test_env.sh
+lgrp_nums=(8 9 40 41)
 
 sl_test_init
-sl_test_lgrp_setup 0 0 /usr/bin/sl_test_scripts/systems//settings/ck400_x1_il_fec_calc.sh
-sl_test_serdes_settings_set 0 0 0 /usr/bin/sl_test_scripts/settings/serdes/default.config
-sl_test_link_up 0 0 0
+sl_test_lgrp_setup 0 "${lgrp_nums[*]}" /usr/bin/sl_test_scripts/systems//settings/bs200_x1_lb_fec_calc.sh
+sl_test_serdes_settings_set 0 "${lgrp_nums[*]}" 0 /usr/bin/sl_test_scripts/settings/serdes/default.config
+sl_test_link_up 0 "${lgrp_nums[*]}" 0
 
 sleep 10
 
-state=$(cat /sys/class/rossw/rossw0/pgrp/0/test_port/0/link/state)
-
-if [[ "${state}" == "up" ]]; then
-        for f in /sys/class/rossw/rossw0/pgrp/0/serdes/lane/0/settings/*; do
-                echo "$(basename $f): $(cat $f)";
-        done
-fi
+for lgrp_num in ${lgrp_nums[@]}; do
+        state=$(cat /sys/class/rossw/rossw0/pgrp/${lgrp_num}/test_port/0/link/state)
+        if [[ "${state}" == "up" ]]; then
+                echo "SerDes Settings for ${lgrp_num}"
+                for f in /sys/class/rossw/rossw0/pgrp/${lgrp_num}/serdes/lane/0/settings/*; do
+                        echo "$(basename $f): $(cat $f)";
+                done
+        fi
+done
 ```
 
 ```txt
+SerDes Settings for 8
 clocking: 85/170
-cursor: 168
+cursor: 100
 dfe: enabled
 encoding: PAM4_normal
 link_training: disabled
 media: headshell
-osr: OSX1
+osr: OSX2
 post1: 0
 post2: 0
 pre1: 0
 pre2: 0
 pre3: 0
 scramble: disabled
-width: 160
+width: 80
+...
 ```
 
 ## FAQS
