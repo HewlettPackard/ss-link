@@ -246,35 +246,37 @@ static ssize_t up_count_show(struct kobject *kobj, struct kobj_attribute *kattr,
 static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link  *ctl_link;
-	u32                  up_time_ms;
-	u32                  total_time_ms;
+	s64                  up_time_ms;
+	s64                  total_time_ms;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_ctl_link_up_clocks_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-		&up_time_ms, &total_time_ms);
+	sl_ctl_link_up_clocks_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &up_time_ms, &total_time_ms);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "up time show (up_time_ms = %u, total_time_ms = %u)",
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"up time show (up_time = %lldms, total_time = %lldms)",
 		up_time_ms, total_time_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", up_time_ms);
+	return scnprintf(buf, PAGE_SIZE, "%lld\n", up_time_ms);
 }
 
 static ssize_t total_time_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctl_link  *ctl_link;
-	u32                  up_time_ms;
-	u32                  total_time_ms;
+	s64                  up_time_ms;
+	s64                  total_time_ms;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_ctl_link_up_clocks_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-		&up_time_ms, &total_time_ms);
+	sl_ctl_link_up_clocks_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &up_time_ms, &total_time_ms);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "total time show (up_time_ms = %u, total_time_ms = %u)",
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"total time show (up_time = %lldms, total_time = %lldms)",
 		up_time_ms, total_time_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", total_time_ms);
+	return scnprintf(buf, PAGE_SIZE, "%lld\n", total_time_ms);
 }
 
 static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

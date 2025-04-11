@@ -56,14 +56,13 @@ struct sl_ctl_link {
 
 	spinlock_t                   data_lock;
 	bool                         is_canceled;
-	u32                          up_count;
-	spinlock_t                   up_count_lock;
 
 	struct sl_ctl_link_counter  *counters;
 
 	struct {
 		ktime_t              start;
 		ktime_t              elapsed;
+		u32                  attempt_count;
 		ktime_t              attempt_start;
 		ktime_t              attempt_elapsed;
 		spinlock_t           lock;
@@ -128,7 +127,7 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			       u32 *up_time, u32 *total_time);
+			       s64 *up_time, s64 *total_time);
 void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
 
 int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);

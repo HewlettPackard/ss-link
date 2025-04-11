@@ -278,7 +278,7 @@ int sl_link_reset(struct sl_link *link)
 }
 EXPORT_SYMBOL(sl_link_reset);
 
-int sl_link_clocks_get(struct sl_link *link, u32 *up_count, u32 *up_time, u32 *total_time)
+int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *total_time)
 {
 	int rtn;
 

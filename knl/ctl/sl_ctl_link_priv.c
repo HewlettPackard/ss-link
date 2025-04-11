@@ -104,8 +104,9 @@ void sl_ctl_link_up_clock_start(struct sl_ctl_link *ctl_link)
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
-	ctl_link->up_clock.start   = ktime_get();
-	ctl_link->up_clock.elapsed = ktime_set(0, 0);
+	ctl_link->up_clock.start         = ktime_get();
+	ctl_link->up_clock.elapsed       = ktime_set(0, 0);
+	ctl_link->up_clock.attempt_count = 1;
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 }
 
@@ -119,27 +120,31 @@ static void sl_ctl_link_up_clock_stop(struct sl_ctl_link *ctl_link)
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 }
 
-void sl_ctl_link_up_clock_clear(struct sl_ctl_link *ctl_link)
+void sl_ctl_link_up_clock_reset(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
-	ctl_link->up_clock.elapsed = ktime_set(0, 0);
-	ctl_link->up_clock.start   = ktime_set(0, 0);
+	ctl_link->up_clock.elapsed         = ktime_set(0, 0);
+	ctl_link->up_clock.start           = ktime_set(0, 0);
+	ctl_link->up_clock.attempt_count   = 0;
+	ctl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
+	ctl_link->up_clock.attempt_start   = ktime_set(0, 0);
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 }
 
-void sl_ctl_link_up_attempt_clock_start(struct sl_ctl_link *ctl_link)
+static void sl_ctl_link_up_clock_attempt_start(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
 	ctl_link->up_clock.attempt_start   = ktime_get();
 	ctl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
+	ctl_link->up_clock.attempt_count++;
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 }
 
-static void sl_ctl_link_up_attempt_clock_stop(struct sl_ctl_link *ctl_link)
+static void sl_ctl_link_up_clock_attempt_stop(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
 
@@ -147,25 +152,6 @@ static void sl_ctl_link_up_attempt_clock_stop(struct sl_ctl_link *ctl_link)
 	ctl_link->up_clock.attempt_elapsed = ktime_sub(ktime_get(), ctl_link->up_clock.attempt_start);
 	ctl_link->up_clock.attempt_start   = ktime_set(0, 0);
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
-}
-
-void sl_ctl_link_up_attempt_clock_clear(struct sl_ctl_link *ctl_link)
-{
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
-	ctl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
-	ctl_link->up_clock.attempt_start   = ktime_set(0, 0);
-	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
-}
-
-void sl_ctl_link_up_count_zero(struct sl_ctl_link *ctl_link)
-{
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->up_count_lock, irq_flags);
-	ctl_link->up_count = 0;
-	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
 }
 
 static bool sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link)
@@ -186,15 +172,6 @@ static bool sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link)
 	return stopping_set;
 }
 
-static void sl_ctl_link_up_count_inc(struct sl_ctl_link *ctl_link)
-{
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->up_count_lock, irq_flags);
-	ctl_link->up_count++;
-	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
-}
-
 int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap,
 			    u32 core_speed, u32 core_fec_mode, u32 core_fec_type)
 {
@@ -204,8 +181,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 	int                       max_up_tries;
 	u32                       up_count;
 	int                       rtn;
-	u32                       up_time;
-	u32                       total_time;
+	s64                       up_time;
+	s64                       total_time;
 	u32                       link_state;
 	union sl_lgrp_notif_info  info;
 
@@ -216,7 +193,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		"up callback (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
 
-	sl_ctl_link_up_attempt_clock_stop(ctl_link);
+	sl_ctl_link_up_clock_attempt_stop(ctl_link);
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_UP:
@@ -227,8 +204,9 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 			ctl_link->num, &up_time, &total_time);
 		sl_ctl_link_up_count_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 			ctl_link->num, &up_count);
+
 		sl_ctl_log_dbg(ctl_link, LOG_NAME,
-			"up callback (count = %d, up_time = %dms, total_time = %dms)",
+			"up callback (count = %d, up_time = %lldms, total_time = %lldms)",
 			up_count, up_time, total_time);
 
 		sl_ctl_link_fec_mon_start(ctl_link);
@@ -250,12 +228,9 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		max_up_tries = ctl_link->config.link_up_tries_max;
 		spin_unlock_irqrestore(&ctl_link->config_lock, irq_flags);
 
-		sl_ctl_link_up_count_inc(ctl_link);
-		sl_ctl_link_up_count_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-			ctl_link->ctl_lgrp->num, ctl_link->num, &up_count);
-
 		/* check for fatal down causes */
 		if (core_cause_map & SL_LINK_DOWN_CAUSE_FATAL_MASK) {
+			sl_ctl_link_up_clock_reset(ctl_link);
 
 			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work fatal down cause");
 
@@ -282,6 +257,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 
 		/* canceled */
 		if (sl_ctl_link_is_canceled(ctl_link)) {
+			sl_ctl_link_up_clock_reset(ctl_link);
 
 			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up retry canceled");
 
@@ -291,8 +267,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 					"link_state_stopping_set invalid state (link_state = %u %s)",
 					link_state, sl_link_state_str(link_state));
 			} else {
-				sl_ctl_link_up_clock_clear(ctl_link);
-
 				flush_work(&ctl_link->ctl_lgrp->notif_work);
 				sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 				complete_all(&ctl_link->down_complete);
@@ -310,7 +284,10 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		}
 
 		/* check up tries */
+		sl_ctl_link_up_count_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+			ctl_link->ctl_lgrp->num, ctl_link->num, &up_count);
 		if ((up_count >= max_up_tries) && (max_up_tries != SL_LINK_INFINITE_UP_TRIES)) {
+			sl_ctl_link_up_clock_reset(ctl_link);
 
 			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work out of up tries");
 
@@ -321,8 +298,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 					link_state, sl_link_state_str(link_state));
 				return 0;
 			}
-
-			sl_ctl_link_up_clock_clear(ctl_link);
 
 			core_cause_map |= SL_LINK_DOWN_CAUSE_UP_TRIES_MAP;
 			sl_core_link_last_up_fail_cause_map_set(ctl_link->ctl_lgrp->ctl_ldev->num,
@@ -341,13 +316,17 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 			return 0;
 		}
 
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_RETRY);
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "link up retry (ctl_link = 0x%p)", ctl_link);
-		sl_ctl_link_up_attempt_clock_start(ctl_link);
+
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_RETRY);
+
+		sl_ctl_link_up_clock_attempt_start(ctl_link);
 
 		rtn = sl_core_link_up(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 			ctl_link->num, sl_ctl_link_up_callback, ctl_link);
 		if (rtn) {
+			sl_ctl_link_up_clock_reset(ctl_link);
+
 			if (!sl_ctl_link_state_stopping_set(ctl_link)) {
 				link_state = sl_ctl_link_state_get(ctl_link);
 				sl_ctl_log_err_trace(ctl_link, LOG_NAME,
@@ -358,8 +337,6 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"up callback work core_link_up failed [%d]", rtn);
-			sl_ctl_link_up_clock_clear(ctl_link);
-			sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
 			flush_work(&ctl_link->ctl_lgrp->notif_work);
 			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
@@ -379,6 +356,7 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		return 0;
 
 	default:
+		sl_ctl_link_up_clock_reset(ctl_link);
 
 		if (!sl_ctl_link_state_stopping_set(ctl_link)) {
 			link_state = sl_ctl_link_state_get(ctl_link);
@@ -388,10 +366,8 @@ int sl_ctl_link_up_callback(void *tag, u32 core_state, u64 core_cause_map, u64 c
 		}
 
 		sl_ctl_log_err(ctl_link, LOG_NAME,
-			"up callback work invalid (core_state = %u %s, core_imap = %s)",
-			core_state, sl_core_link_state_str(core_state), core_imap_str);
-		sl_ctl_link_up_clock_clear(ctl_link);
-		sl_ctl_link_up_attempt_clock_clear(ctl_link);
+			"up callback work invalid (core_state = %u, core_imap = %s)",
+			core_state, core_imap_str);
 
 		flush_work(&ctl_link->ctl_lgrp->notif_work);
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
@@ -446,7 +422,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 		"fault callback work (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
 
-	sl_ctl_link_fec_mon_stop(ctl_link);
+	sl_ctl_link_up_clock_reset(ctl_link);
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
@@ -573,6 +549,8 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 
 	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
+
+	sl_ctl_link_up_clock_reset(ctl_link);
 
 	spin_lock_irqsave(&ctl_link->data_lock, irq_flags);
 	link_state = ctl_link->state;

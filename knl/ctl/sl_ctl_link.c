@@ -81,7 +81,6 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 	spin_lock_init(&ctl_link->config_lock);
 	spin_lock_init(&ctl_link->data_lock);
-	spin_lock_init(&ctl_link->up_count_lock);
 
 	rtn = sl_ctl_link_counters_init(ctl_link);
 	if (rtn) {
@@ -92,6 +91,7 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 	ctl_link->up_clock.start           = ktime_set(0, 0);
 	ctl_link->up_clock.elapsed         = ktime_set(0, 0);
+	ctl_link->up_clock.attempt_count   = 0;
 	ctl_link->up_clock.attempt_start   = ktime_set(0, 0);
 	ctl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
 	spin_lock_init(&ctl_link->up_clock.lock);
@@ -471,9 +471,8 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up cmd");
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CMD);
-	sl_ctl_link_up_count_zero(ctl_link);
+
 	sl_ctl_link_up_clock_start(ctl_link);
-	sl_ctl_link_up_attempt_clock_start(ctl_link);
 
 	sl_ctl_link_is_canceled_set(ctl_link, false);
 
@@ -483,10 +482,10 @@ static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
 		sl_ctl_link_up_callback, ctl_link);
 	if (rtn) {
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_STOPPING);
+
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME, "core_link_up failed [%d]", rtn);
 
-		sl_ctl_link_up_clock_clear(ctl_link);
-		sl_ctl_link_up_attempt_clock_clear(ctl_link);
+		sl_ctl_link_up_clock_reset(ctl_link);
 
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 
@@ -549,7 +548,10 @@ static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
 	int                 rtn;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down cmd");
+
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_DOWN_CMD);
+
+	sl_ctl_link_up_clock_reset(ctl_link);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
@@ -654,6 +656,8 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 
 	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_RESET_CMD);
 
+	sl_ctl_link_up_clock_reset(ctl_link);
+
 	sl_ctl_link_fec_mon_stop(ctl_link);
 	cancel_work_sync(&ctl_link->fec_mon_timer_work);
 
@@ -687,9 +691,6 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "completion (timeleft = %lu)", timeleft);
 
 	sl_core_link_reset(ldev_num, lgrp_num, link_num);
-
-	sl_ctl_link_up_clock_clear(ctl_link);
-	sl_ctl_link_up_attempt_clock_clear(ctl_link);
 
 	return 0;
 }
@@ -748,7 +749,7 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 }
 
 void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			       u32 *up_time, u32 *total_time)
+			       s64 *up_time, s64 *total_time)
 {
 	unsigned long       irq_flags;
 	struct sl_ctl_link *ctl_link;
@@ -762,15 +763,21 @@ void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
+
 	if (!ktime_compare(ctl_link->up_clock.attempt_start, ktime_set(0, 0)))
-		*up_time = ktime_to_ms(ctl_link->up_clock.attempt_elapsed); /* clock stopped */
+		*up_time = ktime_to_ms(ctl_link->up_clock.attempt_elapsed);
 	else
 		*up_time = ktime_to_ms(ktime_sub(ktime_get(), ctl_link->up_clock.attempt_start));
+
 	if (!ktime_compare(ctl_link->up_clock.start, ktime_set(0, 0)))
-		*total_time = ktime_to_ms(ctl_link->up_clock.elapsed); /* clock stopped */
+		*total_time = ktime_to_ms(ctl_link->up_clock.elapsed);
 	else
 		*total_time = ktime_to_ms(ktime_sub(ktime_get(), ctl_link->up_clock.start));
+
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_info(ctl_link, LOG_NAME,
+		"clocks get (up_time = %lld, total_time = %lld)", *up_time, *total_time);
 }
 
 void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count)
@@ -786,9 +793,11 @@ void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_cou
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->up_count_lock, irq_flags);
-	*up_count = ctl_link->up_count;
-	spin_unlock_irqrestore(&ctl_link->up_count_lock, irq_flags);
+	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
+	*up_count = ctl_link->up_clock.attempt_count;
+	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_info(ctl_link, LOG_NAME, "count get (up_count = %u)", *up_count);
 }
 
 int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
