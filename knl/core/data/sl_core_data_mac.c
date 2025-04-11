@@ -137,7 +137,7 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 		core_mac->settings.tx_cdt_thresh       = 15;
 		core_mac->settings.tx_cdt_init_val     = 72;
 		core_mac->settings.tx_pcs_credits      = 8;
-		core_mac->settings.tx_short_preamble   = 1;
+		core_mac->settings.tx_short_preamble   = 0;
 		core_mac->settings.llr_if_credits      = 8;
 	} else {
 		core_mac->settings.tx_ifg_mode         = 1;
@@ -178,6 +178,9 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 		core_mac->settings.tx_short_preamble = 0;
 	}
 
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_4BYTE_PREAMBLE))
+		core_mac->settings.tx_short_preamble = 1;
+
 	return 0;
 }
 
@@ -191,11 +194,14 @@ int sl_core_data_mac_rx_settings(struct sl_core_mac *core_mac)
 
 	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 		core_mac->settings.rx_flit_packing_cnt = 1;
-		core_mac->settings.rx_short_preamble   = 1;
+		core_mac->settings.rx_short_preamble   = 0;
 	} else {
 		core_mac->settings.rx_flit_packing_cnt = 1;
 		core_mac->settings.rx_short_preamble   = 0;
 	}
+
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_4BYTE_PREAMBLE))
+		core_mac->settings.rx_short_preamble   = 1;
 
 	return 0;
 }
