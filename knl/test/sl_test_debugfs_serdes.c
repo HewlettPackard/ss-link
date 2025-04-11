@@ -25,7 +25,7 @@ struct sl_test_serdes_settings {
 	s16 cursor;
 	s16 post1;
 	s16 post2;
-	u32 media;
+	s16 media;
 	// core settings
 	u16 osr;
 	u16 encoding;
@@ -71,23 +71,6 @@ static void sl_test_serdes_lane_width_opts(char *buf, size_t size)
 		sl_test_serdes_lane_width_str(SL_CORE_HW_SERDES_WIDTH_160));
 };
 
-static void sl_test_media_opts(char *buf, size_t size)
-{
-	snprintf(buf, size, "%s %s %s %s %s %s %s %s %s %s %s %s\n",
-		sl_test_media_type_str(SL_MEDIA_TYPE_HEADSHELL),
-		sl_test_media_type_str(SL_MEDIA_TYPE_BACKPLANE),
-		sl_test_media_type_str(SL_MEDIA_TYPE_ELECTRICAL),
-		sl_test_media_type_str(SL_MEDIA_TYPE_OPTICAL),
-		sl_test_media_type_str(SL_MEDIA_TYPE_PASSIVE),
-		sl_test_media_type_str(SL_MEDIA_TYPE_ACTIVE),
-		sl_test_media_type_str(SL_MEDIA_TYPE_ANALOG),
-		sl_test_media_type_str(SL_MEDIA_TYPE_DIGITAL),
-		sl_test_media_type_str(SL_MEDIA_TYPE_AOC),
-		sl_test_media_type_str(SL_MEDIA_TYPE_PEC),
-		sl_test_media_type_str(SL_MEDIA_TYPE_AEC),
-		sl_test_media_type_str(SL_MEDIA_TYPE_BKP));
-};
-
 static struct str_conv_u16 lane_encoding = {
 	.to_str = sl_test_serdes_lane_encoding_str,
 	.to_u16 = sl_test_serdes_lane_encoding_from_str,
@@ -116,21 +99,14 @@ static struct str_conv_u16 lane_width = {
 	.value  = &settings.width,
 };
 
-static struct str_conv_u32 media = {
-	.to_str = sl_test_media_type_str,
-	.to_u32 = sl_test_media_type_from_str,
-	.opts   = sl_test_media_opts,
-	.value  = &settings.media,
-};
-
-static struct str_conv_u16 dfe = {
+static struct str_conv_u16 lane_dfe = {
 	.to_str = sl_test_state_str,
 	.to_u16 = sl_test_state_from_str,
 	.opts   = sl_test_state_opts,
 	.value  = &settings.dfe,
 };
 
-static struct str_conv_u16 scramble = {
+static struct str_conv_u16 lane_scramble = {
 	.to_str = sl_test_state_str,
 	.to_u16 = sl_test_state_from_str,
 	.opts   = sl_test_state_opts,
@@ -281,14 +257,14 @@ int sl_test_serdes_create(struct dentry *parent)
 	sl_test_debugfs_create_s16("cursor",   0644, settings_dir, &(settings.cursor));
 	sl_test_debugfs_create_s16("post1",    0644, settings_dir, &(settings.post1));
 	sl_test_debugfs_create_s16("post2",    0644, settings_dir, &(settings.post2));
+	sl_test_debugfs_create_s16("media",    0644, settings_dir, &(settings.media));
 
 	sl_test_debugfs_create_str_conv_u16("encoding", 0644, settings_dir, &lane_encoding);
 	sl_test_debugfs_create_str_conv_u16("clocking", 0644, settings_dir, &lane_clocking);
 	sl_test_debugfs_create_str_conv_u16("osr",      0644, settings_dir, &lane_osr);
 	sl_test_debugfs_create_str_conv_u16("width",    0644, settings_dir, &lane_width);
-	sl_test_debugfs_create_str_conv_u32("media",    0644, settings_dir, &media);
-	sl_test_debugfs_create_str_conv_u16("dfe",      0644, settings_dir, &dfe);
-	sl_test_debugfs_create_str_conv_u16("scramble", 0644, settings_dir, &scramble);
+	sl_test_debugfs_create_str_conv_u16("dfe",      0644, settings_dir, &lane_dfe);
+	sl_test_debugfs_create_str_conv_u16("scramble", 0644, settings_dir, &lane_scramble);
 
 	dentry = debugfs_create_file("cmds", 0644, sl_test_serdes_dir, NULL, &sl_test_serdes_cmds_fops);
 	if (!dentry) {
@@ -312,7 +288,7 @@ int sl_test_serdes_set(void)
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "serdes set");
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-		"serdes set (pre1 = %d, pre2 = %d, pre3 = %d, cursor = %d, post1 = %d, post2 = %d, media = %u)",
+		"serdes set (pre1 = %d, pre2 = %d, pre3 = %d, cursor = %d, post1 = %d, post2 = %d, media = %d)",
 		settings.pre1, settings.pre2, settings.pre3, settings.cursor,
 		settings.post1, settings.post2, settings.media);
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,

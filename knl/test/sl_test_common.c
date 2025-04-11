@@ -104,7 +104,19 @@ EXPORT_SYMBOL(sl_test_serdes_lane_encoding_from_str);
 
 int sl_test_serdes_lane_clocking_from_str(const char *str, u16 *clocking)
 {
-	return sl_core_test_serdes_lane_clocking_from_str(str, clocking);
+	int rtn;
+
+	if (!str || !clocking) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid arg\n");
+		return -EINVAL;
+	}
+
+	rtn = sl_core_test_serdes_lane_clocking_from_str(str, clocking);
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"clocking_from_str (str = %s, clocking = %u)", str, *clocking);
+
+	return rtn;
 }
 EXPORT_SYMBOL(sl_test_serdes_lane_clocking_from_str);
 
@@ -383,6 +395,10 @@ static ssize_t sl_test_debugfs_str_to_u16_read(struct file *f, char __user *buf,
 		return bytes_read;
 	}
 
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"str_to_u16_read (len = %ld, str = %s, bytes = %ld, buf = %s)",
+		len, str, bytes_read, buf);
+
 	return bytes_read;
 }
 
@@ -394,6 +410,9 @@ static ssize_t sl_test_debugfs_str_to_u16_write(struct file *f, const char __use
 	char                 kbuf[VAL_LEN];
 
 	option = f->private_data;
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"str_to_u16_write (count = %ld, buf = %s)", count, buf);
 
 	len = simple_write_to_buffer(&kbuf, sizeof(kbuf) - 1, pos, buf, count);
 	if (len < 0)

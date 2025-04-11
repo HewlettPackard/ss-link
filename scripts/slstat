@@ -13,6 +13,7 @@ function usage {
         echo "    link_num = link number (0-3)"
         echo "  option:"
         echo "    state    = print state for the target"
+        echo "    cable    = print cable info for the target"
         echo "    counters = print counters for a link target (requires #:#:#)"
         echo "    use_test = use the \"test_port\" directory"
         exit;
@@ -28,6 +29,9 @@ elif [ "$#" -eq 2 ] ; then
         case $2 in
                 state )
                         option=state
+                        ;;
+                cable )
+                        option=cable
                         ;;
                 counters )
                         option=counters
@@ -101,8 +105,10 @@ function print_jack_state {
 
         local state=$(cat ${LGRP_PATH}/media/state)
         local jack_num=$(cat ${LGRP_PATH}/media/jack_num)
+        local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
+	local power=$(cat ${LGRP_PATH}/media/jack_power_state)
 
-        printf "jack%03d    | state: ${state}\n" ${jack_num}
+        printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}\n" ${jack_num}
 }
 
 function print_link_state {
@@ -115,7 +121,7 @@ function print_link_state {
         local up_time=$(cat ${LINK_PATH}/up_time_ms)
         local time_str=$(date -d @${up_time} '+%Hh %Mm %Ss')
 
-        printf "link%d      | state: ${state}, speed: ${speed}, up_time: ${time_str}\n" ${LINK}
+        printf "link%d      | state: ${state} [${time_str}] ${speed}\n" ${LINK}
 }
 
 function print_mac_state {
@@ -126,7 +132,7 @@ function print_mac_state {
         local state_tx=$(cat ${MAC_PATH}/tx_state)
         local state_rx=$(cat ${MAC_PATH}/rx_state)
 
-        printf "mac%d       | tx_state: ${state_tx}, rx_state: ${state_rx}\n" ${LINK}
+        printf "mac%d       | state: tx ${state_tx}, rx ${state_rx}\n" ${LINK}
 }
 
 function print_llr_state {
@@ -150,10 +156,10 @@ function print_counters {
         for counter in ${LINK_PATH}/counters/* ; do
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %30s = ${val}\n" $(basename "${counter}")
+                        printf " %25s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %30s = ${val}\n" $(basename "${counter}")
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }
@@ -168,15 +174,15 @@ function print_jack {
         local vendor=$(cat ${LGRP_PATH}/media/vendor)
         local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
         local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
+        local supported=$(cat ${LGRP_PATH}/media/supported)
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
-        local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
 
         print_jack_state
 
-        printf "           | furcation: ${furcation}, power: ${shift}\n"
         printf "           | cable: ${vendor} ${type} ${length}cm, type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
+        printf "           | supported: ${supported}, furcation: ${furcation}\n"
         printf "           | speeds: "
         if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
                 printf "cd50 "
@@ -216,7 +222,8 @@ function print_lgrp {
         local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
 
         printf "lgrp%02d     | furcation: ${furcation}\n" ${LGRP}
-        printf "           | tech: ${tech_map}, fec: ${fec_map}\n" ${LGRP}
+        printf "           | tech_config: ${tech_map}\n"
+        printf "           | fec_config : ${fec_map}\n"
 }
 
 function print_link {
@@ -233,16 +240,25 @@ function print_link {
         local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
         local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
         local autoneg=$(cat ${LINK_PATH}/config/autoneg)
+        local caps_pause=$(cat ${LINK_PATH}/caps/pause_map)
+        local caps_tech=$(cat ${LINK_PATH}/caps/tech_map)
+        local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
+        local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
         local loopback=$(cat ${LINK_PATH}/config/loopback)
 
         print_link_state
 
-        printf "           | last_down_cause_map: ${down_cause_map}, last_down_time: ${down_time}\n"
-        printf "           | up_fail_cause_map: ${up_fail_cause_map}, up_fail_time: ${up_fail_time}\n"
-        printf "           | hpe: ${hpe_map}\n"
-        printf "           | pause: ${pause_map}\n"
-        printf "           | link_up_timeout: ${link_up_timeout}ms, link_up_tries_max: ${link_up_tries_max}\n"
-        printf "           | autoneg: ${autoneg}, loopback: ${loopback}\n"
+        printf "           | last_down_cause: [${down_time}] ${down_cause_map}\n"
+        printf "           | up_fail_cause  : [${up_fail_time}] ${up_fail_cause_map}\n"
+        printf "           | link_up_timeout: ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
+        printf "           | hpe_config     : ${hpe_map}\n"
+        printf "           | pause_config   : ${pause_map}\n"
+        printf "           | autoneg        : ${autoneg}\n"
+        printf "           |      pause_caps: ${caps_pause}\n"
+        printf "           |      tech_caps : ${caps_tech}\n"
+        printf "           |      fec_caps  : ${caps_fec}\n"
+        printf "           |      hpe_caps  : ${caps_hpe}\n"
+	printf "           | loopback       : ${loopback}\n"
 }
 
 function print_mac {
@@ -393,16 +409,16 @@ function print_fec_current {
 
         printf "           | current_ccw: ${ccw}, current_ucw: ${ucw}\n"
         count=$(cat ${LINK_PATH}/fec/current/tail/bin00)
-        printf "           | bins: ${count}\n"
+        printf "           | current_bins: [00] ${count}\n"
         for bin in {1..9} ; do
                 count=$(cat ${LINK_PATH}/fec/current/tail/bin0${bin})
-                printf "           |       ${count}\n"
+                printf "           |               [0${bin}] ${count}\n"
         done
         for bin in {10..14} ; do
                 count=$(cat ${LINK_PATH}/fec/current/tail/bin${bin})
-                printf "           |       ${count}\n"
+                printf "           |               [${bin}] ${count}\n"
         done
-        printf "           | fecls:                 fecl0           fecl1           fecl2           fecl3\n"
+        printf "           | current_fecls:         fecl0           fecl1           fecl2           fecl3\n"
         printf "           |            +----------------------------------------------------------------\n"
         for lane in {0..3} ; do
                 printf "           | %10s | " "lane${lane}"
@@ -414,16 +430,24 @@ function print_fec_current {
         done
         printf "           |            +----------------------------------------------------------------\n"
 }
+function print_serdes_header {
+        print_serdes
+        printf "           | lanes:                   lane0           lane1           lane2           lane3\n"
+        printf "           |              +----------------------------------------------------------------\n"
+}
+
+function print_serdes_footer {
+        printf "           |              +----------------------------------------------------------------\n"
+}
 
 function print_lane_state {
         if [ ! -e ${LGRP_PATH} ] ; then
                 return
         fi
 
-        printf "           | lanes:                   lane0           lane1           lane2           lane3\n"
-        printf "           |              +----------------------------------------------------------------\n"
+        print_serdes_header
         print_col_state
-        printf "           |              +----------------------------------------------------------------\n"
+        print_serdes_footer
 }
 
 function print_serdes_settings {
@@ -431,9 +455,7 @@ function print_serdes_settings {
                 return
         fi
 
-        print_serdes
-        printf "           | lanes:                   lane0           lane1           lane2           lane3\n"
-        printf "           |              +----------------------------------------------------------------\n"
+        print_serdes_header
         print_col_state
         print_col_eye_high
         print_col_eye_low
@@ -452,7 +474,7 @@ function print_serdes_settings {
         print_col "settings/osr" "osr"
         print_col "settings/scramble" "scramble"
         print_col "settings/clocking" "clocking"
-        printf "           |              +----------------------------------------------------------------\n"
+        print_serdes_footer
 }
 
 ## ==================== MAIN ====================
@@ -469,13 +491,18 @@ case $option in
                         print_link_state
                         print_mac_state
                         print_llr_state
-                        print_counters
                 fi
                 if [ ${num_args} -ge 2 ] ; then
                         print_lane_state
                 fi
                 exit
                 ;;
+        cable )
+                if [ ${num_args} -ge 2 ] ; then
+                        print_ldev
+                        print_jack
+		fi
+		;;
         counters )
                 if [ ${num_args} -ge 3 ] ; then
                         print_ldev
@@ -484,8 +511,6 @@ case $option in
                         print_mac_state
                         print_llr_state
                         print_counters
-                else
-                        usage;
                 fi
                 exit
                 ;;

@@ -14,12 +14,10 @@ export SL_TEST_LIBS_DIR="${SL_TEST_DIR}/libs/"
 # SL Test System/Settings Directories
 ##########################################################################################
 
-export SL_TEST_CONFIGS_DIR="${SL_TEST_DIR}/configs/"
-export SL_TEST_POLICY_DIR="${SL_TEST_DIR}/policies/"
-export SL_TEST_SERDES_SETTINGS_DIR="${SL_TEST_DIR}/settings/serdes/"
-export SL_TEST_SYSTEMS_DIR="${SL_TEST_DIR}/systems/"
-
-export SL_TEST_SYSTEMS_SETTINGS_DIR="${SL_TEST_SYSTEMS_DIR}/settings/"
+export SL_TEST_CONFIGS_DIR="${SL_TEST_DIR}/configs"
+export SL_TEST_POLICY_DIR="${SL_TEST_DIR}/policies"
+export SL_TEST_SERDES_SETTINGS_DIR="${SL_TEST_DIR}/settings/serdes"
+export SL_TEST_SYSTEMS_SETTINGS_DIR="${SL_TEST_DIR}/systems/settings"
 
 SL_TEST_LGRP_CONFIG_DIR="${SL_TEST_CONFIGS_DIR}/lgrp/"
 SL_TEST_LINK_CONFIG_DIR="${SL_TEST_CONFIGS_DIR}/link/"

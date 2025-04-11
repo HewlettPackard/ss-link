@@ -225,7 +225,7 @@ lgrps=(8 9 40 41)
 
 sl_test_init
 sl_test_lgrp_setup 0 "${lgrps[*]}" /usr/bin/sl_test_scripts/systems/settings/bs200_x1_lb_fec_calc.sh
-sl_test_link_up 0 "${lgrps[*]}"
+sl_test_link_up 0 "${lgrps[*]}" 0
 sl_test_lgrp_cleanup 0 "${lgrps[*]}"
 ```
 
@@ -566,7 +566,7 @@ source /usr/bin/sl_test_scripts/sl_test_env.sh
 | SL_TEST_CONFIGS_DIR | Directory for the SL test configurations. |
 | SL_TEST_POLICY_DIR | Directory for the SL test policies. |
 | SL_TEST_SERDES_SETTINGS_DIR | Directory for the SL test SerDes Settings. |
-| SL_TEST_SYSTEMS_DIR | Directory for the SL test system settings. |
+| SL_TEST_SYSTEMS_SETTINGS_DIR | Directory for the SL test system settings. |
 | SL_TEST_LOG_DIR | Directory logs are stored after running `sl_run_test`. |
 | SL_TEST_LGRP_DEBUGFS_NOTIFS | File to read notifications registered for. |
 | SL_TEST_DEVICE_TYPE | Type of device tests are running on. |

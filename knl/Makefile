@@ -97,7 +97,7 @@ test_clean:
 	$(MAKE) -C test clean
 
 # dpkg-buildpackage builds test target.
-test: modules
+test: modules fw
 	$(MAKE) -C test stage_install
 
 test_framework: modules

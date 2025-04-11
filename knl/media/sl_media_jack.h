@@ -87,7 +87,7 @@ struct sl_media_serdes_settings {
 	s16 cursor;
 	s16 post1;
 	s16 post2;
-	u16 media;
+	s16 media;
 };
 
 struct sl_media_cable_attr {

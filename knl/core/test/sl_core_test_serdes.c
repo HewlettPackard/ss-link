@@ -21,12 +21,14 @@ int sl_core_test_serdes_settings_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 	if (!core_link) {
 		sl_core_log_err(NULL, LOG_NAME,
-			"set link doesn't exist (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			"serdes settings set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
 		return -ENOMEM;
 	}
 
-	sl_core_log_dbg(core_link, LOG_NAME, "serdes settings set");
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"serdes settings set (media = %d, clocking = %u)",
+		media, clocking);
 
 	core_link->serdes.test_settings.pre1     = pre1;
 	core_link->serdes.test_settings.pre2     = pre2;
@@ -116,9 +118,6 @@ int sl_core_test_serdes_lane_encoding_from_str(const char *str, u16 *encoding)
 
 int sl_core_test_serdes_lane_clocking_from_str(const char *str, u16 *clocking)
 {
-	if (!str || !clocking)
-		return -EINVAL;
-
 	if (!strncmp(str, "82.5/165", 8)) {
 		*clocking = SL_CORE_HW_SERDES_CLOCKING_82P5;
 		return 0;

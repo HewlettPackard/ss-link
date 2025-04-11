@@ -182,9 +182,9 @@ static ssize_t media_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		return scnprintf(buf, PAGE_SIZE, "no_link\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"settings media show (media = %u)", core_link->serdes.media_serdes_settings.media);
+		"settings media show (media = %d)", core_link->serdes.media_serdes_settings.media);
 // FIXME: get from hardware?
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_type_str(core_link->serdes.media_serdes_settings.media));
+	return scnprintf(buf, PAGE_SIZE, "%d\n", core_link->serdes.media_serdes_settings.media);
 }
 
 static struct kobj_attribute settings_pre1   = __ATTR_RO(pre1);

@@ -317,10 +317,10 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	sl_test_link_config_init();
 
 	debugfs_create_u32("link_up_timeout_ms", 0644, config_dir, &link_config.link_up_timeout_ms);
-	debugfs_create_u32("link_up_tries_max",  0644, config_dir, &link_config.link_up_tries_max);
 	debugfs_create_u32("hpe_map",            0644, config_dir, &link_config.hpe_map);
 	debugfs_create_u32("pause_map",          0644, config_dir, &link_config.pause_map);
 
+	sl_test_debugfs_create_s32("link_up_tries_max",     0644, config_dir, &link_config.link_up_tries_max);
 	sl_test_debugfs_create_s32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);
 	sl_test_debugfs_create_s32("fec_up_check_wait_ms",  0644, config_dir, &link_config.fec_up_check_wait_ms);
 	sl_test_debugfs_create_s32("fec_up_ccw_limit",      0644, config_dir, &link_config.fec_up_ccw_limit);
