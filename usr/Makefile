@@ -13,3 +13,4 @@ all $(MAKECMDGOALS) :
 	# TODO: Fails to build, missing uapi/sbl_kconfig.h
 	#$(MAKE) -C linktool $(MAKECMDGOALS)
 	$(MAKE) -C sl_test $(MAKECMDGOALS)
+	$(MAKE) -C sl_test_file_write $(MAKECMDGOALS)

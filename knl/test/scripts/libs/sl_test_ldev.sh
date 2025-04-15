@@ -52,7 +52,7 @@ function __sl_test_ldev_cmd {
 		return ${rtn}
 	fi
 
-	echo "${cmd_str}" > ${SL_TEST_LDEV_DEBUGFS_CMD}
+	__sl_test_write_cmd "${cmd_str}" "${SL_TEST_LDEV_DEBUGFS_CMD}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"

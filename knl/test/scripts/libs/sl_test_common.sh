@@ -359,16 +359,20 @@ function sl_test_init {
 	local rtn
 	local options
 	local OPTIND
-	local usage="Usage: ${FUNCNAME} [-h | --help]"
+	local info
+	local usage="Usage: ${FUNCNAME} [-h | --help] [-i | --info]"
 	local description=$(cat <<-EOF
 	Automatically initialize the device under test. The device type is automatically determined.
 
 	Options:
 	-h, --help This message.
+	-i, --info Print basic system info.
 	EOF
 	)
 
-	options=$(getopt -o "h" --long "help" -- "$@")
+	info=false
+
+	options=$(getopt -o "hi" --long "help,info" -- "$@")
 
 	if [ "$?" != 0 ]; then
 		echo "${usage}"
@@ -384,6 +388,11 @@ function sl_test_init {
 				echo "${description}"
 				return 0
 				;;
+			-i | --info)
+				info=true
+				shift
+				break
+				;;
 			-- )
 				shift
 				break
@@ -393,6 +402,8 @@ function sl_test_init {
 				;;
 		esac
 	done
+
+	shift
 
 	if [[ "$#" != 0 ]]; then
 		sl_test_debug_log "${FUNCNAME}" "incorrect number of parameters"
@@ -406,6 +417,10 @@ function sl_test_init {
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "sl_test_${SL_TEST_DEVICE_TYPE}_init failed [${rtn}]"
 		return ${rtn}
+	fi
+
+	if [[ "${info}" == "true" ]]; then
+		sl_test_system_info
 	fi
 
 	return 0
@@ -581,6 +596,61 @@ function __sl_test_s16_check {
 		sl_test_error_log "${FUNCNAME}" "(${name} = ${value}) out of range"
 		return 1
 	fi
+
+	return 0
+}
+
+function __sl_test_write_cmd {
+	local rtn
+	local cmd=$1
+	local filename=$2
+
+	sl_test_file_write "${cmd}" "${filename}" > /dev/null 2>&1
+	rtn=$?
+
+	case ${rtn} in
+		0)
+			return ${rtn}
+			;;
+		${EALREADY})
+			sl_test_warn_log "${FUNCNAME}" "already complete [${rtn}]"
+			return 0;
+			;;
+		${EINPROGRESS})
+			sl_test_warn_log "${FUNCNAME}" "in progress [${rtn}]"
+			return 0;
+			;;
+		${EBADRQC})
+			sl_test_error_log "${FUNCNAME}" "bad request [${rtn}]"
+			return ${rtn}
+			;;
+		*)
+			sl_test_error_log "${FUNCNAME}" "failed [${rtn}]"
+			return ${rtn}
+			;;
+	esac
+}
+
+function sl_test_system_info {
+	local mod
+	local mods
+	local eth0_ip_info
+
+	sl_test_info_log "${FUNCNAME}" "hostname: $(hostname)"
+
+	eth0_ip_info=($(ip -4 -br addr show dev eth0))
+
+	sl_test_info_log "${FUNCNAME}" "ipv4/subnet: ${eth0_ip_info[2]}"
+
+	while IFS= read -r line; do
+		sl_test_info_log "${FUNCNAME}" "${line}"
+	done < "${SL_TEST_BMC_IMAGE_VER}"
+
+	mods=(sl sl-test)
+
+	for mod in ${mods[@]}; do
+		sl_test_info_log "${FUNCNAME}" "${mod} version: $(modinfo -Fversion ${mod})"
+	done
 
 	return 0
 }

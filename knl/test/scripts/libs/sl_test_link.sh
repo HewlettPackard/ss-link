@@ -98,7 +98,7 @@ function __sl_test_link_cmd {
 				return ${rtn}
 			fi
 
-			echo "${cmd_str}" > ${SL_TEST_LINK_DEBUGFS_CMD}
+			__sl_test_write_cmd "${cmd_str}" "${SL_TEST_LINK_DEBUGFS_CMD}"
 			rtn=$?
 			if [[ "${rtn}" != 0 ]]; then
 				sl_test_error_log "${FUNCNAME}" \

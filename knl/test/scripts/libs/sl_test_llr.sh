@@ -60,7 +60,7 @@ function __sl_test_llr_cmd {
 				return ${rtn}
 			fi
 
-			echo "${cmd_str}" > ${SL_TEST_LLR_DEBUGFS_CMD}
+			__sl_test_write_cmd "${cmd_str}" "${SL_TEST_LLR_DEBUGFS_CMD}"
 			rtn=$?
 			if [[ "${rtn}" != 0 ]]; then
 				sl_test_error_log "${FUNCNAME}" "cmd failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, llr_num = ${llr_num}, cmd_str = ${cmd_str}) [${rtn}]"

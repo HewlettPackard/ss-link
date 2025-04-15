@@ -83,6 +83,7 @@ source "${SL_TEST_LIBS_DIR}/devices/sl_test_cassini2.sh"
 source "${SL_TEST_LIBS_DIR}/devices/sl_test_rosetta2.sh"
 
 # Common functions
+source "${SL_TEST_LIBS_DIR}/sl_test_errno.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_log.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_util.sh"
 source "${SL_TEST_LIBS_DIR}/sl_test_ldev.sh"
@@ -130,6 +131,12 @@ export SL_TEST_LGRP_NUM_END
 ##########################################################################################
 
 export SL_TEST_LOG_DIR=${SL_TEST_DIR}/logs/
+
+##########################################################################################
+# System Info
+##########################################################################################
+
+export SL_TEST_BMC_IMAGE_VER="/usr/etc/version/bmc-image.version"
 
 ##########################################################################################
 # Setup execution path

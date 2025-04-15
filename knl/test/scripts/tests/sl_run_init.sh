@@ -39,7 +39,7 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" "init"
-	sl_test_init
+	sl_test_init -i
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "init failed [${rtn}]"
