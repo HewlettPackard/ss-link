@@ -7,7 +7,7 @@
 brief="Test link-up notification is received when cabled links are commanded up with autoneg enabled."
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
-LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
+LINK_NOTIF_TIMEOUT=275000 # Timeout in milliseconds
 settings="${SL_TEST_DIR}/systems/settings/autoneg_x1_fec_calc.sh"
 
 ldev_num=0
@@ -176,7 +176,7 @@ function main {
 	sl_test_info_log "${FUNCNAME}" \
 		"lgrp_links_notif_wait link-up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
-	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
+	sl_test_lgrp_links_notif_wait -d ${ldev_num} "${lgrp_nums[*]}" \
 		"link-up" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then

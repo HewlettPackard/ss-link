@@ -1137,31 +1137,36 @@ function sl_test_lgrp_links_notif_wait {
 	local link_num
 	local wait_link_nums
 	local notif
-	local expect
+	local wait_notif
 	local timeout_ms
 	local notif_found
 	local notif_str
 	local -n notifs
 	local furcation
 	local temp_file
-	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums expect timeout_ms notifs"
+	local filter_on
+	local filter
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums wait_notif timeout_ms notifs"
 	local description=$(cat <<-EOF
-	Wait for the notification (expect) for all the links in a link group. Notifications will be added to the
-	passed in notifs variable.
+	Wait for the notification (wait_notif) for all the links in a link group. Notifications will be added to the
+	passed in notifs variable. If the next received notification doesn't match wait_notif this function will fail.
+	Optionally you can drop other notifications.
 
 	Mandatory:
 	ldev_num   Link Device Number the <lgrp_num> belongs to.
 	lgrp_nums  Link Group Numbers to wait on.
-	expect     Notification type to expect and wait on. See "sl_test_lgrp_notifs_read -h" for more info.
+	wait_notif Notification type to wait on. See "sl_test_lgrp_notifs_read -h" for more info.
 	timeout_ms Number of milliseconds to wait before exiting with ETIMEDOUT.
-        notifs     Bash variable to store an array of notifications to.
+	notifs     Bash variable to store an array of notifications to.
 
 	Options:
 	-h, --help This message.
+	-d, --drop Drop all other notifications not matching the wait_notif.
 	EOF
 	)
 
-	options=$(getopt -o "h" --long "help" -- "$@")
+	filter_on=false
+	options=$(getopt -o "hd" --long "help,drop" -- "$@")
 
 	if [ "$?" != 0 ]; then
 		echo "${usage}"
@@ -1176,6 +1181,11 @@ function sl_test_lgrp_links_notif_wait {
 				echo "${usage}"
 				echo "${description}"
 				return 0
+				;;
+			-d | --drop)
+				filter_on=true
+				shift 2
+				break
 				;;
 			-- )
 				shift
@@ -1204,9 +1214,13 @@ function sl_test_lgrp_links_notif_wait {
 		return ${rtn}
 	fi
 
-	expect=$3
+	wait_notif=$3
 	timeout_ms=$4
 	notifs=$5
+
+	if [[ "${filter_on}" == true ]]; then
+		filter="-f ${wait_notif}"
+	fi
 
 	echo ${ldev_num} > ${SL_TEST_LDEV_DEBUGFS_NUM}
 	rtn=$?
@@ -1250,7 +1264,7 @@ function sl_test_lgrp_links_notif_wait {
 
 			sl_test_debug_log "${FUNCNAME}" "waiting (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 
-			notif_str=$(sl_test_lgrp_notifs_read -e ${expect} -t ${timeout_ms} 2> ${temp_file})
+			notif_str=$(sl_test_lgrp_notifs_read ${filter} -e ${wait_notif} -t ${timeout_ms} 2> ${temp_file})
 			rtn=$?
 			if [[ "${rtn}" != 0 ]]; then
 				while IFS= read -r line; do
