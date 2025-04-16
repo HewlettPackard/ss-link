@@ -64,11 +64,7 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	spin_lock_init(&core_llr->data_lock);
 
 	sl_core_hw_llr_stop(core_llr);
-	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_OFF);
-
-	core_llr->data_cache = KMEM_CACHE(sl_llr_data, 0);
-	if (core_llr->data_cache == NULL)
-		return -ENOMEM;
+	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_NEW);
 
 	timer_setup(&(core_llr->timers[SL_CORE_TIMER_LLR_SETUP].timer),
 		sl_core_timer_llr_timeout, 0);
@@ -81,8 +77,6 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP]),
 		sl_core_hw_llr_setup_work);
-	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_REUSE_TIMING]),
-		sl_core_hw_llr_setup_reuse_timing_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_TIMEOUT]),
 		sl_core_hw_llr_setup_timeout_work);
 	INIT_WORK(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]),
@@ -105,7 +99,7 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	rtn = sl_core_hw_intr_llr_hdlr_register(core_llr);
 	if (rtn != 0) {
-		sl_core_log_err_trace(core_llr, LOG_NAME,
+		sl_core_log_err(core_llr, LOG_NAME,
 			"core_hw_intr_llr_hdlr_register failed [%d]", rtn);
 		kfree(core_llr);
 		return rtn;
@@ -123,33 +117,35 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	struct sl_core_llr *core_llr;
-	int                 x;
 
 	core_llr = sl_core_llr_get(ldev_num, lgrp_num, llr_num);
 	if (!core_llr) {
-		sl_core_log_dbg(NULL, LOG_NAME, "not found (llr_num = %u)", llr_num);
+		sl_core_log_err(NULL, LOG_NAME, "not found (llr_num = %u)", llr_num);
 		return;
 	}
-
-	sl_core_hw_llr_stop(core_llr);
 
 	spin_lock(&core_llrs_lock);
 	core_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&core_llrs_lock);
 
+	sl_core_llr_is_canceled_set(core_llr);
+
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
+
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 
-	for (x = 0; x < SL_CORE_WORK_LLR_COUNT; ++x)
-		cancel_work_sync(&(core_llr->work[x]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_TIMEOUT]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_TIMEOUT]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]));
 
 	sl_core_hw_intr_llr_hdlr_unregister(core_llr);
-
-	kmem_cache_destroy(core_llr->data_cache);
-	core_llr->data_cache = NULL;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "del (llr = 0x%p)", core_llr);
 
@@ -172,8 +168,6 @@ struct sl_core_llr *sl_core_data_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_config *llr_config)
 {
-	sl_core_log_dbg(core_llr, LOG_NAME, "config set");
-
 	core_llr->settings.size              = 1;
 	core_llr->settings.lossless_when_off = 1;
 
@@ -199,14 +193,14 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	core_llr->settings.replay_timer_max    = 15500;
 
 	if (llr_config->setup_timeout_ms == 0) {
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"config set - setup timeout is 0, setting to default");
 		core_llr->timers[SL_CORE_TIMER_LLR_SETUP].data.timeout_ms = 3000;
 	} else {
 		core_llr->timers[SL_CORE_TIMER_LLR_SETUP].data.timeout_ms = llr_config->setup_timeout_ms;
 	}
 	if (llr_config->start_timeout_ms == 0) {
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"config set - start timeout is 0, setting to default");
 		core_llr->timers[SL_CORE_TIMER_LLR_START].data.timeout_ms = 3000;
 	} else {

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LLR_H_
 #define _SL_CORE_LLR_H_
@@ -17,30 +17,25 @@ struct sl_llr_config;
 
 struct work_struct;
 
-#define SL_CORE_LLR_FLAG_SETUP_REUSE_TIMING BIT(0) /* setup will reuse previous timing */
-#define SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP   BIT(1) /* stop will clear setup            */
-
 #define SL_CORE_LLR_MAX_LOOP_TIME_COUNT 10
 
 #define SL_CORE_LLR_DATA_MAGIC 0x736c4C52
 
 enum sl_core_llr_state {
-	SL_CORE_LLR_STATE_INVALID = 0,
-	SL_CORE_LLR_STATE_OFF,
-	SL_CORE_LLR_STATE_CONFIGURED,
-	SL_CORE_LLR_STATE_SETTING_UP,
-	SL_CORE_LLR_STATE_SETUP_TIMEOUT,
-	SL_CORE_LLR_STATE_SETUP,
-	SL_CORE_LLR_STATE_STARTING,
-	SL_CORE_LLR_STATE_START_TIMEOUT,
-	SL_CORE_LLR_STATE_START_FAIL,
-	SL_CORE_LLR_STATE_RUNNING,
-	SL_CORE_LLR_STATE_CANCELING,
-	SL_CORE_LLR_STATE_STOPPING,
+	SL_CORE_LLR_STATE_NEW      = 1,   /* next: config         */
+	SL_CORE_LLR_STATE_CONFIGURED,     /* next: config | setup */
+	SL_CORE_LLR_STATE_SETTING_UP,     /* -- BUSY --           */
+	SL_CORE_LLR_STATE_SETUP_TIMEOUT,  /* -- transient --      */
+	SL_CORE_LLR_STATE_SETUP,          /* next: start          */
+	SL_CORE_LLR_STATE_STARTING,       /* -- BUSY --           */
+	SL_CORE_LLR_STATE_START_TIMEOUT,  /* -- transient --      */
+	SL_CORE_LLR_STATE_RUNNING,        /* next: stop           */
+	SL_CORE_LLR_STATE_CANCELING,      /* -- BUSY --           */
+	SL_CORE_LLR_STATE_STOPPING,       /* -- BUSY --           */
 };
 
 typedef int (*sl_core_llr_setup_callback_t)(void *tag, u32 llr_state,
-					    u64 info_map, struct sl_llr_data *llr_data);
+					    u64 info_map, struct sl_llr_data llr_data);
 typedef int (*sl_core_llr_start_callback_t)(void *tag, u32 llr_state,
 					    u64 info_map);
 
@@ -59,7 +54,6 @@ struct sl_core_llr {
 	u64                                        loop_time[SL_CORE_LLR_MAX_LOOP_TIME_COUNT];
 	bool                                       is_data_valid;
 	struct sl_llr_data                         data;
-	struct kmem_cache                         *data_cache;
 	struct {
 		sl_core_llr_setup_callback_t       setup;
 		sl_core_llr_start_callback_t       start;
@@ -105,14 +99,11 @@ int  sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		       sl_core_llr_setup_callback_t callback, void *tag, u32 flags);
 int  sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		       sl_core_llr_start_callback_t callback, void *tag, u32 flags);
-int  sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags);
+int  sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 int  sl_core_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_state);
 
-int  sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-			  struct sl_llr_data *llr_data);
-void sl_core_llr_data_free(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-			   struct sl_llr_data *llr_data);
+struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr);
 void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr);

@@ -327,14 +327,22 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "link-async-down";
 	case SL_LGRP_NOTIF_LINK_ERROR:
 		return "link-error";
-	case SL_LGRP_NOTIF_LLR_DATA:
-		return "llr-data";
+	case SL_LGRP_NOTIF_LINK_DOWN:
+		return "link-down";
+	case SL_LGRP_NOTIF_LINK_UCW_WARN:
+		return "link-ucw-warn";
+	case SL_LGRP_NOTIF_LINK_CCW_WARN:
+		return "link-ccw-warn";
+	case SL_LGRP_NOTIF_LLR_SETUP:
+		return "llr-setup";
 	case SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT:
 		return "llr-setup-timeout";
-	case SL_LGRP_NOTIF_LLR_START_TIMEOUT:
-		return "llr-start-timeout";
 	case SL_LGRP_NOTIF_LLR_RUNNING:
 		return "llr-running";
+	case SL_LGRP_NOTIF_LLR_START_TIMEOUT:
+		return "llr-start-timeout";
+	case SL_LGRP_NOTIF_LLR_CANCELED:
+		return "llr-canceled";
 	case SL_LGRP_NOTIF_LLR_ERROR:
 		return "llr-error";
 	case SL_LGRP_NOTIF_MEDIA_PRESENT:
@@ -343,20 +351,12 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "media-not-present";
 	case SL_LGRP_NOTIF_MEDIA_ERROR:
 		return "media-error";
-	case SL_LGRP_NOTIF_LINK_UCW_WARN:
-		return "link-ucw-warn";
-	case SL_LGRP_NOTIF_LINK_CCW_WARN:
-		return "link-ccw-warn";
 	case SL_LGRP_NOTIF_AN_DATA:
 		return "an-data";
 	case SL_LGRP_NOTIF_AN_TIMEOUT:
 		return "an-timeout";
 	case SL_LGRP_NOTIF_AN_ERROR:
 		return "an-error";
-	case SL_LGRP_NOTIF_LLR_CANCELED:
-		return "llr-canceled";
-	case SL_LGRP_NOTIF_LINK_DOWN:
-		return "link-down";
 	default:
 		return "unknown";
 	}

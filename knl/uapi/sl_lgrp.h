@@ -19,23 +19,23 @@
 #define SL_LGRP_NOTIF_ALL               ~0       /* all notifications               */
 #define SL_LGRP_NOTIF_LINK_UP           BIT(1)   /* link up                         */
 #define SL_LGRP_NOTIF_LINK_UP_FAIL      BIT(2)   /* link up fail                    */
-#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN   BIT(3)   /* link down asynchronously        */
-#define SL_LGRP_NOTIF_LINK_ERROR        BIT(4)   /* link error                      */
-#define SL_LGRP_NOTIF_LINK_UCW_WARN     BIT(5)   /* UCW count crossed warning limit */
-#define SL_LGRP_NOTIF_LINK_CCW_WARN     BIT(6)   /* CCW count crossed warning limit */
-#define SL_LGRP_NOTIF_LLR_DATA          BIT(7)   /* LLR data                        */
-#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT BIT(8)   /* LLR setup timeout               */
-#define SL_LGRP_NOTIF_LLR_START_TIMEOUT BIT(9)   /* LLR start timeout               */
+#define SL_LGRP_NOTIF_LINK_DOWN         BIT(3)   /* link down                       */
+#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN   BIT(4)   /* link down asynchronously        */
+#define SL_LGRP_NOTIF_LINK_ERROR        BIT(5)   /* link error                      */
+#define SL_LGRP_NOTIF_LINK_UCW_WARN     BIT(6)   /* UCW count crossed warning limit */
+#define SL_LGRP_NOTIF_LINK_CCW_WARN     BIT(7)   /* CCW count crossed warning limit */
+#define SL_LGRP_NOTIF_LLR_SETUP         BIT(8)   /* LLR is setup + data             */
+#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT BIT(9)   /* LLR setup timeout               */
 #define SL_LGRP_NOTIF_LLR_RUNNING       BIT(10)  /* LLR running                     */
-#define SL_LGRP_NOTIF_LLR_ERROR         BIT(11)  /* LLR error                       */
-#define SL_LGRP_NOTIF_MEDIA_PRESENT     BIT(12)  /* media/cable present             */
-#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT BIT(13)  /* media/cable not present         */
-#define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(14)  /* media/cable error               */
-#define SL_LGRP_NOTIF_AN_DATA           BIT(15)  /* autoneg data                    */
-#define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(16)  /* autoneg timeout                 */
-#define SL_LGRP_NOTIF_AN_ERROR          BIT(17)  /* automeg error                   */
-#define SL_LGRP_NOTIF_LLR_CANCELED      BIT(18)  /* LLR canceled                    */
-#define SL_LGRP_NOTIF_LINK_DOWN         BIT(19)  /* link down                       */
+#define SL_LGRP_NOTIF_LLR_START_TIMEOUT BIT(11)  /* LLR start timeout               */
+#define SL_LGRP_NOTIF_LLR_CANCELED      BIT(12)  /* LLR canceled                    */
+#define SL_LGRP_NOTIF_LLR_ERROR         BIT(13)  /* LLR error                       */
+#define SL_LGRP_NOTIF_MEDIA_PRESENT     BIT(14)  /* media/cable present             */
+#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT BIT(15)  /* media/cable not present         */
+#define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(16)  /* media/cable error               */
+#define SL_LGRP_NOTIF_AN_DATA           BIT(17)  /* autoneg data                    */
+#define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(18)  /* autoneg timeout                 */
+#define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* automeg error                   */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -47,11 +47,11 @@
 				SL_LGRP_NOTIF_LINK_UCW_WARN   | \
 				SL_LGRP_NOTIF_LINK_CCW_WARN)
 
-#define SL_LGRP_NOTIF_LLR      (SL_LGRP_NOTIF_LLR_DATA | \
+#define SL_LGRP_NOTIF_LLR      (SL_LGRP_NOTIF_LLR_SETUP         | \
 				SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT | \
+				SL_LGRP_NOTIF_LLR_RUNNING       | \
 				SL_LGRP_NOTIF_LLR_START_TIMEOUT | \
 				SL_LGRP_NOTIF_LLR_CANCELED      | \
-				SL_LGRP_NOTIF_LLR_RUNNING       | \
 				SL_LGRP_NOTIF_LLR_ERROR)
 
 #define SL_LGRP_NOTIF_MEDIA    (SL_LGRP_NOTIF_MEDIA_PRESENT     | \

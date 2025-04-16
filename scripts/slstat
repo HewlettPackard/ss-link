@@ -266,12 +266,14 @@ function print_llr {
         local down_bahavior=$(cat ${LLR_PATH}/config/link_down_behavior)
         local setup_timeout=$(cat ${LLR_PATH}/config/setup_timeout_ms)
         local start_timeout=$(cat ${LLR_PATH}/config/start_timeout_ms)
+        local tries=$(cat ${LLR_PATH}/policies/continous_tries)
 
         print_llr_state
 
         printf "           | loop_calc: ${calc}ns, loop_min: ${min}ns, loop_max: ${max}ns, loop_avg: ${avg}ns\n"
         printf "           | mode: ${mode}, link_down_bahavior: ${down_bahavior}\n"
         printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
+        printf "           | continuous_tries: ${tries}\n"
 }
 
 function print_serdes {

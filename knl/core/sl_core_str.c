@@ -156,10 +156,8 @@ const char *sl_core_mac_state_str(enum sl_core_mac_state mac_state)
 const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 {
 	switch (llr_state) {
-	case SL_CORE_LLR_STATE_INVALID:
-		return "invalid";
-	case SL_CORE_LLR_STATE_OFF:
-		return "off";
+	case SL_CORE_LLR_STATE_NEW:
+		return "new";
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		return "configured";
 	case SL_CORE_LLR_STATE_SETTING_UP:
@@ -172,8 +170,6 @@ const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 		return "starting";
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		return "start-timeout";
-	case SL_CORE_LLR_STATE_START_FAIL:
-		return "failed";
 	case SL_CORE_LLR_STATE_RUNNING:
 		return "running";
 	case SL_CORE_LLR_STATE_CANCELING:
@@ -188,10 +184,6 @@ const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 const char *sl_core_llr_flag_str(unsigned int llr_flag)
 {
 	switch (llr_flag) {
-	case SL_CORE_LLR_FLAG_SETUP_REUSE_TIMING:
-		return "setup-reuse-timing";
-	case SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP:
-		return "stop-clear-setup";
 	default:
 		return "unknown";
 	}

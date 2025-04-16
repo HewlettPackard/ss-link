@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -14,22 +14,22 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
-static ssize_t infinite_tries_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t continuous_tries_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_llr    *ctl_llr;
-	struct sl_llr_policy  llr_policy;
+	struct sl_ctl_llr *ctl_llr;
+	struct sl_llr_policy llr_policy;
 
 	ctl_llr = container_of(kobj, struct sl_ctl_llr, policy_kobj);
 	sl_core_llr_policy_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num, &llr_policy);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(llr_policy.options & SL_LLR_POLICY_OPT_INFINITE_START_TRIES) ? "enabled" : "disabled");
+		(llr_policy.options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? "enabled" : "disabled");
 }
 
-static struct kobj_attribute infinite_tries = __ATTR_RO(infinite_tries);
+static struct kobj_attribute continuous_tries = __ATTR_RO(continuous_tries);
 
 static struct attribute *llr_policy_attrs[] = {
-	&infinite_tries.attr,
+	&continuous_tries.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(llr_policy);

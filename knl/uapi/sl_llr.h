@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _UAPI_SL_LLR_H_
 #define _UAPI_SL_LLR_H_
@@ -34,7 +34,7 @@ struct sl_llr_config {
 	__u32 options;
 };
 
-#define SL_LLR_POLICY_OPT_INFINITE_START_TRIES BIT(0)
+#define SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES BIT(0)
 
 #define SL_LLR_POLICY_MAGIC 0x636c6c72
 #define SL_LLR_POLICY_VER   1
@@ -47,9 +47,14 @@ struct sl_llr_policy {
 };
 
 enum sl_llr_state {
-	SL_LLR_STATE_OFF,
-	SL_LLR_STATE_BUSY,
+	SL_LLR_STATE_OFF          = 1,
+	SL_LLR_STATE_CONFIGURED,
+	SL_LLR_STATE_SETUP_BUSY,
+	SL_LLR_STATE_SETUP,
+	SL_LLR_STATE_START_BUSY,
 	SL_LLR_STATE_RUNNING,
+	SL_LLR_STATE_CANCELING,
+	SL_LLR_STATE_STOP_BUSY,
 };
 
 #endif /* _UAPI_SL_LLR_H_ */

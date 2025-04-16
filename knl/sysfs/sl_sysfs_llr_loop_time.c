@@ -62,8 +62,8 @@ static ssize_t calc_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	struct sl_ctl_llr  *ctl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num, &llr_data);
+	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
 
 	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
 		"calc show (llr = 0x%p, calc = %lluns)", ctl_llr, llr_data.loop.calculated);
@@ -76,8 +76,8 @@ static ssize_t min_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 	struct sl_ctl_llr  *ctl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num, &llr_data);
+	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
 
 	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
 		"min show (llr = 0x%p, min = %lluns)", ctl_llr, llr_data.loop.min);
@@ -90,8 +90,8 @@ static ssize_t max_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 	struct sl_ctl_llr  *ctl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num, &llr_data);
+	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
 
 	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
 		"max show (llr = 0x%p, max = %lluns)", ctl_llr, llr_data.loop.max);
@@ -104,8 +104,8 @@ static ssize_t average_ns_show(struct kobject *kobj, struct kobj_attribute *katt
 	struct sl_ctl_llr  *ctl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num, &llr_data);
+	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
 
 	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
 		"average show (llr = 0x%p, average = %lluns)", ctl_llr, llr_data.loop.average);

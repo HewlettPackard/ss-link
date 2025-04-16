@@ -52,7 +52,8 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	}
 
 	if (core_llr)
-		sl_core_hw_llr_stop_cmd(core_llr, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
+		sl_core_llr_stop(core_link->core_lgrp->core_ldev->num,
+				 core_link->core_lgrp->num, core_link->num);
 
 	sl_core_hw_pcs_stop(core_link);
 

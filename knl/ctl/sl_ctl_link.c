@@ -665,7 +665,7 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 	lgrp_num = ctl_link->ctl_lgrp->num;
 	link_num = ctl_link->num;
 
-	rtn = sl_core_llr_stop(ldev_num, lgrp_num, link_num, SL_CORE_LLR_FLAG_STOP_CLEAR_SETUP);
+	rtn = sl_core_llr_stop(ldev_num, lgrp_num, link_num);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_llr_stop failed [%d]", rtn);
 
@@ -776,7 +776,7 @@ void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 
-	sl_ctl_log_info(ctl_link, LOG_NAME,
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"clocks get (up_time = %lld, total_time = %lld)", *up_time, *total_time);
 }
 
@@ -797,7 +797,7 @@ void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_cou
 	*up_count = ctl_link->up_clock.attempt_count;
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 
-	sl_ctl_log_info(ctl_link, LOG_NAME, "count get (up_count = %u)", *up_count);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "count get (up_count = %u)", *up_count);
 }
 
 int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)

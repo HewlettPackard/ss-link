@@ -279,7 +279,7 @@ static int sl_core_test_an_callback(void *tag, struct sl_link_caps *caps, u32 re
 	return 0;
 }
 static int sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
-	u64 info_map, struct sl_llr_data *llr_data)
+	u64 info_map, struct sl_llr_data llr_data)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         info_map_str[1024];
@@ -291,14 +291,12 @@ static int sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
 	pr_info(SL_CORE_TEST_NAME
 		"llr setup callback (lgrp_num = %u, link_num = %u, llr_state = %u, loop_time = %lldns, info_map = %s)\n",
 		test_tag.lgrp_num, test_tag.link_num, llr_state,
-		llr_data->loop.average, info_map_str);
+		llr_data.loop.average, info_map_str);
 
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].received  = true;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].info_map  = info_map;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_state = llr_state;
-	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_data  = *llr_data;
-
-	sl_core_llr_data_free(test_tag.ldev_num, test_tag.lgrp_num, test_tag.link_num, llr_data);
+	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_data  = llr_data;
 
 	return 0;
 }
@@ -662,12 +660,9 @@ static int sl_core_test30(struct sl_core_test_args test_args)
 
 static int sl_core_test31(struct sl_core_test_args test_args)
 {
-	int                rtn;
 	struct sl_llr_data llr_data;
 
-	rtn = sl_core_llr_data_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &llr_data);
-	if (rtn != 0)
-		return rtn;
+	llr_data = sl_core_llr_data_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 
 	pr_info(SL_CORE_TEST_NAME
 		"LLR data (lgrp_num = %u, link_num = %u, min = %lldns, max = %lldns, average = %lldns, calc = %lldns)\n",
@@ -694,7 +689,7 @@ static int sl_core_test33(struct sl_core_test_args test_args)
 
 static int sl_core_test34(struct sl_core_test_args test_args)
 {
-	return sl_core_llr_stop(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, 0);
+	return sl_core_llr_stop(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 }
 
 static int sl_core_test35(struct sl_core_test_args test_args)

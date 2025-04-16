@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -47,12 +47,12 @@ int sl_core_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_c
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	llr_state = core_llr->state;
 	switch (llr_state) {
-	case SL_CORE_LLR_STATE_OFF:
+	case SL_CORE_LLR_STATE_NEW:
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		rtn = sl_core_data_llr_config_set(core_llr, llr_config);
 		if (rtn) {
 			sl_core_log_err(core_llr, LOG_NAME,
-				"config set - core_data_llr_config_set failed [%d]", rtn);
+				"config set - llr_config_set failed [%d]", rtn);
 			spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 			return rtn;
 		}
@@ -80,7 +80,7 @@ int sl_core_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 	rtn = sl_core_data_llr_policy_set(core_llr, llr_policy);
 	if (rtn) {
 		sl_core_log_err(core_llr, LOG_NAME,
-			"policy set - core_data_llr_policy_set failed [%d]", rtn);
+			"policy set - llr_policy_set failed [%d]", rtn);
 		return rtn;
 	}
 	return 0;
@@ -91,6 +91,8 @@ int sl_core_llr_policy_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 	struct sl_core_llr *core_llr;
 
 	core_llr = sl_core_llr_get(ldev_num, lgrp_num, llr_num);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "policy get");
 
 	return sl_core_data_llr_policy_get(core_llr, llr_policy);
 }
@@ -110,30 +112,20 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	llr_state = core_llr->state;
 	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETUP:
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup - already setup");
+		return -EALREADY;
 	case SL_CORE_LLR_STATE_CONFIGURED:
-	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup");
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup - in configured");
 		core_llr->state = SL_CORE_LLR_STATE_SETTING_UP;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		rtn = sl_core_data_llr_settings(core_llr);
 		if (rtn) {
-			sl_core_log_err_trace(core_llr, LOG_NAME, "setup - llr_settings failed [%d]", rtn);
+			sl_core_log_err_trace(core_llr, LOG_NAME,
+				"setup - llr_settings failed [%d]", rtn);
 			return -EBADRQC;
 		}
 		sl_core_hw_llr_setup_cmd(core_llr, callback, tag, flags);
-		return 0;
-	case SL_CORE_LLR_STATE_SETTING_UP:
-	case SL_CORE_LLR_STATE_SETUP:
-	case SL_CORE_LLR_STATE_STARTING:
-	case SL_CORE_LLR_STATE_CANCELING:
-	case SL_CORE_LLR_STATE_STOPPING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup - in progress");
-		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		return -EINPROGRESS;
-	case SL_CORE_LLR_STATE_RUNNING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup - already running");
-		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
@@ -158,19 +150,14 @@ int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	llr_state = core_llr->state;
 	switch (llr_state) {
-	case SL_CORE_LLR_STATE_CONFIGURED:
-		sl_core_log_dbg(core_llr, LOG_NAME, "start - configured, not setup");
-		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		return 0;
+	case SL_CORE_LLR_STATE_RUNNING:
+		sl_core_log_dbg(core_llr, LOG_NAME, "start - already started");
+		return -EALREADY;
 	case SL_CORE_LLR_STATE_SETUP:
-		sl_core_log_dbg(core_llr, LOG_NAME, "start");
+		sl_core_log_dbg(core_llr, LOG_NAME, "start - in setup");
 		core_llr->state = SL_CORE_LLR_STATE_STARTING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		sl_core_hw_llr_start_cmd(core_llr, callback, tag, flags);
-		return 0;
-	case SL_CORE_LLR_STATE_RUNNING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "start - already running");
-		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
@@ -181,7 +168,7 @@ int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	}
 }
 
-int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags)
+int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	unsigned long       irq_flags;
 	u32                 llr_state;
@@ -195,7 +182,7 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags)
 	llr_state = core_llr->state;
 	sl_core_log_dbg(core_llr, LOG_NAME, "stop (state = %u)", core_llr->state);
 	switch (llr_state) {
-	case SL_CORE_LLR_STATE_OFF:
+	case SL_CORE_LLR_STATE_NEW:
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - already off");
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
@@ -207,25 +194,32 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 flags)
 		sl_core_hw_llr_off_wait(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_SETTING_UP:
-		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel setup");
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel setting up");
 		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		sl_core_hw_llr_setup_cancel_cmd(core_llr);
+		sl_core_hw_llr_settingup_cancel_cmd(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_STARTING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel start");
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel starting");
 		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		sl_core_hw_llr_start_cancel_cmd(core_llr);
+		sl_core_hw_llr_starting_cancel_cmd(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_SETUP:
-	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
-	case SL_CORE_LLR_STATE_RUNNING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "stop");
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - in setup");
 		core_llr->state = SL_CORE_LLR_STATE_STOPPING;
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		sl_core_hw_llr_stop_cmd(core_llr, flags);
+		sl_core_hw_llr_setup_stop_cmd(core_llr);
+		return 0;
+	case SL_CORE_LLR_STATE_RUNNING:
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - in running");
+		core_llr->state = SL_CORE_LLR_STATE_STOPPING;
+		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+		sl_core_hw_llr_running_stop_cmd(core_llr);
+		return 0;
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+		/* do nothing */
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
@@ -250,8 +244,7 @@ int sl_core_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_state)
 	return 0;
 }
 
-int sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-	struct sl_llr_data *llr_data)
+struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	struct sl_core_llr *core_llr;
 
@@ -259,21 +252,7 @@ int sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "data get");
 
-	*llr_data = sl_core_data_llr_data_get(core_llr);
-
-	return 0;
-}
-
-void sl_core_llr_data_free(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-	struct sl_llr_data *llr_data)
-{
-	struct sl_core_llr *core_llr;
-
-	core_llr = sl_core_llr_get(ldev_num, lgrp_num, llr_num);
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "data free");
-
-	kmem_cache_free(core_llr->data_cache, llr_data);
+	return sl_core_data_llr_data_get(core_llr);
 }
 
 bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr)
@@ -285,7 +264,8 @@ bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr)
 	is_canceled  = core_llr->is_canceled;
 	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_canceled = %s", is_canceled ? "true" : "false");
+	sl_core_log_dbg(core_llr, LOG_NAME,
+		"is_canceled = %s", is_canceled ? "true" : "false");
 
 	return is_canceled;
 }

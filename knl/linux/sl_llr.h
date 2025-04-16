@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LLR_H_
 #define _LINUX_SL_LLR_H_
@@ -30,8 +30,11 @@ int            sl_llr_del(struct sl_llr *llr);
 
 int sl_llr_config_set(struct sl_llr *llr, struct sl_llr_config *llr_config);
 int sl_llr_policy_set(struct sl_llr *llr, struct sl_llr_policy *llr_policy);
+
+int sl_llr_setup(struct sl_llr *llr);
 int sl_llr_start(struct sl_llr *llr);
 int sl_llr_stop(struct sl_llr *llr);
+
 int sl_llr_state_get(struct sl_llr *llr, u32 *state);
 
 const char *sl_llr_state_str(u32 state);

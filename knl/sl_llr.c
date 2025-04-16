@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/err.h>
@@ -195,6 +195,20 @@ int sl_llr_policy_set(struct sl_llr *llr, struct sl_llr_policy *llr_policy)
 }
 EXPORT_SYMBOL(sl_llr_policy_set);
 
+int sl_llr_setup(struct sl_llr *llr)
+{
+	int rtn;
+
+	rtn = sl_llr_check(llr);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "setup fail");
+		return rtn;
+	}
+
+	return sl_ctl_llr_setup(llr->ldev_num, llr->lgrp_num, llr->num);
+}
+EXPORT_SYMBOL(sl_llr_setup);
+
 int sl_llr_start(struct sl_llr *llr)
 {
 	int rtn;
@@ -242,10 +256,20 @@ const char *sl_llr_state_str(u32 state)
 	switch (state) {
 	case SL_LLR_STATE_OFF:
 		return "off";
-	case SL_LLR_STATE_BUSY:
-		return "busy";
+	case SL_LLR_STATE_CONFIGURED:
+		return "configured";
+	case SL_LLR_STATE_SETUP_BUSY:
+		return "setup-busy";
+	case SL_LLR_STATE_SETUP:
+		return "setup";
+	case SL_LLR_STATE_START_BUSY:
+		return "start-busy";
 	case SL_LLR_STATE_RUNNING:
 		return "running";
+	case SL_LLR_STATE_CANCELING:
+		return "canceling";
+	case SL_LLR_STATE_STOP_BUSY:
+		return "stop-busy";
 	default:
 		return "unknown";
 	}

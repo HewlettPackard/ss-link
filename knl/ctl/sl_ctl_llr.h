@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTL_LLR_H_
 #define _SL_CTL_LLR_H_
@@ -27,14 +27,11 @@ struct sl_ctl_llr {
 	struct sl_llr_config        config;
 	struct sl_llr_policy        policy;
 	struct {
-		struct work_struct  work;
 		u32                 state;
 		u64                 imap;
-		bool                is_data_new;
 		struct sl_llr_data  data;
 	} setup;
 	struct {
-		struct work_struct  work;
 		u32                 state;
 		u64                 imap;
 	} start;
@@ -57,6 +54,7 @@ struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 int  sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_config *llr_config);
 int  sl_ctl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_policy *llr_policy);
 
+int  sl_ctl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 int  sl_ctl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 int  sl_ctl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
