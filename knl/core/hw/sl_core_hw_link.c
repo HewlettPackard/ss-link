@@ -328,7 +328,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
 		rtn = sl_media_jack_cable_downshift(core_link->core_lgrp->core_ldev->num,
-				core_link->core_lgrp->num);
+				core_link->core_lgrp->num, core_link->num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "downshift failed [%d]", rtn);
 			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -342,7 +342,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		}
 	} else {
 		rtn = sl_media_jack_cable_upshift(core_link->core_lgrp->core_ldev->num,
-				core_link->core_lgrp->num);
+				core_link->core_lgrp->num, core_link->num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "upshift failed [%d]", rtn);
 			rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);

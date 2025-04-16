@@ -2,6 +2,7 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include "sl_asic.h"
+#include "sl_core_link.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_io.h"
@@ -39,7 +40,7 @@ static struct sl_media_downshift_info downshift_cable_db[] = {
 				.type = SL_MEDIA_TYPE_AEC,
 				.vendor = SL_MEDIA_VENDOR_MOLEX,
 				.fw_major_ver = 0x01,
-				.fw_minor_ver = 0x00,
+				.fw_minor_ver = 0x01,
 		},
 		{
 				.type = SL_MEDIA_TYPE_AOC,
@@ -227,12 +228,14 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
 	return 0;
 }
 
-int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
+int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
+	struct sl_core_link  *core_link;
 
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
@@ -253,9 +256,11 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 		return 0;
 	}
 
-	if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
-		sl_media_log_err(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
-		return 0;
+	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
+		if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
+			return 0;
+		}
 	}
 
 	rtn = sl_media_data_jack_cable_downshift(media_lgrp->media_jack);
@@ -270,12 +275,14 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num)
 	return 0;
 }
 
-int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num)
+int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
+	struct sl_core_link  *core_link;
 
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable upshift");
 
@@ -296,9 +303,11 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num)
 		return 0;
 	}
 
-	if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
-		sl_media_log_err(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
-		return 0;
+	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
+		if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
+			return 0;
+		}
 	}
 
 	rtn = sl_media_data_jack_cable_upshift(media_lgrp->media_jack);

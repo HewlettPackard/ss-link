@@ -164,7 +164,7 @@ bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
-int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num);
-int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num);
+int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
+int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 #endif /* _SL_MEDIA_JACK_H_ */
