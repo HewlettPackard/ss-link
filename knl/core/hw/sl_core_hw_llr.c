@@ -206,6 +206,7 @@ static void sl_core_hw_llr_discard(struct sl_core_llr *core_llr)
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
 }
 
+#define SL_CORE_PACKET_BYTES_MAX 9000
 static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 {
 	u32                port;
@@ -234,7 +235,8 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 		calc_data = 0x800; /* reset value */
 	} else {
 		bytes = (llr_data.loop.average * core_llr->settings.bytes_per_ns) +
-			(SL_CORE_LLR_BYTES_PER_FRAME * SL_CORE_LLR_NUM_FRAMES);
+			(SL_CORE_LLR_BYTES_PER_FRAME * SL_CORE_LLR_NUM_FRAMES) +
+			SL_CORE_PACKET_BYTES_MAX;
 
 		sl_core_log_dbg(core_llr, LOG_NAME,
 			"capacity set (average = %lldns, byte_per_ns = %d, bytes = %lld)",
