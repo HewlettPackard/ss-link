@@ -422,18 +422,6 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_CAUSE_RF:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
 			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_PLL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-pll ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_SIGNAL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-signal ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_QUALITY:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-quality ");
-			break;
 		case SL_LINK_DOWN_CAUSE_DOWN:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");
 			break;
@@ -479,8 +467,27 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_CAUSE_PCS_FAULT:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "pcs-fault ");
 			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_PLL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-pll ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_SIGNAL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-signal ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SERDES_QUALITY:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-quality ");
+			break;
+		case SL_LINK_DOWN_CAUSE_NO_MEDIA:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "no-media ");
+			break;
+		case SL_LINK_DOWN_CAUSE_CCW:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
+			break;
+
 		case SL_LINK_DOWN_RETRYABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retry ");
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retryable ");
 			break;
 		case SL_LINK_DOWN_ORIGIN_ASYNC:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-async ");
@@ -488,9 +495,7 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_ORIGIN_LINK_UP:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-up ");
 			break;
-		case SL_LINK_DOWN_CAUSE_NO_MEDIA:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "no-media ");
-			break;
+
 		default:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
 			break;
