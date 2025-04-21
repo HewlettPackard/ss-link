@@ -100,8 +100,11 @@ void sl_ctl_link_up_clock_start(struct sl_ctl_link *ctl_link)
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
 	ctl_link->up_clock.start         = ktime_get();
 	ctl_link->up_clock.elapsed       = ktime_set(0, 0);
-	ctl_link->up_clock.attempt_count = 1;
+	ctl_link->up_clock.attempt_count = 0;
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"clock start (time = %lld)", ctl_link->up_clock.start);
 }
 
 static void sl_ctl_link_up_clock_stop(struct sl_ctl_link *ctl_link)
@@ -112,11 +115,16 @@ static void sl_ctl_link_up_clock_stop(struct sl_ctl_link *ctl_link)
 	ctl_link->up_clock.elapsed = ktime_sub(ktime_get(), ctl_link->up_clock.start);
 	ctl_link->up_clock.start   = ktime_set(0, 0);
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"clock stop (time = %lld)", ctl_link->up_clock.elapsed);
 }
 
 void sl_ctl_link_up_clock_reset(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "clock reset");
 
 	spin_lock_irqsave(&ctl_link->up_clock.lock, irq_flags);
 	ctl_link->up_clock.elapsed         = ktime_set(0, 0);
@@ -127,7 +135,7 @@ void sl_ctl_link_up_clock_reset(struct sl_ctl_link *ctl_link)
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
 }
 
-static void sl_ctl_link_up_clock_attempt_start(struct sl_ctl_link *ctl_link)
+void sl_ctl_link_up_clock_attempt_start(struct sl_ctl_link *ctl_link)
 {
 	unsigned long irq_flags;
 
@@ -136,6 +144,9 @@ static void sl_ctl_link_up_clock_attempt_start(struct sl_ctl_link *ctl_link)
 	ctl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
 	ctl_link->up_clock.attempt_count++;
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"clock attempt start (time = %lld)", ctl_link->up_clock.attempt_start);
 }
 
 static void sl_ctl_link_up_clock_attempt_stop(struct sl_ctl_link *ctl_link)
@@ -146,6 +157,9 @@ static void sl_ctl_link_up_clock_attempt_stop(struct sl_ctl_link *ctl_link)
 	ctl_link->up_clock.attempt_elapsed = ktime_sub(ktime_get(), ctl_link->up_clock.attempt_start);
 	ctl_link->up_clock.attempt_start   = ktime_set(0, 0);
 	spin_unlock_irqrestore(&ctl_link->up_clock.lock, irq_flags);
+
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"clock attempt stop (time = %lld)", ctl_link->up_clock.attempt_elapsed);
 }
 
 static bool sl_ctl_link_state_stopping_set(struct sl_ctl_link *ctl_link)

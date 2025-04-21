@@ -118,10 +118,9 @@ function print_link_state {
 
         local state=$(cat ${LINK_PATH}/state)
         local speed=$(cat ${LINK_PATH}/speed)
-        local up_time=$(cat ${LINK_PATH}/up_time_ms)
-        local time_str=$(date -d @${up_time} '+%Hh %Mm %Ss')
+        local time_to_link_up=$(cat ${LINK_PATH}/time_to_link_up_ms)
 
-        printf "link%d      | state: ${state} [${time_str}] ${speed}\n" ${LINK}
+        printf "link%d      | state: ${state} ${speed}, time_to_link_up: ${time_to_link_up}ms\n" ${LINK}
 }
 
 function print_mac_state {
@@ -282,7 +281,7 @@ function print_llr {
         local down_bahavior=$(cat ${LLR_PATH}/config/link_down_behavior)
         local setup_timeout=$(cat ${LLR_PATH}/config/setup_timeout_ms)
         local start_timeout=$(cat ${LLR_PATH}/config/start_timeout_ms)
-        local tries=$(cat ${LLR_PATH}/policies/continous_tries)
+        local tries=$(cat ${LLR_PATH}/policies/continuous_tries)
 
         print_llr_state
 

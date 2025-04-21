@@ -22,6 +22,7 @@ int  sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map);
 
 void sl_ctl_link_up_clock_start(struct sl_ctl_link *ctl_link);
 void sl_ctl_link_up_clock_reset(struct sl_ctl_link *ctl_link);
+void sl_ctl_link_up_clock_attempt_start(struct sl_ctl_link *ctl_link);
 
 void sl_ctl_link_config_get(struct sl_ctl_link *ctl_link, struct sl_link_config *link_config);
 void sl_ctl_link_policy_get(struct sl_ctl_link *ctl_link, struct sl_link_policy *link_policy);
