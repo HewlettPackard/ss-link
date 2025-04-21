@@ -5,6 +5,7 @@
 
 # Default log level is "info"
 export SL_TEST_LOG_LEVEL=${SL_TEST_LOG_LEVEL:-2}
+[ -z $TERM ] && export TERM="xterm-256color"
 
 declare -A LOG_LEVELS
 LOG_LEVELS=([0]="error" [1]="warn" [2]="info" [3]="debug")

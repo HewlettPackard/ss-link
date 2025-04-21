@@ -86,7 +86,7 @@ function test_verify {
 				fi
 
 				if [[ "${notif_type}" == "link-async-down" ]]; then
-					if [[ "${sysfs_down_cause}" == "command retry origin-async" ]]; then
+					if [[ "${sysfs_down_cause}" == "command retryable origin-async" ]]; then
 						sl_test_info_log "${FUNCNAME}" \
 							"Expected: command, Found: ${sysfs_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 						found=true

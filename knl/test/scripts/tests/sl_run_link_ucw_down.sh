@@ -84,7 +84,7 @@ function test_verify {
 
 				if [[ "${notif_type}" == "link-up-fail" && \
 					"${notif_fields[7]}" == "ucw" && \
-					"${notif_fields[8]}" == "retry" && \
+					"${notif_fields[8]}" == "retryable" && \
 					"${notif_fields[9]}" == "origin-up" ]]; then
 						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
 						found=true
@@ -94,7 +94,7 @@ function test_verify {
 
 			if [[ "${found}" != true ]]; then
 				sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-				sl_test_debug_log "${FUNCNAME}" "Expected: link-up-fail ucw retry origin-up"
+				sl_test_debug_log "${FUNCNAME}" "Expected: link-up-fail ucw retryable origin-up"
 				sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
 				return 1
 			fi

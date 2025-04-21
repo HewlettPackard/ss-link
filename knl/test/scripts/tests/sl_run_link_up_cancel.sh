@@ -86,7 +86,7 @@ function test_verify {
 
 				if [[ "${notif_type}" == "link-up-fail" && \
 					"${notif_fields[7]}" == "canceled" && \
-					"${notif_fields[8]}" == "retry" && \
+					"${notif_fields[8]}" == "retryable" && \
 					"${notif_fields[9]}" == "origin-up" ]]; then
 						sl_test_info_log "${FUNCNAME}" "link-up-fail found (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
@@ -96,7 +96,7 @@ function test_verify {
 
 				if [[ "${notif_type}" == "link-async-down" && \
 					"${notif_fields[7]}" == "canceled" && \
-					"${notif_fields[8]}" == "retry" && \
+					"${notif_fields[8]}" == "retryable" && \
 					"${notif_fields[9]}" == "origin-up" ]]; then
 						sl_test_info_log "${FUNCNAME}" \
 							"link-async-down found (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
