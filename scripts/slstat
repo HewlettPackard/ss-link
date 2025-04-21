@@ -177,12 +177,24 @@ function print_jack {
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
+	local fw_ver=$(cat ${LGRP_PATH}/media/firmware_version)
+	local host_iface_200=$(cat ${LGRP_PATH}/media/actv_cable_200g_host_iface)
+	local lane_cnt_200=$(cat ${LGRP_PATH}/media/actv_cable_200g_lane_cnt)
+	local appsel_no_200=$(cat ${LGRP_PATH}/media/actv_cable_200g_appsel_no)
+	local host_iface_400=$(cat ${LGRP_PATH}/media/actv_cable_400g_host_iface)
+	local lane_cnt_400=$(cat ${LGRP_PATH}/media/actv_cable_400g_lane_cnt)
+	local appsel_no_400=$(cat ${LGRP_PATH}/media/actv_cable_400g_appsel_no)
 
         print_jack_state
 
         printf "           | cable: ${vendor} ${type} ${length}cm, type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
         printf "           | supported: ${supported}, furcation: ${furcation}\n"
-        printf "           | speeds: "
+	if [ "$type" != "PEC" ]; then
+		printf "           | active cable: firmware version: ${fw_ver}\n"
+		printf "           | active cable 200g: host_iface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appsel_no: ${appsel_no_200}\n"
+		printf "           | active cable 400g: host_iface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appsel_no: ${appsel_no_400}\n"
+	fi
+	printf "           | speeds: "
         if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
                 printf "cd50 "
         fi

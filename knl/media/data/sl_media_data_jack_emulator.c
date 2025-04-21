@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include "sl_asic.h"
 
@@ -48,6 +48,16 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 }
 
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+{
+	return 0;
+}
+
+int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
+{
+	return 0;
+}
+
+int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 {
 	return 0;
 }

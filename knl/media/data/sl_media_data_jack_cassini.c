@@ -41,7 +41,6 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 }
 
 #define DATA_PATH_STATE_DEACTIVATED       0x1
-#define DATA_PATH_INIT_TIMEOUT_S          200
 #define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x01
 #define DATA_PATH_ID                      0x08
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
@@ -50,8 +49,6 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 {
 	int rtn;
 	int i;
-	u8  count;
-	u8  read_data[4];
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable downshift");
 
@@ -60,42 +57,20 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
+	msleep(500);
 
-	count = 0;
-	while (1) {
-		/*
-		 * Allow up to 2 seconds (normally observed <= 10ms)
-		 */
-		if (count++ >= DATA_PATH_INIT_TIMEOUT_S) {
-			sl_media_log_err(media_jack, LOG_NAME, "deinit - timed out");
-			return -ETIMEDOUT;
-		}
-
-		usleep_range(10000, 11000);
-
-		/*
-		 * Read data path states (page 0x11, bytes 128-129, 2 lanes per byte)
-		 */
-		for (i = 0; i < 2; ++i) {
-			rtn = sl_media_io_read8(media_jack, 0x11, 128 + i, &read_data[i]);
-			if (rtn != sizeof(read_data[0])) {
-				sl_media_log_err(media_jack, LOG_NAME, "data path states read failed [%d]", rtn);
-				return rtn;
-			}
-		}
-
-		/*
-		 * If all lanes are deactivated, we can proceed
-		 */
-		if ((read_data[0] == DATA_PATH_LANES_DEACTIVATED) &&
-		    (read_data[1] == DATA_PATH_LANES_DEACTIVATED)) {
-			sl_media_log_dbg(media_jack, LOG_NAME, "all lanes deactivated");
-			break;
-		}
+	/*
+	 * enable low power mode
+	 */
+	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		return rtn;
 	}
+	msleep(500);
 
 	/*
 	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-148
@@ -105,68 +80,46 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
 				        (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
 		if (rtn) {
-			sl_media_log_err(media_jack, LOG_NAME,
+			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
 			return rtn;
 		}
 	}
+	msleep(100);
 
 	/*
 	 * ApplyDPInitLane8-1
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
+	msleep(500);
 
-	count = 0;
-	while (1) {
-		/*
-		 * Allow up to 2 seconds (normally observed <= 10ms)
-		 */
-		if (count++ >= DATA_PATH_INIT_TIMEOUT_S) {
-			sl_media_log_err(media_jack, LOG_NAME, "config success - timed out");
-			return -ETIMEDOUT;
-		}
-
-		usleep_range(10000, 11000);
-
-		/*
-		 * Read Configuration Command Execution and Result Status Codes
-		 * (page 0x11, bytes 202-203, 2 lanes per byte)
-		 */
-		for (i = 0; i < 2; ++i) {
-			rtn = sl_media_io_read8(media_jack, 0x11, 202 + i, &read_data[i]);
-			if (rtn != sizeof(read_data[0])) {
-				sl_media_log_err(media_jack, LOG_NAME, "data path states read failed [%d]", rtn);
-				return rtn;
-			}
-		}
-
-		/*
-		 * If all lanes are ConfigSuccess (0x1), we can proceed
-		 */
-		if ((read_data[0] == 0x11) &&
-		    (read_data[1] == 0x11)) {
-			sl_media_log_dbg(media_jack, LOG_NAME, "config success");
-			break;
-		}
+	/*
+	 * enable high power mode
+	 */
+	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		return rtn;
 	}
+	msleep(500);
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
 		return rtn;
 	}
 
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(500);
+	msleep(2000);
 
 	return 0;
 }
@@ -175,45 +128,117 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 {
 	int rtn;
 	int i;
-	u8  lower_lane_config;
+	u8  downshift_lower_lane_config;
+	u8  upshift_lower_lane_config;
 	u8  read_data[4];
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable hw shift state get");
 
-	lower_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	downshift_lower_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	upshift_lower_lane_config = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
 
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_read8(media_jack, 0x10, 145 + i, &read_data[i]);
 		if (rtn != sizeof(read_data[0])) {
-			sl_media_log_err(media_jack, LOG_NAME,
+			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
 			return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
 		}
 	}
 
-	if ((read_data[0] != lower_lane_config) ||
-	    (read_data[1] != lower_lane_config) ||
-	    (read_data[2] != lower_lane_config) ||
-	    (read_data[3] != lower_lane_config)) {
+	if ((read_data[0] == downshift_lower_lane_config) &&
+	    (read_data[1] == downshift_lower_lane_config) &&
+	    (read_data[2] == downshift_lower_lane_config) &&
+	    (read_data[3] == downshift_lower_lane_config)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "cable is downshifted");
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
+	} else if ((read_data[0] == upshift_lower_lane_config) &&
+		   (read_data[1] == upshift_lower_lane_config) &&
+		   (read_data[2] == upshift_lower_lane_config) &&
+		   (read_data[3] == upshift_lower_lane_config)) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "cable is upshifted");
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED;
 	}
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is downshifted");
-	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is in invalid state");
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
 }
 
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 {
 	int rtn;
+	int i;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable upshift");
 
-	rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+	/*
+	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
+	 */
+	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
+	msleep(500);
+
+	/*
+	 * enable low power mode
+	 */
+	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		return rtn;
+	}
+	msleep(500);
+
+	/*
+	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-148
+	 * Config lanes 1 to 4
+	 */
+	for (i = 0; i < 4; ++i) {
+		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
+					(media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
+			return rtn;
+		}
+	}
+	msleep(100);
+
+	/*
+	 * ApplyDPInitLane8-1
+	 */
+	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
+		return rtn;
+	}
+	msleep(500);
+
+	/*
+	 * enable high power mode
+	 */
+	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		return rtn;
+	}
+	msleep(500);
+
+	/*
+	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
+	 */
+	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
+		return rtn;
+	}
+
+	/*
+	 * waiting for firmware reload
+	 */
+	msleep(2000);
 
 	return 0;
 }
@@ -226,7 +251,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 
 	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x08)", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x08)", rtn);
 		return rtn;
 	}
 
@@ -234,7 +259,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 
 	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x00)", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x00)", rtn);
 		return rtn;
 	}
 
@@ -242,6 +267,48 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	 * waiting for firmware reload
 	 */
 	msleep(5000);
+
+	return 0;
+}
+
+#define SL_MEDIA_CMIS_POWER_UP_PAGE 0x00
+#define SL_MEDIA_CMIS_POWER_UP_ADDR 0x1a
+#define SL_MEDIA_CMIS_POWER_UP_DATA 0x00
+int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "high power set");
+
+	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_UP_PAGE,
+	      SL_MEDIA_CMIS_POWER_UP_ADDR, SL_MEDIA_CMIS_POWER_UP_DATA);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
+		return -EIO;
+	}
+
+	media_jack->is_high_powered = true;
+
+	return 0;
+}
+
+#define SL_MEDIA_CMIS_POWER_DOWN_PAGE 0x00
+#define SL_MEDIA_CMIS_POWER_DOWN_ADDR 0x1a
+#define SL_MEDIA_CMIS_POWER_DOWN_DATA 0x10
+int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "low power set");
+
+	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_DOWN_PAGE,
+	      SL_MEDIA_CMIS_POWER_DOWN_ADDR, SL_MEDIA_CMIS_POWER_DOWN_DATA);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
+		return -EIO;
+	}
+
+	media_jack->is_high_powered = false;
 
 	return 0;
 }

@@ -10,6 +10,7 @@
 #include "sl_media_jack_cassini.h"
 #include "sl_media_lgrp.h"
 #include "data/sl_media_data_jack.h"
+#include "data/sl_media_data_jack_cassini.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "base/sl_media_log.h"
@@ -148,8 +149,16 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return rtn;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
-		media_attr.type == SL_MEDIA_TYPE_AEC) {
+	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
+		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
+		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+		else
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID);
+	}
+
+	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC) {
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);

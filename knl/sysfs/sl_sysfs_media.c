@@ -34,6 +34,29 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_state_str(state));
 }
 
+static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	bool                  is_high_powered;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	is_high_powered = sl_media_jack_is_high_powered(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"power state show (media_lgrp = 0x%p, state = %s)", media_lgrp, is_high_powered ? "high_powered" : "low_powered");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high_powered" : "low_powered");
+}
+
 static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -314,6 +337,12 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
 	cable_shift_state = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
@@ -323,23 +352,169 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_cable_shift_state_str(cable_shift_state));
 }
 
-static struct kobj_attribute media_state             = __ATTR_RO(state);
-static struct kobj_attribute media_vendor            = __ATTR_RO(vendor);
-static struct kobj_attribute media_type              = __ATTR_RO(type);
-static struct kobj_attribute media_length_cm         = __ATTR_RO(length_cm);
-static struct kobj_attribute media_max_speed         = __ATTR_RO(max_speed);
-static struct kobj_attribute media_serial_num        = __ATTR_RO(serial_num);
-static struct kobj_attribute media_hpe_part_num      = __ATTR_RO(hpe_part_num);
-static struct kobj_attribute media_jack_num          = __ATTR_RO(jack_num);
-static struct kobj_attribute media_jack_type         = __ATTR_RO(jack_type);
-static struct kobj_attribute media_furcation         = __ATTR_RO(furcation);
-static struct kobj_attribute media_supported         = __ATTR_RO(supported);
-static struct kobj_attribute media_date_code         = __ATTR_RO(date_code);
-static struct kobj_attribute media_firmware_version  = __ATTR_RO(firmware_version);
-static struct kobj_attribute media_cable_shift_state = __ATTR_RO(cable_shift_state);
+static ssize_t actv_cable_200g_host_iface_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    host_iface;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	host_iface = sl_media_jack_actv_cable_200g_host_iface_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 200g host iface show (media_lgrp = 0x%p, host_iface = 0x%X)", media_lgrp, host_iface);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", host_iface);
+}
+
+static ssize_t actv_cable_200g_lane_cnt_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    lane_cnt;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	lane_cnt = sl_media_jack_actv_cable_200g_lane_count_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 200g lane cnt show (media_lgrp = 0x%p, lane_cnt = 0x%X)", media_lgrp, lane_cnt);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", lane_cnt);
+}
+
+static ssize_t actv_cable_200g_appsel_no_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    appsel_no;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	appsel_no = sl_media_jack_actv_cable_200g_appsel_no_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 200g appsel no show (media_lgrp = 0x%p, appsel_no = 0x%X)", media_lgrp, appsel_no);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", appsel_no);
+}
+
+static ssize_t actv_cable_400g_host_iface_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    host_iface;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	host_iface = sl_media_jack_actv_cable_400g_host_iface_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 400g host iface show (media_lgrp = 0x%p, host_iface = 0x%X)", media_lgrp, host_iface);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", host_iface);
+}
+
+static ssize_t actv_cable_400g_lane_cnt_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    lane_cnt;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	lane_cnt = sl_media_jack_actv_cable_400g_lane_count_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 400g lane cnt show (media_lgrp = 0x%p, lane_cnt = 0x%X)", media_lgrp, lane_cnt);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", lane_cnt);
+}
+
+static ssize_t actv_cable_400g_appsel_no_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    appsel_no;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	appsel_no = sl_media_jack_actv_cable_400g_appsel_no_get(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"actv cable 400g appsel no show (media_lgrp = 0x%p, appsel_no = 0x%X)", media_lgrp, appsel_no);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%x\n", appsel_no);
+}
+
+static struct kobj_attribute media_state                      = __ATTR_RO(state);
+static struct kobj_attribute media_jack_power_state           = __ATTR_RO(jack_power_state);
+static struct kobj_attribute media_vendor                     = __ATTR_RO(vendor);
+static struct kobj_attribute media_type                       = __ATTR_RO(type);
+static struct kobj_attribute media_length_cm                  = __ATTR_RO(length_cm);
+static struct kobj_attribute media_max_speed                  = __ATTR_RO(max_speed);
+static struct kobj_attribute media_serial_num                 = __ATTR_RO(serial_num);
+static struct kobj_attribute media_hpe_part_num               = __ATTR_RO(hpe_part_num);
+static struct kobj_attribute media_jack_num                   = __ATTR_RO(jack_num);
+static struct kobj_attribute media_jack_type                  = __ATTR_RO(jack_type);
+static struct kobj_attribute media_furcation                  = __ATTR_RO(furcation);
+static struct kobj_attribute media_supported                  = __ATTR_RO(supported);
+static struct kobj_attribute media_date_code                  = __ATTR_RO(date_code);
+static struct kobj_attribute media_firmware_version           = __ATTR_RO(firmware_version);
+static struct kobj_attribute media_cable_shift_state          = __ATTR_RO(cable_shift_state);
+static struct kobj_attribute media_actv_cable_200g_host_iface = __ATTR_RO(actv_cable_200g_host_iface);
+static struct kobj_attribute media_actv_cable_200g_lane_cnt   = __ATTR_RO(actv_cable_200g_lane_cnt);
+static struct kobj_attribute media_actv_cable_200g_appsel_no  = __ATTR_RO(actv_cable_200g_appsel_no);
+static struct kobj_attribute media_actv_cable_400g_host_iface = __ATTR_RO(actv_cable_400g_host_iface);
+static struct kobj_attribute media_actv_cable_400g_lane_cnt   = __ATTR_RO(actv_cable_400g_lane_cnt);
+static struct kobj_attribute media_actv_cable_400g_appsel_no  = __ATTR_RO(actv_cable_400g_appsel_no);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
+	&media_jack_power_state.attr,
 	&media_vendor.attr,
 	&media_type.attr,
 	&media_length_cm.attr,
@@ -353,6 +528,12 @@ static struct attribute *media_attrs[] = {
 	&media_date_code.attr,
 	&media_firmware_version.attr,
 	&media_cable_shift_state.attr,
+	&media_actv_cable_200g_host_iface.attr,
+	&media_actv_cable_200g_lane_cnt.attr,
+	&media_actv_cable_200g_appsel_no.attr,
+	&media_actv_cable_400g_host_iface.attr,
+	&media_actv_cable_400g_lane_cnt.attr,
+	&media_actv_cable_400g_appsel_no.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

@@ -92,10 +92,18 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		if (media_jack->appsel_no_400_gaui) /* we prefer 4_l_c2m over 4_s_c2m for default ck400G speed */
+			break;
 		media_jack->appsel_no_400_gaui = appsel_no;
+		media_jack->lane_count_400_gaui = lane_count;
 		media_jack->host_interface_400_gaui = host_interface;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M:
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
+		media_jack->appsel_no_400_gaui = appsel_no;
+		media_jack->lane_count_400_gaui = lane_count;
+		media_jack->host_interface_400_gaui = host_interface;
+		fallthrough;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GBASE_CR8:
 		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;

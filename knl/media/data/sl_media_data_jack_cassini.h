@@ -13,6 +13,8 @@ int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack);
+int  sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack);
+int  sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
 int  sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *fake_media_attr);

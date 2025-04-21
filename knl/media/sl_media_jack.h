@@ -141,6 +141,7 @@ struct sl_media_jack {
 	u8                              lane_count_200_gaui; /* used for downshifting */
 	u8                              host_interface_200_gaui; /* used for downshifting */
 	u8                              appsel_no_400_gaui; /* used for upshifting */
+	u8                              lane_count_400_gaui; /* used for upshifting */
 	u8                              host_interface_400_gaui; /* used for upshifting */
 
 #ifdef BUILDSYS_FRAMEWORK_ROSETTA
@@ -158,10 +159,18 @@ void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
 struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
 void                  sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_state_get(struct sl_media_jack *media_jack);
+bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_jack);
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
+
+u8 sl_media_jack_actv_cable_200g_host_iface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_actv_cable_200g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_actv_cable_200g_lane_count_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_actv_cable_400g_host_iface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_actv_cable_400g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_actv_cable_400g_lane_count_get(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);

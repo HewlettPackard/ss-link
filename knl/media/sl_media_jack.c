@@ -5,7 +5,6 @@
 #include "sl_core_link.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
-#include "sl_media_io.h"
 #include "data/sl_media_data_jack.h"
 #include "data/sl_media_data_jack_rosetta.h"
 #include "data/sl_media_data_jack_emulator.h"
@@ -15,10 +14,10 @@
 
 #define LOG_NAME SL_MEDIA_JACK_LOG_NAME
 
-#define SL_MEDIA_CMIS_POWER_UP_PAGE      0x0
-#define SL_MEDIA_CMIS_POWER_UP_ADDR      0x1a
-#define SL_MEDIA_CMIS_POWER_UP_DATA      0x0
-#define SL_MEDIA_XCVR_POWER_UP_WAIT_TIME 10000
+enum sl_media_cable_shift {
+	SL_MEDIA_JACK_CABLE_DOWNSHIFT,
+	SL_MEDIA_JACK_CABLE_UPSHIFT,
+};
 
 /*
  * FIXME: Eventually remove this struct array and get this info from cable DB
@@ -86,6 +85,18 @@ u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
 	return state;
 }
 
+bool sl_media_jack_is_high_powered(struct sl_media_jack *media_jack)
+{
+	bool          is_high_powered;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	is_high_powered = media_jack->is_high_powered;
+	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+
+	return is_high_powered;
+}
+
 void sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state)
 {
 	unsigned long irq_flags;
@@ -124,15 +135,82 @@ bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
 
 bool sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack)
 {
-	u8 format;
+	bool is_format_invalid;
 
 	spin_lock(&media_jack->data_lock);
-	format = media_jack->is_cable_format_invalid;
+	is_format_invalid = media_jack->is_cable_format_invalid;
 	spin_unlock(&media_jack->data_lock);
 
-	return format;
+	return is_format_invalid;
 }
 
+u8 sl_media_jack_actv_cable_200g_host_iface_get(struct sl_media_jack *media_jack)
+{
+	u8 host_interface_200_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	host_interface_200_gaui = media_jack->host_interface_200_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return host_interface_200_gaui;
+}
+
+u8 sl_media_jack_actv_cable_200g_appsel_no_get(struct sl_media_jack *media_jack)
+{
+	u8 appsel_no_200_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	appsel_no_200_gaui = media_jack->appsel_no_200_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return appsel_no_200_gaui;
+}
+
+u8 sl_media_jack_actv_cable_200g_lane_count_get(struct sl_media_jack *media_jack)
+{
+	u8 lane_count_200_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	lane_count_200_gaui = media_jack->lane_count_200_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return lane_count_200_gaui;
+}
+
+u8 sl_media_jack_actv_cable_400g_host_iface_get(struct sl_media_jack *media_jack)
+{
+	u8 host_interface_400_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	host_interface_400_gaui = media_jack->host_interface_400_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return host_interface_400_gaui;
+}
+
+u8 sl_media_jack_actv_cable_400g_appsel_no_get(struct sl_media_jack *media_jack)
+{
+	u8 appsel_no_400_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	appsel_no_400_gaui = media_jack->appsel_no_400_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return appsel_no_400_gaui;
+}
+
+u8 sl_media_jack_actv_cable_400g_lane_count_get(struct sl_media_jack *media_jack)
+{
+	u8 lane_count_400_gaui;
+
+	spin_lock(&media_jack->data_lock);
+	lane_count_400_gaui = media_jack->lane_count_400_gaui;
+	spin_unlock(&media_jack->data_lock);
+
+	return lane_count_400_gaui;
+}
+
+#define SL_MEDIA_XCVR_POWER_UP_WAIT_TIME 10000
 int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 {
 	int                   rtn;
@@ -142,14 +220,11 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "high power set");
 
-	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_UP_PAGE,
-	      SL_MEDIA_CMIS_POWER_UP_ADDR, SL_MEDIA_CMIS_POWER_UP_DATA);
+	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
 		return -EIO;
 	}
-
-	media_jack->is_high_powered = true;
 
 	media_jack->cable_power_up_wait_time_end = jiffies +
 			msecs_to_jiffies(SL_MEDIA_XCVR_POWER_UP_WAIT_TIME);
@@ -182,7 +257,7 @@ static bool sl_media_jack_cable_firmware_version_check(struct sl_media_lgrp *med
 	return false;
 }
 
-static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
+static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8 shift_state)
 {
 	u8 i;
 
@@ -214,15 +289,28 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp)
 				 "shift check failed - no shift support in cable");
 		return -EINVAL;
 	}
-	if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
+	if (shift_state == SL_MEDIA_JACK_CABLE_DOWNSHIFT) {
+		if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
 			(media_lgrp->media_jack->lane_count_200_gaui != 0x44) ||
 			(media_lgrp->media_jack->host_interface_400_gaui == 0)) {
-		media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
-		spin_unlock(&media_lgrp->media_jack->data_lock);
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
-				 "shift check failed - invalid host interface and/or lane count");
-		return -EINVAL;
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
+			spin_unlock(&media_lgrp->media_jack->data_lock);
+			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
+					 "downshift check failed - invalid host interface and/or lane count");
+			return -EINVAL;
+		}
+	} else {
+		if (((media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M) &&
+			(media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M)) ||
+			(media_lgrp->media_jack->lane_count_400_gaui != 0x44)) {
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
+			spin_unlock(&media_lgrp->media_jack->data_lock);
+			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
+					 "upshift check failed - invalid host interface and/or lane count");
+			return -EINVAL;
+		}
 	}
+
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
 	return 0;
@@ -250,7 +338,7 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	rtn = sl_media_jack_cable_shift_checks(media_lgrp);
+	rtn = sl_media_jack_cable_shift_checks(media_lgrp, SL_MEDIA_JACK_CABLE_DOWNSHIFT);
 	if (rtn) {
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "cable shift checks failed [%d]", rtn);
 		return 0;
@@ -297,7 +385,7 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	rtn = sl_media_jack_cable_shift_checks(media_lgrp);
+	rtn = sl_media_jack_cable_shift_checks(media_lgrp, SL_MEDIA_JACK_CABLE_UPSHIFT);
 	if (rtn) {
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "cable shift checks failed [%d]", rtn);
 		return 0;
