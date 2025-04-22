@@ -114,6 +114,7 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	switch (llr_state) {
 	case SL_CORE_LLR_STATE_SETUP:
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup - already setup");
+		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return -EALREADY;
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		sl_core_log_dbg(core_llr, LOG_NAME, "setup - in configured");
@@ -152,6 +153,7 @@ int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 	switch (llr_state) {
 	case SL_CORE_LLR_STATE_RUNNING:
 		sl_core_log_dbg(core_llr, LOG_NAME, "start - already started");
+		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return -EALREADY;
 	case SL_CORE_LLR_STATE_SETUP:
 		sl_core_log_dbg(core_llr, LOG_NAME, "start - in setup");
@@ -220,6 +222,7 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 		/* do nothing */
+		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
