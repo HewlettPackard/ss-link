@@ -109,10 +109,7 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get work hw_serdes_link_up_an failed [%d]", rtn);
-		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
-		if (rtn < 0)
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-				"lp caps get work lp caps get end failed [%d]", rtn);
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, core_link->an.link_state);
 		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_ERROR);
@@ -204,10 +201,7 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 			"lp caps get done work rx pages (%d = 0x%016llX)",
 			x, core_link->an.rx_pages[x]);
 
-	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
-	if (rtn < 0)
-		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"lp caps get done work lp caps get end failed [%d]", rtn);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_serdes_link_down(core_link);

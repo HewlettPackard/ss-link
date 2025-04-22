@@ -59,7 +59,6 @@ static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
 
 static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 {
-	int rtn;
 	int bit;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start test caps");
@@ -89,10 +88,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 
 	if (core_link->core_lgrp->link_caps[core_link->num].tech_map == 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up start test caps no match");
-		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		if (rtn < 0)
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-				"up start test caps link up end failed [%d]", rtn);
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_fail_callback(core_link);
@@ -175,10 +171,7 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up work hw_serdes_link_up_an failed [%d]", rtn);
-		rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		if (rtn < 0)
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-				"up work link up end failed [%d]", rtn);
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 		sl_core_an_up_fail_callback(core_link);
@@ -254,10 +247,7 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 
 out_down:
 
-	rtn = sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-	if (rtn < 0)
-		sl_core_log_warn(core_link, LOG_NAME,
-			"up done work link up timer end failed [%d]", rtn);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	sl_core_hw_serdes_link_down(core_link);
 	sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);

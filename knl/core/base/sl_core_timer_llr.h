@@ -32,6 +32,6 @@ struct sl_core_timer_llr_info {
 
 void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num);
 void sl_core_timer_llr_timeout(struct timer_list *timer);
-int  sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num);
+void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num);
 
 #endif /* _SL_CORE_TIMER_LLR_H_ */

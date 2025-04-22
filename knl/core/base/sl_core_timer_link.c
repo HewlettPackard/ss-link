@@ -63,18 +63,11 @@ void sl_core_timer_link_timeout(struct timer_list *timer)
 	sl_core_work_link_queue(core_link, info->data.work_num);
 }
 
-int sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
+void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
 {
-	int rtn;
-
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"end - %s (link = 0x%p, timer = %d)",
 		core_link->timers[timer_num].data.log, core_link, timer_num);
 
-	rtn = del_timer_sync(&(core_link->timers[timer_num].timer));
-	if (rtn < 0)
-		sl_core_log_warn(core_link, LOG_NAME,
-			"end - %s - del_timer_sync failed [%d]",
-			core_link->timers[timer_num].data.log, rtn);
-	return rtn;
+	 del_timer_sync(&(core_link->timers[timer_num].timer));
 }

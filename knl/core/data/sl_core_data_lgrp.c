@@ -196,6 +196,7 @@ void sl_core_data_lgrp_config_set(struct sl_core_lgrp *core_lgrp, struct sl_lgrp
 		sl_core_hw_reset_lgrp(core_lgrp);
 
 	/* if loopback enable changes, then we have to swizzle */
+	need_swizzled = false;
 	if ((lgrp_config->options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE) !=
 		(core_lgrp->config.options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
 		need_swizzled = true;
