@@ -995,23 +995,23 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 			if (!local_fault && !remote_fault && !link_down)
 				return;
 		} else {
-			sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred");
+			sl_core_log_err_trace(core_link, LOG_NAME, "llr replay max occurred");
 			sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
 			down_cause |= SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP;
 		}
 	}
 	if (local_fault) {
-		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
+		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
 		down_cause |= SL_LINK_DOWN_CAUSE_LF_MAP;
 	}
 	if (remote_fault) {
-		sl_core_log_err(core_link, LOG_NAME, "remote fault occurred");
+		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
 		down_cause |= SL_LINK_DOWN_CAUSE_RF_MAP;
 	}
 	if (link_down) {
-		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
+		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
 		down_cause |= SL_LINK_DOWN_CAUSE_DOWN_MAP;
 	}
