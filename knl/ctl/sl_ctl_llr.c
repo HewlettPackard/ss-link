@@ -49,7 +49,7 @@ static bool sl_ctl_llr_is_deleting(struct sl_ctl_llr *ctl_llr)
 	return is_deleting;
 }
 
-static int sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
+static void sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
 	u64 core_imap, struct sl_llr_data core_llr_data)
 {
 	int                       rtn;
@@ -74,14 +74,14 @@ static int sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup SETUP ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num,
 			SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT, NULL, ctl_llr->setup.imap);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup TIMEOUT ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		memset(&(ctl_llr->setup.data), 0, sizeof(struct sl_llr_data));
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num,
@@ -89,7 +89,7 @@ static int sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup CONFIGURED ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	default:
 		memset(&(ctl_llr->setup.data), 0, sizeof(struct sl_llr_data));
 		sl_ctl_log_err(ctl_llr, LOG_NAME,
@@ -101,11 +101,11 @@ static int sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"setup ERROR ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	}
 }
 
-static int sl_ctl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_imap)
+static void sl_ctl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_imap)
 {
 	int                       rtn;
 	struct sl_ctl_llr        *ctl_llr;
@@ -127,7 +127,7 @@ static int sl_ctl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_ima
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start RUNNING ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		if (ctl_llr->policy.options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) {
 			sl_ctl_log_dbg(ctl_llr, LOG_NAME, "start TIMEOUT retry");
@@ -142,14 +142,14 @@ static int sl_ctl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_ima
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start TIMEOUT ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	case SL_CORE_LLR_STATE_SETUP:
 		rtn = sl_ctl_lgrp_notif_enqueue(ctl_llr->ctl_lgrp, ctl_llr->num,
 			SL_LGRP_NOTIF_LLR_CANCELED, NULL, ctl_llr->start.imap);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start CONFIGURED ctl_lgrp_notif_enqueue failed [%d[", rtn);
-		return 0;
+		return;
 	default:
 		memset(&(ctl_llr->setup.data), 0, sizeof(struct sl_llr_data));
 		sl_ctl_log_err(ctl_llr, LOG_NAME,
@@ -162,7 +162,7 @@ static int sl_ctl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_ima
 			sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 				"start ERROR ctl_lgrp_notif_enqueue failed [%d[",
 				rtn);
-		return 0;
+		return;
 	}
 }
 

@@ -57,9 +57,10 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	if (!core_llr)
 		return -ENOMEM;
 
-	core_llr->magic     = SL_CORE_LLR_MAGIC;
-	core_llr->num       = llr_num;
-	core_llr->core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
+	core_llr->magic               = SL_CORE_LLR_MAGIC;
+	core_llr->num                 = llr_num;
+	core_llr->core_lgrp           = sl_core_lgrp_get(ldev_num, lgrp_num);
+	core_llr->last_fail_cause     = SL_LLR_FAIL_CAUSE_NONE;
 
 	spin_lock_init(&core_llr->data_lock);
 
@@ -248,13 +249,16 @@ int sl_core_data_llr_settings(struct sl_core_llr *core_llr)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "settings");
 
+	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
+
 	lgrp_config = &(core_llr->core_lgrp->config);
 	link_caps   = &(core_llr->core_lgrp->link_caps[core_llr->num]);
 
 	if (hweight_long(link_caps->tech_map) != 1) {
-		sl_core_log_err(core_llr, LOG_NAME,
+		sl_core_log_err_trace(core_llr, LOG_NAME,
 			"settings - tech map invalid (map = 0x%08X)",
 			link_caps->tech_map);
+		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_SETUP_CONFIG);
 		return -EINVAL;
 	}
 
@@ -432,4 +436,32 @@ u64 sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr)
 		"get info map 0x%016llX", info_map);
 
 	return info_map;
+}
+
+void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr_fail_cause,
+	time64_t *llr_fail_time)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	*llr_fail_cause = core_llr->last_fail_cause;
+	*llr_fail_time  = core_llr->last_fail_time;
+	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+
+	sl_core_log_dbg(core_llr, LOG_NAME,
+		"last llr fail cause get (cause = %u %s)", *llr_fail_cause,
+		sl_core_llr_fail_cause_str(*llr_fail_cause));
+}
+
+void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_fail_cause)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	core_llr->last_fail_cause = llr_fail_cause;
+	core_llr->last_fail_time  = ktime_get_real_seconds();
+	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+
+	sl_core_log_dbg(core_llr, LOG_NAME,
+		"last llr fail cause set (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
 }

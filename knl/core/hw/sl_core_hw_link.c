@@ -849,7 +849,7 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_MAX_STARVATION);
 
-	sl_core_log_warn(core_link, LOG_NAME, "llr max starvation occurred");
+	sl_core_log_warn_trace(core_link, LOG_NAME, "llr max starvation occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))
@@ -883,7 +883,7 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_STARVED);
 
-	sl_core_log_warn(core_link, LOG_NAME, "llr starved occurred");
+	sl_core_log_warn_trace(core_link, LOG_NAME, "llr starved occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED) == -EALREADY) {
 		if (sl_core_link_is_canceled_or_timed_out(core_link))

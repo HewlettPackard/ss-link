@@ -278,7 +278,7 @@ static int sl_core_test_an_callback(void *tag, struct sl_link_caps *caps, u32 re
 
 	return 0;
 }
-static int sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
+static void sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
 	u64 info_map, struct sl_llr_data llr_data)
 {
 	struct sl_core_test_tag_data test_tag;
@@ -297,10 +297,8 @@ static int sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].info_map  = info_map;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_state = llr_state;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_data  = llr_data;
-
-	return 0;
 }
-static int sl_core_test_llr_start_callback(void *tag, u32 llr_state, u64 info_map)
+static void sl_core_test_llr_start_callback(void *tag, u32 llr_state, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
 	char                         info_map_str[1024];
@@ -317,8 +315,6 @@ static int sl_core_test_llr_start_callback(void *tag, u32 llr_state, u64 info_ma
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].received  = true;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].info_map  = info_map;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].llr_state = llr_state;
-
-	return 0;
 }
 
 static int sl_core_test0(struct sl_core_test_args test_args)

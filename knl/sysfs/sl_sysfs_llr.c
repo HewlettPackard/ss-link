@@ -9,9 +9,52 @@
 #include "sl_ctl_llr.h"
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_ldev.h"
+#include "sl_core_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
+
+static ssize_t last_fail_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_llr *ctl_llr;
+	u32                llr_fail_cause;
+	time64_t           llr_fail_time;
+
+	ctl_llr = container_of(kobj, struct sl_ctl_llr, kobj);
+
+	sl_core_llr_last_fail_cause_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num,
+		ctl_llr->num, &llr_fail_cause, &llr_fail_time);
+
+	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
+		"last fail cause show (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
+
+	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_llr_fail_cause_str(llr_fail_cause));
+}
+
+static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_llr *ctl_llr;
+	u32                llr_fail_cause;
+	time64_t           llr_fail_time;
+
+	ctl_llr = container_of(kobj, struct sl_ctl_llr, kobj);
+
+	sl_core_llr_last_fail_cause_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num,
+		ctl_llr->num, &llr_fail_cause, &llr_fail_time);
+
+	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
+		"last fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+		llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause),
+		llr_fail_time, &llr_fail_time, &llr_fail_time);
+
+	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &llr_fail_time, &llr_fail_time);
+}
 
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -28,10 +71,14 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_llr_state_str(state));
 }
 
-static struct kobj_attribute llr_state = __ATTR_RO(state);
+static struct kobj_attribute llr_state           = __ATTR_RO(state);
+static struct kobj_attribute llr_last_fail_cause = __ATTR_RO(last_fail_cause);
+static struct kobj_attribute llr_last_fail_time  = __ATTR_RO(last_fail_time);
 
 static struct attribute *llr_attrs[] = {
 	&llr_state.attr,
+	&llr_last_fail_cause.attr,
+	&llr_last_fail_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(llr);

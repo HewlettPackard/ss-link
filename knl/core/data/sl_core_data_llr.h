@@ -32,4 +32,7 @@ void sl_core_data_llr_info_map_clr(struct sl_core_llr *core_llr, u32 bit_num);
 void sl_core_data_llr_info_map_set(struct sl_core_llr *core_llr, u32 bit_num);
 u64  sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr);
 
+void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_fail_cause);
+void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr_fail_cause, time64_t *llr_fail_time);
+
 #endif /* _SL_CORE_DATA_LLR_H_ */

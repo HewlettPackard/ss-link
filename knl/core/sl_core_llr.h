@@ -34,9 +34,18 @@ enum sl_core_llr_state {
 	SL_CORE_LLR_STATE_STOPPING,       /* -- BUSY --           */
 };
 
-typedef int (*sl_core_llr_setup_callback_t)(void *tag, u32 llr_state,
+#define SL_LLR_FAIL_CAUSE_NONE                   0
+#define SL_LLR_FAIL_CAUSE_SETUP_CONFIG           BIT(0) /* llr setup config invalid                            */
+#define SL_LLR_FAIL_CAUSE_SETUP_INTR_ENABLE      BIT(1) /* llr setup interrupt enable failed                   */
+#define SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT          BIT(2) /* llr setup timeout                                   */
+#define SL_LLR_FAIL_CAUSE_START_INTR_ENABLE      BIT(3) /* llr start interrupt enable failed                   */
+#define SL_LLR_FAIL_CAUSE_START_TIMEOUT          BIT(4) /* llr start timeout                                   */
+
+#define SL_LLR_FAIL_CAUSE_STR_SIZE 128
+
+typedef void (*sl_core_llr_setup_callback_t)(void *tag, u32 llr_state,
 					    u64 info_map, struct sl_llr_data llr_data);
-typedef int (*sl_core_llr_start_callback_t)(void *tag, u32 llr_state,
+typedef void (*sl_core_llr_start_callback_t)(void *tag, u32 llr_state,
 					    u64 info_map);
 
 #define SL_CORE_LLR_MAGIC 0x756c5C4E
@@ -47,6 +56,8 @@ struct sl_core_llr {
 	struct sl_core_lgrp             *core_lgrp;
 
 	spinlock_t                                 data_lock;
+	u32                                        last_fail_cause;
+	time64_t                                   last_fail_time;
 	bool                                       is_canceled;
 	u32                                        state;
 	u64                                        info_map;
@@ -108,5 +119,11 @@ struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr);
 void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr);
 void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr);
+
+void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 llr_fail_cause);
+void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_fail_cause,
+	time64_t *llr_fail_time);
+
+const char *sl_core_llr_fail_cause_str(u32 llr_fail_cause);
 
 #endif /* _SL_CORE_LLR_H_ */

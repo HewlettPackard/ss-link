@@ -16,7 +16,7 @@
 void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 {
 	if (core_llr->timers[timer_num].data.timeout_ms == 0) {
-		sl_core_log_warn(core_llr, LOG_NAME,
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"begin - %s timeout is 0", core_llr->timers[timer_num].data.log);
 		return;
 	}

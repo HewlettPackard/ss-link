@@ -111,7 +111,7 @@ void sl_core_hw_intr_hdlr_unregister(struct sl_core_link *core_link)
 			rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[x].flgs,
 				sl_core_hw_intr_hdlr);
 		if (rtn != 0)
-			sl_core_log_warn(core_link, LOG_NAME,
+			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"unregister - %d failed [%d]", x, rtn);
 	}
 }
@@ -187,7 +187,7 @@ int sl_core_hw_intr_flgs_enable(struct sl_core_link *core_link, u32 intr_num)
 			core_link->intrs[intr_num].flgs, sl_core_hw_intr_hdlr);
 	if (rtn != 0) {
 		if (rtn != -EALREADY)
-			sl_core_log_err(core_link, LOG_NAME,
+			sl_core_log_err_trace(core_link, LOG_NAME,
 				"flgs enable failed [%d]", rtn);
 		return rtn;
 	}
@@ -218,7 +218,7 @@ int sl_core_hw_intr_flgs_disable(struct sl_core_link *core_link, u32 intr_num)
 		rtn = sl_core_hw_intr_disable(core_link,
 			core_link->intrs[intr_num].flgs, sl_core_hw_intr_hdlr);
 	if (rtn != 0) {
-		sl_core_log_err(core_link, LOG_NAME,
+		sl_core_log_err_trace(core_link, LOG_NAME,
 			"flgs disable failed [%d]", rtn);
 		return rtn;
 	}

@@ -25,5 +25,5 @@ void sl_core_work_link_queue(struct sl_core_link *core_link, u32 work_num)
 
 	if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
 		&(core_link->work[work_num])))
-		sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)", work_num);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "already queued (work_num = %u)", work_num);
 }

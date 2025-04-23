@@ -553,7 +553,7 @@ void sl_core_data_link_timeouts(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "timeouts");
 
 	if (core_link->config.link_up_timeout_ms == 0) {
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"timeouts - link up timeout is 0, setting to default");
 		core_link->timers[SL_CORE_TIMER_LINK_UP].data.timeout_ms = 10000;
 	} else {

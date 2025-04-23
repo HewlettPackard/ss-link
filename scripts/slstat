@@ -294,6 +294,8 @@ function print_llr {
         local setup_timeout=$(cat ${LLR_PATH}/config/setup_timeout_ms)
         local start_timeout=$(cat ${LLR_PATH}/config/start_timeout_ms)
         local tries=$(cat ${LLR_PATH}/policies/continuous_tries)
+        local last_fail_cause=$(cat ${LLR_PATH}/last_fail_cause)
+        local last_fail_time=$(cat ${LLR_PATH}/last_fail_time)
 
         print_llr_state
 
@@ -301,6 +303,7 @@ function print_llr {
         printf "           | mode: ${mode}, link_down_bahavior: ${down_bahavior}\n"
         printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
         printf "           | continuous_tries: ${tries}\n"
+        printf "           | last_fail_cause: [${last_fail_time}] ${last_fail_cause}\n"
 }
 
 function print_serdes {

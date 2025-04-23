@@ -294,3 +294,33 @@ void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr)
 	core_llr->is_canceled = false;
 	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
 }
+
+void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 llr_fail_cause)
+{
+	sl_core_data_llr_last_fail_cause_set(sl_core_llr_get(ldev_num, lgrp_num, llr_num), llr_fail_cause);
+}
+
+void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_fail_cause,
+	time64_t *llr_fail_time)
+{
+	sl_core_data_llr_last_fail_cause_get(sl_core_llr_get(ldev_num, lgrp_num, llr_num),
+		llr_fail_cause, llr_fail_time);
+}
+
+const char *sl_core_llr_fail_cause_str(u32 llr_fail_cause)
+{
+	switch (llr_fail_cause) {
+	case SL_LLR_FAIL_CAUSE_SETUP_CONFIG:
+		return "setup-config";
+	case SL_LLR_FAIL_CAUSE_SETUP_INTR_ENABLE:
+		return "setup-intr-enable";
+	case SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT:
+		return "setup-timeout";
+	case SL_LLR_FAIL_CAUSE_START_INTR_ENABLE:
+		return "start-intr-enable";
+	case SL_LLR_FAIL_CAUSE_START_TIMEOUT:
+		return "start-timeout";
+	default:
+		return "unknown";
+	}
+}
