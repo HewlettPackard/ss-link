@@ -281,13 +281,12 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 
 static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	int                  rtn;
 	u32                  lp_caps_state;
 	struct sl_ctl_link  *ctl_link;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	rtn = sl_ctl_link_an_lp_caps_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+	sl_ctl_link_an_lp_caps_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &lp_caps_state);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "an lp caps state show (lp_caps_state = %u %s)",
