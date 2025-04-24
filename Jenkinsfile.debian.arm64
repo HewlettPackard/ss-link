@@ -8,6 +8,7 @@ def scimageProject_r2_arm64 = new SCImageProject(
         build_steps:       'build_sl_driver',
         slack_channel_failure: '#slingshot-team-platform',
         ct_build_steps:    'build_rosetta2_drivers,build_rosetta2_sdk',
+        ct_target_arch:    'ss400',
         sequence_dir:      'tools.d'
     )
 
