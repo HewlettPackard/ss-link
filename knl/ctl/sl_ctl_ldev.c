@@ -123,7 +123,8 @@ void sl_ctl_ldev_del(u8 ldev_num)
 
 	ctl_ldev = sl_ctl_ldev_get(ldev_num);
 	if (!ctl_ldev) {
-		sl_ctl_log_dbg(NULL, LOG_NAME, "not found (ldev_num = %u)", ldev_num);
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (ldev_num = %u)", ldev_num);
 		return;
 	}
 

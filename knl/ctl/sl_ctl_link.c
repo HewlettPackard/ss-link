@@ -149,7 +149,7 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctl_link) {
-		sl_ctl_log_dbg(NULL, LOG_NAME,
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
 			"del not found (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
 		return;
@@ -173,20 +173,20 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		fallthrough;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - stopping");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del stopping");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		goto down;
 	case SL_LINK_STATE_STOPPING:
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - already stopping");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del already stopping");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		goto wait;
 	case SL_LINK_STATE_DOWN:
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del - already down");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del already down");
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		goto delete;
 	case SL_LINK_STATE_INVALID:
 	default:
-		sl_ctl_log_err(ctl_link, LOG_NAME, "del - invalid state (link_state = %u %s)",
+		sl_ctl_log_err(ctl_link, LOG_NAME, "del invalid state (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock_irqrestore(&ctl_link->data_lock, irq_flags);
 		return;
@@ -213,9 +213,10 @@ wait:
 		msecs_to_jiffies(SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS));
 	if (timeleft == 0)
 		sl_ctl_log_err(ctl_link, LOG_NAME,
-			"completion_timeout (down_complete = 0x%p)", &ctl_link->down_complete);
+			"del completion_timeout (down_complete = 0x%p)",
+			&ctl_link->down_complete);
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "completion (timeleft = %lu)", timeleft);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "del completion (timeleft = %lu)", timeleft);
 
 delete:
 	sl_core_link_del(ldev_num, lgrp_num, link_num);

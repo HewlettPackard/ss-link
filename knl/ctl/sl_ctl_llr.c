@@ -227,8 +227,8 @@ void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
 	if (!ctl_llr) {
-		sl_ctl_log_err(NULL, LOG_NAME,
-			"not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 			ldev_num, lgrp_num, llr_num);
 		return;
 	}
@@ -245,7 +245,7 @@ void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
-			"core_llr_stop failed [%d[", rtn);
+			"del core_llr_stop failed [%d[", rtn);
 
 	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 

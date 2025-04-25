@@ -6,7 +6,7 @@
 fabric_link=0
 fec_map=$((1 << 0))                 # SL_LGRP_CONFIG_FEC_RS
 fec_mode=$((1 << 2))                # SL_LGRP_FEC_MODE_CORRECT
-furcation=0x1                       # SL_MEDIA_FURCATION_X1
+furcation=unfurcated
 lock=0
 mfs=9216
 r1_partner=0

@@ -18,6 +18,8 @@
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
 #include "sl_test_debugfs_link.h"
+#include "sl_test_debugfs_llr.h"
+#include "sl_test_debugfs_mac.h"
 #include "sl_test_common.h"
 
 #define LOG_BLOCK "lgrp"
@@ -491,6 +493,21 @@ static const struct file_operations sl_test_lgrp_cmd_fops = {
 	.write = sl_test_lgrp_cmd_write,
 };
 
+static void sl_test_furcation_opts(char *buf, size_t size)
+{
+	snprintf(buf, size, "%s %s %s\n",
+		sl_media_furcation_str(SL_MEDIA_FURCATION_X1),
+		sl_media_furcation_str(SL_MEDIA_FURCATION_X2),
+		sl_media_furcation_str(SL_MEDIA_FURCATION_X4));
+};
+
+static struct str_conv_u32 lgrp_furcation = {
+	.to_str = sl_media_furcation_str,
+	.to_u32 = sl_test_furcation_from_str,
+	.opts   = sl_test_furcation_opts,
+	.value  = &lgrp_config.furcation,
+};
+
 #define STATIC_OPT_ENTRY(_name, _bit_field) static struct options_field_entry option_##_name = { \
 	.options = &lgrp_config.options,                                                         \
 	.field   = SL_LGRP_OPT_##_bit_field,                                                     \
@@ -574,7 +591,8 @@ int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 	debugfs_create_u32("fec_map",   0644, config_dir, &lgrp_config.fec_map);
 	debugfs_create_u32("fec_mode",  0644, config_dir, &lgrp_config.fec_mode);
 	debugfs_create_u32("tech_map",  0644, config_dir, &lgrp_config.tech_map);
-	debugfs_create_u32("furcation", 0644, config_dir, &lgrp_config.furcation);
+
+	sl_test_debugfs_create_str_conv_u32("furcation", 0644, config_dir, &lgrp_furcation);
 
 	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &option_lock);
 	if (rtn) {
@@ -675,8 +693,11 @@ void sl_test_port_sysfs_exit(u8 ldev_num)
 	u8 link_num;
 
 	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
-		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num)
+		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
+			sl_test_llr_remove(ldev_num, lgrp_num, link_num);
+			sl_test_mac_remove(ldev_num, lgrp_num, link_num);
 			sl_test_link_remove(ldev_num, lgrp_num, link_num);
+		}
 
 		sl_test_port_sysfs_remove(lgrp_num);
 	}

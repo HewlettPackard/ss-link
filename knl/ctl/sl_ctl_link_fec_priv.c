@@ -527,7 +527,6 @@ void sl_ctl_link_fec_mon_timer(struct timer_list *timer)
 void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 {
 	bool          stop;
-	int           rtn;
 	unsigned long irq_flags;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor stop");
@@ -542,9 +541,7 @@ void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 		return;
 	}
 
-	rtn = del_timer_sync(&ctl_link->fec_mon_timer);
-	if (rtn < 0)
-		sl_ctl_log_warn(ctl_link, LOG_NAME, "del_timer_sync failed [%d]", rtn);
+	del_timer_sync(&ctl_link->fec_mon_timer);
 }
 
 #define SL_CTL_LINK_FEC_LIMIT_25   25781250000ULL

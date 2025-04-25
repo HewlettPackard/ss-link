@@ -488,6 +488,10 @@ void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	int            rtn;
 	struct sl_link sl_link;
 
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"link remove (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+		ldev_num, lgrp_num, link_num);
+
 	sl_test_link_init(&sl_link, ldev_num, lgrp_num, link_num);
 
 	rtn = sl_link_del(&sl_link);
@@ -497,7 +501,7 @@ void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_test_link_sysfs_remove(sl_link.lgrp_num, sl_link.num);
 }
 
-static struct kobject *sl_test_link_sysfs_get(u8 lgrp_num, u8 link_num)
+struct kobject *sl_test_link_sysfs_get(u8 lgrp_num, u8 link_num)
 {
 	return sl_link_num_dir[lgrp_num][link_num];
 }
@@ -512,10 +516,14 @@ int sl_test_link_new(void)
 	lgrp = sl_test_lgrp_get();
 	link_num = sl_test_debugfs_link_num_get();
 
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"link new (lgrp_num = %u, link_num = %u)",
+		lgrp->num, link_num);
+
 	rtn = sl_test_link_sysfs_init(lgrp->num, link_num);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd sl_test_link_sysfs_init failed [%d]", rtn);
+			"sl_test_link_sysfs_init failed [%d]", rtn);
 		return rtn;
 	}
 

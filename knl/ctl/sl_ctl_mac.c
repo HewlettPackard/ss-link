@@ -103,7 +103,8 @@ void sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	ctl_mac = sl_ctl_mac_get(ldev_num, lgrp_num, mac_num);
 	if (!ctl_mac) {
-		sl_ctl_log_dbg(NULL, LOG_NAME, "not found (mac_num = %u)", mac_num);
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (mac_num = %u)", mac_num);
 		return;
 	}
 

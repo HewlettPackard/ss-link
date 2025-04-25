@@ -559,3 +559,28 @@ int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct d
 	return 0;
 }
 EXPORT_SYMBOL_GPL(sl_test_debugfs_create_str_conv_u32);
+
+// FIXME: is the correct place to put this?
+int sl_test_furcation_from_str(const char *str, u32 *furcation)
+{
+	if (!str || !furcation)
+		return -EINVAL;
+
+	if (!strncmp(str, "unfurcated", 10)) {
+		*furcation = SL_MEDIA_FURCATION_X1;
+		return 0;
+	}
+
+	if (!strncmp(str, "bifurcated", 10)) {
+		*furcation = SL_MEDIA_FURCATION_X2;
+		return 0;
+	}
+
+	if (!strncmp(str, "quadfurcated", 12)) {
+		*furcation = SL_MEDIA_FURCATION_X4;
+		return 0;
+	}
+
+	return -ENOENT;
+}
+EXPORT_SYMBOL(sl_test_furcation_from_str);

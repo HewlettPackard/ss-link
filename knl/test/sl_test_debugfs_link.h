@@ -20,4 +20,6 @@ int sl_test_link_policy_set(void);
 int sl_test_link_options_set(void);
 int sl_test_link_fec_cntr_set(void);
 
+struct kobject *sl_test_link_sysfs_get(u8 lgrp_num, u8 link_num);
+
 #endif /* _SL_TEST_DEBUGFS_LINK_H_ */

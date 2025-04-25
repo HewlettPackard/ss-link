@@ -4,12 +4,16 @@
 #include <linux/debugfs.h>
 #include <linux/sl_link.h>
 #include <linux/sl_llr.h>
+#include <linux/sl_test.h>
+#include <linux/kobject.h>
 
+#include "sl_asic.h"
 #include "sl_lgrp.h"
 #include "sl_llr.h"
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
+#include "sl_test_debugfs_link.h"
 #include "sl_test_debugfs_llr.h"
 #include "sl_test_common.h"
 
@@ -181,13 +185,13 @@ static const struct file_operations sl_test_llr_cmds_fops = {
 STATIC_CONFIG_OPT_ENTRY(lock, LOCK);
 STATIC_POLICY_OPT_ENTRY(lock, LOCK);
 
-static void sl_test_llr_init(void)
+static void sl_test_llr_init(struct sl_llr *llr, u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
-	llr.magic    = SL_LLR_MAGIC;
-	llr.ver      = SL_LLR_VER;
-	llr.ldev_num = sl_test_debugfs_ldev_num_get();
-	llr.lgrp_num = sl_test_debugfs_lgrp_num_get();
-	llr.num      = 0;
+	llr->magic    = SL_LLR_MAGIC;
+	llr->ver      = SL_LLR_VER;
+	llr->ldev_num = ldev_num;
+	llr->lgrp_num = lgrp_num;
+	llr->num      = link_num;
 }
 
 static void sl_test_llr_config_init(void)
@@ -232,7 +236,7 @@ int sl_test_debugfs_llr_create(struct dentry *top_dir)
 		return -ENOMEM;
 	}
 
-	sl_test_llr_init();
+	sl_test_llr_init(&llr, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
 	debugfs_create_u8("num", 0644, llr_dir, &llr.num);
 
@@ -295,15 +299,44 @@ static u8 sl_test_debugfs_llr_num_get(void)
 	return llr.num;
 }
 
+void sl_test_llr_remove(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+{
+	int           rtn;
+	struct sl_llr sl_llr;
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"llr remove (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+		ldev_num, lgrp_num, llr_num);
+
+	sl_test_llr_init(&sl_llr, ldev_num, lgrp_num, llr_num);
+
+	rtn = sl_llr_del(&sl_llr);
+	if (rtn)
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
+}
+
 int sl_test_llr_new(void)
 {
-	struct kobject *kobj;
+	u8              llr_num;
 	struct sl_lgrp *lgrp;
+	struct kobject *llr_kobj;
 
 	lgrp = sl_test_lgrp_get();
-	kobj = sl_test_lgrp_kobj_get(sl_test_debugfs_ldev_num_get(), lgrp->num);
+	llr_num = sl_test_debugfs_llr_num_get();
 
-	return IS_ERR(sl_llr_new(lgrp, sl_test_debugfs_llr_num_get(), kobj));
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"llr new (lgrp_num = %u, llr_num = %u)",
+		lgrp->num, llr_num);
+
+	// NOTE: assumes the link is made first
+	llr_kobj = sl_test_link_sysfs_get(lgrp->num, llr_num);
+	if (!llr_kobj) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_link_sysfs_get NULL");
+		return -EBADRQC;
+	}
+
+	return IS_ERR(sl_llr_new(lgrp, llr_num, llr_kobj));
 }
 
 int sl_test_llr_del(void)

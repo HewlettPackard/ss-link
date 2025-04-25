@@ -4,12 +4,16 @@
 #include <linux/debugfs.h>
 #include <linux/sl_link.h>
 #include <linux/sl_mac.h>
+#include <linux/sl_test.h>
+#include <linux/kobject.h>
 
+#include "sl_asic.h"
 #include "sl_lgrp.h"
 #include "sl_mac.h"
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
+#include "sl_test_debugfs_link.h"
 #include "sl_test_debugfs_mac.h"
 #include "sl_test_common.h"
 
@@ -139,13 +143,13 @@ static const struct file_operations sl_test_mac_cmd_fops = {
 	.write = sl_test_mac_cmd_write,
 };
 
-static void sl_test_mac_init(void)
+static void sl_test_mac_init(struct sl_mac *mac, u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
-	mac.magic    = SL_MAC_MAGIC;
-	mac.ver      = SL_MAC_VER;
-	mac.ldev_num = sl_test_debugfs_ldev_num_get();
-	mac.lgrp_num = sl_test_debugfs_lgrp_num_get();
-	mac.num      = 0;
+	mac->magic    = SL_MAC_MAGIC;
+	mac->ver      = SL_MAC_VER;
+	mac->ldev_num = ldev_num;
+	mac->lgrp_num = lgrp_num;
+	mac->num      = link_num;
 }
 
 static struct sl_mac *sl_test_mac_get(void)
@@ -167,7 +171,7 @@ int sl_test_debugfs_mac_create(struct dentry *top_dir)
 		return -ENOMEM;
 	}
 
-	sl_test_mac_init();
+	sl_test_mac_init(&mac, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
 	debugfs_create_u8("num", 0644, mac_dir, &mac.num);
 
@@ -193,15 +197,44 @@ static u8 sl_test_debugfs_mac_num_get(void)
 	return mac.num;
 }
 
+void sl_test_mac_remove(u8 ldev_num, u8 lgrp_num, u8 mac_num)
+{
+	int           rtn;
+	struct sl_mac sl_mac;
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"mac remove (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
+		ldev_num, lgrp_num, mac_num);
+
+	sl_test_mac_init(&sl_mac, ldev_num, lgrp_num, mac_num);
+
+	rtn = sl_mac_del(&sl_mac);
+	if (rtn)
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
+}
+
 int sl_test_mac_new(void)
 {
-	struct kobject *kobj;
+	u8              mac_num;
 	struct sl_lgrp *lgrp;
+	struct kobject *mac_kobj;
 
 	lgrp = sl_test_lgrp_get();
-	kobj = sl_test_lgrp_kobj_get(sl_test_debugfs_ldev_num_get(), lgrp->num);
+	mac_num = sl_test_debugfs_mac_num_get();
 
-	return IS_ERR(sl_mac_new(lgrp, sl_test_debugfs_mac_num_get(), kobj));
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"mac new (lgrp_num = %u, mac_num = %u)",
+		lgrp->num, mac_num);
+
+	// NOTE: assumes the link is made first
+	mac_kobj = sl_test_link_sysfs_get(lgrp->num, mac_num);
+	if (!mac_kobj) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_link_sysfs_get NULL");
+		return -EBADRQC;
+	}
+
+	return IS_ERR(sl_mac_new(lgrp, mac_num, mac_kobj));
 }
 
 int sl_test_mac_del(void)

@@ -192,7 +192,7 @@ function sl_test_serdes_settings_set {
 	cursor   = -32,768 < cursor < 32,767
 	dfe      = $(__sl_test_serdes_settings_options_get "dfe")
 	encoding = $(__sl_test_serdes_settings_options_get "encoding")
-	media    = $(__sl_test_serdes_settings_options_get "media")
+	media    = 1
 	osr      = $(__sl_test_serdes_settings_options_get "osr")
 	post1    = -32,768 < post1 < 32,767
 	post2    = -32,768 < post2 < 32,767
@@ -285,13 +285,6 @@ function sl_test_serdes_settings_set {
 	fi
 
 	__sl_test_serdes_settings_check "encoding" "${encoding}"
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"
-		return ${rtn}
-	fi
-
-	__sl_test_serdes_settings_check "media" "${media}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed [${rtn}]"

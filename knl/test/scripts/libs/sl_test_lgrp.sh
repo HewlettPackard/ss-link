@@ -499,6 +499,14 @@ function sl_test_lgrp_cleanup {
 	return 0
 }
 
+function __sl_test_lgrp_config_options_get {
+	local config=$1
+
+	options=$(cat ${SL_TEST_LGRP_DEBUGFS_CONFIG_DIR}/${config}_options)
+
+	echo ${options} | awk '{ gsub (" ", " | ", $0); print}'
+}
+
 function sl_test_lgrp_config_set {
 	local rtn
 	local options
@@ -517,6 +525,9 @@ function sl_test_lgrp_config_set {
 
 	Options:
 	-h, --help This message.
+
+	Config Options:
+	furcation = $(__sl_test_lgrp_config_options_get "furcation")
 
 	Config:
 	$(find ${SL_TEST_LGRP_CONFIG_DIR} -type f)
@@ -579,6 +590,9 @@ function sl_test_lgrp_config_set {
 
 	for filename in ${SL_TEST_LGRP_DEBUGFS_CONFIG_DIR}/* ; do
 		item=$(basename ${filename})
+		if [[ "${item}" == *"options" ]] ; then
+			continue;
+		fi
 		if [ -z "${!item}" ]; then
 			sl_test_error_log "${FUNCNAME}" "config missing (item = ${item})"
 			sl_test_error_log "${FUNCNAME}" "lgrp_config failed"

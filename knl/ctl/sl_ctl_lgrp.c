@@ -137,7 +137,8 @@ void sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
-		sl_ctl_log_dbg(NULL, LOG_NAME, "not found (lgrp_num = %u)", lgrp_num);
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (lgrp_num = %u)", lgrp_num);
 		return;
 	}
 

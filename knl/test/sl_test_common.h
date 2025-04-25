@@ -107,4 +107,6 @@ int sl_test_debugfs_create_str_conv_u16(const char *name, umode_t mode, struct d
 int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct dentry *parent,
 					struct str_conv_u32 *option);
 
+int sl_test_furcation_from_str(const char *str, u32 *furcation);
+
 #endif /* _SL_TEST_COMMON_H_ */

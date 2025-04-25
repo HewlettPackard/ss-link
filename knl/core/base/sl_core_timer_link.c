@@ -69,5 +69,5 @@ void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
 		"end - %s (link = 0x%p, timer = %d)",
 		core_link->timers[timer_num].data.log, core_link, timer_num);
 
-	 del_timer_sync(&(core_link->timers[timer_num].timer));
+	del_timer_sync(&(core_link->timers[timer_num].timer));
 }

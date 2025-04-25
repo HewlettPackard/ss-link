@@ -6,6 +6,8 @@
 
 int sl_test_debugfs_llr_create(struct dentry *top_dir);
 
+void sl_test_llr_remove(u8 ldev_num, u8 lgrp_num, u8 llr_num);
+
 int sl_test_llr_new(void);
 int sl_test_llr_del(void);
 
