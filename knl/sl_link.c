@@ -397,7 +397,7 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 	if (!cause_str)
 		return -EINVAL;
 
-	if (cause_str_size < SL_LINK_DOWN_CAUSE_STR_SIZE)
+	if (cause_str_size < SL_LINK_DOWN_CAUSE_STR_SIZE_MIN)
 		return -EINVAL;
 
 	if (cause_map == SL_LINK_DOWN_CAUSE_NONE) {
