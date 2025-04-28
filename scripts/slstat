@@ -144,15 +144,53 @@ function print_llr_state {
         printf "llr%d       | state: ${state}\n" ${LINK}
 }
 
-function print_counters {
+function print_link_counters {
         if [ ! -e ${LINK_PATH} ] ; then
                 return
         fi
 
         local first=0;
 
-        printf "counters   |"
+        printf "  counters |"
         for counter in ${LINK_PATH}/counters/* ; do
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_mac_counters {
+        if [ ! -e ${MAC_PATH} ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${MAC_PATH}/counters/* ; do
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_llr_counters {
+        if [ ! -e ${LLR_PATH} ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${LLR_PATH}/counters/* ; do
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
                         printf " %25s = ${val}\n" $(basename "${counter}")
@@ -522,9 +560,11 @@ case $option in
                         print_ldev
                         print_jack_state
                         print_link_state
+                        print_link_counters
                         print_mac_state
+                        print_mac_counters
                         print_llr_state
-                        print_counters
+                        print_llr_counters
                 fi
                 exit
                 ;;
@@ -538,9 +578,11 @@ case $option in
                 fi
                 if [ ${num_args} -ge 3 ] ; then
                         print_link
+                        print_link_counters
                         print_mac
+                        print_mac_counters
                         print_llr 
-                        print_counters
+                        print_llr_counters
                         print_serdes_settings
                         print_fec
                         print_fec_current
