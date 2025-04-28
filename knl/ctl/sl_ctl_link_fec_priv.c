@@ -395,7 +395,7 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 			"CCW exceeded down limit (UCW = %llu, CCW = %llu, ccw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctl_link->fec_ccw_chance);
 		ctl_link->fec_ccw_chance = 0;
-		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_CCW);
+		rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_CCW_MAP);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
 			return rtn;
