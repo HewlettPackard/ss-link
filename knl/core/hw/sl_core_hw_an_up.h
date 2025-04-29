@@ -7,7 +7,7 @@
 struct sl_core_link;
 struct work_struct;
 
-void sl_core_hw_an_up_start(struct sl_core_link *core_link);
+void sl_core_hw_an_up_start_work(struct work_struct *work);
 
 void sl_core_hw_an_up_work(struct work_struct *work);
 void sl_core_hw_an_up_done_work(struct work_struct *work);

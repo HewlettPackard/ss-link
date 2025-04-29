@@ -231,12 +231,10 @@ while true; do
 			__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "all" ${2}
 			lgrp_nums=(${tmp_lgrp_nums//;/ })
 			shift 2
-			break
 			;;
 		-g | --lgrp_nums)
 			lgrp_nums=(${2})
 			shift 2
-			break
 			;;
 		-b | --brief)
 			echo ${brief}
@@ -251,8 +249,6 @@ while true; do
 			;;
 	esac
 done
-
-shift
 
 if [[ "$#" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"

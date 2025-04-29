@@ -61,7 +61,8 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - going up");
-		core_link->link.state = SL_CORE_LINK_STATE_GOING_UP;
+		core_link->link.state = is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE) ?
+			SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
 		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 		sl_core_hw_link_up_cmd(core_link, callback, tag);
 		return 0;
@@ -74,10 +75,85 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 }
 
-int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map)
+int sl_core_link_up_fail(struct sl_core_link *core_link)
 {
-	unsigned long        irq_flags;
+	u32                  link_state;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "up fail");
+
+	spin_lock(&core_link->link.data_lock);
+	link_state = core_link->link.state;
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_CANCELING:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
+	case SL_CORE_LINK_STATE_TIMEOUT:
+		sl_core_log_dbg(core_link, LOG_NAME, "up fail - already going down");
+		spin_unlock(&core_link->link.data_lock);
+		return 0;
+	case SL_CORE_LINK_STATE_GOING_UP:
+	case SL_CORE_LINK_STATE_AN:
+		sl_core_log_dbg(core_link, LOG_NAME, "up fail - going down");
+		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		spin_unlock(&core_link->link.data_lock);
+		sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_UP_FAIL);
+		return 0;
+	default:
+		sl_core_log_err(core_link, LOG_NAME,
+			"up fail - invalid (link_state = %u %s)",
+			link_state, sl_core_link_state_str(link_state));
+		spin_unlock(&core_link->link.data_lock);
+		return -EBADRQC;
+	}
+}
+
+int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
+		      sl_core_link_down_callback_t callback, void *tag)
+{
+	u32                  link_state;
+	struct sl_core_link *core_link;
+
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "cancel");
+
+	if (!callback) {
+		sl_core_log_err(core_link, LOG_NAME, "cancel - NULL callback");
+		return -EINVAL;
+	}
+
+	spin_lock(&core_link->link.data_lock);
+	link_state = core_link->link.state;
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_CANCELING:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
+	case SL_CORE_LINK_STATE_TIMEOUT:
+		sl_core_log_dbg(core_link, LOG_NAME, "cancel - already going down");
+		spin_unlock(&core_link->link.data_lock);
+		return 0;
+	case SL_CORE_LINK_STATE_GOING_UP:
+	case SL_CORE_LINK_STATE_AN:
+		sl_core_log_dbg(core_link, LOG_NAME, "canceling");
+		core_link->link.tags.down      = tag;
+		core_link->link.callbacks.down = callback;
+		core_link->link.state = SL_CORE_LINK_STATE_CANCELING;
+		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
+			&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL])))
+			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
+				SL_CORE_WORK_LINK_UP_CANCEL);
+		spin_unlock(&core_link->link.data_lock);
+		return 0;
+	default:
+		sl_core_log_err(core_link, LOG_NAME,
+			"down - invalid (link_state = %u %s)",
+			link_state, sl_core_link_state_str(link_state));
+		spin_unlock(&core_link->link.data_lock);
+		return -EBADRQC;
+	}
+}
+
+int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
+		      sl_core_link_down_callback_t callback, void *tag)
+{
 	u32                  link_state;
 	struct sl_core_link *core_link;
 
@@ -85,42 +161,34 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "down");
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	if (!callback) {
+		sl_core_log_err(core_link, LOG_NAME, "down - NULL callback");
+		return -EINVAL;
+	}
+
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
-	case SL_CORE_LINK_STATE_UNCONFIGURED:
-	case SL_CORE_LINK_STATE_CONFIGURING:
-	case SL_CORE_LINK_STATE_CONFIGURED:
-	case SL_CORE_LINK_STATE_DOWN:
-		sl_core_log_dbg(core_link, LOG_NAME, "down - already down");
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		return 0;
 	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - already going down");
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		return 0;
-	case SL_CORE_LINK_STATE_GOING_UP:
-	case SL_CORE_LINK_STATE_AN:
-		sl_core_log_dbg(core_link, LOG_NAME, "down - cancel up");
-		core_link->link.state = SL_CORE_LINK_STATE_CANCELING;
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_hw_link_up_cancel_cmd(core_link, callback, tag);
+		spin_unlock(&core_link->link.data_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
+		core_link->link.tags.down      = tag;
+		core_link->link.callbacks.down = callback;
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-		sl_core_data_link_last_down_cause_map_set(core_link, down_cause_map);
-		sl_core_hw_link_down_cmd(core_link, callback, tag);
+		spin_unlock(&core_link->link.data_lock);
+		sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_DOWN);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"down - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return -EBADRQC;
 	}
 }
@@ -239,80 +307,21 @@ int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_
 	return 0;
 }
 
-bool sl_core_link_is_canceled(struct sl_core_link *core_link)
-{
-	bool          is_canceled;
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	is_canceled  = core_link->link.is_canceled;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"is_canceled = %s", is_canceled ? "true" : "false");
-
-	return is_canceled;
-}
-
 bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link)
 {
-	bool          is_canceled;
-	bool          is_timed_out;
-	unsigned long irq_flags;
+	u32 state;
+	bool is_canceled;
+	bool is_timed_out;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	is_canceled  = core_link->link.is_canceled;
-	is_timed_out = core_link->link.is_timed_out;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	state = sl_core_data_link_state_get(core_link);
+
+	is_canceled = (state == SL_CORE_LINK_STATE_CANCELING);
+	is_timed_out = (state == SL_CORE_LINK_STATE_TIMEOUT);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "is_canceled = %s, is_timed_out = %s",
 		is_canceled ? "true" : "false", is_timed_out ? "true" : "false");
 
 	return (is_canceled || is_timed_out);
-}
-
-void sl_core_link_is_canceled_set(struct sl_core_link *core_link)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "is_canceled_set");
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_canceled = true;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-}
-
-void sl_core_link_is_canceled_clr(struct sl_core_link *core_link)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "is_canceled_clr");
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_canceled = false;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-}
-
-void sl_core_link_is_timed_out_set(struct sl_core_link *core_link)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "is_timed_out_set");
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_timed_out = true;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
-}
-
-void sl_core_link_is_timed_out_clr(struct sl_core_link *core_link)
-{
-	unsigned long irq_flags;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "is_timed_out_clr");
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.is_timed_out = false;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 }
 
 int sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed)
@@ -334,6 +343,13 @@ void sl_core_link_last_up_fail_cause_map_get(u8 ldev_num, u8 lgrp_num, u8 link_n
 {
 	sl_core_data_link_last_up_fail_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
 		up_fail_cause_map, up_fail_time);
+}
+
+void sl_core_link_last_down_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					       u64 down_cause_map)
+{
+	sl_core_data_link_last_down_cause_map_set(sl_core_link_get(ldev_num, lgrp_num, link_num),
+						  down_cause_map);
 }
 
 void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -395,4 +411,19 @@ bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_
 	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
 
 	return is_policy_set;
+}
+
+struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,
+	struct sl_core_link_up_info *link_up_info)
+{
+	spin_lock(&core_link->link.data_lock);
+	link_up_info->state     = core_link->link.state;
+	link_up_info->cause_map = core_link->link.last_up_fail_cause_map;
+	link_up_info->info_map  = core_link->info_map;
+	link_up_info->speed     = core_link->pcs.settings.speed;
+	link_up_info->fec_mode  = core_link->fec.settings.mode;
+	link_up_info->fec_type  = core_link->fec.settings.type;
+	spin_unlock(&core_link->link.data_lock);
+
+	return link_up_info;
 }

@@ -263,7 +263,6 @@ while true; do
 		-g | --lgrp_nums)
 			lgrp_nums=(${2})
 			shift 2
-			break
 			;;
 		-- )
 			shift
@@ -274,8 +273,6 @@ while true; do
 			;;
 	esac
 done
-
-shift
 
 sl_test_info_log "${SCRIPT_NAME}" "Starting"
 main $1

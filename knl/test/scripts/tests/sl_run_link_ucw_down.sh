@@ -268,7 +268,6 @@ while true; do
 		-g | --lgrp_nums)
 			lgrp_nums=(${2})
 			shift 2
-			break
 			;;
 		-b | --brief)
 			echo ${brief}
@@ -283,8 +282,6 @@ while true; do
 			;;
 	esac
 done
-
-shift
 
 if [[ "$#" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"

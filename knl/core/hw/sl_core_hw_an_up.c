@@ -9,6 +9,7 @@
 #include "sl_kconfig.h"
 #include "sl_media_lgrp.h"
 #include "sl_core_link.h"
+#include "sl_core_str.h"
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_intr.h"
@@ -24,41 +25,9 @@
 #define SL_CORE_HW_AN_RESTART_DELAY_MS     200
 #define SL_CORE_HW_AN_RESTART_DELAY_MS_MAX (SL_CORE_HW_AN_RESTART_DELAY_MS * 10)
 
-static void sl_core_an_up_fail_callback(struct sl_core_link *core_link)
-{
-	int                   rtn;
-	u64                   up_fail_cause_map;
-	struct sl_media_lgrp *media_lgrp;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "up fail callback");
-
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up callback canceled");
-		return;
-	}
-
-	up_fail_cause_map = sl_core_data_link_last_up_fail_cause_map_get(core_link);
-
-	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-		SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-		if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
-			up_fail_cause_map &= ~SL_LINK_DOWN_RETRYABLE;
-			up_fail_cause_map |= SL_LINK_DOWN_CAUSE_NO_MEDIA;
-		}
-
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, up_fail_cause_map);
-	}
-
-	rtn = core_link->link.callbacks.up(core_link->link.tags.up, sl_core_data_link_state_get(core_link),
-		up_fail_cause_map, sl_core_data_link_info_map_get(core_link), sl_core_data_link_speed_get(core_link),
-		sl_core_data_link_fec_mode_get(core_link), sl_core_data_link_fec_type_get(core_link));
-	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
-}
-
 static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 {
+	int rtn;
 	int bit;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start test caps");
@@ -88,21 +57,25 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 
 	if (core_link->core_lgrp->link_caps[core_link->num].tech_map == 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up start test caps no match");
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
-		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_an_up_fail_callback(core_link);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+
 		return;
 	}
 
 	sl_core_hw_link_up_after_an_start(core_link);
 }
 
-void sl_core_hw_an_up_start(struct sl_core_link *core_link)
+void sl_core_hw_an_up_start_work(struct work_struct *work)
 {
-	sl_core_log_dbg(core_link, LOG_NAME, "up start (link = 0x%p)", core_link);
+	struct sl_core_link *core_link;
 
-	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_AN);
+	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_UP_START]);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "up start work (link = 0x%p)", core_link);
 
 	sl_core_hw_an_stop(core_link);
 
@@ -171,10 +144,11 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up work hw_serdes_link_up_an failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		sl_core_hw_serdes_link_down(core_link);
-		sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-		sl_core_an_up_fail_callback(core_link);
+
+		sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+
 		return;
 	}
 
@@ -247,9 +221,8 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 
 out_down:
 
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-	sl_core_hw_serdes_link_down(core_link);
-	sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
-	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-	sl_core_an_up_fail_callback(core_link);
+	sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
+	sl_core_link_up_fail(core_link);
+	if (rtn)
+		sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
 }

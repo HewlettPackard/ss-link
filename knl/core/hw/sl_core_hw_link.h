@@ -8,10 +8,11 @@ struct work_struct;
 
 #include "sl_core_link.h"
 
-void sl_core_hw_link_up_callback(struct sl_core_link *link);
+void sl_core_hw_link_up_callback(struct sl_core_link *core_link,
+	struct sl_core_link_up_info *core_link_up_info);
 void sl_core_hw_link_up_cmd(struct sl_core_link *link,
 	sl_core_link_up_callback_t callback, void *tag);
-void sl_core_hw_link_up_start(struct sl_core_link *link);
+void sl_core_hw_link_up_start_work(struct work_struct *work);
 void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link);
 void sl_core_hw_link_up_work(struct work_struct *work);
 void sl_core_hw_link_up_intr_work(struct work_struct *work);
@@ -19,12 +20,9 @@ void sl_core_hw_link_up_check_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_settle_work(struct work_struct *work);
 void sl_core_hw_link_up_fec_check_work(struct work_struct *work);
 void sl_core_hw_link_up_timeout_work(struct work_struct *work);
-void sl_core_hw_link_up_cancel_cmd(struct sl_core_link *link,
-	sl_core_link_down_callback_t callback, void *tag);
 void sl_core_hw_link_up_cancel_work(struct work_struct *work);
+void sl_core_hw_link_up_fail_work(struct work_struct *work);
 
-void sl_core_hw_link_down_cmd(struct sl_core_link *link,
-	sl_core_link_down_callback_t callback, void *tag);
 void sl_core_hw_link_down_work(struct work_struct *work);
 
 void sl_core_hw_link_high_ser_intr_work(struct work_struct *work);

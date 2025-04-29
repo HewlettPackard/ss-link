@@ -4,7 +4,7 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-brief="Test the link-async-down notification is sent and the last_down_cause is set to command in sysfs."
+brief="Verify link will timeout when sweeping different timeout intervals."
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
@@ -12,6 +12,7 @@ LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 settings="${SL_TEST_DIR}/systems/settings/ck400_x1_lb_fec_on.sh"
 ldev_num=0
 lgrp_nums=({0..63})
+link_up_timeouts=({100..3500..100})
 
 function test_cleanup {
 	local rtn
@@ -27,82 +28,30 @@ function test_cleanup {
 }
 
 function test_verify {
-
-	local found
-	local lgrp_num
-	local furcation
-	local sl_test_link_nums
+	local data
 	local notifs
-	local lgrp_sysfs
+	local notif
+	local notif_fields
+	local notif_ldev_num
+	local notif_lgrp_num
+	local notif_link_num
+	local notif_type
 
 	data=$1
 
-	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_sysfs_parent_set failed [${rtn}]"
-		return ${rtn}
-	fi
+	IFS=';' read -ra notifs <<< "${data}"
+	for notif in "${notifs[@]}"; do
+		notif_fields=(${notif})
+		notif_ldev_num=${notif_fields[2]}
+		notif_lgrp_num=${notif_fields[3]}
+		notif_link_num=${notif_fields[4]}
+		notif_type=${notif_fields[6]}
 
-	#TODO: This is really inefficient
-	found=false
-	for lgrp_num in "${lgrp_nums[@]}"; do
-
-		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
-			return ${rtn}
+		if [[ "${notif_type}" != "link-up-fail" ]]; then
+			sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+			sl_test_error_log "${FUNCNAME}" "Expected: link-up-fail, Found: ${notif_type}"
+			return 1
 		fi
-
-		__sl_test_set_links_from_furcation ${furcation} sl_test_link_nums
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
-			return ${rtn}
-		fi
-
-		for link_num in "${sl_test_link_nums[@]}"; do
-
-			sysfs_down_cause=$(cat ${lgrp_sysfs}/${lgrp_num}/test_port/${link_num}/link/last_down_cause_map)
-
-			IFS=';' read -ra notifs <<< "${data}"
-			for notif in "${notifs[@]}"; do
-				notif_fields=(${notif})
-				notif_ldev_num=${notif_fields[2]}
-				notif_lgrp_num=${notif_fields[3]}
-				notif_link_num=${notif_fields[4]}
-				notif_type=${notif_fields[6]}
-
-				if [[ "${notif_ldev_num}" != ${ldev_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_lgrp_num}" != ${lgrp_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_link_num}" != ${link_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_type}" == "link-async-down" ]]; then
-					if [[ "${sysfs_down_cause}" == "command retryable origin-async" ]]; then
-						sl_test_info_log "${FUNCNAME}" \
-							"Expected: command, Found: ${sysfs_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-						found=true
-						break
-					fi
-				fi
-			done
-
-			if [[ "${found}" != true ]]; then
-				sl_test_info_log "${FUNCNAME}" \
-					"Expected: command, Found: ${sysfs_down_cause} (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-				return 1
-			fi
-
-			found=false
-		done
 	done
 
 	return 0
@@ -111,10 +60,10 @@ function test_verify {
 function main {
 
 	local rtn
+	local link_nums
 	local lgrp_sysfs
 	local furcation
-	local sl_test_link_down_notifs
-	local sl_test_link_up_notifs
+	local sl_test_link_up_fail_notif
 
 	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
 	rtn=$?
@@ -171,48 +120,42 @@ function main {
 		return ${rtn}
 	fi
 
-	sl_test_info_log "${FUNCNAME}" "link_up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
+	for link_up_timeout in "${link_up_timeouts[@]}"; do
 
-	sl_test_link_up ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_up failed [${rtn}]"
-		return ${rtn}
-	fi
+		sl_test_info_log "${FUNCNAME}" "setting timeout (link_up_timeout = ${link_up_timeout})"
+		echo ${link_up_timeout} > "${SL_TEST_LINK_DEBUGFS_CONFIG_DIR}/link_up_timeout_ms"
 
-	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		sl_test_link_cmd ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}" "link_config_write"
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "link_cmd \"link_config_write\" failed [${rtn}]"
+			return ${rtn}
+		fi
 
-	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-		"link-up" ${LINK_NOTIF_TIMEOUT} sl_test_link_up_notif
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
-		return ${rtn}
-	fi
+		sl_test_info_log "${FUNCNAME}" "link_up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-	sl_test_info_log "${FUNCNAME}" "link_down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
+		sl_test_link_up ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "link_up failed [${rtn}]"
+			return ${rtn}
+		fi
 
-	sl_test_link_down ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_up failed [${rtn}]"
-		return ${rtn}
-	fi
+		sl_test_info_log "${FUNCNAME}" \
+			"lgrp_links_notif_wait link-up-fail (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
-	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
+			"link-up-fail" ${LINK_NOTIF_TIMEOUT} sl_test_link_up_fail_notif
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
+			return ${rtn}
+		fi
 
-	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-		"link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_down_notifs
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
-		return ${rtn}
-	fi
+	done
 
 	sl_test_info_log "${FUNCNAME}" "test_verify"
-	test_verify "${sl_test_link_down_notifs}"
+	test_verify "${sl_test_link_up_fail_notif}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		return 1
@@ -255,6 +198,7 @@ while true; do
 		-g | --lgrp_nums)
 			lgrp_nums=(${2})
 			shift 2
+			break
 			;;
 		-b | --brief)
 			echo ${brief}
@@ -269,6 +213,8 @@ while true; do
 			;;
 	esac
 done
+
+shift
 
 if [[ "$#" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"

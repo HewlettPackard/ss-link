@@ -18,12 +18,21 @@ void sl_core_work_link_queue(struct sl_core_link *core_link, u32 work_num)
 {
 	sl_core_log_dbg(core_link, LOG_NAME, "queue - (core_link = 0x%p, work_num = %d)", core_link, work_num);
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+	spin_lock(&core_link->link.data_lock);
+	switch (core_link->link.state) {
+	case SL_CORE_LINK_STATE_CANCELING:
 		sl_core_log_dbg(core_link, LOG_NAME, "canceled (core_link = 0x%p)", core_link);
+		spin_unlock(&core_link->link.data_lock);
+		return;
+	case SL_CORE_LINK_STATE_TIMEOUT:
+		sl_core_log_dbg(core_link, LOG_NAME, "timeout (core_link = 0x%p)", core_link);
+		spin_unlock(&core_link->link.data_lock);
+		return;
+	default:
+		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
+			&(core_link->work[work_num])))
+			sl_core_log_warn_trace(core_link, LOG_NAME, "already queued (work_num = %u)", work_num);
+		spin_unlock(&core_link->link.data_lock);
 		return;
 	}
-
-	if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
-		&(core_link->work[work_num])))
-		sl_core_log_warn_trace(core_link, LOG_NAME, "already queued (work_num = %u)", work_num);
 }

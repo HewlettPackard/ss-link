@@ -90,6 +90,10 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_UCW               | \
 		SL_LINK_DOWN_RETRYABLE               | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP (          \
+		SL_LINK_DOWN_CAUSE_CCW               | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
 #define SL_LINK_DOWN_CAUSE_LF_MAP (                    \
 		SL_LINK_DOWN_CAUSE_LF                | \
 		SL_LINK_DOWN_RETRYABLE               | \
@@ -168,8 +172,16 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_NUM_BITS /* must be last */
 };
 
-typedef int (*sl_core_link_up_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map,
-					  u32 speed, u32 fec_mode, u32 fec_type);
+struct sl_core_link_up_info {
+	u32 state;
+	u64 cause_map;
+	u64 info_map;
+	u32 speed;
+	u32 fec_mode;
+	u32 fec_type;
+};
+
+typedef int (*sl_core_link_up_callback_t)(void *tag, struct sl_core_link_up_info *core_link_up_info);
 typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
 typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
 typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
@@ -236,13 +248,10 @@ struct sl_core_link {
 		struct {
 			u32                           up;
 		} flags;
-		bool                                  is_canceled;
-		bool                                  is_timed_out;
 		bool                                  is_ccw_warn_limit_crossed;
 		time64_t                              last_ccw_warn_limit_crossed_time;
 		bool                                  is_ucw_warn_limit_crossed;
 		time64_t                              last_ucw_warn_limit_crossed_time;
-		bool                                  is_up_new;
 	} link;
 
 	struct {
@@ -367,8 +376,11 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag);
+int sl_core_link_up_fail(struct sl_core_link *core_link);
+int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
+		      sl_core_link_down_callback_t callback, void *tag);
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map);
+		      sl_core_link_down_callback_t callback, void *tag);
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);
@@ -377,16 +389,13 @@ int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_cor
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy);
 int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_caps *link_caps);
 
-bool sl_core_link_is_canceled(struct sl_core_link *core_link);
 bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link);
-void sl_core_link_is_canceled_set(struct sl_core_link *core_link);
-void sl_core_link_is_canceled_clr(struct sl_core_link *core_link);
-void sl_core_link_is_timed_out_set(struct sl_core_link *core_link);
-void sl_core_link_is_timed_out_clr(struct sl_core_link *core_link);
 
 int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
+void sl_core_link_last_down_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					       u64 down_cause_map);
 void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 					       u64 *down_cause_map, time64_t *down_time);
 void sl_core_link_last_up_fail_cause_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -403,5 +412,9 @@ void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_n
 
 bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link);
 bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link);
+
+
+struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,
+	struct sl_core_link_up_info *link_up_info);
 
 #endif /* _SL_CORE_LINK_H_ */

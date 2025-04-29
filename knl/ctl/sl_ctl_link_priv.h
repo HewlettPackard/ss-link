@@ -10,13 +10,13 @@ struct sl_ctl_link;
 struct sl_link_config;
 struct sl_link_policy;
 struct sl_link_caps;
+struct sl_core_link_up_info;
 
 void sl_ctl_link_up_callback_work(struct work_struct *work);
 int  sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap);
 int  sl_ctl_link_fault_intr_hdlr(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int  sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u32 result);
-int  sl_ctl_link_up_callback(void *tag, u32 state, u64 cause_map, u64 imap,
-			     u32 speed, u32 fec_mode, u32 fec_type);
+int  sl_ctl_link_up_callback(void *tag, struct sl_core_link_up_info *core_link_up_info);
 int  sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map);
 int  sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map);
 

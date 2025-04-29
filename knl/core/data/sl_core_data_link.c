@@ -80,7 +80,7 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	spin_lock_init(&(core_link->link.data_lock));
 
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP].timer),
-		sl_core_timer_link_timeout, 0);
+		sl_core_timer_link_up_timeout, 0);
 	SL_CORE_TIMER_INIT(core_link, SL_CORE_TIMER_LINK_UP,
 		SL_CORE_WORK_LINK_UP_TIMEOUT, "link up");
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP_CHECK].timer),
@@ -103,6 +103,10 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_FAULT,
 		SL_CORE_WORK_LINK_FAULT_INTR, "link fault");
 
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]),
+		sl_core_hw_an_up_start_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_START]),
+		sl_core_hw_link_up_start_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP]),
 		sl_core_hw_link_up_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]),
@@ -121,6 +125,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_fault_intr_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]),
 		sl_core_hw_link_up_cancel_work);
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_UP_FAIL]),
+		sl_core_hw_link_up_fail_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_DOWN]),
 		sl_core_hw_link_down_work);
 
@@ -570,16 +576,7 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 {
 	unsigned long irq_flags;
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME,
-			"link_state_set canceled (link_state = %u %s)",
-			link_state, sl_core_link_state_str(link_state));
-		return;
-	}
-
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	if (link_state == SL_CORE_LINK_STATE_UP)
-		core_link->link.is_up_new = true;
 	core_link->link.state = link_state;
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
@@ -682,9 +679,15 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 {
 	unsigned long irq_flags;
 
+	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		sl_core_log_dbg(core_link, LOG_NAME,
+			"last_up_fail_cause_map_set ignoring (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
+		return;
+	}
+
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	core_link->link.last_up_fail_cause_map = up_fail_cause_map;
-	core_link->link.last_up_fail_time      = ktime_get_real_seconds();
+	core_link->link.last_up_fail_cause_map |= up_fail_cause_map;
+	core_link->link.last_up_fail_time       = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
@@ -725,13 +728,8 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
-	if (core_link->link.is_up_new) {
-		core_link->link.last_down_cause_map = down_cause_map;
-		core_link->link.is_up_new           = false;
-	} else {
-		core_link->link.last_down_cause_map |= down_cause_map;
-	}
-	core_link->link.last_down_time  = ktime_get_real_seconds();
+	core_link->link.last_down_cause_map |= down_cause_map;
+	core_link->link.last_down_time       = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
