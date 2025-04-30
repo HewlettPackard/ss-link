@@ -345,26 +345,14 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	}
 
 	rtn = sl_core_hw_serdes_link_up(core_link);
-	switch (rtn) {
-	case 0:
-		break;
-	case -ECANCELED:
-		sl_core_log_err_trace(core_link, LOG_NAME,
-			"up work hw_serdes_link_up failed [%d]", rtn);
-
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
-		rtn = sl_core_link_up_fail(core_link);
-		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
-
-		return;
-	default:
+	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up work hw_serdes_link_up failed [%d]", rtn);
 
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+
 		return;
 	}
 
@@ -733,7 +721,6 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_DONE);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
-	sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_TIMEOUT_MAP);
 	if (!sl_core_hw_link_media_check(core_link))
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 

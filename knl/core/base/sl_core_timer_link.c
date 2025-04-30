@@ -74,6 +74,8 @@ void sl_core_timer_link_up_timeout(struct timer_list *timer)
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		core_link->link.state = SL_CORE_LINK_STATE_TIMEOUT;
+		core_link->link.last_up_fail_cause_map |= SL_LINK_DOWN_CAUSE_TIMEOUT_MAP;
+		core_link->link.last_up_fail_time       = ktime_get_real_seconds();
 		sl_core_log_dbg(core_link, LOG_NAME, "link up timeout - timeout");
 		spin_unlock(&core_link->link.data_lock);
 		break;
