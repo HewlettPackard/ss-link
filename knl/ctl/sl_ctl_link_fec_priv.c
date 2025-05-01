@@ -181,6 +181,7 @@ void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link)
 	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
 	if (!period) {
 		sl_ctl_link_fec_mon_stop(ctl_link);
+		cancel_work_sync(&ctl_link->fec_mon_timer_work);
 		return;
 	}
 

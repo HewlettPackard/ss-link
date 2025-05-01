@@ -504,6 +504,7 @@ int sl_ctl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64
 			SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_UP_CANCELED);
 
 		sl_ctl_link_fec_mon_stop(ctl_link);
+		cancel_work_sync(&ctl_link->fec_mon_timer_work);
 
 		flush_work(&ctl_link->ctl_lgrp->notif_work);
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);

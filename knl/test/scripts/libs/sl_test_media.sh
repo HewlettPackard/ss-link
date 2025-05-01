@@ -189,7 +189,7 @@ function sl_test_media_wb_connections_map_show {
 		return ${rtn}
 	fi
 
-	IFS=';' read -ra lgrp_connections <<< "${media_connections_map}"
+	IFS=';' read -ra lgrp_connections <<< "${media_wb_connections_map}"
 	for lgrp_connection in "${lgrp_connections[@]}"; do
 		echo "lgrps: ${lgrp_connection}"
 	done
