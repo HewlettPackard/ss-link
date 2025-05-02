@@ -222,6 +222,7 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
 		return -EIO;
 	}
@@ -408,4 +409,79 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 
 	return 0;
+}
+
+void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause)
+{
+	spin_lock(&media_jack->data_lock);
+	media_jack->fault_cause = fault_cause;
+	media_jack->fault_time  = ktime_get_real_seconds();
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "fault cause set (cause = %u %s)", fault_cause,
+		sl_media_fault_cause_str(fault_cause));
+}
+
+void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
+	time64_t *fault_time)
+{
+	spin_lock(&media_jack->data_lock);
+	*fault_cause = media_jack->fault_cause;
+	*fault_time  = media_jack->fault_time;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable fault cause get (cause = %u %s)", *fault_cause,
+		sl_media_fault_cause_str(*fault_cause));
+}
+
+const char *sl_media_fault_cause_str(u32 fault_cause)
+{
+	switch (fault_cause) {
+	case SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID:
+		return "eeprom-format-invalid";
+	case SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID:
+		return "eeprom-vendor-invalid";
+	case SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO:
+		return "eeprom-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET:
+		return "online-status-get";
+	case SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT:
+		return "online-timedout";
+	case SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO:
+		return "online-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET:
+		return "online-jack-get";
+	case SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET:
+		return "serdes-settings-get";
+	case SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET:
+		return "scan-status-get";
+	case SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET:
+		return "scan-hdl-get";
+	case SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET:
+		return "scan-jack-get";
+	case SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET:
+		return "media-attr-set";
+	case SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO:
+		return "intr-event-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_POWER_SET:
+		return "power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO:
+		return "shift-down-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET:
+		return "shift-down-low-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET:
+		return "shift-down-high-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO:
+		return "shift-up-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET:
+		return "shift-up-low-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET:
+		return "shift-up-high-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO:
+		return "shift-state-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
+		return "offline";
+	default:
+		return "unknown";
+	}
 }

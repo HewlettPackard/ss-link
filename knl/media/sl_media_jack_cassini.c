@@ -49,6 +49,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable insert");
 
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
+
 	memset(&media_attr, 0, sizeof(struct sl_media_attr));
 
 	if (flags & SL_MEDIA_TYPE_BACKPLANE) {
@@ -78,7 +80,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		sl_media_data_jack_eeprom_page1_get(media_jack, eeprom_page1);
 		rtn = sl_media_eeprom_parse(media_jack, &media_attr);
 		if (rtn) {
-			sl_media_log_err(media_jack, LOG_NAME, "eeprom_parse failed [%d]", rtn);
+			sl_media_log_err(media_jack, LOG_NAME, "eeprom parse failed [%d]", rtn);
 			if (sl_media_jack_is_cable_format_invalid(media_jack)) {
 				memset(&media_attr, 0, sizeof(struct sl_media_attr));
 				media_attr.options |= SL_MEDIA_OPT_CABLE_FORMAT_INVALID;
@@ -86,8 +88,10 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				media_jack->cable_info[0].lgrp_num = lgrp_num;
 				rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0],
 									&media_attr);
-				if (rtn)
+				if (rtn) {
+					sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 					sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
+				}
 				sl_media_lgrp_real_cable_if_invalid_error_send(ldev_num, lgrp_num);
 			}
 		}
@@ -123,6 +127,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		return 0;
@@ -135,6 +140,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	media_jack->cable_info[0].lgrp_num = lgrp_num;
 	rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[0], &media_attr);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr set failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		return 0;
@@ -192,6 +198,7 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 
 	return 0;
 }

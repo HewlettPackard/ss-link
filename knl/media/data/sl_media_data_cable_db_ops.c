@@ -94,7 +94,7 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_jack->serdes_settings.post2  = 0;
 	} else {
 		if (media_jack->cable_db_idx < 0 || media_jack->cable_db_idx >= ARRAY_SIZE(cable_db)) {
-			sl_media_log_err(media_jack, LOG_NAME, "serdes settings get - invalid idx (%d)",
+			sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get - invalid idx (%d)",
 					media_jack->cable_db_idx);
 			return -ENOENT;
 		}

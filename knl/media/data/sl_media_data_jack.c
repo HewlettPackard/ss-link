@@ -62,10 +62,11 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	if (!media_jack)
 		return -ENOMEM;
 
-	media_jack->magic        = SL_MEDIA_JACK_MAGIC;
-	media_jack->num          = jack_num;
-	media_jack->physical_num = 1;
-	media_jack->cable_db_idx = -1;
+	media_jack->magic             = SL_MEDIA_JACK_MAGIC;
+	media_jack->num               = jack_num;
+	media_jack->physical_num      = 1;
+	media_jack->cable_db_idx      = -1;
+	media_jack->fault_cause       = SL_MEDIA_FAULT_CAUSE_NONE;
 
 	spin_lock_init(&(media_jack->data_lock));
 	spin_lock_init(&(media_jack->log_lock));
@@ -129,7 +130,7 @@ int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
 	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
 	if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) {
 		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
-		sl_media_log_err(media_jack, LOG_NAME, "media attr already set");
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr already set");
 		return -EEXIST;
 	}
 

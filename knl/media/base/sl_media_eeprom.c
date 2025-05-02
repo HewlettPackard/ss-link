@@ -16,6 +16,8 @@
 #include "data/sl_media_data_jack_rosetta.h"
 #include "data/sl_media_data_jack_cassini.h"
 
+#define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
+
 #define IDENTIFIER_OFFSET    0
 #define REV_CMPL_OFFSET      1
 static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
@@ -41,7 +43,8 @@ static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *form
 
 	media_jack->is_cable_format_invalid = true;
 
-	sl_media_log_err(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID);
+	sl_media_log_err(media_jack, LOG_NAME,
 		"invalid format (id = 0x%X, rev = 0x%X)",
 		media_jack->eeprom_page0[IDENTIFIER_OFFSET], media_jack->eeprom_page0[REV_CMPL_OFFSET]);
 
@@ -125,7 +128,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		}
 		break;
 	default:
-		sl_media_log_dbg(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
+		sl_media_log_dbg(media_jack, LOG_NAME,
 				"invalid host interface (0x%x)", host_interface);
 	}
 }
@@ -247,6 +250,10 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 	}
 
 	*vendor = 0;
+
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID);
+	sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom vendor get invalid");
+
 	return -EFAULT;
 }
 
@@ -359,7 +366,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 {
 	u8 format;
 
-	sl_media_log_dbg(media_jack, SL_MEDIA_EEPROM_LOG_NAME, "parse");
+	sl_media_log_dbg(media_jack, LOG_NAME, "parse");
 
 	media_attr->magic = SL_MEDIA_ATTR_MAGIC;
 	media_attr->ver   = SL_MEDIA_ATTR_VER;
@@ -379,7 +386,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 	if (media_attr->type == SL_MEDIA_TYPE_PEC)
 		media_attr->options = SL_MEDIA_OPT_AUTONEG;
 
-	sl_media_log_dbg(media_jack, SL_MEDIA_EEPROM_LOG_NAME,
+	sl_media_log_dbg(media_jack, LOG_NAME,
 		"vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X, hpe_pn = %u, serial_num_str = %s",
 		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map, media_attr->hpe_pn,
 		media_attr->serial_num_str);

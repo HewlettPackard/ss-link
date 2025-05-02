@@ -57,6 +57,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -67,6 +68,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -80,6 +82,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
 				        (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
 		if (rtn) {
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
 			return rtn;
@@ -92,6 +95,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -102,6 +106,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -112,6 +117,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -176,6 +182,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -186,6 +193,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -199,6 +207,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
 					(media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
 		if (rtn) {
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
 			return rtn;
@@ -211,6 +220,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -221,6 +231,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -231,6 +242,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
 		return rtn;
 	}

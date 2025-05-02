@@ -136,6 +136,8 @@ struct sl_media_jack {
 	bool                            is_ss200_cable;
 	bool                            is_high_powered;
 	unsigned long                   cable_power_up_wait_time_end;
+	u32                             fault_cause;
+	time64_t                        fault_time;
 	u8                              cable_shift_state;
 	u8                              appsel_no_200_gaui; /* used for downshifting */
 	u8                              lane_count_200_gaui; /* used for downshifting */
@@ -153,6 +155,30 @@ struct sl_media_jack {
 #endif /* BUILDSYS_FRAMEWORK_EMULATOR */
 #endif /* BUILDSYS_FRAMEWORK_ROSETTA */
 };
+
+#define SL_MEDIA_FAULT_CAUSE_NONE                            0
+#define SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID           BIT(0)
+#define SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID           BIT(1)
+#define SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO                  BIT(2)
+#define SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET               BIT(3)
+#define SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT                 BIT(4)
+#define SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO                  BIT(5)
+#define SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET                 BIT(6)
+#define SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET             BIT(7)
+#define SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET                 BIT(8)
+#define SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET                    BIT(9)
+#define SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET                   BIT(10)
+#define SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET                  BIT(11)
+#define SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO              BIT(12)
+#define SL_MEDIA_FAULT_CAUSE_POWER_SET                       BIT(13)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO              BIT(14)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET        BIT(15)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET       BIT(16)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO                BIT(17)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET          BIT(18)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET         BIT(19)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO             BIT(20)
+#define SL_MEDIA_FAULT_CAUSE_OFFLINE                         BIT(21)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -175,5 +201,9 @@ u8 sl_media_jack_actv_cable_400g_lane_count_get(struct sl_media_jack *media_jack
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
+void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause);
+void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
+	time64_t *fault_time);
+const char *sl_media_fault_cause_str(u32 fault_cause);
 
 #endif /* _SL_MEDIA_JACK_H_ */

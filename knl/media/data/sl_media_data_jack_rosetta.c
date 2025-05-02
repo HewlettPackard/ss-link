@@ -43,7 +43,8 @@ static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack)
 
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "i2c read for eeprom page1 failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read for eeprom page1 failed [%d]", rtn);
 		return rtn;
 	}
 	memcpy(media_jack->eeprom_page1, media_jack->i2c_data.data, SL_MEDIA_EEPROM_PAGE_SIZE);
@@ -127,6 +128,7 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 }
 
 static void sl_media_data_jack_event_offline(u8 physical_jack_num)
@@ -138,6 +140,7 @@ static void sl_media_data_jack_event_offline(u8 physical_jack_num)
 	media_jack = sl_media_data_jack_get(0, jack_num);
 	sl_media_log_dbg(media_jack, LOG_NAME, "offline event (jack_num = %u)", physical_jack_num);
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_OFFLINE);
 }
 
 /*
@@ -164,7 +167,8 @@ static void sl_media_data_jack_event_interrupt(u8 physical_jack_num)
 	media_jack->i2c_data.len    = 4;
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
-		sl_media_log_err(NULL, LOG_NAME, "i2c read failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
 		return;
 	}
 
@@ -192,7 +196,8 @@ static void sl_media_data_jack_event_interrupt(u8 physical_jack_num)
 	media_jack->i2c_data.len    = 20;
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
-		sl_media_log_err(NULL, LOG_NAME, "i2c read failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
 		return;
 	}
 
@@ -370,17 +375,20 @@ int sl_media_data_jack_scan(u8 ldev_num)
 		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 		hdl = hsnxcvr_get_next_hdl(hdl);
 		if (!hdl) {
-			sl_media_log_err(NULL, LOG_NAME, "hdl not found (jack_num = %u)", jack_num);
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET);
+			sl_media_log_err_trace(NULL, LOG_NAME, "hdl not found (jack_num = %u)", jack_num);
 			return 0;
 		}
 		rtn = hsnxcvr_status_get(hdl, &status);
 		if (rtn) {
-			sl_media_log_err(NULL, LOG_NAME, "status_get failed (jack_num = %u)", jack_num);
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
+			sl_media_log_err(NULL, LOG_NAME, "status get failed (jack_num = %u)", jack_num);
 			continue;
 		}
 		rtn = hsnxcvr_jack_get(hdl, &jack);
 		if (rtn) {
-			sl_media_log_err(NULL, LOG_NAME, "jack_get failed (jack_num = %u)", jack_num);
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET);
+			sl_media_log_err_trace(NULL, LOG_NAME, "jack_get failed (jack_num = %u)", jack_num);
 			continue;
 		}
 
@@ -390,6 +398,10 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			return -EFAULT;
 		}
 		spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+		/*
+		 * Don't use media_jack in the log messages before this point as they
+		 * don't have real physical numbers yet
+		 */
 		media_jack->physical_num = physical_jack_num;
 		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
 
@@ -433,7 +445,8 @@ int sl_media_data_jack_scan(u8 ldev_num)
 		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 		rtn = hsnxcvr_status_get(media_jack->hdl, &media_jack->status_data);
 		if (rtn) {
-			sl_media_log_err(media_jack, LOG_NAME, "status_get failed (jack_num = %u)",
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
+			sl_media_log_err(media_jack, LOG_NAME, "status get failed (jack_num = %u)",
 					media_jack->physical_num);
 			continue;
 		}
@@ -467,6 +480,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "media data jack online");
 
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
+
 	count = 0;
 	while (sl_media_data_jack_cable_is_going_online(media_jack)) {
 		if (sl_media_jack_state_get(media_jack) == SL_MEDIA_JACK_CABLE_REMOVED) {
@@ -475,6 +490,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			return 0;
 		}
 		if (count++ >= SL_MEDIA_JACK_CABLE_EVENT_TIMEOUT) {
+			sl_media_jack_fault_cause_set(media_jack,
+				SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT);
 			sl_media_log_err(media_jack, LOG_NAME, "timed out waiting for online");
 			return -ETIMEDOUT;
 		}
@@ -487,12 +504,14 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	rtn = hsnxcvr_jack_get(media_jack->hdl, &media_jack->jack_data);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "jack get failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "jack get failed [%d]", rtn);
 		return rtn;
 	}
 
 	rtn = hsnxcvr_status_get(media_jack->hdl, &media_jack->status_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET);
 		sl_media_log_err(media_jack, LOG_NAME, "status get failed [%d]", rtn);
 		return rtn;
 	}
@@ -536,7 +555,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		case 0:
 			break;
 		default:
-			sl_media_log_err(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO);
+			sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
 			return rtn;
 		}
 
@@ -560,6 +580,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 					rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i],
 										&media_attr);
 					if (rtn) {
+						sl_media_jack_fault_cause_set(media_jack,
+							SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 						sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]",
 								 rtn);
 						return rtn;
@@ -621,6 +643,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		return rtn;
 	}
@@ -630,6 +653,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		media_jack->cable_info[i].lgrp_num = media_jack->jack_data.asic_port[i];
 		rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i], &media_attr);
 		if (rtn) {
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 			sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
 			return rtn;
 		}
@@ -710,6 +734,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -720,6 +745,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -740,6 +766,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
 		return rtn;
@@ -760,6 +787,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
 		return rtn;
@@ -777,6 +805,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -787,6 +816,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -803,6 +833,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -840,6 +871,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	media_jack->i2c_data.len    = 4;
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
@@ -853,6 +885,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	media_jack->i2c_data.len    = 4;
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 5-8 - read failed [%d]", rtn);
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
@@ -902,6 +935,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -912,6 +946,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -932,6 +967,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
 		return rtn;
@@ -952,6 +988,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
 		return rtn;
@@ -969,6 +1006,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -979,6 +1017,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -995,6 +1034,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	media_jack->i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &media_jack->i2c_data);
 	if (rtn) {
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
 		return rtn;
 	}

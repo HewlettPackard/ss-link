@@ -490,6 +490,51 @@ static ssize_t actv_cable_400g_appsel_no_show(struct kobject *kobj, struct kobj_
 	return scnprintf(buf, PAGE_SIZE, "0x%x\n", appsel_no);
 }
 
+static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u32                  fault_cause;
+	time64_t             fault_time;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"last_fault cause show (cause = %u %s)", fault_cause,
+		sl_media_fault_cause_str(fault_cause));
+
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_fault\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_fault_cause_str(fault_cause));
+}
+
+static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u32                  fault_cause;
+	time64_t             fault_time;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"last fault time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+		fault_cause, sl_media_fault_cause_str(fault_cause),
+		fault_time, &fault_time, &fault_time);
+
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_fault\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fault_time, &fault_time);
+}
+
 static struct kobj_attribute media_state                      = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state           = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_vendor                     = __ATTR_RO(vendor);
@@ -511,6 +556,8 @@ static struct kobj_attribute media_actv_cable_200g_appsel_no  = __ATTR_RO(actv_c
 static struct kobj_attribute media_actv_cable_400g_host_iface = __ATTR_RO(actv_cable_400g_host_iface);
 static struct kobj_attribute media_actv_cable_400g_lane_cnt   = __ATTR_RO(actv_cable_400g_lane_cnt);
 static struct kobj_attribute media_actv_cable_400g_appsel_no  = __ATTR_RO(actv_cable_400g_appsel_no);
+static struct kobj_attribute media_last_fault_cause           = __ATTR_RO(last_fault_cause);
+static struct kobj_attribute media_last_fault_time            = __ATTR_RO(last_fault_time);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -534,6 +581,8 @@ static struct attribute *media_attrs[] = {
 	&media_actv_cable_400g_host_iface.attr,
 	&media_actv_cable_400g_lane_cnt.attr,
 	&media_actv_cable_400g_appsel_no.attr,
+	&media_last_fault_cause.attr,
+	&media_last_fault_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);
