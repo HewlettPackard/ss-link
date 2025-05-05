@@ -604,9 +604,8 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_RX_MISC_CONFIG],  &data16);
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"lane up quality check (serdes_lane_num = %u, 0x%X = 0x%X)",
-		core_lgrp->core_ldev->serdes.addrs[SERDES_RX_MISC_CONFIG],
-		serdes_lane_num, data16);
+		"lane up quality check (serdes_lane_num = %u, 0x%X = 0x%X)", serdes_lane_num,
+		 core_lgrp->core_ldev->serdes.addrs[SERDES_RX_MISC_CONFIG], data16);
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_TLB_TX_TLB_TX_PAM4_CONFIG_0],  &data16);
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
@@ -626,7 +625,7 @@ static void sl_core_hw_pmd_tx_enable(struct sl_core_link *core_link, u8 serdes_l
 	u8  asic_lane_num;
 
 	port          = core_link->core_lgrp->num;
-	asic_lane_num = sl_core_hw_serdes_rx_asic_lane_num_get(core_link, serdes_lane_num);
+	asic_lane_num = sl_core_hw_serdes_tx_asic_lane_num_get(core_link, serdes_lane_num);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"pmd_tx_enable (port = %u, serdes_lane_num = %u, asic_lane_num = %u)",
