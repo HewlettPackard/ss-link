@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
+#include "linux/completion.h"
 #include <linux/types.h>
 #include <linux/slab.h>
 #include <linux/delay.h>
@@ -399,6 +400,9 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 		sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
 		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
+
+		complete_all(&core_llr->stop_complete);
+
 		sl_core_hw_llr_setup_callback(core_llr);
 		return;
 	}
@@ -507,6 +511,8 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT);
 	sl_core_hw_llr_setup_callback(core_llr);
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
+
+	complete_all(&core_llr->stop_complete);
 }
 
 void sl_core_hw_llr_settingup_cancel_cmd(struct sl_core_llr *core_llr)
@@ -541,6 +547,9 @@ void sl_core_hw_llr_settingup_cancel_cmd(struct sl_core_llr *core_llr)
 	sl_core_llr_is_canceled_clr(core_llr);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
+
+	complete_all(&core_llr->stop_complete);
+
 	sl_core_hw_llr_setup_callback(core_llr);
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
 }
@@ -680,6 +689,8 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_START_TIMEOUT);
 	sl_core_hw_llr_start_callback(core_llr);
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
+
+	complete_all(&core_llr->stop_complete);
 }
 
 void sl_core_hw_llr_starting_cancel_cmd(struct sl_core_llr *core_llr)
@@ -713,6 +724,9 @@ void sl_core_hw_llr_starting_cancel_cmd(struct sl_core_llr *core_llr)
 	sl_core_llr_is_canceled_clr(core_llr);
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
+
+	complete_all(&core_llr->stop_complete);
+
 	sl_core_hw_llr_start_callback(core_llr);
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
 }
@@ -748,6 +762,8 @@ void sl_core_hw_llr_setup_stop_cmd(struct sl_core_llr *core_llr)
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
+
+	complete_all(&core_llr->stop_complete);
 }
 
 void sl_core_hw_llr_running_stop_cmd(struct sl_core_llr *core_llr)
@@ -764,22 +780,23 @@ void sl_core_hw_llr_running_stop_cmd(struct sl_core_llr *core_llr)
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
+
+	complete_all(&core_llr->stop_complete);
 }
 
-void sl_core_hw_llr_off_wait(struct sl_core_llr *core_llr)
+int sl_core_hw_llr_stop_wait(struct sl_core_llr *core_llr)
 {
-	int try_count;
+	unsigned long timeleft;
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "off wait");
+	sl_core_log_dbg(core_llr, LOG_NAME, "stop wait");
 
-	try_count = 0;
-	do {
-		switch (sl_core_data_llr_state_get(core_llr)) {
-		case SL_CORE_LLR_STATE_NEW:
-		case SL_CORE_LLR_STATE_CONFIGURED:
-			sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
-			return;
-		}
-		usleep_range(1000, 2000);
-	} while (try_count++ < 10 * 1000);
+	timeleft = wait_for_completion_timeout(&core_llr->stop_complete,
+		msecs_to_jiffies(10000));
+	if (timeleft == 0) {
+		sl_core_log_err(core_llr, LOG_NAME,
+			"completion_timeout (stop_complete = 0x%p)", &core_llr->stop_complete);
+		return -ETIMEDOUT;
+	}
+
+	return 0;
 }

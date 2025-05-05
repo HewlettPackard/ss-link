@@ -66,6 +66,7 @@ int sl_core_data_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	sl_core_hw_llr_stop(core_llr);
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_NEW);
+	init_completion(&core_llr->stop_complete);
 
 	timer_setup(&(core_llr->timers[SL_CORE_TIMER_LLR_SETUP].timer),
 		sl_core_timer_llr_timeout, 0);

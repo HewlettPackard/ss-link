@@ -109,6 +109,8 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup");
 
+	reinit_completion(&core_llr->stop_complete);
+
 	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
 	llr_state = core_llr->state;
 	switch (llr_state) {
@@ -193,8 +195,7 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	case SL_CORE_LLR_STATE_STOPPING:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - waiting");
 		spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
-		sl_core_hw_llr_off_wait(core_llr);
-		return 0;
+		return sl_core_hw_llr_stop_wait(core_llr);
 	case SL_CORE_LLR_STATE_SETTING_UP:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel setting up");
 		core_llr->state = SL_CORE_LLR_STATE_CANCELING;

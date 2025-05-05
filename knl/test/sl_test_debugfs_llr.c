@@ -30,6 +30,7 @@ enum llr_cmd_index {
 	LLR_DEL_CMD,
 	LLR_CONFIG_WRITE_CMD,
 	LLR_POLICY_WRITE_CMD,
+	LLR_SETUP_CMD,
 	LLR_START_CMD,
 	LLR_STOP_CMD,
 	NUM_CMDS,
@@ -40,6 +41,7 @@ static struct cmd_entry llr_cmd_list[]  = {
 	[LLR_DEL_CMD]          = { .cmd = "llr_del",          .desc = "delete llr object"                  },
 	[LLR_CONFIG_WRITE_CMD] = { .cmd = "llr_config_write", .desc = "write out the llr config from dir"  },
 	[LLR_POLICY_WRITE_CMD] = { .cmd = "llr_policy_write", .desc = "write out the llr policy from dir"  },
+	[LLR_SETUP_CMD]        = { .cmd = "llr_setup",        .desc = "setup LLR"                          },
 	[LLR_START_CMD]        = { .cmd = "llr_start",        .desc = "start LLR"                          },
 	[LLR_STOP_CMD]         = { .cmd = "llr_stop",         .desc = "stop LLR"                           },
 };
@@ -119,6 +121,16 @@ static ssize_t sl_test_llr_cmd_write(struct file *f, const char __user *buf, siz
 		return size;
 	}
 
+	match_found = LLR_CMD_MATCH(LLR_SETUP_CMD, cmd_buf);
+	if (match_found) {
+		rtn = sl_test_llr_setup();
+		if (rtn < 0) {
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+				"sl_test_llr_setup failed [%d]", rtn);
+			return rtn;
+		}
+		return size;
+	}
 
 	match_found = LLR_CMD_MATCH(LLR_START_CMD, cmd_buf);
 	if (match_found) {
@@ -344,6 +356,11 @@ int sl_test_llr_del(void)
 	sl_llr_del(sl_test_llr_get());
 
 	return 0;
+}
+
+int sl_test_llr_setup(void)
+{
+	return sl_llr_setup(sl_test_llr_get());
 }
 
 int sl_test_llr_start(void)

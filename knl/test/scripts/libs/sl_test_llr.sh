@@ -421,3 +421,234 @@ function sl_test_llr_config_set {
 
 	return 0
 }
+
+function sl_test_llr_setup {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_nums
+	local llr_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums llr_nums"
+	local description=$(cat <<-EOF
+	Setup the LLRs for the link groups.
+
+	Mandatory:
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the llr_nums belongs to.
+	llr_nums   LLR Numbers to setup.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	ldev_num=$1
+	lgrp_nums=($2)
+	llr_nums=($3)
+	__sl_test_llr_check ${ldev_num} lgrp_nums llr_nums
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), llr_nums = (${llr_nums[*]}))"
+
+	__sl_test_llr_cmd ${ldev_num} lgrp_nums llr_nums "llr_setup"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "llr_setup failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	return 0
+}
+
+function sl_test_llr_start {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_nums
+	local llr_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums llr_nums"
+	local description=$(cat <<-EOF
+	Start the LLRs for the link groups.
+
+	Mandatory:
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the llr_nums belongs to.
+	llr_nums   LLR Numbers to start.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	ldev_num=$1
+	lgrp_nums=($2)
+	llr_nums=($3)
+	__sl_test_llr_check ${ldev_num} lgrp_nums llr_nums
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), llr_nums = (${llr_nums[*]}))"
+
+	__sl_test_llr_cmd ${ldev_num} lgrp_nums llr_nums "llr_start"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "llr_start failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	return 0
+}
+
+function sl_test_llr_stop {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_nums
+	local llr_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums llr_nums"
+	local description=$(cat <<-EOF
+	Stop the LLRs for the link groups.
+
+	Mandatory:
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the llr_nums belongs to.
+	llr_nums   LLR Numbers to stop.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	ldev_num=$1
+	lgrp_nums=($2)
+	llr_nums=($3)
+	__sl_test_llr_check ${ldev_num} lgrp_nums llr_nums
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), llr_nums = (${llr_nums[*]}))"
+
+	__sl_test_llr_cmd ${ldev_num} lgrp_nums llr_nums "llr_stop"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "llr_stop failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	return 0
+}

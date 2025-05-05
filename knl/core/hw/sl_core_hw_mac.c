@@ -7,6 +7,7 @@
 
 #include "base/sl_core_log.h"
 #include "sl_core_mac.h"
+#include "sl_core_str.h"
 #include "data/sl_core_data_mac.h"
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_mac.h"
@@ -104,8 +105,9 @@ u64 sl_core_hw_mac_tx_state_get(struct sl_core_mac *core_mac)
 
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_TX_MAC_SUBPORT(core_mac->num), &data64);
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "tx state get (port = %d, state = %llu)",
-		port, SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64));
+	sl_core_log_dbg(core_mac, LOG_NAME, "tx state get (port = %d, state = %llu %s)",
+		port, SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64),
+		sl_core_mac_state_str(SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64)));
 
 	return SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
 }
@@ -179,8 +181,9 @@ u64 sl_core_hw_mac_rx_state_get(struct sl_core_mac *core_mac)
 
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
 
-	sl_core_log_dbg(core_mac, LOG_NAME, "rx state get (port = %d, state = %llu)",
-		port, SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64));
+	sl_core_log_dbg(core_mac, LOG_NAME, "rx state get (port = %d, state = %llu %s)",
+		port, SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64),
+		sl_core_mac_state_str(SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64)));
 
 	return SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(data64);
 }

@@ -5,6 +5,7 @@
 #define _SL_CORE_LLR_H_
 
 #include <linux/spinlock.h>
+#include <linux/completion.h>
 
 #include <linux/sl_llr.h>
 #include "sl_core_lgrp.h"
@@ -93,6 +94,7 @@ struct sl_core_llr {
 	struct work_struct                         work[SL_CORE_WORK_LLR_COUNT];
 	struct sl_core_timer_llr_info              timers[SL_CORE_TIMER_LLR_COUNT];
 	struct sl_core_hw_intr_llr_info            intrs[SL_CORE_HW_INTR_LLR_FLGS_COUNT];
+	struct completion                          stop_complete;
 };
 
 int                 sl_core_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num);

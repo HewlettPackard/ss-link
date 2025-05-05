@@ -13,6 +13,7 @@ int sl_test_llr_del(void);
 
 int sl_test_llr_config_set(void);
 int sl_test_llr_policy_set(void);
+int sl_test_llr_setup(void);
 int sl_test_llr_start(void);
 int sl_test_llr_stop(void);
 
