@@ -276,8 +276,6 @@ static int sl_core_test_an_callback(void *tag, struct sl_link_caps *caps, u32 re
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].received = true;
 	sl_core_test_callback_status[test_tag.lgrp_num][test_tag.link_num].caps     = *caps;
 
-	sl_core_link_an_lp_caps_free(test_tag.ldev_num, test_tag.lgrp_num, test_tag.link_num, caps);
-
 	return 0;
 }
 static void sl_core_test_llr_setup_callback(void *tag, u32 llr_state,

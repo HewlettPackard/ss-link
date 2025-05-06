@@ -142,10 +142,6 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV, 0, "an page recv");
 
-	core_link->an.lp_caps_cache = KMEM_CACHE(sl_link_caps, 0);
-	if (core_link->an.lp_caps_cache == NULL)
-		return -ENOMEM;
-
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]),
 		sl_core_hw_an_lp_caps_get_work);
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]),
@@ -256,8 +252,6 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 	/* an */
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
-	kmem_cache_destroy(core_link->an.lp_caps_cache);
-	core_link->an.lp_caps_cache = NULL;
 
 	/* fec */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);

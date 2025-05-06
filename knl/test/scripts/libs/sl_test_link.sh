@@ -515,6 +515,73 @@ function sl_test_link_down {
 	return 0
 }
 
+function sl_test_link_an_caps_get {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_num
+	local link_num
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_num link_num"
+        local description=$(cat <<-EOF
+        Get the link partner capabilities using autoneg.
+        The requested capabilities are sent as a notification.
+        Mandatory:
+        ldev_num   Link Device Number the lgrp_num belongs to.
+        lgrp_num   Link Group Number the link_num belongs to.
+        link_num   Link Number to set up.
+        Options:
+        -h, --help This message.
+	EOF
+	)
+	options=$(getopt -o "h" --long "help" -- "$@")
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+	eval set -- "${options}"
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+	__sl_test_link_check $1 $2 $3
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "link_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+	ldev_num=$1
+	lgrp_num=$2
+	link_num=$3
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+	__sl_test_link_cmd ${ldev_num} ${lgrp_num} ${link_num} "link_an_caps_get"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "cmd failed [${rtn}]"
+		return ${rtn}
+	fi
+	return 0
+}
+
 function sl_test_link_opt_use_fec_cntr_set {
 	local rtn
 	local options

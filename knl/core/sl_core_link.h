@@ -258,13 +258,11 @@ struct sl_core_link {
 		spinlock_t                            data_lock;
 		u32                                   link_state;
 		void                                 *tag;
-		u32                                   lp_caps_get_timeout_ms;
 		struct {
 			sl_core_link_an_callback_t    lp_caps_get;
 		} callbacks;
 		struct sl_link_caps                   my_caps;
 		struct sl_link_caps                   lp_caps;
-		struct kmem_cache                    *lp_caps_cache;
 		u32                                   lp_caps_state;
 		u8                                    state;
 		u8                                    page_num;

@@ -35,19 +35,21 @@ enum link_cmd_index {
 	CANCEL_CMD,
 	LINK_OPTION_SET_CMD,
 	LINK_FEC_CNT_SET_CMD,
+	LINK_AN_LP_CAPS_GET_CMD,
 	NUM_CMDS,
 };
 
 static struct cmd_entry link_cmd_list[]  = {
-	[LINK_NEW_CMD]          = { .cmd = "link_new",          .desc = "create link object"                 },
-	[LINK_DEL_CMD]          = { .cmd = "link_del",          .desc = "delete link object"                 },
-	[LINK_CONFIG_WRITE_CMD] = { .cmd = "link_config_write", .desc = "write out the link config from dir" },
-	[LINK_POLICY_WRITE_CMD] = { .cmd = "link_policy_write", .desc = "write out the link policy from dir" },
-	[UP_CMD]                = { .cmd = "up",                .desc = "task link to go up"                 },
-	[DOWN_CMD]              = { .cmd = "down",              .desc = "task link to go down"               },
-	[CANCEL_CMD]            = { .cmd = "cancel",            .desc = "cancel command"                     },
-	[LINK_OPTION_SET_CMD]   = { .cmd = "link_opt_set",      .desc = "set link test options"              },
-	[LINK_FEC_CNT_SET_CMD]  = { .cmd = "link_fec_cnt_set",  .desc = "set link test fec cntrs"            },
+	[LINK_NEW_CMD]            = { .cmd = "link_new",            .desc = "create link object"                 },
+	[LINK_DEL_CMD]            = { .cmd = "link_del",            .desc = "delete link object"                 },
+	[LINK_CONFIG_WRITE_CMD]   = { .cmd = "link_config_write",   .desc = "write out the link config from dir" },
+	[LINK_POLICY_WRITE_CMD]   = { .cmd = "link_policy_write",   .desc = "write out the link policy from dir" },
+	[UP_CMD]                  = { .cmd = "up",                  .desc = "task link to go up"                 },
+	[DOWN_CMD]                = { .cmd = "down",                .desc = "task link to go down"               },
+	[CANCEL_CMD]              = { .cmd = "cancel",              .desc = "cancel command"                     },
+	[LINK_OPTION_SET_CMD]     = { .cmd = "link_opt_set",        .desc = "set link test options"              },
+	[LINK_FEC_CNT_SET_CMD]    = { .cmd = "link_fec_cnt_set",    .desc = "set link test fec cntrs"            },
+	[LINK_AN_LP_CAPS_GET_CMD] = { .cmd = "link_an_lp_caps_get", .desc = "get the link partner capabilities"  },
 };
 
 #define LINK_CMD_MATCH(_index, _str) \
@@ -165,6 +167,17 @@ static ssize_t sl_test_link_cmd_write(struct file *f, const char __user *buf, si
 		if (rtn < 0) {
 			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 				"sl_test_link_options_set failed [%d]", rtn);
+			return rtn;
+		}
+		return size;
+	}
+
+	match_found = LINK_CMD_MATCH(LINK_AN_LP_CAPS_GET_CMD, cmd_buf);
+	if (match_found) {
+		rtn = sl_test_link_an_lp_caps_get();
+		if (rtn < 0) {
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+				"sl_test_link_an_lp_caps_get failed [%d]", rtn);
 			return rtn;
 		}
 		return size;
@@ -575,6 +588,13 @@ int sl_test_link_policy_set(void)
 int sl_test_link_fec_cntr_set(void)
 {
 	return sl_test_fec_cntrs_set(sl_test_link_get(), fec_ucw, fec_ccw, fec_gcw);
+}
+
+int sl_test_link_an_lp_caps_get(void)
+{
+	struct sl_link_caps lp_caps;
+
+	return sl_link_an_lp_caps_get(sl_test_link_get(), &lp_caps, 4000, 0);
 }
 
 int sl_test_link_options_set(void)

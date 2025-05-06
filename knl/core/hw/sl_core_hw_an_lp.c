@@ -20,22 +20,12 @@
 
 static void sl_core_an_lp_caps_get_callback(struct sl_core_link *link)
 {
-	int                  rtn;
-	struct sl_link_caps *lp_caps_cache_entry;
+	int rtn;
 
 	sl_core_log_dbg(link, LOG_NAME, "lp caps get callback");
 
-	lp_caps_cache_entry = NULL;
-	if (link->an.lp_caps_state == SL_CORE_LINK_LP_CAPS_DATA) {
-		lp_caps_cache_entry = kmem_cache_alloc(link->an.lp_caps_cache, GFP_ATOMIC);
-		if (lp_caps_cache_entry == NULL)
-			sl_core_log_warn(link, LOG_NAME,
-				"lp caps get callback - lp caps cache alloc failed");
-		else
-			*lp_caps_cache_entry = link->an.lp_caps;
-	}
-
-	rtn = link->an.callbacks.lp_caps_get(link->an.tag, lp_caps_cache_entry, link->an.lp_caps_state);
+	rtn = link->an.callbacks.lp_caps_get(link->an.tag,
+		&(link->an.lp_caps), link->an.lp_caps_state);
 	if (rtn != 0)
 		sl_core_log_warn(link, LOG_NAME,
 			"lp caps get callback - failed [%d]", rtn);
@@ -53,11 +43,13 @@ void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *core_link, u32 link_stat
 
 	core_link->an.link_state             = link_state;
 	core_link->an.tag                    = tag;
-	core_link->an.lp_caps_get_timeout_ms = timeout_ms;
 	core_link->an.callbacks.lp_caps_get  = callback;
 	core_link->an.done_work_num          = SL_CORE_WORK_LINK_AN_LP_CAPS_GET_DONE;
 	core_link->an.my_caps                = *caps;
+
 	sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_RUNNING);
+
+	core_link->timers[SL_CORE_TIMER_LINK_AN_LP_CAPS_GET].data.timeout_ms = timeout_ms;
 
 	/* test check */
 	if (core_link->an.use_test_caps) {

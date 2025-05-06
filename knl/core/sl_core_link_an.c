@@ -86,15 +86,3 @@ int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 }
-
-void sl_core_link_an_lp_caps_free(u8 ldev_num, u8 lgrp_num, u8 link_num,
-	struct sl_link_caps *caps)
-{
-	struct sl_core_link *core_link;
-
-	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
-
-	sl_core_log_dbg(core_link, LOG_NAME, "lp caps free");
-
-	kmem_cache_free(core_link->an.lp_caps_cache, caps);
-}

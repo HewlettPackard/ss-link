@@ -443,19 +443,19 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 
 int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u32 result)
 {
-	int                      rtn;
+	int                       rtn;
 	struct sl_ctl_link       *ctl_link;
-	union sl_lgrp_notif_info info;
+	union sl_lgrp_notif_info  info;
 
-	ctl_link       =  tag;
+	ctl_link          =  tag;
 	info.lp_link_caps = *caps;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "an lp caps get callback");
 
 	switch (result) {
 	case SL_CORE_LINK_LP_CAPS_DATA:
-		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num, SL_LGRP_NOTIF_AN_DATA,
-			&info, 0);
+		rtn = sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+			SL_LGRP_NOTIF_AN_DATA, &info, 0);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"lp caps data ctl_lgrp_notif_enqueue failed [%d[", rtn);
@@ -476,9 +476,6 @@ int sl_ctl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u3
 				"lp caps error ctl_lgrp_notif_enqueue failed [%d[", rtn);
 		break;
 	}
-
-	sl_core_link_an_lp_caps_free(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, caps);
 
 	return 0;
 }
