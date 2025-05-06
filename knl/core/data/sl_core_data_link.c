@@ -717,11 +717,24 @@ u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
 	return up_fail_cause_map;
 }
 
+void sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool is_last_down_new)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.is_last_down_new = is_last_down_new;
+	spin_unlock(&core_link->link.data_lock);
+}
+
 void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+
+	if (core_link->link.is_last_down_new) {
+		core_link->link.last_down_cause_map = 0;
+		core_link->link.is_last_down_new = false;
+	}
+
 	core_link->link.last_down_cause_map |= down_cause_map;
 	core_link->link.last_down_time       = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);

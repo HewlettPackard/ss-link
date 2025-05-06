@@ -235,6 +235,7 @@ struct sl_core_link {
 		u32                                   state;
 		u64                                   last_up_fail_cause_map;
 		time64_t                              last_up_fail_time;
+		bool                                  is_last_down_new;
 		u64                                   last_down_cause_map;
 		time64_t                              last_down_time;
 		struct {

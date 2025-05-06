@@ -32,6 +32,7 @@ u64  sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link
 void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
 	time64_t *up_fail_time);
 
+void     sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool is_last_down_new);
 void     sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map);
 void     sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
 							time64_t *down_time);
