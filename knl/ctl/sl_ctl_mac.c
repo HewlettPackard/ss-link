@@ -24,21 +24,18 @@ static DEFINE_SPINLOCK(ctl_macs_lock);
 
 static void sl_ctl_mac_is_deleting_set(struct sl_ctl_mac *ctl_mac)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&ctl_mac->data_lock, flags);
+	spin_lock(&ctl_mac->data_lock);
 	ctl_mac->is_deleting = true;
-	spin_unlock_irqrestore(&ctl_mac->data_lock, flags);
+	spin_unlock(&ctl_mac->data_lock);
 }
 
 static bool sl_ctl_mac_is_deleting(struct sl_ctl_mac *ctl_mac)
 {
-	unsigned long flags;
-	bool          is_deleting;
+	bool is_deleting;
 
-	spin_lock_irqsave(&ctl_mac->data_lock, flags);
+	spin_lock(&ctl_mac->data_lock);
 	is_deleting = ctl_mac->is_deleting;
-	spin_unlock_irqrestore(&ctl_mac->data_lock, flags);
+	spin_unlock(&ctl_mac->data_lock);
 
 	return is_deleting;
 }
@@ -130,12 +127,11 @@ void sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 struct sl_ctl_mac *sl_ctl_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 {
-	unsigned long      irq_flags;
 	struct sl_ctl_mac *ctl_mac;
 
-	spin_lock_irqsave(&ctl_macs_lock, irq_flags);
+	spin_lock(&ctl_macs_lock);
 	ctl_mac = ctl_macs[ldev_num][lgrp_num][mac_num];
-	spin_unlock_irqrestore(&ctl_macs_lock, irq_flags);
+	spin_unlock(&ctl_macs_lock);
 
 	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "get (mac = 0x%p)", ctl_mac);
 

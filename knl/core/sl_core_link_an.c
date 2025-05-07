@@ -20,7 +20,6 @@ int sl_core_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_core_link_an_callback_t callback, void *tag, struct sl_link_caps *caps,
 	u32 timeout_ms, u32 flags)
 {
-	unsigned long        irq_flags;
 	u32                  link_state;
 	struct sl_core_link *core_link;
 
@@ -28,21 +27,21 @@ int sl_core_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get");
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
 		core_link->link.state = SL_CORE_LINK_STATE_AN;
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		sl_core_hw_an_lp_caps_get_cmd(core_link, link_state, callback, tag, caps, timeout_ms, flags);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"lp caps get - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return -EBADRQC;
 	}
 }

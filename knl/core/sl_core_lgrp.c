@@ -33,21 +33,20 @@ struct sl_core_lgrp *sl_core_lgrp_get(u8 ldev_num, u8 lgrp_num)
 int sl_core_lgrp_hw_attr_set(u8 ldev_num, u8 lgrp_num, struct sl_hw_attr *hw_attr)
 {
 	int                  rtn;
-	unsigned long        irq_flags;
 	struct sl_core_lgrp *core_lgrp;
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "hw attr set");
 
-	spin_lock_irqsave(&(core_lgrp->data_lock), irq_flags);
+	spin_lock(&(core_lgrp->data_lock));
 	if (core_lgrp->is_configuring) {
 		sl_core_log_err(core_lgrp, LOG_NAME, "hw attr set - lgrp is configuring");
-		spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+		spin_unlock(&(core_lgrp->data_lock));
 		return -EBADRQC;
 	}
 	core_lgrp->is_configuring = 1;
-	spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+	spin_unlock(&(core_lgrp->data_lock));
 
 	rtn = sl_core_data_lgrp_link_config_check(core_lgrp);
 	if (rtn != 0) {
@@ -62,9 +61,9 @@ int sl_core_lgrp_hw_attr_set(u8 ldev_num, u8 lgrp_num, struct sl_hw_attr *hw_att
 	rtn = 0;
 
 out:
-	spin_lock_irqsave(&(core_lgrp->data_lock), irq_flags);
+	spin_lock(&(core_lgrp->data_lock));
 	core_lgrp->is_configuring = 0;
-	spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+	spin_unlock(&(core_lgrp->data_lock));
 
 	return rtn;
 }
@@ -72,21 +71,20 @@ out:
 int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp_config)
 {
 	int                  rtn;
-	unsigned long        irq_flags;
 	struct sl_core_lgrp *core_lgrp;
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "config set");
 
-	spin_lock_irqsave(&(core_lgrp->data_lock), irq_flags);
+	spin_lock(&(core_lgrp->data_lock));
 	if (core_lgrp->is_configuring) {
 		sl_core_log_err(core_lgrp, LOG_NAME, "config set - lgrp is configuring");
-		spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+		spin_unlock(&(core_lgrp->data_lock));
 		return -EBADRQC;
 	}
 	core_lgrp->is_configuring = 1;
-	spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+	spin_unlock(&(core_lgrp->data_lock));
 
 	rtn = sl_core_data_lgrp_link_config_check(core_lgrp);
 	if (rtn != 0) {
@@ -101,9 +99,9 @@ int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgr
 	rtn = 0;
 
 out:
-	spin_lock_irqsave(&(core_lgrp->data_lock), irq_flags);
+	spin_lock(&(core_lgrp->data_lock));
 	core_lgrp->is_configuring = 0;
-	spin_unlock_irqrestore(&(core_lgrp->data_lock), irq_flags);
+	spin_unlock(&(core_lgrp->data_lock));
 
 	return rtn;
 }

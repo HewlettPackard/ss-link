@@ -65,12 +65,11 @@ static inline u8 sl_media_data_jack_num_update(u8 jack_num)
 
 static bool sl_media_data_jack_cable_is_going_online(struct sl_media_jack *media_jack)
 {
-	bool          is_going_online;
-	unsigned long irq_flags;
+	bool is_going_online;
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	is_going_online = media_jack->state == SL_MEDIA_JACK_CABLE_GOING_ONLINE;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	return is_going_online;
 }
@@ -112,7 +111,6 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 {
 	struct sl_media_jack *media_jack;
 	u8                    i;
-	unsigned long         irq_flags;
 	u8                    jack_num;
 
 	jack_num = sl_media_data_jack_num_update(physical_jack_num);
@@ -123,11 +121,11 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	for (i = 0; i < media_jack->jack_data.port_count; ++i)
 		sl_media_data_jack_media_attr_clr(media_jack, &media_jack->cable_info[i]);
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	sl_media_data_cable_serdes_settings_clr(media_jack);
 	sl_media_data_jack_eeprom_clr(media_jack);
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 }
 
@@ -266,12 +264,11 @@ static void sl_media_data_jack_event_interrupt(u8 physical_jack_num)
 
 static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 {
-	unsigned long irq_flags;
 	u8            i;
 	bool          is_removed;
 
 	is_removed = false;
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	if ((!(media_jack->status_data.flags & XCVR_PRESENT)) &&
 		media_jack->state != SL_MEDIA_JACK_CABLE_REMOVED) {
 		for (i = 0; i < media_jack->jack_data.port_count; ++i)
@@ -281,21 +278,20 @@ static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 		media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 		is_removed = true;
 	}
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	return is_removed;
 }
 
 static void sl_media_data_jack_online_verify(struct sl_media_jack *media_jack, u8 ldev_num)
 {
-	unsigned long irq_flags;
 	int           rtn;
 	bool          is_state_different;
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	is_state_different = (media_jack->status_data.flags & XCVR_PRESENT) &&
 			(media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE);
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	if (is_state_different) {
 		rtn = sl_media_data_jack_online(media_jack->hdl, ldev_num, media_jack->num);
@@ -360,7 +356,6 @@ int sl_media_data_jack_scan(u8 ldev_num)
 {
 	u8                       jack_num;
 	u8                       physical_jack_num;
-	unsigned long            irq_flags;
 	struct xcvr_status_data  status;
 	struct xcvr_jack_data    jack;
 	struct sl_media_jack    *media_jack;
@@ -397,13 +392,13 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			sl_media_log_err(NULL, LOG_NAME, "kstrtou8 failed [%d]", rtn);
 			return -EFAULT;
 		}
-		spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+		spin_lock(&media_jack->data_lock);
 		/*
 		 * Don't use media_jack in the log messages before this point as they
 		 * don't have real physical numbers yet
 		 */
 		media_jack->physical_num = physical_jack_num;
-		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+		spin_unlock(&media_jack->data_lock);
 
 		if (status.flags & XCVR_PRESENT) {
 			/*

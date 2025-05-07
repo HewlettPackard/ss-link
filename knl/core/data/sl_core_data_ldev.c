@@ -94,12 +94,11 @@ void sl_core_data_ldev_del(u8 ldev_num)
 
 struct sl_core_ldev *sl_core_data_ldev_get(u8 ldev_num)
 {
-	unsigned long        irq_flags;
 	struct sl_core_ldev *core_ldev;
 
-	spin_lock_irqsave(&core_ldevs_lock, irq_flags);
+	spin_lock(&core_ldevs_lock);
 	core_ldev = core_ldevs[ldev_num];
-	spin_unlock_irqrestore(&core_ldevs_lock, irq_flags);
+	spin_unlock(&core_ldevs_lock);
 
 	sl_core_log_dbg(core_ldev, LOG_NAME, "get (ldev = 0x%p)", core_ldev);
 

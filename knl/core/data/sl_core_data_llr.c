@@ -156,12 +156,11 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 struct sl_core_llr *sl_core_data_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
-	unsigned long       irq_flags;
 	struct sl_core_llr *core_llr;
 
-	spin_lock_irqsave(&core_llrs_lock, irq_flags);
+	spin_lock(&core_llrs_lock);
 	core_llr = core_llrs[ldev_num][lgrp_num][llr_num];
-	spin_unlock_irqrestore(&core_llrs_lock, irq_flags);
+	spin_unlock(&core_llrs_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "get (llr = 0x%p)", core_llr);
 
@@ -219,26 +218,22 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 
 int sl_core_data_llr_policy_set(struct sl_core_llr *core_llr, struct sl_llr_policy *llr_policy)
 {
-	unsigned long irq_flags;
-
 	sl_core_log_dbg(core_llr, LOG_NAME, "policy set");
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	core_llr->policy = *llr_policy;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	return 0;
 }
 
 int sl_core_data_llr_policy_get(struct sl_core_llr *core_llr, struct sl_llr_policy *llr_policy)
 {
-	unsigned long irq_flags;
-
 	sl_core_log_dbg(core_llr, LOG_NAME, "policy get");
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	*llr_policy = core_llr->policy;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	return 0;
 }
@@ -305,8 +300,6 @@ int sl_core_data_llr_settings(struct sl_core_llr *core_llr)
 
 void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 {
-	unsigned long irq_flags;
-
 	if (sl_core_llr_is_canceled(core_llr)) {
 		sl_core_log_dbg(core_llr, LOG_NAME,
 			"llr_state_set canceled (core_state = %u %s)",
@@ -314,9 +307,9 @@ void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 		return;
 	}
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	core_llr->state = llr_state;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"set state = %s", sl_core_llr_state_str(llr_state));
@@ -324,12 +317,11 @@ void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 
 u32 sl_core_data_llr_state_get(struct sl_core_llr *core_llr)
 {
-	unsigned long irq_flags;
-	u32           llr_state;
+	u32 llr_state;
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	llr_state = core_llr->state;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"get state = %u %s", llr_state, sl_core_llr_state_str(llr_state));
@@ -339,13 +331,11 @@ u32 sl_core_data_llr_state_get(struct sl_core_llr *core_llr)
 
 void sl_core_data_llr_data_set(struct sl_core_llr *core_llr, struct sl_llr_data llr_data)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	core_llr->is_data_valid = true;
 	core_llr->data          = llr_data;
 	core_llr->data.magic    = SL_CORE_LLR_DATA_MAGIC;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"data set (min = %lldns, max = %lldns, average = %lldns, calc = %lldns)",
@@ -355,12 +345,11 @@ void sl_core_data_llr_data_set(struct sl_core_llr *core_llr, struct sl_llr_data 
 
 struct sl_llr_data sl_core_data_llr_data_get(struct sl_core_llr *core_llr)
 {
-	unsigned long      irq_flags;
 	struct sl_llr_data llr_data;
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	llr_data = core_llr->data;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"data get (min = %lluns, max = %lluns, average = %lluns, calc = %lluns)",
@@ -372,33 +361,28 @@ struct sl_llr_data sl_core_data_llr_data_get(struct sl_core_llr *core_llr)
 
 void sl_core_data_llr_data_clr(struct sl_core_llr *core_llr)
 {
-	unsigned long irq_flags;
-
 	sl_core_log_dbg(core_llr, LOG_NAME, "data clear");
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	core_llr->is_data_valid = false;
 	memset(&(core_llr->data), 0, sizeof(core_llr->data));
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 }
 
 bool sl_core_data_llr_data_is_valid(struct sl_core_llr *core_llr)
 {
-	unsigned long irq_flags;
-	bool          is_valid;
+	bool is_valid;
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	is_valid = core_llr->is_data_valid;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	return is_valid;
 }
 
 void sl_core_data_llr_info_map_clr(struct sl_core_llr *core_llr, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 
 	if (bit_num == SL_CORE_INFO_MAP_NUM_BITS)
 		bitmap_zero((unsigned long *)&(core_llr->info_map), SL_CORE_INFO_MAP_NUM_BITS);
@@ -408,30 +392,27 @@ void sl_core_data_llr_info_map_clr(struct sl_core_llr *core_llr, u32 bit_num)
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"clr info map 0x%016llX", core_llr->info_map);
 
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 }
 
 void sl_core_data_llr_info_map_set(struct sl_core_llr *core_llr, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	set_bit(bit_num, (unsigned long *)&(core_llr->info_map));
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"set info map 0x%016llX", core_llr->info_map);
 
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 }
 
 u64 sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr)
 {
-	unsigned long irq_flags;
-	u64           info_map;
+	u64 info_map;
 
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	info_map = core_llr->info_map;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"get info map 0x%016llX", info_map);
@@ -442,12 +423,10 @@ u64 sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr)
 void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr_fail_cause,
 	time64_t *llr_fail_time)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	*llr_fail_cause = core_llr->last_fail_cause;
 	*llr_fail_time  = core_llr->last_fail_time;
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"last llr fail cause get (cause = %u %s)", *llr_fail_cause,
@@ -456,12 +435,10 @@ void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr
 
 void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_fail_cause)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_llr->data_lock, irq_flags);
+	spin_lock(&core_llr->data_lock);
 	core_llr->last_fail_cause = llr_fail_cause;
 	core_llr->last_fail_time  = ktime_get_real_seconds();
-	spin_unlock_irqrestore(&core_llr->data_lock, irq_flags);
+	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"last llr fail cause set (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));

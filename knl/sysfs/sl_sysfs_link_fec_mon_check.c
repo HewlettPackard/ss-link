@@ -18,14 +18,13 @@ static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctl_link   *ctl_link;
 	s32                   ucw_down_limit;
 	u32                   period_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	ucw_down_limit = ctl_link->fec_data.info.monitor.ucw_down_limit;
 	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ucw_down_limit show (ucw_down_limit = %d, period = %ums)",
@@ -42,14 +41,13 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctl_link   *ctl_link;
 	s32                   ucw_warn_limit;
 	u32                   period_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_warn_limit;
 	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ucw_warn_limit show (ucw_warn_limit = %d, period = %ums)",
@@ -66,14 +64,13 @@ static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctl_link   *ctl_link;
 	s32                   ccw_down_limit;
 	u32                   period_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
 	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ccw_down_limit show (ccw_down_limit = %d, period = %ums)",
@@ -90,14 +87,13 @@ static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctl_link   *ctl_link;
 	s32                   ccw_warn_limit;
 	u32                   period_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_warn_limit;
 	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ccw_warn_limit show (ccw_warn_limit = %d, period = %ums)",
@@ -113,13 +109,12 @@ static ssize_t period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr
 {
 	struct sl_ctl_link   *ctl_link;
 	u32                   period_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_period_ms_show show (period_ms = %u)", period_ms);

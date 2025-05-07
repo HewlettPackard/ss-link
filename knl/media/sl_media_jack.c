@@ -66,56 +66,49 @@ struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num)
 
 void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	media_jack->state = state;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 }
 
 u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
 {
-	u8            state;
-	unsigned long irq_flags;
+	u8 state;
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	state = media_jack->state;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	return state;
 }
 
 bool sl_media_jack_is_high_powered(struct sl_media_jack *media_jack)
 {
-	bool          is_high_powered;
-	unsigned long irq_flags;
+	bool is_high_powered;
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	is_high_powered = media_jack->is_high_powered;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	return is_high_powered;
 }
 
 void sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	media_jack->cable_shift_state = state;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state set = %u", media_jack->cable_shift_state);
 }
 
 u8 sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack)
 {
-	u8            cable_shift_state;
-	unsigned long irq_flags;
+	u8 cable_shift_state;
 
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	cable_shift_state = media_jack->cable_shift_state;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state get = %u", cable_shift_state);
 

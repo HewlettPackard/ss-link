@@ -995,7 +995,6 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 {
 	int                                 rtn;
-	unsigned long                       irq_flags;
 	u32                                 link_state;
 	u64                                 link_down;
 	u64                                 remote_fault;
@@ -1110,13 +1109,13 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	sl_ctl_link_state_set(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
 		core_link->core_lgrp->num, core_link->num), SL_LINK_STATE_STOPPING);
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_TIMEOUT:
 	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		sl_core_log_dbg(core_link, LOG_NAME,
 			"fault intr work incorrect state (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
@@ -1124,7 +1123,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	default:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 	}
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 

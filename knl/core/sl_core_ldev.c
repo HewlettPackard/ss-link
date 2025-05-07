@@ -162,24 +162,21 @@ struct sl_core_ldev *sl_core_ldev_get(u8 ldev_num)
 
 void sl_core_ldev_serdes_is_ready_set(struct sl_core_ldev *core_ldev, bool is_ready)
 {
-	unsigned long flags;
-
 	sl_core_log_dbg(core_ldev, LOG_NAME,
 		"set is_ready to %s", is_ready ? "true" : "false");
 
-	spin_lock_irqsave(&core_ldev->data_lock, flags);
+	spin_lock(&core_ldev->data_lock);
 	core_ldev->serdes.is_ready = is_ready;
-	spin_unlock_irqrestore(&core_ldev->data_lock, flags);
+	spin_unlock(&core_ldev->data_lock);
 }
 
 bool sl_core_ldev_serdes_is_ready(struct sl_core_ldev *core_ldev)
 {
-	unsigned long flags;
-	bool          is_ready;
+	bool is_ready;
 
-	spin_lock_irqsave(&core_ldev->data_lock, flags);
+	spin_lock(&core_ldev->data_lock);
 	is_ready = core_ldev->serdes.is_ready;
-	spin_unlock_irqrestore(&core_ldev->data_lock, flags);
+	spin_unlock(&core_ldev->data_lock);
 
 	sl_core_log_dbg(core_ldev, LOG_NAME,
 		"is_ready = %s", is_ready ? "true" : "false");

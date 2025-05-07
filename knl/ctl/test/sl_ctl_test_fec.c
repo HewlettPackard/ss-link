@@ -15,15 +15,14 @@
 
 static void sl_ctl_test_fec_data_store_clr(struct sl_ctl_link *ctl_link)
 {
-	unsigned long       irq_flags;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "data_store_clr");
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	memset(&ctl_link->fec_data.curr_ptr->cw_cntrs, 0, sizeof(struct sl_core_link_fec_cw_cntrs));
 	memset(&ctl_link->fec_data.curr_ptr->lane_cntrs, 0, sizeof(struct sl_core_link_fec_lane_cntrs));
 	memset(&ctl_link->fec_data.curr_ptr->tail_cntrs, 0, sizeof(struct sl_core_link_fec_tail_cntrs));
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 }
 
 int sl_ctl_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool use_test_cntrs)

@@ -223,6 +223,4 @@ out_down:
 
 	sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_link_up_fail(core_link);
-	if (rtn)
-		sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
 }

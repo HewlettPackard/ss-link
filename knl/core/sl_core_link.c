@@ -32,7 +32,6 @@ struct sl_core_link *sl_core_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		    sl_core_link_up_callback_t callback, void *tag)
 {
-	unsigned long        irq_flags;
 	u32                  link_state;
 	struct sl_core_link *core_link;
 
@@ -46,31 +45,31 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EIO;
 	}
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - already going up");
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - already up");
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - going up");
 		core_link->link.state = is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE) ?
 			SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		sl_core_hw_link_up_cmd(core_link, callback, tag);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"up - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return -EBADRQC;
 	}
 }
@@ -251,7 +250,6 @@ int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			    struct sl_core_link_config *link_config)
 {
-	unsigned long        irq_flags;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -259,37 +257,36 @@ int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "config set");
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
 		core_link->link.state = SL_CORE_LINK_STATE_CONFIGURING;
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		sl_core_data_link_config_set(core_link, link_config);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"config set invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+		spin_unlock(&core_link->link.data_lock);
 		return -EBADRQC;
 	}
 }
 
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy)
 {
-	unsigned long        irq_flags;
 	struct sl_core_link *core_link;
 
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "policy set");
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	core_link->policy = *link_policy;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	return 0;
 }
@@ -391,24 +388,22 @@ void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_n
 
 bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	bool          is_policy_set;
+	bool is_policy_set;
 
-	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	spin_lock(&core_link->serdes.data_lock);
 	is_policy_set = (core_link->policy.options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) != 0;
-	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+	spin_unlock(&core_link->serdes.data_lock);
 
 	return is_policy_set;
 }
 
 bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	bool          is_policy_set;
+	bool is_policy_set;
 
-	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	spin_lock(&core_link->serdes.data_lock);
 	is_policy_set = (core_link->policy.options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) != 0;
-	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+	spin_unlock(&core_link->serdes.data_lock);
 
 	return is_policy_set;
 }

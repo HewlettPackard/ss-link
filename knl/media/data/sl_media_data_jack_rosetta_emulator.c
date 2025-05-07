@@ -22,7 +22,6 @@
 int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *fake_media_attr)
 {
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -32,9 +31,9 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		fake_media_attr->length_cm, fake_media_attr->speeds_map);
 
 	media_lgrp = sl_media_data_lgrp_get(cable_info->ldev_num, cable_info->lgrp_num);
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+		spin_unlock(&media_jack->data_lock);
 		sl_media_log_err(media_jack, LOG_NAME, "fake media attr already set");
 		return -EEXIST;
 	}
@@ -45,7 +44,7 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 	}
 	cable_info->media_attr = *fake_media_attr;
 	cable_info->fake_cable_status = CABLE_MEDIA_ATTR_ADDED;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	if (media_lgrp) {
 		if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_STASHED)
@@ -60,15 +59,14 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info)
 {
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "fake media attr clr");
 
 	media_lgrp = sl_media_data_lgrp_get(cable_info->ldev_num, cable_info->lgrp_num);
-	spin_lock_irqsave(&media_jack->data_lock, irq_flags);
+	spin_lock(&media_jack->data_lock);
 	if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_REMOVED) {
-		spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+		spin_unlock(&media_jack->data_lock);
 		sl_media_log_dbg(media_jack, LOG_NAME, "no fake media attr to clear");
 		return;
 	}
@@ -80,7 +78,7 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		memset(&(cable_info->media_attr), 0, sizeof(struct sl_media_attr));
 	}
 	cable_info->fake_cable_status = CABLE_MEDIA_ATTR_REMOVED;
-	spin_unlock_irqrestore(&media_jack->data_lock, irq_flags);
+	spin_unlock(&media_jack->data_lock);
 
 	if (media_lgrp) {
 		sl_media_data_jack_cable_not_present_send(media_lgrp);

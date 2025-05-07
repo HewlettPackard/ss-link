@@ -21,15 +21,14 @@ static ssize_t ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctl_link   *ctl_link;
 	struct sl_core_link  *core_link;
 	s32                   ucw_limit;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.up_check_kobj);
 
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	spin_lock(&core_link->data_lock);
 	ucw_limit = core_link->fec.settings.up_ucw_limit;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+	spin_unlock(&core_link->data_lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_up_ucw_limit show (ucw_limit = %d)", ucw_limit);
@@ -42,15 +41,14 @@ static ssize_t ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctl_link   *ctl_link;
 	struct sl_core_link  *core_link;
 	s32                   ccw_limit;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.up_check_kobj);
 
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	spin_lock(&core_link->data_lock);
 	ccw_limit = core_link->fec.settings.up_ccw_limit;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+	spin_unlock(&core_link->data_lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"fec_up_ccw_limit show (ccw_limit = %d)", ccw_limit);
@@ -63,15 +61,14 @@ static ssize_t settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctl_link   *ctl_link;
 	struct sl_core_link  *core_link;
 	u32                   settle_wait_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.up_check_kobj);
 
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	spin_lock(&core_link->data_lock);
 	settle_wait_ms = core_link->fec.settings.up_settle_wait_ms;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+	spin_unlock(&core_link->data_lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"settle_wait_ms show (settle_wait_ms = %u)", settle_wait_ms);
@@ -84,15 +81,14 @@ static ssize_t check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *k
 	struct sl_ctl_link   *ctl_link;
 	struct sl_core_link  *core_link;
 	u32                   check_wait_ms;
-	unsigned long         irq_flags;
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, fec.up_check_kobj);
 
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	spin_lock(&core_link->data_lock);
 	check_wait_ms = core_link->fec.settings.up_check_wait_ms;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+	spin_unlock(&core_link->data_lock);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"check_wait_ms show (check_wait_ms = %u)", check_wait_ms);

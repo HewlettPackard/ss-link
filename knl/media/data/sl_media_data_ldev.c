@@ -25,7 +25,6 @@ static DEFINE_SPINLOCK(media_ldevs_lock);
 
 int sl_media_data_ldev_new(u8 ldev_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_ldev *media_ldev;
 	int                   rtn;
 	u8                    jack_num;
@@ -63,16 +62,15 @@ int sl_media_data_ldev_new(u8 ldev_num)
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "new (ldev = 0x%p)", media_ldev);
 
-	spin_lock_irqsave(&media_ldevs_lock, irq_flags);
+	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = media_ldev;
-	spin_unlock_irqrestore(&media_ldevs_lock, irq_flags);
+	spin_unlock(&media_ldevs_lock);
 
 	return 0;
 }
 
 void sl_media_data_ldev_del(u8 ldev_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_ldev *media_ldev;
 	u8                    lgrp_num;
 	u8                    jack_num;
@@ -83,9 +81,9 @@ void sl_media_data_ldev_del(u8 ldev_num)
 		return;
 	}
 
-	spin_lock_irqsave(&media_ldevs_lock, irq_flags);
+	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = NULL;
-	spin_unlock_irqrestore(&media_ldevs_lock, irq_flags);
+	spin_unlock(&media_ldevs_lock);
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "del (ldev = 0x%p)", media_ldev);
 
@@ -102,12 +100,11 @@ void sl_media_data_ldev_del(u8 ldev_num)
 
 struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_ldev *media_ldev;
 
-	spin_lock_irqsave(&media_ldevs_lock, irq_flags);
+	spin_lock(&media_ldevs_lock);
 	media_ldev = media_ldevs[ldev_num];
-	spin_unlock_irqrestore(&media_ldevs_lock, irq_flags);
+	spin_unlock(&media_ldevs_lock);
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "get (ldev = 0x%p)", media_ldev);
 

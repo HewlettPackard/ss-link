@@ -315,12 +315,11 @@ void sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 struct sl_core_link *sl_core_data_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
-	unsigned long        irq_flags;
 	struct sl_core_link *core_link;
 
-	spin_lock_irqsave(&core_links_lock, irq_flags);
+	spin_lock(&core_links_lock);
 	core_link = core_links[ldev_num][lgrp_num][link_num];
-	spin_unlock_irqrestore(&core_links_lock, irq_flags);
+	spin_unlock(&core_links_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "get (link = 0x%p)", core_link);
 
@@ -330,15 +329,13 @@ struct sl_core_link *sl_core_data_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num
 void sl_core_data_link_config_set(struct sl_core_link *core_link,
 	struct sl_core_link_config *link_config)
 {
-	unsigned long irq_flags;
-
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"config set (flags = 0x%X, hpe_map = 0x%X, pause_map = 0x%X)",
 		link_config->flags, link_config->hpe_map, link_config->pause_map);
 
-	spin_lock_irqsave(&core_link->data_lock, irq_flags);
+	spin_lock(&core_link->data_lock);
 	core_link->config = *link_config;
-	spin_unlock_irqrestore(&core_link->data_lock, irq_flags);
+	spin_unlock(&core_link->data_lock);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_CONFIGURED);
 }
@@ -568,11 +565,9 @@ void sl_core_data_link_timeouts(struct sl_core_link *core_link)
 
 void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	core_link->link.state = link_state;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"set state = %s", sl_core_link_state_str(link_state));
@@ -580,12 +575,11 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 
 u32 sl_core_data_link_state_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u32           link_state;
+	u32 link_state;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"get state = %u", link_state);
@@ -595,12 +589,11 @@ u32 sl_core_data_link_state_get(struct sl_core_link *core_link)
 
 u32 sl_core_data_link_speed_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u32           link_speed;
+	u32 link_speed;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_speed = core_link->pcs.settings.speed;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"get speed = %u", link_speed);
@@ -610,12 +603,11 @@ u32 sl_core_data_link_speed_get(struct sl_core_link *core_link)
 
 u16 sl_core_data_link_clocking_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u16           link_clocking;
+	u16 link_clocking;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	link_clocking = core_link->serdes.core_serdes_settings.clocking;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"get clocking = %u", link_clocking);
@@ -625,9 +617,7 @@ u16 sl_core_data_link_clocking_get(struct sl_core_link *core_link)
 
 void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 
 	if (bit_num == SL_CORE_INFO_MAP_NUM_BITS)
 		bitmap_zero((unsigned long *)&(core_link->info_map), SL_CORE_INFO_MAP_NUM_BITS);
@@ -637,31 +627,28 @@ void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"clr info map 0x%016llX", core_link->info_map);
 
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 }
 
 void sl_core_data_link_info_map_set(struct sl_core_link *core_link, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 
 	set_bit(bit_num, (unsigned long *)&(core_link->info_map));
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"set info map 0x%016llX", core_link->info_map);
 
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 }
 
 u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u64           info_map;
+	u64 info_map;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	info_map = core_link->info_map;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"get info map 0x%016llX", info_map);
@@ -671,18 +658,16 @@ u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 
 void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
 {
-	unsigned long irq_flags;
-
 	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
 		sl_core_log_dbg(core_link, LOG_NAME,
 			"last_up_fail_cause_map_set ignoring (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
 		return;
 	}
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	core_link->link.last_up_fail_cause_map |= up_fail_cause_map;
 	core_link->link.last_up_fail_time       = ktime_get_real_seconds();
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
@@ -691,12 +676,10 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
 	time64_t *up_fail_time)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	*up_fail_cause_map = core_link->link.last_up_fail_cause_map;
 	*up_fail_time      = core_link->link.last_up_fail_time;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last up fail cause get (cause_map = 0x%llX)", *up_fail_cause_map);
@@ -704,12 +687,11 @@ void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64
 
 u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
 {
-	u64           up_fail_cause_map;
-	unsigned long irq_flags;
+	u64 up_fail_cause_map;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	up_fail_cause_map = core_link->link.last_up_fail_cause_map;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last up fail cause get (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
@@ -726,9 +708,7 @@ void sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool
 
 void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 
 	if (core_link->link.is_last_down_new) {
 		core_link->link.last_down_cause_map = 0;
@@ -737,7 +717,7 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 
 	core_link->link.last_down_cause_map |= down_cause_map;
 	core_link->link.last_down_time       = ktime_get_real_seconds();
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last down cause map set (down_cause_map = 0x%llX)", down_cause_map);
@@ -746,12 +726,10 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
 						    time64_t *down_time)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	*down_cause_map = core_link->link.last_down_cause_map;
 	*down_time      = core_link->link.last_down_time;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
@@ -760,12 +738,11 @@ void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_li
 
 u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 {
-	u64           down_cause_map;
-	unsigned long irq_flags;
+	u64 down_cause_map;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	down_cause_map = core_link->link.last_down_cause_map;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last down cause map get (down_cause_map = 0x%llX)", down_cause_map);
@@ -775,12 +752,10 @@ u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	core_link->link.is_ccw_warn_limit_crossed = is_limit_crossed;
 	core_link->link.last_ccw_warn_limit_crossed_time  = ktime_get_real_seconds();
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"ccw warn limit crossed set (is_limit_crossed = %d %s)", core_link->link.is_ccw_warn_limit_crossed,
@@ -790,12 +765,10 @@ void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link
 void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
 	time64_t *limit_crossed_time)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	*is_limit_crossed = core_link->link.is_ccw_warn_limit_crossed;
 	*limit_crossed_time = core_link->link.last_ccw_warn_limit_crossed_time;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"ccw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
@@ -804,12 +777,10 @@ void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link
 
 void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	core_link->link.is_ucw_warn_limit_crossed = is_limit_crossed;
 	core_link->link.last_ucw_warn_limit_crossed_time  = ktime_get_real_seconds();
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"ucw warn limit crossed set (is_limit_crossed = %d %s)", core_link->link.is_ucw_warn_limit_crossed,
@@ -819,12 +790,10 @@ void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link
 void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
 	time64_t *limit_crossed_time)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	*is_limit_crossed = core_link->link.is_ucw_warn_limit_crossed;
 	*limit_crossed_time = core_link->link.last_ucw_warn_limit_crossed_time;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"ucw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
@@ -833,12 +802,11 @@ void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link
 
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u32           fec_mode;
+	u32 fec_mode;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	fec_mode = core_link->fec.settings.mode;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"fec_mode get = %u %s", fec_mode, sl_lgrp_fec_mode_str(fec_mode));
@@ -848,12 +816,11 @@ u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)
 
 u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u32           fec_type;
+	u32 fec_type;
 
-	spin_lock_irqsave(&core_link->link.data_lock, irq_flags);
+	spin_lock(&core_link->link.data_lock);
 	fec_type = core_link->fec.settings.type;
-	spin_unlock_irqrestore(&core_link->link.data_lock, irq_flags);
+	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"fec_type get = %u %s", fec_type, sl_lgrp_config_fec_str(fec_type));
@@ -863,12 +830,11 @@ u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link)
 
 u32 sl_core_data_link_an_lp_caps_state_get(struct sl_core_link *core_link)
 {
-	u32           lp_caps_state;
-	unsigned long flags;
+	u32 lp_caps_state;
 
-	spin_lock_irqsave(&core_link->an.data_lock, flags);
+	spin_lock(&core_link->an.data_lock);
 	lp_caps_state = core_link->an.lp_caps_state;
-	spin_unlock_irqrestore(&core_link->an.data_lock, flags);
+	spin_unlock(&core_link->an.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps state get (lp_caps_state = %u %s)",
 		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
@@ -878,11 +844,9 @@ u32 sl_core_data_link_an_lp_caps_state_get(struct sl_core_link *core_link)
 
 void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 lp_caps_state)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&core_link->an.data_lock, flags);
+	spin_lock(&core_link->an.data_lock);
 	core_link->an.lp_caps_state = lp_caps_state;
-	spin_unlock_irqrestore(&core_link->an.data_lock, flags);
+	spin_unlock(&core_link->an.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps state set (lp_caps_state = %u %s)",
 		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));

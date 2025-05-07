@@ -81,12 +81,11 @@ void sl_core_data_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 struct sl_core_mac *sl_core_data_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 {
-	unsigned long       irq_flags;
 	struct sl_core_mac *core_mac;
 
-	spin_lock_irqsave(&core_macs_lock, irq_flags);
+	spin_lock(&core_macs_lock);
 	core_mac = core_macs[ldev_num][lgrp_num][mac_num];
-	spin_unlock_irqrestore(&core_macs_lock, irq_flags);
+	spin_unlock(&core_macs_lock);
 
 	sl_core_log_dbg(core_mac, LOG_NAME, "get (mac = 0x%p)", core_mac);
 
@@ -236,9 +235,7 @@ u32 sl_core_data_mac_rx_state_get(struct sl_core_mac *core_mac)
 
 void sl_core_data_mac_info_map_clr(struct sl_core_mac *core_mac, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
+	spin_lock(&core_mac->data_lock);
 
 	if (bit_num == SL_CORE_INFO_MAP_NUM_BITS)
 		bitmap_zero((unsigned long *)&(core_mac->info_map), SL_CORE_INFO_MAP_NUM_BITS);
@@ -248,30 +245,27 @@ void sl_core_data_mac_info_map_clr(struct sl_core_mac *core_mac, u32 bit_num)
 	sl_core_log_dbg(core_mac, LOG_NAME,
 		"clr info map 0x%016llX", core_mac->info_map);
 
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
+	spin_unlock(&core_mac->data_lock);
 }
 
 void sl_core_data_mac_info_map_set(struct sl_core_mac *core_mac, u32 bit_num)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
+	spin_lock(&core_mac->data_lock);
 	set_bit(bit_num, (unsigned long *)&(core_mac->info_map));
 
 	sl_core_log_dbg(core_mac, LOG_NAME,
 		"set info map 0x%016llX", core_mac->info_map);
 
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
+	spin_unlock(&core_mac->data_lock);
 }
 
 u64 sl_core_data_mac_info_map_get(struct sl_core_mac *core_mac)
 {
-	unsigned long irq_flags;
-	u64           info_map;
+	u64 info_map;
 
-	spin_lock_irqsave(&core_mac->data_lock, irq_flags);
+	spin_lock(&core_mac->data_lock);
 	info_map = core_mac->info_map;
-	spin_unlock_irqrestore(&core_mac->data_lock, irq_flags);
+	spin_unlock(&core_mac->data_lock);
 
 	sl_core_log_dbg(core_mac, LOG_NAME,
 		"get info map 0x%016llX", info_map);

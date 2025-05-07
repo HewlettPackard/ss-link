@@ -25,23 +25,20 @@ static DEFINE_SPINLOCK(ctl_llrs_lock);
 
 static void sl_ctl_llr_is_deleting_set(struct sl_ctl_llr *ctl_llr)
 {
-	unsigned long flags;
-
 	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "is_deleting set");
 
-	spin_lock_irqsave(&ctl_llr->data_lock, flags);
+	spin_lock(&ctl_llr->data_lock);
 	ctl_llr->is_deleting = true;
-	spin_unlock_irqrestore(&ctl_llr->data_lock, flags);
+	spin_unlock(&ctl_llr->data_lock);
 }
 
 static bool sl_ctl_llr_is_deleting(struct sl_ctl_llr *ctl_llr)
 {
-	unsigned long flags;
-	bool          is_deleting;
+	bool is_deleting;
 
-	spin_lock_irqsave(&ctl_llr->data_lock, flags);
+	spin_lock(&ctl_llr->data_lock);
 	is_deleting = ctl_llr->is_deleting;
-	spin_unlock_irqrestore(&ctl_llr->data_lock, flags);
+	spin_unlock(&ctl_llr->data_lock);
 
 	sl_ctl_log_dbg(ctl_llr, LOG_NAME,
 		"is_deleting = %s", is_deleting ? "true" : "false");
@@ -260,12 +257,11 @@ void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
-	unsigned long      irq_flags;
 	struct sl_ctl_llr *ctl_llr;
 
-	spin_lock_irqsave(&ctl_llrs_lock, irq_flags);
+	spin_lock(&ctl_llrs_lock);
 	ctl_llr = ctl_llrs[ldev_num][lgrp_num][llr_num];
-	spin_unlock_irqrestore(&ctl_llrs_lock, irq_flags);
+	spin_unlock(&ctl_llrs_lock);
 
 	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "get (llr = 0x%p)", ctl_llr);
 
@@ -275,7 +271,6 @@ struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 int sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_config *llr_config)
 {
 	int                rtn;
-	unsigned long      irq_flags;
 	struct sl_ctl_llr *ctl_llr;
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -302,9 +297,9 @@ int sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_co
 		return rtn;
 	}
 
-	spin_lock_irqsave(&ctl_llr->data_lock, irq_flags);
+	spin_lock(&ctl_llr->data_lock);
 	ctl_llr->config = *llr_config;
-	spin_unlock_irqrestore(&ctl_llr->data_lock, irq_flags);
+	spin_unlock(&ctl_llr->data_lock);
 
 	return 0;
 }
@@ -312,7 +307,6 @@ int sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_co
 int sl_ctl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_policy *llr_policy)
 {
 	int                rtn;
-	unsigned long      irq_flags;
 	struct sl_ctl_llr *ctl_llr;
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -337,9 +331,9 @@ int sl_ctl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_po
 		return rtn;
 	}
 
-	spin_lock_irqsave(&ctl_llr->data_lock, irq_flags);
+	spin_lock(&ctl_llr->data_lock);
 	ctl_llr->policy = *llr_policy;
-	spin_unlock_irqrestore(&ctl_llr->data_lock, irq_flags);
+	spin_unlock(&ctl_llr->data_lock);
 
 	return 0;
 }

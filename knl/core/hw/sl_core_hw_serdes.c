@@ -194,21 +194,18 @@ out:
 
 void sl_core_hw_serdes_state_set(struct sl_core_link *core_link, u8 state)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	spin_lock(&core_link->serdes.data_lock);
 	core_link->serdes.serdes_state = state;
-	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+	spin_unlock(&core_link->serdes.data_lock);
 }
 
 u8 sl_core_hw_serdes_state_get(struct sl_core_link *core_link)
 {
-	unsigned long irq_flags;
-	u8            serdes_state;
+	u8 serdes_state;
 
-	spin_lock_irqsave(&core_link->serdes.data_lock, irq_flags);
+	spin_lock(&core_link->serdes.data_lock);
 	serdes_state = core_link->serdes.serdes_state;
-	spin_unlock_irqrestore(&core_link->serdes.data_lock, irq_flags);
+	spin_unlock(&core_link->serdes.data_lock);
 
 	return serdes_state;
 }

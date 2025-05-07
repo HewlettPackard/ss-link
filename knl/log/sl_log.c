@@ -70,7 +70,6 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 	struct sl_media_ldev      *media_ldev;
 	struct sl_media_lgrp      *media_lgrp;
 	struct sl_media_jack      *media_jack;
-	unsigned long              irq_flags;
 	int                        idx;
 
 	idx = snprintf(msg, SL_LOG_MSG_LEN, "%s%s", level, module_name(THIS_MODULE));
@@ -114,39 +113,39 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 			break;
 		case SL_CTL_LGRP_MAGIC:
 			ctl_lgrp = ptr;
-			spin_lock_irqsave(&(ctl_lgrp->log_lock), irq_flags);
+			spin_lock(&(ctl_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LGRP_ID_FMT,
 				SL_LOG_CONTEXT,
 				ctl_lgrp->ctl_ldev->num, ctl_lgrp->num,
 				ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_lgrp->log_lock), irq_flags);
+			spin_unlock(&(ctl_lgrp->log_lock));
 			break;
 		case SL_CTL_LINK_MAGIC:
 			ctl_link = ptr;
-			spin_lock_irqsave(&(ctl_link->ctl_lgrp->log_lock), irq_flags);
+			spin_lock(&(ctl_link->ctl_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
 				ctl_link->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_link->ctl_lgrp->log_lock), irq_flags);
+			spin_unlock(&(ctl_link->ctl_lgrp->log_lock));
 			break;
 		case SL_CTL_LLR_MAGIC:
 			ctl_llr = ptr;
-			spin_lock_irqsave(&(ctl_llr->ctl_lgrp->log_lock), irq_flags);
+			spin_lock(&(ctl_llr->ctl_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num,
 				ctl_llr->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_llr->ctl_lgrp->log_lock), irq_flags);
+			spin_unlock(&(ctl_llr->ctl_lgrp->log_lock));
 			break;
 		case SL_CTL_MAC_MAGIC:
 			ctl_mac = ptr;
-			spin_lock_irqsave(&(ctl_mac->ctl_lgrp->log_lock), irq_flags);
+			spin_lock(&(ctl_mac->ctl_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				ctl_mac->ctl_lgrp->ctl_ldev->num, ctl_mac->ctl_lgrp->num, ctl_mac->num,
 				ctl_mac->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_mac->ctl_lgrp->log_lock), irq_flags);
+			spin_unlock(&(ctl_mac->ctl_lgrp->log_lock));
 			break;
 		case SL_CORE_LDEV_MAGIC:
 			core_ldev = ptr;
@@ -156,39 +155,39 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 			break;
 		case SL_CORE_LGRP_MAGIC:
 			core_lgrp = ptr;
-			spin_lock_irqsave(&(core_lgrp->log_lock), irq_flags);
+			spin_lock(&(core_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LGRP_ID_FMT,
 				SL_LOG_CONTEXT,
 				core_lgrp->core_ldev->num, core_lgrp->num,
 				core_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(core_lgrp->log_lock), irq_flags);
+			spin_unlock(&(core_lgrp->log_lock));
 			break;
 		case SL_CORE_LINK_MAGIC:
 			core_link = ptr;
-			spin_lock_irqsave(&(core_link->core_lgrp->log_lock), irq_flags);
+			spin_lock(&(core_link->core_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num,
 				core_link->core_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(core_link->core_lgrp->log_lock), irq_flags);
+			spin_unlock(&(core_link->core_lgrp->log_lock));
 			break;
 		case SL_CORE_MAC_MAGIC:
 			core_mac = ptr;
-			spin_lock_irqsave(&(core_mac->core_lgrp->log_lock), irq_flags);
+			spin_lock(&(core_mac->core_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				core_mac->core_lgrp->core_ldev->num, core_mac->core_lgrp->num, core_mac->num,
 				core_mac->core_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(core_mac->core_lgrp->log_lock), irq_flags);
+			spin_unlock(&(core_mac->core_lgrp->log_lock));
 			break;
 		case SL_CORE_LLR_MAGIC:
 			core_llr = ptr;
-			spin_lock_irqsave(&(core_llr->core_lgrp->log_lock), irq_flags);
+			spin_lock(&(core_llr->core_lgrp->log_lock));
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
 				core_llr->core_lgrp->core_ldev->num, core_llr->core_lgrp->num, core_llr->num,
 				core_llr->core_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(core_llr->core_lgrp->log_lock), irq_flags);
+			spin_unlock(&(core_llr->core_lgrp->log_lock));
 			break;
 		case SL_MEDIA_LDEV_MAGIC:
 			media_ldev = ptr;
@@ -198,20 +197,20 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 			break;
 		case SL_MEDIA_LGRP_MAGIC:
 			media_lgrp = ptr;
-			spin_lock_irqsave(&media_lgrp->log_lock, irq_flags);
+			spin_lock(&media_lgrp->log_lock);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LGRP_ID_FMT,
 				SL_LOG_CONTEXT,
 				media_lgrp->media_ldev->num, media_lgrp->num,
 				media_lgrp->connect_id);
-			spin_unlock_irqrestore(&media_lgrp->log_lock, irq_flags);
+			spin_unlock(&media_lgrp->log_lock);
 			break;
 		case SL_MEDIA_JACK_MAGIC:
 			media_jack = ptr;
-			spin_lock_irqsave(&media_jack->log_lock, irq_flags);
+			spin_lock(&media_jack->log_lock);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_JACK_ID_FMT,
 				SL_LOG_CONTEXT,
 				media_jack->physical_num);
-			spin_unlock_irqrestore(&media_jack->log_lock, irq_flags);
+			spin_unlock(&media_jack->log_lock);
 			break;
 		default:
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_DFLT_ID_FMT,

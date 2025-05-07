@@ -87,14 +87,13 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 
 void sl_core_data_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 {
-	unsigned long        irq_flags;
 	struct sl_core_lgrp *core_lgrp;
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 
-	spin_lock_irqsave(&(core_lgrp->log_lock), irq_flags);
+	spin_lock(&(core_lgrp->log_lock));
 	strncpy(core_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
-	spin_unlock_irqrestore(&(core_lgrp->log_lock), irq_flags);
+	spin_unlock(&(core_lgrp->log_lock));
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "connect_id = %s", connect_id);
 }
@@ -133,12 +132,11 @@ void sl_core_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 struct sl_core_lgrp *sl_core_data_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
-	unsigned long        irq_flags;
 	struct sl_core_lgrp *core_lgrp;
 
-	spin_lock_irqsave(&core_lgrps_lock, irq_flags);
+	spin_lock(&core_lgrps_lock);
 	core_lgrp = core_lgrps[ldev_num][lgrp_num];
-	spin_unlock_irqrestore(&core_lgrps_lock, irq_flags);
+	spin_unlock(&core_lgrps_lock);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "get (lgrp = 0x%p)", core_lgrp);
 
@@ -213,12 +211,11 @@ void sl_core_data_lgrp_config_set(struct sl_core_lgrp *core_lgrp, struct sl_lgrp
 
 u32 sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp)
 {
-	u32           flags;
-	unsigned long irq_flags;
+	u32 flags;
 
-	spin_lock_irqsave(&core_lgrp->data_lock, irq_flags);
+	spin_lock(&core_lgrp->data_lock);
 	flags = core_lgrp->config.options;
-	spin_unlock_irqrestore(&core_lgrp->data_lock, irq_flags);
+	spin_unlock(&core_lgrp->data_lock);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "config flags get (flags = 0x%X)", flags);
 

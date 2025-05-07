@@ -22,21 +22,18 @@ static DEFINE_SPINLOCK(ctl_ldevs_lock);
 
 static void sl_ctl_ldev_is_deleting_set(struct sl_ctl_ldev *ctl_ldev)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&ctl_ldev->data_lock, flags);
+	spin_lock(&ctl_ldev->data_lock);
 	ctl_ldev->is_deleting = true;
-	spin_unlock_irqrestore(&ctl_ldev->data_lock, flags);
+	spin_unlock(&ctl_ldev->data_lock);
 }
 
 static bool sl_ctl_ldev_is_deleting(struct sl_ctl_ldev *ctl_ldev)
 {
-	unsigned long flags;
-	bool          is_deleting;
+	bool is_deleting;
 
-	spin_lock_irqsave(&ctl_ldev->data_lock, flags);
+	spin_lock(&ctl_ldev->data_lock);
 	is_deleting = ctl_ldev->is_deleting;
-	spin_unlock_irqrestore(&ctl_ldev->data_lock, flags);
+	spin_unlock(&ctl_ldev->data_lock);
 
 	return is_deleting;
 }
@@ -157,12 +154,11 @@ void sl_ctl_ldev_del(u8 ldev_num)
 
 struct sl_ctl_ldev *sl_ctl_ldev_get(u8 ldev_num)
 {
-	unsigned long       irq_flags;
 	struct sl_ctl_ldev *ctl_ldev;
 
-	spin_lock_irqsave(&ctl_ldevs_lock, irq_flags);
+	spin_lock(&ctl_ldevs_lock);
 	ctl_ldev = ctl_ldevs[ldev_num];
-	spin_unlock_irqrestore(&ctl_ldevs_lock, irq_flags);
+	spin_unlock(&ctl_ldevs_lock);
 
 	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "get (ldev = 0x%p)", ctl_ldev);
 

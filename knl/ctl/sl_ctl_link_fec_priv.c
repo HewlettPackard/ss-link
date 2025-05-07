@@ -26,11 +26,10 @@ void sl_ctl_link_fec_data_store(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
 	struct sl_ctl_link_fec_cntrs *tmp_cntrs_ptr;
-	unsigned long                 irq_flags;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "data_store");
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 
 	tmp_cntrs_ptr = ctl_link->fec_data.prev_ptr;
 	ctl_link->fec_data.prev_ptr = ctl_link->fec_data.curr_ptr;
@@ -41,18 +40,16 @@ void sl_ctl_link_fec_data_store(struct sl_ctl_link *ctl_link,
 	ctl_link->fec_data.curr_ptr->tail_cntrs = *tail_cntrs;
 	ctl_link->fec_data.curr_ptr->timestamp  = jiffies;
 
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 }
 
 void sl_ctl_link_fec_up_cache_clear(struct sl_ctl_link *ctl_link)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_up_cache.lock);
 	memset(&(ctl_link->fec_up_cache.cw_cntrs),   0, sizeof(struct sl_core_link_fec_cw_cntrs));
 	memset(&(ctl_link->fec_up_cache.lane_cntrs), 0, sizeof(struct sl_core_link_fec_lane_cntrs));
 	memset(&(ctl_link->fec_up_cache.tail_cntrs), 0, sizeof(struct sl_core_link_fec_tail_cntrs));
-	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_up_cache.lock);
 }
 
 void sl_ctl_link_fec_up_cache_store(struct sl_ctl_link *ctl_link,
@@ -60,26 +57,22 @@ void sl_ctl_link_fec_up_cache_store(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	unsigned long irq_flags;
-
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up_cache_store");
 
-	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_up_cache.lock);
 	ctl_link->fec_up_cache.cw_cntrs   = *cw_cntrs;
 	ctl_link->fec_up_cache.lane_cntrs = *lane_cntrs;
 	ctl_link->fec_up_cache.tail_cntrs = *tail_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_up_cache.lock);
 }
 
 void sl_ctl_link_fec_down_cache_clear(struct sl_ctl_link *ctl_link)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_down_cache.lock);
 	memset(&(ctl_link->fec_down_cache.cw_cntrs),   0, sizeof(struct sl_core_link_fec_cw_cntrs));
 	memset(&(ctl_link->fec_down_cache.lane_cntrs), 0, sizeof(struct sl_core_link_fec_lane_cntrs));
 	memset(&(ctl_link->fec_down_cache.tail_cntrs), 0, sizeof(struct sl_core_link_fec_tail_cntrs));
-	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_down_cache.lock);
 }
 
 void sl_ctl_link_fec_down_cache_store(struct sl_ctl_link *ctl_link,
@@ -87,25 +80,22 @@ void sl_ctl_link_fec_down_cache_store(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	unsigned long irq_flags;
-
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down_cache_store");
 
-	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_down_cache.lock);
 	ctl_link->fec_down_cache.cw_cntrs   = *cw_cntrs;
 	ctl_link->fec_down_cache.lane_cntrs = *lane_cntrs;
 	ctl_link->fec_down_cache.tail_cntrs = *tail_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_down_cache.lock);
 }
 
 static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 {
-	unsigned long         irq_flags;
 	struct sl_link_policy link_policy;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "mon limits calc");
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 
 	link_policy = ctl_link->policy;
 
@@ -164,41 +154,39 @@ static void sl_ctl_link_fec_mon_limits_calc(struct sl_ctl_link *ctl_link)
 			"CCW warning limit set greater than down limit (%d > %d)",
 			ctl_link->fec_data.info.monitor.ucw_warn_limit, ctl_link->fec_data.info.monitor.ucw_down_limit);
 
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 }
 
 void sl_ctl_link_fec_mon_start(struct sl_ctl_link *ctl_link)
 {
-	u32           period;
-	unsigned long irq_flags;
+	u32 period;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "mon_start");
 
 	sl_ctl_link_fec_mon_limits_calc(ctl_link);
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	period = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 	if (!period) {
 		sl_ctl_link_fec_mon_stop(ctl_link);
 		cancel_work_sync(&ctl_link->fec_mon_timer_work);
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_lock(&ctl_link->fec_mon_timer_lock);
 	ctl_link->fec_mon_timer_stop = false;
 	mod_timer(&ctl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
-	spin_unlock_irqrestore(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_unlock(&ctl_link->fec_mon_timer_lock);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor timer started (period = %ums)", period);
 }
 
 void sl_ctl_link_fec_data_calc(struct sl_ctl_link *ctl_link)
 {
-	int           x;
-	unsigned long irq_flags;
+	int x;
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 
 	ctl_link->fec_data.info.ccw =
 		ctl_link->fec_data.curr_ptr->cw_cntrs.ccw - ctl_link->fec_data.prev_ptr->cw_cntrs.ccw;
@@ -217,7 +205,7 @@ void sl_ctl_link_fec_data_calc(struct sl_ctl_link *ctl_link)
 			ctl_link->fec_data.prev_ptr->tail_cntrs.ccw_bins[x];
 	ctl_link->fec_data.tail.period_ms = ctl_link->fec_data.info.period_ms;
 
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	if ((ctl_link->fec_data.info.ccw > 0) || (ctl_link->fec_data.info.ucw > 0)) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME,
@@ -233,11 +221,10 @@ void sl_ctl_link_fec_data_calc(struct sl_ctl_link *ctl_link)
 struct sl_fec_info sl_ctl_link_fec_data_info_get(struct sl_ctl_link *ctl_link)
 {
 	struct sl_fec_info fec_info;
-	unsigned long      irq_flags;
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	fec_info = ctl_link->fec_data.info;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	return fec_info;
 }
@@ -245,11 +232,10 @@ struct sl_fec_info sl_ctl_link_fec_data_info_get(struct sl_ctl_link *ctl_link)
 struct sl_fec_tail sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link)
 {
 	struct sl_fec_tail fec_tail;
-	unsigned long      irq_flags;
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	fec_tail = ctl_link->fec_data.tail;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	return fec_tail;
 }
@@ -257,11 +243,9 @@ struct sl_fec_tail sl_ctl_link_fec_data_tail_get(struct sl_ctl_link *ctl_link)
 int sl_ctl_link_fec_up_cache_cw_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_cw_cntrs *cw_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_up_cache.lock);
 	*cw_cntrs = ctl_link->fec_up_cache.cw_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_up_cache.lock);
 
 	return 0;
 }
@@ -269,11 +253,9 @@ int sl_ctl_link_fec_up_cache_cw_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_up_cache_lane_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_up_cache.lock);
 	*lane_cntrs = ctl_link->fec_up_cache.lane_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_up_cache.lock);
 
 	return 0;
 }
@@ -281,11 +263,9 @@ int sl_ctl_link_fec_up_cache_lane_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_up_cache_tail_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_up_cache.lock);
 	*tail_cntrs = ctl_link->fec_up_cache.tail_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_up_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_up_cache.lock);
 
 	return 0;
 }
@@ -293,11 +273,9 @@ int sl_ctl_link_fec_up_cache_tail_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_down_cache_cw_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_cw_cntrs *cw_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_down_cache.lock);
 	*cw_cntrs = ctl_link->fec_down_cache.cw_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_down_cache.lock);
 
 	return 0;
 }
@@ -305,11 +283,9 @@ int sl_ctl_link_fec_down_cache_cw_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_down_cache_lane_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_down_cache.lock);
 	*lane_cntrs = ctl_link->fec_down_cache.lane_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_down_cache.lock);
 
 	return 0;
 }
@@ -317,11 +293,9 @@ int sl_ctl_link_fec_down_cache_lane_cntrs_get(struct sl_ctl_link *ctl_link,
 int sl_ctl_link_fec_down_cache_tail_cntrs_get(struct sl_ctl_link *ctl_link,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_lock(&ctl_link->fec_down_cache.lock);
 	*tail_cntrs = ctl_link->fec_down_cache.tail_cntrs;
-	spin_unlock_irqrestore(&ctl_link->fec_down_cache.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_down_cache.lock);
 
 	return 0;
 }
@@ -354,18 +328,17 @@ int sl_ctl_link_fec_data_check(struct sl_ctl_link *ctl_link)
 	s32                ucw_down_limit;
 	s32                ucw_warn_limit;
 	struct sl_fec_info fec_info;
-	unsigned long      irq_flags;
 	bool               is_limit_crossed;
 	time64_t           limit_crossed_time;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "data check");
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
 	ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_warn_limit;
 	ucw_down_limit = ctl_link->fec_data.info.monitor.ucw_down_limit;
 	ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_warn_limit;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 
 	fec_info = ctl_link->fec_data.info;
 
@@ -447,7 +420,6 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 {
 	int                                  rtn;
 	struct sl_ctl_link                  *ctl_link;
-	unsigned long                        irq_flags;
 	s32                                  period;
 	bool                                 stop;
 	struct sl_core_link_fec_cw_cntrs     cw_cntrs;
@@ -458,17 +430,17 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor timer work");
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	period = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 	if (!period) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor period zero");
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_lock(&ctl_link->fec_mon_timer_lock);
 	stop = ctl_link->fec_mon_timer_stop;
-	spin_unlock_irqrestore(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_unlock(&ctl_link->fec_mon_timer_lock);
 	if (stop) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor stopped");
 		return;
@@ -492,17 +464,17 @@ void sl_ctl_link_fec_mon_timer_work(struct work_struct *work)
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->fec_data.lock, irq_flags);
+	spin_lock(&ctl_link->fec_data.lock);
 	period = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock_irqrestore(&ctl_link->fec_data.lock, irq_flags);
+	spin_unlock(&ctl_link->fec_data.lock);
 	if (!period) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor period zero");
 		return;
 	}
 
-	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_lock(&ctl_link->fec_mon_timer_lock);
 	stop = ctl_link->fec_mon_timer_stop;
-	spin_unlock_irqrestore(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_unlock(&ctl_link->fec_mon_timer_lock);
 	if (stop) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor stopped");
 		return;
@@ -527,15 +499,14 @@ void sl_ctl_link_fec_mon_timer(struct timer_list *timer)
 
 void sl_ctl_link_fec_mon_stop(struct sl_ctl_link *ctl_link)
 {
-	bool          stop;
-	unsigned long irq_flags;
+	bool stop;
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor stop");
 
-	spin_lock_irqsave(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_lock(&ctl_link->fec_mon_timer_lock);
 	stop = ctl_link->fec_mon_timer_stop;
 	ctl_link->fec_mon_timer_stop = true;
-	spin_unlock_irqrestore(&ctl_link->fec_mon_timer_lock, irq_flags);
+	spin_unlock(&ctl_link->fec_mon_timer_lock);
 
 	if (stop) {
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "monitor already stopped");

@@ -26,21 +26,18 @@ static DEFINE_SPINLOCK(ctl_lgrps_lock);
 
 static void sl_ctl_lgrp_is_deleting_set(struct sl_ctl_lgrp *ctl_lgrp)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&ctl_lgrp->data_lock, flags);
+	spin_lock(&ctl_lgrp->data_lock);
 	ctl_lgrp->is_deleting = true;
-	spin_unlock_irqrestore(&ctl_lgrp->data_lock, flags);
+	spin_unlock(&ctl_lgrp->data_lock);
 }
 
 static bool sl_ctl_lgrp_is_deleting(struct sl_ctl_lgrp *ctl_lgrp)
 {
-	unsigned long flags;
-	bool          is_deleting;
+	bool is_deleting;
 
-	spin_lock_irqsave(&ctl_lgrp->data_lock, flags);
+	spin_lock(&ctl_lgrp->data_lock);
 	is_deleting = ctl_lgrp->is_deleting;
-	spin_unlock_irqrestore(&ctl_lgrp->data_lock, flags);
+	spin_unlock(&ctl_lgrp->data_lock);
 
 	return is_deleting;
 }
@@ -173,12 +170,11 @@ void sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 struct sl_ctl_lgrp *sl_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
-	unsigned long       irq_flags;
 	struct sl_ctl_lgrp *ctl_lgrp;
 
-	spin_lock_irqsave(&ctl_lgrps_lock, irq_flags);
+	spin_lock(&ctl_lgrps_lock);
 	ctl_lgrp = ctl_lgrps[ldev_num][lgrp_num];
-	spin_unlock_irqrestore(&ctl_lgrps_lock, irq_flags);
+	spin_unlock(&ctl_lgrps_lock);
 
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "get (lgrp = 0x%p)", ctl_lgrp);
 
@@ -188,7 +184,6 @@ struct sl_ctl_lgrp *sl_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num)
 int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 {
 	struct sl_ctl_lgrp *ctl_lgrp;
-	unsigned long       irq_flags;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
@@ -196,9 +191,9 @@ int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 		return -EBADRQC;
 	}
 
-	spin_lock_irqsave(&ctl_lgrp->log_lock, irq_flags);
+	spin_lock(&ctl_lgrp->log_lock);
 	strncpy(ctl_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
-	spin_unlock_irqrestore(&ctl_lgrp->log_lock, irq_flags);
+	spin_unlock(&ctl_lgrp->log_lock);
 
 	sl_media_lgrp_connect_id_set(ldev_num, lgrp_num, connect_id);
 
@@ -211,7 +206,6 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 {
 	int                 rtn;
 	struct sl_ctl_lgrp *ctl_lgrp;
-	unsigned long       irq_flags;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
@@ -233,9 +227,9 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 		return rtn;
 	}
 
-	spin_lock_irqsave(&(ctl_lgrp->config_lock), irq_flags);
+	spin_lock(&(ctl_lgrp->config_lock));
 	ctl_lgrp->config = *lgrp_config;
-	spin_unlock_irqrestore(&(ctl_lgrp->config_lock), irq_flags);
+	spin_unlock(&(ctl_lgrp->config_lock));
 
 	return 0;
 }
@@ -243,7 +237,6 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 int sl_ctl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp_policy)
 {
 	struct sl_ctl_lgrp *ctl_lgrp;
-	unsigned long       irq_flags;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
@@ -253,9 +246,9 @@ int sl_ctl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp
 
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "policy set");
 
-	spin_lock_irqsave(&(ctl_lgrp->config_lock), irq_flags);
+	spin_lock(&(ctl_lgrp->config_lock));
 	ctl_lgrp->policy = *lgrp_policy;
-	spin_unlock_irqrestore(&(ctl_lgrp->config_lock), irq_flags);
+	spin_unlock(&(ctl_lgrp->config_lock));
 
 	return 0;
 }

@@ -24,7 +24,6 @@ static DEFINE_SPINLOCK(media_lgrps_lock);
 
 int sl_media_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 	int                   rtn;
 
@@ -55,16 +54,15 @@ int sl_media_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "new (lgrp = 0x%p)", media_lgrp);
 
-	spin_lock_irqsave(&media_lgrps_lock, irq_flags);
+	spin_lock(&media_lgrps_lock);
 	media_lgrps[ldev_num][lgrp_num] = media_lgrp;
-	spin_unlock_irqrestore(&media_lgrps_lock, irq_flags);
+	spin_unlock(&media_lgrps_lock);
 
 	return 0;
 }
 
 void sl_media_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
@@ -73,9 +71,9 @@ void sl_media_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 		return;
 	}
 
-	spin_lock_irqsave(&media_lgrps_lock, irq_flags);
+	spin_lock(&media_lgrps_lock);
 	media_lgrps[ldev_num][lgrp_num] = NULL;
-	spin_unlock_irqrestore(&media_lgrps_lock, irq_flags);
+	spin_unlock(&media_lgrps_lock);
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "del (lgrp = 0x%p)", media_lgrp);
 
@@ -84,12 +82,11 @@ void sl_media_data_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 struct sl_media_lgrp *sl_media_data_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
-	unsigned long         irq_flags;
 	struct sl_media_lgrp *media_lgrp;
 
-	spin_lock_irqsave(&media_lgrps_lock, irq_flags);
+	spin_lock(&media_lgrps_lock);
 	media_lgrp = media_lgrps[ldev_num][lgrp_num];
-	spin_unlock_irqrestore(&media_lgrps_lock, irq_flags);
+	spin_unlock(&media_lgrps_lock);
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "get (lgrp = 0x%p)", media_lgrp);
 
@@ -98,11 +95,9 @@ struct sl_media_lgrp *sl_media_data_lgrp_get(u8 ldev_num, u8 lgrp_num)
 
 void sl_media_data_lgrp_connect_id_set(struct sl_media_lgrp *media_lgrp, const char *connect_id)
 {
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&(media_lgrp->log_lock), irq_flags);
+	spin_lock(&(media_lgrp->log_lock));
 	strncpy(media_lgrp->connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
-	spin_unlock_irqrestore(&(media_lgrp->log_lock), irq_flags);
+	spin_unlock(&(media_lgrp->log_lock));
 
 	sl_media_log_dbg(media_lgrp, SL_MEDIA_DATA_LGRP_LOG_NAME, "connect_id = %s", connect_id);
 }
