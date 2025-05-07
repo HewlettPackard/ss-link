@@ -474,7 +474,14 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "shift-state-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
 		return "offline";
+	case SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO:
+		return "high-temp-jack-io";
 	default:
 		return "unknown";
 	}
+}
+
+bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+{
+	return sl_media_data_jack_cable_is_high_temp(media_jack);
 }

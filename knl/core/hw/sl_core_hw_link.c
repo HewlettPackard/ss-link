@@ -1149,6 +1149,12 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	if (!sl_core_hw_link_media_check(core_link))
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
+	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+							    SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
+		if (sl_media_jack_cable_is_high_temp((sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
+						     core_link->core_lgrp->num))->media_jack))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP);
+
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	rtn = core_link->config.fault_callback(core_link->link.tags.up, sl_core_data_link_state_get(core_link),

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/kernel.h>
@@ -1124,4 +1124,32 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 	media_jack->is_high_powered = false;
 
 	return 0;
+}
+
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+{
+	int                  rtn;
+	struct xcvr_i2c_data data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable is high temp");
+
+	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num))
+		return false;
+
+	data.addr   = 0;
+	data.page   = 0x00;
+	data.bank   = 0;
+	data.offset = 0x09;
+	data.len    = 1;
+
+	rtn = hsnxcvr_i2c_read(media_jack->hdl, &data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME,
+			"high temp page read failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO);
+		return false;
+	}
+
+	return ((data.data[0] & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) != 0);
 }

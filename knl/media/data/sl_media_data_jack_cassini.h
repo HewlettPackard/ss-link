@@ -21,4 +21,6 @@ int  sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info);
 
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
+
 #endif /* _SL_MEDIA_DATA_JACK_CASSINI_H_ */

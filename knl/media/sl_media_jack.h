@@ -70,6 +70,8 @@
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED   1
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED 2
 
+#define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
+
 /*
  * FIXME: Eventually remove this struct and get this info from cable DB
  */
@@ -179,6 +181,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET         BIT(19)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO             BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_OFFLINE                         BIT(21)
+#define SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO               BIT(22)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -205,5 +208,7 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
 	time64_t *fault_time);
 const char *sl_media_fault_cause_str(u32 fault_cause);
+
+bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 
 #endif /* _SL_MEDIA_JACK_H_ */

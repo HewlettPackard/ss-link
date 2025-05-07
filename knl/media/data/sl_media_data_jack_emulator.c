@@ -61,3 +61,8 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 {
 	return 0;
 }
+
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+{
+	return false;
+}

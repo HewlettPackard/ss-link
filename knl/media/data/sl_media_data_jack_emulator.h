@@ -13,4 +13,6 @@ int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
+
 #endif /* _SL_MEDIA_DATA_JACK_EMULATOR_H_ */

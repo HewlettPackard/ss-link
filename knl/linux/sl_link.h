@@ -40,10 +40,11 @@ struct kobject;
 #define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(24) /* link up serdes quality problems      */
 #define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(25) /* no media present                     */
 #define SL_LINK_DOWN_CAUSE_CCW               BIT(26) /* link up or fec mon CCW limit crossed */
+#define SL_LINK_DOWN_CAUSE_HIGH_TEMP         BIT(27) /* active cable too hot                 */
 
-#define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible               */
-#define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous    */
-#define SL_LINK_DOWN_ORIGIN_LINK_UP          BIT(63) /* link down before reaching up        */
+#define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
+#define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */
+#define SL_LINK_DOWN_ORIGIN_LINK_UP          BIT(63) /* link down before reaching up         */
 
 #define SL_LINK_DOWN_CAUSE_STR_SIZE     128
 #define SL_LINK_DOWN_CAUSE_STR_SIZE_MIN 4
