@@ -37,8 +37,7 @@ void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_lin
 		SL_CORE_HW_AN_BP_PAUSE_SHIFT);
 	core_link->an.tx_pages[0] |= ((u64)(my_caps->tech_map & SL_LGRP_CONFIG_TECH_MASK) <<
 		SL_CORE_HW_AN_BP_TECH_SHIFT);
-	// FIXME: for now just allow the RS bit
-	core_link->an.tx_pages[0] |= ((u64)((my_caps->fec_map & SL_LGRP_CONFIG_FEC_MASK) & 0x1) <<
+	core_link->an.tx_pages[0] |= ((u64)(my_caps->fec_map & SL_LGRP_CONFIG_FEC_MASK) <<
 		SL_CORE_HW_AN_BP_FEC_SHIFT);
 
 	/* 2 - OUI message next page */
@@ -441,7 +440,7 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	u32 hpe_map;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode (count = %u)", core_link->an.rx_count);
-	for (x = 0; x < core_link->an.tx_count; ++x)
+	for (x = 0; x < core_link->an.rx_count; ++x)
 		sl_core_log_dbg(core_link, LOG_NAME,
 		"rx pages decode pages (%d = 0x%016llX)", x, core_link->an.rx_pages[x]);
 
@@ -492,7 +491,6 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	}
 	link_caps->pause_map = pause_map & my_caps->pause_map;
 	link_caps->fec_map   = fec_map & my_caps->fec_map;
-	link_caps->fec_map  |= SL_LGRP_CONFIG_FEC_RS;
 	link_caps->hpe_map   = hpe_map & my_caps->hpe_map;
 
 	sl_core_log_dbg(core_link, LOG_NAME,

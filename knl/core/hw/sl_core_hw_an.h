@@ -8,26 +8,32 @@ struct sl_core_link;
 struct work_struct;
 
 /* base page */
-#define SL_CORE_HW_AN_BP_BIT_FEC_25G_BASE_R        45
-#define SL_CORE_HW_AN_BP_BIT_FEC_25G_RS            44
-#define SL_CORE_HW_AN_BP_BIT_FEC_100G_RS           43
+#define SL_CORE_HW_AN_BP_BIT_FEC_10G_REQUESTED     47 /* F1 */
+#define SL_CORE_HW_AN_BP_BIT_FEC_10G_ABILITY       46 /* F0 */
+#define SL_CORE_HW_AN_BP_BIT_FEC_25G_BASE_R        45 /* F3 */
+#define SL_CORE_HW_AN_BP_BIT_FEC_25G_RS            44 /* F2 */
+/* bits [43:40] other technology */
 #define SL_CORE_HW_AN_BP_BIT_400G_BASE_xR_4        39
 #define SL_CORE_HW_AN_BP_BIT_200G_BASE_xR_2        38
 #define SL_CORE_HW_AN_BP_BIT_100G_BASE_xR_1        37
 #define SL_CORE_HW_AN_BP_BIT_200G_BASE_xR_4        36
 #define SL_CORE_HW_AN_BP_BIT_100G_BASE_xR_2        35
 #define SL_CORE_HW_AN_BP_BIT_50G_BASE_xR           34
+/* bits [33:32] other technology */
 #define SL_CORE_HW_AN_BP_BIT_25G_BASE_KR           31
 #define SL_CORE_HW_AN_BP_BIT_25G_BASE_KR_S         30
 #define SL_CORE_HW_AN_BP_BIT_100G_BASE_CR_4        29
 #define SL_CORE_HW_AN_BP_BIT_100G_BASE_KR_4        28
-#define SL_CORE_HW_AN_BP_BIT_TRANS_NONCE           16
+/* bits [27:21] other technology */
+#define SL_CORE_HW_AN_BP_BIT_TRANS_NONCE           16 /* [20:16] */
 #define SL_CORE_HW_AN_BP_BIT_NP                    15
 #define SL_CORE_HW_AN_BP_BIT_ACK                   14
 #define SL_CORE_HW_AN_BP_BIT_RF                    13
+/* bit 12 PAUSE_reserved */
 #define SL_CORE_HW_AN_BP_BIT_PAUSE_ASYMETRIC       11
 #define SL_CORE_HW_AN_BP_BIT_PAUSE_SYMETRIC        10
-#define SL_CORE_HW_AN_BP_BIT_SELECTOR               0
+/* bits [9:5] ECHO_NONCE */
+#define SL_CORE_HW_AN_BP_BIT_SELECTOR               0 /* [4:0] */
 #define SL_CORE_HW_AN_BP_802_3                     (BIT_ULL(0) << SL_CORE_HW_AN_BP_BIT_SELECTOR)
 
 /* next page */
@@ -55,7 +61,7 @@ struct work_struct;
 /* link caps */
 #define SL_CORE_HW_AN_BP_PAUSE_SHIFT 10
 #define SL_CORE_HW_AN_BP_TECH_SHIFT  21
-#define SL_CORE_HW_AN_BP_FEC_SHIFT   43
+#define SL_CORE_HW_AN_BP_FEC_SHIFT   44
 #define SL_CORE_HW_AN_NP_HPE_SHIFT   24
 
 enum sl_core_hw_an_state {
