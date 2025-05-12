@@ -62,6 +62,13 @@ enum sl_media_vendor {
 	SL_MEDIA_VENDOR_AMPHENOL,
 };
 
+enum sl_media_shape {
+	SL_MEDIA_SHAPE_INVALID = 0,
+	SL_MEDIA_SHAPE_STRAIGHT,
+	SL_MEDIA_SHAPE_SPLITTER,
+	SL_MEDIA_SHAPE_BIFURCATED,
+};
+
 #define SL_MEDIA_SPEEDS_SUPPORT_CK_400G BIT(0)
 #define SL_MEDIA_SPEEDS_SUPPORT_CK_200G BIT(1)
 #define SL_MEDIA_SPEEDS_SUPPORT_CK_100G BIT(2)
@@ -70,6 +77,7 @@ enum sl_media_vendor {
 #define SL_MEDIA_SPEEDS_SUPPORT_CD_100G BIT(5)
 #define SL_MEDIA_SPEEDS_SUPPORT_CD_50G  BIT(6)
 #define SL_MEDIA_SPEEDS_SUPPORT_CK_800G BIT(7)
+#define SL_MEDIA_SPEEDS_SUPPORT_INVALID BIT(8)
 
 #define SL_MEDIA_OPT_AUTONEG              BIT(0)
 #define SL_MEDIA_OPT_FAKE                 BIT(1)
@@ -107,7 +115,7 @@ struct sl_media_qsfp {
 #define SL_MEDIA_FIRMWARE_VERSION_SIZE 2
 
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
-#define SL_MEDIA_ATTR_VER   8
+#define SL_MEDIA_ATTR_VER   9
 struct sl_media_attr {
 	u32 magic;
 	u32 ver;
@@ -118,6 +126,7 @@ struct sl_media_attr {
 	u32 length_cm;
 	u32 speeds_map;                /* Supported speeds on cable */
 	u32 hpe_pn;                    /* HPE part number */
+	u32 shape;
 	char  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
 	char  serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
 	char  date_code_str[SL_MEDIA_DATE_CODE_SIZE];
@@ -149,6 +158,8 @@ const char *sl_media_furcation_str(u32 furcation);
 const char *sl_media_state_str(u8 state);
 const char *sl_media_cable_shift_state_str(u8 cable_shift_state);
 const char *sl_media_type_str(u32 type);
+const char *sl_media_shape_str(u32 shape);
+const char *sl_media_cable_end_str(u8 cable_end);
 const char *sl_media_vendor_str(u32 vendor);
 const char *sl_media_speed_str(u32 speed);
 const char *sl_media_ber_str(u8 media_interface);

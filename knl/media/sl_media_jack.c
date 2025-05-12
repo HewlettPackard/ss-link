@@ -84,6 +84,17 @@ u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
 	return state;
 }
 
+u8 sl_media_jack_cable_end_get(struct sl_media_jack *media_jack)
+{
+	u8 cable_end;
+
+	spin_lock(&media_jack->data_lock);
+	cable_end = media_jack->cable_end;
+	spin_unlock(&media_jack->data_lock);
+
+	return cable_end;
+}
+
 bool sl_media_jack_is_high_powered(struct sl_media_jack *media_jack)
 {
 	bool is_high_powered;
@@ -139,7 +150,7 @@ bool sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack)
 	return is_format_invalid;
 }
 
-u8 sl_media_jack_actv_cable_200g_host_iface_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_200g_host_iface_get(struct sl_media_jack *media_jack)
 {
 	u8 host_interface_200_gaui;
 
@@ -150,7 +161,7 @@ u8 sl_media_jack_actv_cable_200g_host_iface_get(struct sl_media_jack *media_jack
 	return host_interface_200_gaui;
 }
 
-u8 sl_media_jack_actv_cable_200g_appsel_no_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_200g_appsel_no_get(struct sl_media_jack *media_jack)
 {
 	u8 appsel_no_200_gaui;
 
@@ -161,7 +172,7 @@ u8 sl_media_jack_actv_cable_200g_appsel_no_get(struct sl_media_jack *media_jack)
 	return appsel_no_200_gaui;
 }
 
-u8 sl_media_jack_actv_cable_200g_lane_count_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack)
 {
 	u8 lane_count_200_gaui;
 
@@ -172,7 +183,7 @@ u8 sl_media_jack_actv_cable_200g_lane_count_get(struct sl_media_jack *media_jack
 	return lane_count_200_gaui;
 }
 
-u8 sl_media_jack_actv_cable_400g_host_iface_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_400g_host_iface_get(struct sl_media_jack *media_jack)
 {
 	u8 host_interface_400_gaui;
 
@@ -183,7 +194,7 @@ u8 sl_media_jack_actv_cable_400g_host_iface_get(struct sl_media_jack *media_jack
 	return host_interface_400_gaui;
 }
 
-u8 sl_media_jack_actv_cable_400g_appsel_no_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_400g_appsel_no_get(struct sl_media_jack *media_jack)
 {
 	u8 appsel_no_400_gaui;
 
@@ -194,7 +205,7 @@ u8 sl_media_jack_actv_cable_400g_appsel_no_get(struct sl_media_jack *media_jack)
 	return appsel_no_400_gaui;
 }
 
-u8 sl_media_jack_actv_cable_400g_lane_count_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack)
 {
 	u8 lane_count_400_gaui;
 
@@ -516,4 +527,27 @@ void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state)
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "headshell led set");
 
 	sl_media_data_jack_headshell_led_set(media_lgrp->media_jack, jack_state);
+}
+
+void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
+{
+	u32 type;
+	u32 vendor;
+	int i;
+
+	type   = media_jack->cable_info[0].media_attr.type;
+	vendor = media_jack->cable_info[0].media_attr.vendor;
+
+	for (i = 0; i < ARRAY_SIZE(downshift_cable_db); ++i) {
+		if ((downshift_cable_db[i].type == type) &&
+			(downshift_cable_db[i].vendor == vendor)) {
+			snprintf(target_fw_str, target_fw_size, "0x%u%u",
+				 downshift_cable_db[i].fw_major_ver,
+				 downshift_cable_db[i].fw_minor_ver);
+			return;
+		}
+	}
+
+	strncpy(target_fw_str, "none", target_fw_size - 1);
+	target_fw_str[target_fw_size - 1] = '\0';
 }

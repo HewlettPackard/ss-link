@@ -332,6 +332,14 @@ static int sl_media_eeprom_fw_ver_get(struct sl_media_jack *media_jack, u8 *fw_v
 	return 0;
 }
 
+#define CABLE_END_OFFSET 240
+static int sl_media_eeprom_cable_end_get(struct sl_media_jack *media_jack)
+{
+	media_jack->cable_end = media_jack->eeprom_page0[CABLE_END_OFFSET];
+
+	return 0;
+}
+
 #define CMIS_LENGTH_OFFSET    202
 #define SFF8436_LENGTH_OFFSET 146
 static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 format, u32 *length)
@@ -379,6 +387,7 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str)                ||
 		sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str)                  ||
 		sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver)                            ||
+		sl_media_eeprom_cable_end_get(media_jack)                                             ||
 		sl_media_eeprom_length_get(media_jack, format, &(media_attr->length_cm))              ||
 		sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map))                ||
 		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))

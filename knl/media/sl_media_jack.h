@@ -100,6 +100,7 @@ struct sl_media_cable_attr {
 	__u32                           length_cm;
 	__u32                           hpe_pn;      /* HPE part number */
 	__u32                           max_speed;
+	__u32                           shape;
 
 	struct sl_media_serdes_settings serdes_settings;
 };
@@ -126,6 +127,7 @@ struct sl_media_jack {
 
 	int                             cable_db_idx;
 	struct sl_media_lgrp_cable_info cable_info[SL_MEDIA_MAX_LGRPS_PER_JACK];
+	u32                             cable_end;
 
 	u8                              eeprom_page0[SL_MEDIA_EEPROM_PAGE_SIZE];
 	u8                              eeprom_page1[SL_MEDIA_EEPROM_PAGE_SIZE];
@@ -190,18 +192,19 @@ void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
 struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
 void                  sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_state_get(struct sl_media_jack *media_jack);
+u8                    sl_media_jack_cable_end_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_jack);
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
 
-u8 sl_media_jack_actv_cable_200g_host_iface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_actv_cable_200g_appsel_no_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_actv_cable_200g_lane_count_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_actv_cable_400g_host_iface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_actv_cable_400g_appsel_no_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_actv_cable_400g_lane_count_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_200g_host_iface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_200g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_400g_host_iface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_400g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
@@ -216,5 +219,7 @@ int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 
 void sl_media_jack_link_led_set(u8 ldev_num, u8 lgrp_num, u32 link_state);
 void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state);
+
+void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size);
 
 #endif /* _SL_MEDIA_JACK_H_ */

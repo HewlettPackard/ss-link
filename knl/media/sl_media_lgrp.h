@@ -62,6 +62,7 @@ void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 
 u32  sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp);
+u32  sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp);
 void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str);

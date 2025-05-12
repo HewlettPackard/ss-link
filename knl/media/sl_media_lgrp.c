@@ -141,6 +141,26 @@ u32 sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp)
 	return type;
 }
 
+u32 sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp)
+{
+	u32 shape;
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		shape = media_lgrp->cable_info->media_attr.shape;
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+		shape = media_lgrp->cable_info->stashed_media_attr.shape;
+		break;
+	default:
+		shape = SL_MEDIA_SHAPE_INVALID;
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return shape;
+}
+
 u32 sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp)
 {
 	u32 length_cm;
