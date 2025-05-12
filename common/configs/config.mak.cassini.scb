@@ -1,0 +1,43 @@
+#
+# build configuration for Cassini
+#
+
+ARCH := $(shell uname -m)
+
+KDIR        ?= /lib/modules/$KNL_REL/build
+STAGING_DIR ?= $(PWD)/staging_dir
+
+SL_MOD_DIR = extra/sshot
+KNL_MOD_DIR := $(STAGING_DIR)/lib/modules/$(KNL_REL)
+
+INSTALL_DIR	:= $(DESTDIR)
+GIT_HASH := $(shell git rev-parse HEAD)
+
+PLATFORM_CASSINI = 1
+
+KNL_BUILD_ARGS += BUILDSYS_FRAMEWORK_CASSINI=1
+KNL_BUILD_ARGS += SL_CASSINI_BUILD=y
+KNL_BUILD_ARGS += SL_TEST=y
+
+KCPPFLAGS += -DBUILDSYS_EXTERNAL_BUILD
+KCPPFLAGS += -DBUILDSYS_FRAMEWORK_CASSINI
+KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
+KCPPFLAGS += -DSL_TEST=1
+
+USR_BUILD_ARGS += -DBUILDSYS_FRAMEWORK_CASSINI
+USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)
+DISCRIMINATOR  := $(ARCH)-linux-gnu
+
+SL_NAME = cxi-sl
+SL_TEST_NAME = cxi-sl-test
+KNL_BUILD_ARGS += SL_NAME=$(SL_NAME)
+KNL_BUILD_ARGS += SL_TEST_NAME=$(SL_TEST_NAME)
+
+## NOTE: to compile user space
+##SL_BUILD_USR=1
+
+export SL_MOD_DIR
+export STAGING_DIR
+export DISCRIMINATOR
+export SL_NAME
+export SL_TEST_NAME
