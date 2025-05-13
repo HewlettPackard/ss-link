@@ -63,7 +63,7 @@ function sl_test_rosetta2_unload_modules {
 
         sl_test_debug_log "${FUNCNAME}"
 
-        modules=(rossw roscore sl)
+        modules=(rosnic rossw roscore sl)
 
         for module in ${modules[@]}; do
                 modinfo ${module} > /dev/null
@@ -75,7 +75,6 @@ function sl_test_rosetta2_unload_modules {
         done
 
         # These may or may not be loaded
-        rmmod rosnic > /dev/null 2>&1
         rmmod sl-test > /dev/null 2>&1
 
         for module in "${modules[@]}"; do
@@ -95,7 +94,7 @@ function sl_test_rosetta2_load_modules
 {
         sl_test_debug_log "${FUNCNAME}"
 
-        modules=(sl roscore rossw sl-test)
+        modules=(sl roscore rossw rosnic sl-test)
 
         for module in ${modules[@]}; do
                 modinfo ${module} > /dev/null
