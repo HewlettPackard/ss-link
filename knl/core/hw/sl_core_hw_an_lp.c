@@ -27,7 +27,7 @@ static void sl_core_an_lp_caps_get_callback(struct sl_core_link *link)
 	rtn = link->an.callbacks.lp_caps_get(link->an.tag,
 		&(link->an.lp_caps), link->an.lp_caps_state);
 	if (rtn != 0)
-		sl_core_log_warn(link, LOG_NAME,
+		sl_core_log_warn_trace(link, LOG_NAME,
 			"lp caps get callback - failed [%d]", rtn);
 }
 
@@ -53,7 +53,7 @@ void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *core_link, u32 link_stat
 
 	/* test check */
 	if (core_link->an.use_test_caps) {
-		sl_core_log_warn(core_link, LOG_NAME,
+		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get cmd - using test caps");
 		core_link->an.lp_caps       = core_link->an.test_caps;
 		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_DATA);
@@ -101,6 +101,8 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get work hw_serdes_link_up_an failed [%d]", rtn);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_SERDES_LINK_UP_FAIL);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
 		sl_core_hw_serdes_link_down(core_link);
 		sl_core_data_link_state_set(core_link, core_link->an.link_state);
@@ -202,6 +204,8 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 	if (core_link->an.state != SL_CORE_HW_AN_STATE_COMPLETE) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"lp caps get done work not complete");
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_NOT_COMPLETE);
 		sl_core_data_link_an_lp_caps_state_set(core_link, SL_CORE_LINK_LP_CAPS_ERROR);
 		goto out;
 	}

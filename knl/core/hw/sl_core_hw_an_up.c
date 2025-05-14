@@ -19,6 +19,8 @@
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_link.h"
+#include "sl_ctl_link_counters.h"
+#include "sl_ctl_link.h"
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
@@ -57,7 +59,8 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 
 	if (core_link->core_lgrp->link_caps[core_link->num].tech_map == 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up start test caps no match");
-
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_TEST_CAPS_NOMATCH);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -100,8 +103,13 @@ static void sl_core_hw_an_up(struct sl_core_link *core_link)
 {
 	int                 rtn;
 	struct sl_link_caps my_caps;
+	struct sl_ctl_link *ctl_link;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up");
+
+	ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+	core_link->core_lgrp->num, core_link->num);
+	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_HW_AN_ATTEMPT);
 
 	sl_core_hw_an_init(core_link);
 
@@ -144,6 +152,8 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up work hw_serdes_link_up_an failed [%d]", rtn);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_SERDES_LINK_UP_FAIL);
 
 		sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -200,6 +210,8 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 			return;
 		}
 		sl_core_log_err_trace(core_link, LOG_NAME, "up done work auto neg not complete");
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_NOT_COMPLETE);
 		goto out_down;
 	}
 
@@ -212,6 +224,8 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up done work hw_an_rx_pages_decode failure [%d]", rtn);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_FAIL);
 		goto out_down;
 	}
 

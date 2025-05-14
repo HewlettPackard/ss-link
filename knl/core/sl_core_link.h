@@ -266,6 +266,8 @@ struct sl_core_link {
 		struct sl_link_caps                   lp_caps;
 		u32                                   lp_caps_state;
 		u8                                    state;
+		u32                                   fail_cause;
+		time64_t                              fail_time;
 		u8                                    page_num;
 		u8                                    tx_count;
 		u64                                   tx_pages[SL_CORE_LINK_AN_MAX_PAGES];

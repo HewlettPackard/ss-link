@@ -74,6 +74,28 @@ enum sl_core_hw_an_state {
 	SL_CORE_HW_AN_STATE_ERROR,
 };
 
+#define SL_CORE_HW_AN_FAIL_CAUSE_NONE                           0
+#define SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_SERDES_LINK_UP_FAIL    BIT(0)
+#define SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_NOT_COMPLETE           BIT(1)
+#define SL_CORE_HW_AN_FAIL_CAUSE_NOT_COMPLETE                   BIT(2)
+#define SL_CORE_HW_AN_FAIL_CAUSE_TEST_CAPS_NOMATCH              BIT(3)
+#define SL_CORE_HW_AN_FAIL_CAUSE_SERDES_LINK_UP_FAIL            BIT(4)
+#define SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_BAD             BIT(5)
+#define SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_LP_ABILITY_NOT_SET    BIT(6)
+#define SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_ERROR           BIT(7)
+#define SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_BP_NOT_SET            BIT(8)
+#define SL_CORE_HW_AN_FAIL_CAUSE_BP_SEND_INTR_ENABLE_FAIL       BIT(9)
+#define SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_STATE_BAD             BIT(10)
+#define SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_BP_SET                BIT(11)
+#define SL_CORE_HW_AN_FAIL_CAUSE_NP_CHECK_STATE_BAD             BIT(12)
+#define SL_CORE_HW_AN_FAIL_CAUSE_INTR_STATE_INVALID             BIT(13)
+#define SL_CORE_HW_AN_FAIL_CAUSE_INTR_AN_RETRY_NP_SEND_FAIL     BIT(14)
+#define SL_CORE_HW_AN_FAIL_CAUSE_INTR_OUT_OF_PAGES              BIT(15)
+#define SL_CORE_HW_AN_FAIL_CAUSE_INTR_NP_SEND_FAIL              BIT(16)
+#define SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_FAIL              BIT(17)
+#define SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP             BIT(18)
+#define SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID       BIT(19)
+
 void sl_core_hw_an_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data);
 
 void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link,

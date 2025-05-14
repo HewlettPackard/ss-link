@@ -24,5 +24,7 @@ int  sl_core_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 int  sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 u32  sl_core_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
+void sl_core_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time);
+const char *sl_core_link_an_fail_cause_str(u32 fail_cause);
 
 #endif /* _SL_CORE_LINK_AN_H_ */

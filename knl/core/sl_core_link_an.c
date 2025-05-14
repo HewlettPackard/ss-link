@@ -13,6 +13,7 @@
 #include "base/sl_core_log.h"
 #include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_an_lp.h"
+#include "hw/sl_core_hw_an.h"
 
 #define LOG_NAME SL_CORE_LINK_AN_LOG_NAME
 
@@ -85,3 +86,57 @@ int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 }
+
+void sl_core_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
+{
+	sl_core_data_link_an_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num), fail_cause, fail_time);
+}
+
+const char *sl_core_link_an_fail_cause_str(u32 fail_cause)
+{
+	switch (fail_cause) {
+	case SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_SERDES_LINK_UP_FAIL:
+		return "lp-caps-serdes-link-up-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_NOT_COMPLETE:
+		return "lp-caps-not-complete";
+	case SL_CORE_HW_AN_FAIL_CAUSE_NOT_COMPLETE:
+		return "not-complete";
+	case SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_FAIL:
+		return "pages-decode-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_TEST_CAPS_NOMATCH:
+		return "test-caps-nomatch";
+	case SL_CORE_HW_AN_FAIL_CAUSE_SERDES_LINK_UP_FAIL:
+		return "serdes-link-up-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_BAD:
+		return "bp-store-state-bad";
+	case SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_LP_ABILITY_NOT_SET:
+		return "bp-store-lp-ability-not-set";
+	case SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_ERROR:
+		return "bp-store-state-error";
+	case SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_BP_NOT_SET:
+		return "bp-store-bp-not-set";
+	case SL_CORE_HW_AN_FAIL_CAUSE_BP_SEND_INTR_ENABLE_FAIL:
+		return "bp-send-intr-enable-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_STATE_BAD:
+		return "np-store-state-bad";
+	case SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_BP_SET:
+		return "np-store-bp-set";
+	case SL_CORE_HW_AN_FAIL_CAUSE_NP_CHECK_STATE_BAD:
+		return "np-check-state-bad";
+	case SL_CORE_HW_AN_FAIL_CAUSE_INTR_STATE_INVALID:
+		return "intr-state-invalid";
+	case SL_CORE_HW_AN_FAIL_CAUSE_INTR_AN_RETRY_NP_SEND_FAIL:
+		return "intr-an-retry-np-send-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_INTR_OUT_OF_PAGES:
+		return "intr-out-of-pages";
+	case SL_CORE_HW_AN_FAIL_CAUSE_INTR_NP_SEND_FAIL:
+		return "intr-np-send-fail";
+	case SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP:
+		return "pages-decode-no-bp";
+	case SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID:
+		return "pages-decode-oui-invalid";
+	default:
+		return "unknown";
+	}
+}
+

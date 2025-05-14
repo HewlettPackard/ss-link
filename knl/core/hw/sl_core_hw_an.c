@@ -19,6 +19,8 @@
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_pcs.h"
+#include "sl_ctl_link_counters.h"
+#include "sl_ctl_link.h"
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
@@ -264,6 +266,8 @@ int sl_core_hw_an_base_page_send(struct sl_core_link *core_link)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page send intr enable failed [%d]", rtn);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_BP_SEND_INTR_ENABLE_FAIL);
 		return rtn;
 	}
 
@@ -308,6 +312,7 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store bad state (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -316,6 +321,8 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store lp ability not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_LP_ABILITY_NOT_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -324,6 +331,8 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"base page store base page not set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_BP_NOT_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -365,6 +374,7 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page store bad state (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -373,6 +383,8 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page store base page set (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_BP_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_RETRY;
 		return;
 	}
@@ -412,6 +424,7 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"next page check bad state (pg %u = 0x%016llX)",
 			core_link->an.page_num, data64);
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_NP_CHECK_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -447,6 +460,8 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	/* base page */
 	if (!(core_link->an.rx_pages[0] & SL_CORE_HW_AN_BP_802_3)) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no base page");
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP);
 		return -EIO;
 	}
 	pause_map = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_PAUSE_SHIFT);
@@ -476,6 +491,8 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 				sl_core_log_err_trace(core_link, LOG_NAME,
 					"rx pages decode invalid oui (ver = 0x%llX)",
 					AN_OUI_VER_GET(core_link->an.rx_pages[x]));
+				sl_core_data_link_an_fail_cause_set(core_link,
+					SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
 				continue;
 			}
 		}
@@ -502,7 +519,8 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 
 static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 {
-	int                  rtn;
+	int                 rtn;
+	struct sl_ctl_link *ctl_link;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"page recv intr (state = %u)", core_link->an.state);
@@ -520,11 +538,13 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	default:
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr invalid (state = %u)", core_link->an.state);
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_INTR_STATE_INVALID);
 		goto out;
 	}
 
 	if (core_link->an.state == SL_CORE_HW_AN_STATE_COMPLETE) {
 		sl_core_log_dbg(core_link, LOG_NAME, "page recv intr autoneg complete");
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_NONE);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_NEXT_PAGE);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_BASE_PAGE);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_ERROR);
@@ -541,10 +561,15 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	}
 
 	if (core_link->an.state == SL_CORE_HW_AN_STATE_RETRY) {
+		ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+			core_link->core_lgrp->num, core_link->num);
+		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_HW_AN_RETRY);
 		rtn = sl_core_hw_an_next_page_send(core_link);
 		if (rtn != 0) {
 			sl_core_log_err_trace(core_link, LOG_NAME,
 				"page recv intr an next page send retry failed [%d]", rtn);
+			sl_core_data_link_an_fail_cause_set(core_link,
+				SL_CORE_HW_AN_FAIL_CAUSE_INTR_AN_RETRY_NP_SEND_FAIL);
 			core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 			goto out;
 		}
@@ -556,6 +581,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	if (core_link->an.page_num >= SL_CORE_LINK_AN_MAX_PAGES) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr out of pages");
+		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_INTR_OUT_OF_PAGES);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		goto out;
 	}
@@ -564,6 +590,8 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"page recv intr an next page send failed [%d]", rtn);
+		sl_core_data_link_an_fail_cause_set(core_link,
+			SL_CORE_HW_AN_FAIL_CAUSE_INTR_NP_SEND_FAIL);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		goto out;
 	}

@@ -283,6 +283,8 @@ function print_link {
                 return
         fi
 
+        local an_fail_cause=$(cat ${LINK_PATH}/last_autoneg_fail_cause)
+        local an_fail_time=$(cat ${LINK_PATH}/last_autoneg_fail_time)
         local down_cause_map=$(cat ${LINK_PATH}/last_down_cause_map)
         local down_time=$(cat ${LINK_PATH}/last_down_time)
         local up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail_cause_map)
@@ -300,17 +302,18 @@ function print_link {
 
         print_link_state
 
-        printf "           | last_down_cause: [${down_time}] ${down_cause_map}\n"
-        printf "           | up_fail_cause  : [${up_fail_time}] ${up_fail_cause_map}\n"
-        printf "           | link_up_timeout: ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
-        printf "           | hpe_config     : ${hpe_map}\n"
-        printf "           | pause_config   : ${pause_map}\n"
-        printf "           | autoneg        : ${autoneg}\n"
-        printf "           |      pause_caps: ${caps_pause}\n"
-        printf "           |      tech_caps : ${caps_tech}\n"
-        printf "           |      fec_caps  : ${caps_fec}\n"
-        printf "           |      hpe_caps  : ${caps_hpe}\n"
-	printf "           | loopback       : ${loopback}\n"
+        printf "           | last_autoneg_fail_cause: [${an_fail_time}] ${an_fail_cause}\n"
+        printf "           | last_down_cause        : [${down_time}] ${down_cause_map}\n"
+        printf "           | up_fail_cause          : [${up_fail_time}] ${up_fail_cause_map}\n"
+        printf "           | link_up_timeout        : ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
+        printf "           | hpe_config             : ${hpe_map}\n"
+        printf "           | pause_config           : ${pause_map}\n"
+        printf "           | autoneg                : ${autoneg}\n"
+        printf "           |      pause_caps        : ${caps_pause}\n"
+        printf "           |      tech_caps         : ${caps_tech}\n"
+        printf "           |      fec_caps          : ${caps_fec}\n"
+        printf "           |      hpe_caps          : ${caps_hpe}\n"
+        printf "           | loopback               : ${loopback}\n"
 }
 
 function print_mac {

@@ -69,9 +69,10 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	/* ----- general ----- */
 
-	core_link->magic      = SL_CORE_LINK_MAGIC;
-	core_link->num        = link_num;
-	core_link->core_lgrp  = core_lgrp;
+	core_link->magic         = SL_CORE_LINK_MAGIC;
+	core_link->num           = link_num;
+	core_link->core_lgrp     = core_lgrp;
+	core_link->an.fail_cause = SL_CORE_HW_AN_FAIL_CAUSE_NONE;
 	spin_lock_init(&(core_link->data_lock));
 	spin_lock_init(&(core_link->serdes.data_lock));
 
@@ -850,4 +851,26 @@ void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps state set (lp_caps_state = %u %s)",
 		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
+}
+
+void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time)
+{
+	spin_lock(&core_link->an.data_lock);
+	*fail_cause = core_link->an.fail_cause;
+	*fail_time  = core_link->an.fail_time;
+	spin_unlock(&core_link->an.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause get (fail_cause = %u %s)",
+		*fail_cause, sl_core_link_an_fail_cause_str(*fail_cause));
+}
+
+void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fail_cause)
+{
+	spin_lock(&core_link->an.data_lock);
+	core_link->an.fail_cause = fail_cause;
+	core_link->an.fail_time  = ktime_get_real_seconds();
+	spin_unlock(&core_link->an.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause set (fail_cause = %u %s)",
+		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
 }

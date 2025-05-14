@@ -6,8 +6,8 @@
 #include "sl_ctl_link.h"
 #include "sl_ctl_link_counters.h"
 
-#define SL_CTL_LINK_COUNTER_INIT(_link, _counter)                  \
-	do {                                                       \
+#define SL_CTL_LINK_COUNTER_INIT(_link, _counter)          \
+	do {                                                   \
 		atomic_set(&(_link)->counters[_counter].count, 0); \
 		(_link)->counters[_counter].name = #_counter;      \
 	} while (0)
@@ -38,6 +38,9 @@ int sl_ctl_link_counters_init(struct sl_ctl_link *ctl_link)
 
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_CCW_WARN_CROSSED);
 	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_UCW_WARN_CROSSED);
+
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_HW_AN_RETRY);
+	SL_CTL_LINK_COUNTER_INIT(ctl_link, LINK_HW_AN_ATTEMPT);
 
 	return 0;
 }

@@ -850,3 +850,18 @@ int sl_ctl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 
 
 	return 0;
 }
+
+void sl_ctl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
+{
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"an fail cause get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return;
+	}
+
+	sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
+}

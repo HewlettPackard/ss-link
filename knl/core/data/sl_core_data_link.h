@@ -52,4 +52,7 @@ u32 sl_core_data_link_fec_type_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_an_lp_caps_state_get(struct sl_core_link *core_link);
 void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 lp_caps_state);
 
+void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time);
+void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fail_cause);
+
 #endif /* _SL_CORE_DATA_LINK_H_ */

@@ -10,6 +10,7 @@
 #include "sl_ctl_ldev.h"
 #include "sl_ctl_link_priv.h"
 #include "sl_core_link.h"
+#include "hw/sl_core_hw_an.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -295,6 +296,46 @@ static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *k
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_an_lp_caps_state_str(lp_caps_state));
 }
 
+static ssize_t last_autoneg_fail_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32                  fail_cause;
+	time64_t             fail_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_ctl_link_an_fail_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &fail_cause, &fail_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail casue show (cause = %u %s)",
+		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
+
+	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_failt\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_link_an_fail_cause_str(fail_cause));
+}
+
+static ssize_t last_autoneg_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32                  fail_cause;
+	time64_t             fail_time;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_ctl_link_an_fail_cause_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
+		ctl_link->num, &fail_cause, &fail_time);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+		fail_cause, sl_core_link_an_fail_cause_str(fail_cause), fail_time, &fail_time, &fail_time);
+
+	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fail_time, &fail_time);
+}
+
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
 static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
@@ -309,6 +350,8 @@ static struct kobj_attribute link_up_count                         = __ATTR_RO(u
 static struct kobj_attribute link_time_to_link_up_ms               = __ATTR_RO(time_to_link_up_ms);
 static struct kobj_attribute link_total_time_to_link_up_ms         = __ATTR_RO(total_time_to_link_up_ms);
 static struct kobj_attribute link_lp_caps_state                    = __ATTR_RO(lp_caps_state);
+static struct kobj_attribute link_last_autoneg_fail_cause         = __ATTR_RO(last_autoneg_fail_cause);
+static struct kobj_attribute link_last_autoneg_fail_time          = __ATTR_RO(last_autoneg_fail_time);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -325,6 +368,8 @@ static struct attribute *link_attrs[] = {
 	&link_time_to_link_up_ms.attr,
 	&link_total_time_to_link_up_ms.attr,
 	&link_lp_caps_state.attr,
+	&link_last_autoneg_fail_cause.attr,
+	&link_last_autoneg_fail_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link);

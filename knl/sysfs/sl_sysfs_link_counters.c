@@ -181,6 +181,34 @@ static ssize_t link_ucw_warn_crossed_show(struct kobject *kobj, struct kobj_attr
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t link_autoneg_np_retry_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32 counter;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+
+	counter = sl_ctl_link_counters_get(ctl_link, LINK_HW_AN_RETRY);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link autoneg np retry show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_autoneg_attempt_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	u32 counter;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+
+	counter = sl_ctl_link_counters_get(ctl_link, LINK_HW_AN_ATTEMPT);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link autoneg attempt show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static struct kobj_attribute link_up_cmd               = __ATTR_RO(link_up_cmd);
 static struct kobj_attribute link_up_retry             = __ATTR_RO(link_up_retry);
 static struct kobj_attribute link_up                   = __ATTR_RO(link_up);
@@ -193,6 +221,8 @@ static struct kobj_attribute link_reset_cmd            = __ATTR_RO(link_reset_cm
 static struct kobj_attribute link_fault                = __ATTR_RO(link_fault);
 static struct kobj_attribute link_ccw_warn_crossed     = __ATTR_RO(link_ccw_warn_crossed);
 static struct kobj_attribute link_ucw_warn_crossed     = __ATTR_RO(link_ucw_warn_crossed);
+static struct kobj_attribute link_autoneg_np_retry     = __ATTR_RO(link_autoneg_np_retry);
+static struct kobj_attribute link_autoneg_attempt      = __ATTR_RO(link_autoneg_attempt);
 
 static struct attribute *link_counters_attrs[] = {
 	&link_up_cmd.attr,
@@ -207,6 +237,8 @@ static struct attribute *link_counters_attrs[] = {
 	&link_fault.attr,
 	&link_ccw_warn_crossed.attr,
 	&link_ucw_warn_crossed.attr,
+	&link_autoneg_np_retry.attr,
+	&link_autoneg_attempt.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_counters);
