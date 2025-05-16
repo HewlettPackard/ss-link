@@ -938,6 +938,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 
+	sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UP_CANCELED_MAP);
 	sl_core_hw_link_down_callback(core_link);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);

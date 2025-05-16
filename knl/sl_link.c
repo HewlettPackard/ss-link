@@ -497,8 +497,14 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_CAUSE_HIGH_TEMP:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "high-temp ");
 			break;
+		case SL_LINK_DOWN_CAUSE_INTR_REGISTER:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "interrupt-reg ");
+			break;
 		case SL_LINK_DOWN_CAUSE_MEDIA_ERROR:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-error ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UP_CANCELED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-canceled ");
 			break;
 
 		case SL_LINK_DOWN_RETRYABLE:
