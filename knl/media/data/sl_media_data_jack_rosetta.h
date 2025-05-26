@@ -21,4 +21,7 @@ int  sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_temp(struct sl_media_jack *media_jack, u8 *temp);
 
+void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state);
+void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state);
+
 #endif /* _SL_MEDIA_DATA_JACK_ROSETTA_H_ */

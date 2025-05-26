@@ -57,6 +57,8 @@ typedef int (*sl_dt_info_get_t)(void *dt_accessor, u8 ldev_num, u8 lgrp_num,
 typedef int (*sl_uc_rd8_t)(void *uc_accessor, u32 offset, u32 page, u8 *data);
 typedef int (*sl_uc_wr8_t)(void *uc_accessor, u8 page, u8 addr, u8 data);
 
+typedef void (*sl_uc_led_set_t)(void *uc_accessor, u8 led_pattern);
+
 /* MB types */
 typedef int (*sl_mb_info_get_t)(void *mb_accessor, u8 *platform, u16 *revision, u16 *proto);
 
@@ -80,8 +82,9 @@ struct sl_uc_accessor {
 };
 
 struct sl_uc_ops {
-	sl_uc_rd8_t uc_read8;
-	sl_uc_wr8_t uc_write8;
+	sl_uc_rd8_t     uc_read8;
+	sl_uc_wr8_t     uc_write8;
+	sl_uc_led_set_t uc_led_set;
 };
 
 struct sl_ops {

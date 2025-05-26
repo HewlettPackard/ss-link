@@ -27,6 +27,7 @@
 #define SL_MEDIA_JACK_CABLE_GOING_ONLINE 3
 #define SL_MEDIA_JACK_CABLE_ONLINE       4
 #define SL_MEDIA_JACK_CABLE_ERROR        5
+#define SL_MEDIA_JACK_CABLE_HIGH_TEMP    6
 
 /*
  * GAUI interface is for AEC/AOC and GBASE interface is for PEC
@@ -212,5 +213,8 @@ const char *sl_media_fault_cause_str(u32 fault_cause);
 
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
+
+void sl_media_jack_link_led_set(u8 ldev_num, u8 lgrp_num, u32 link_state);
+void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state);
 
 #endif /* _SL_MEDIA_JACK_H_ */

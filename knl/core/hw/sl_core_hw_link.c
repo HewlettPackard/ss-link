@@ -507,6 +507,8 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 
 		sl_core_log_dbg(core_link, LOG_NAME, "up success - up");
 		spin_unlock(&core_link->link.data_lock);
+		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
+			core_link->core_lgrp->num, SL_CORE_LINK_STATE_UP);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
 		return;
 	case SL_CORE_LINK_STATE_CANCELING:
@@ -732,6 +734,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 }
 
@@ -786,6 +789,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 
 	sl_core_hw_link_down_callback(core_link);
@@ -842,6 +846,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
+
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 }
 
@@ -1127,8 +1132,10 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		return;
 	default:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		spin_unlock(&core_link->link.data_lock);
+		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
+			core_link->core_lgrp->num, SL_CORE_LINK_STATE_GOING_DOWN);
 	}
-	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 

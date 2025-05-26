@@ -11,8 +11,21 @@
 #include "sl_media_jack.h"
 #include "sl_media_data_jack.h"
 #include "sl_media_data_jack_cassini.h"
+#include "sl_core_link.h"
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
+
+enum sl_media_led_states {
+	LED_OFF          = 0,
+	LED_ON_GRN       = 1,
+	LED_SLOW_GRN     = 2,
+	LED_FAST_GRN     = 3,
+	LED_ON_YEL       = 4,
+	LED_SLOW_YEL     = 5,
+	LED_FAST_YEL     = 6,
+	LED_SLOW_GRN_YEL = 7,
+	LED_FAST_GRN_YEL = 8,
+};
 
 int sl_media_data_jack_scan(u8 ldev_num)
 {
@@ -367,4 +380,43 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 
 	*temp = data;
 	return 0;
+}
+
+void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "link led set (state = %u)", link_state);
+
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_UNCONFIGURED:
+	case SL_CORE_LINK_STATE_CANCELING:
+	case SL_CORE_LINK_STATE_DOWN:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
+	case SL_CORE_LINK_STATE_TIMEOUT:
+		sl_media_io_led_set(media_jack, LED_OFF);
+		break;
+	case SL_CORE_LINK_STATE_GOING_UP:
+	case SL_CORE_LINK_STATE_AN:
+		sl_media_io_led_set(media_jack, LED_FAST_GRN);
+		break;
+	case SL_CORE_LINK_STATE_UP:
+		sl_media_io_led_set(media_jack, LED_ON_GRN);
+		break;
+	}
+}
+
+void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "headshell led set (state = %u)", jack_state);
+
+	switch (jack_state) {
+	case SL_MEDIA_JACK_CABLE_REMOVED:
+		sl_media_io_led_set(media_jack, LED_OFF);
+		break;
+	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
+		sl_media_io_led_set(media_jack, LED_ON_YEL);
+		break;
+	case SL_MEDIA_JACK_CABLE_ERROR:
+		sl_media_io_led_set(media_jack, LED_FAST_YEL);
+		break;
+	}
 }

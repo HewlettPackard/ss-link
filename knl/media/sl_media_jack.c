@@ -64,11 +64,13 @@ struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num)
 	return sl_media_data_jack_get(ldev_num, jack_num);
 }
 
-void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state)
+void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 jack_state)
 {
 	spin_lock(&media_jack->data_lock);
-	media_jack->state = state;
+	media_jack->state = jack_state;
 	spin_unlock(&media_jack->data_lock);
+
+	sl_media_data_jack_headshell_led_set(media_jack, jack_state);
 }
 
 u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
@@ -411,6 +413,9 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 	media_jack->fault_time  = ktime_get_real_seconds();
 	spin_unlock(&media_jack->data_lock);
 
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO)
+		sl_media_data_jack_headshell_led_set(media_jack, SL_MEDIA_JACK_CABLE_HIGH_TEMP);
+
 	sl_media_log_dbg(media_jack, LOG_NAME, "fault cause set (cause = %u %s)", fault_cause,
 		sl_media_fault_cause_str(fault_cause));
 }
@@ -489,4 +494,26 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
 {
 	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
+}
+
+void sl_media_jack_link_led_set(u8 ldev_num, u8 lgrp_num, u32 link_state)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "link led set");
+
+	sl_media_data_jack_link_led_set(media_lgrp->media_jack, link_state);
+}
+
+void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "headshell led set");
+
+	sl_media_data_jack_headshell_led_set(media_lgrp->media_jack, jack_state);
 }

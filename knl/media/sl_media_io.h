@@ -11,4 +11,6 @@ struct sl_media_jack;
 int sl_media_io_write8(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 data);
 int sl_media_io_read8(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 *data);
 
+void sl_media_io_led_set(struct sl_media_jack *media_jack, u8 led_pattern);
+
 #endif /* _SL_MEDIA_IO_H_ */

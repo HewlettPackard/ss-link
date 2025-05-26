@@ -174,6 +174,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	/* do very last thing */
 	core_link->link.state = SL_CORE_LINK_STATE_UNCONFIGURED;
+	sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
+		core_link->core_lgrp->num, SL_CORE_LINK_STATE_UNCONFIGURED);
 
 	return 0;
 }
@@ -569,6 +571,8 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 	spin_lock(&core_link->link.data_lock);
 	core_link->link.state = link_state;
 	spin_unlock(&core_link->link.data_lock);
+
+	sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, link_state);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"set state = %s", sl_core_link_state_str(link_state));

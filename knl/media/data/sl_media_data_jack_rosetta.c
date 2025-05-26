@@ -17,6 +17,7 @@
 #include "sl_media_data_jack_rosetta.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
+#include "sl_core_link.h"
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
@@ -124,6 +125,7 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 	spin_unlock(&media_jack->data_lock);
+	sl_media_data_jack_headshell_led_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 }
 
@@ -277,6 +279,7 @@ static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 		is_removed = true;
 	}
 	spin_unlock(&media_jack->data_lock);
+	sl_media_data_jack_headshell_led_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
 
 	return is_removed;
 }
@@ -1178,4 +1181,43 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 
 	*temp = data.data[0];
 	return 0;
+}
+
+void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "link led set (state = %u)", link_state);
+
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_UNCONFIGURED:
+	case SL_CORE_LINK_STATE_CANCELING:
+	case SL_CORE_LINK_STATE_DOWN:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
+	case SL_CORE_LINK_STATE_TIMEOUT:
+		sl_media_io_led_set(media_jack, XCVR_LED_OFF);
+		break;
+	case SL_CORE_LINK_STATE_GOING_UP:
+	case SL_CORE_LINK_STATE_AN:
+		sl_media_io_led_set(media_jack, XCVR_LED_A_FAST);
+		break;
+	case SL_CORE_LINK_STATE_UP:
+		sl_media_io_led_set(media_jack, XCVR_LED_A_STEADY);
+		break;
+	}
+}
+
+void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "headshell led set (state = %u)", jack_state);
+
+	switch (jack_state) {
+	case SL_MEDIA_JACK_CABLE_REMOVED:
+		sl_media_io_led_set(media_jack, XCVR_LED_OFF);
+		break;
+	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
+		sl_media_io_led_set(media_jack, XCVR_LED_A_STEADY);
+		break;
+	case SL_MEDIA_JACK_CABLE_ERROR:
+		sl_media_io_led_set(media_jack, XCVR_LED_B_FAST);
+		break;
+	}
 }
