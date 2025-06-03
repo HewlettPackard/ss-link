@@ -12,4 +12,4 @@ usr/include/linux/sl_mac.h
 usr/include/linux/sl_media.h
 usr/include/linux/sl_test.h
 pkgconfig/sl-driver-dev.pc usr/lib/pkgconfig
-usr/bin/sl_sysfs_dump.sh
+usr/bin/slstat

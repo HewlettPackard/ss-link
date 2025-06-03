@@ -86,7 +86,7 @@ function test_verify {
 					continue
 				fi
 
-				if [[ "${notif_type}" == "link-async-down" ]]; then
+				if [[ "${notif_type}" == "link-down" ]]; then
 
 					sl_test_info_log "${FUNCNAME}" \
 						"(ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
@@ -266,9 +266,9 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
-	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" "link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
+	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" "link-down" ${LINK_NOTIF_TIMEOUT} sl_test_notifs
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"

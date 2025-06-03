@@ -311,7 +311,7 @@ static ssize_t last_autoneg_fail_cause_show(struct kobject *kobj, struct kobj_at
 		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_failt\n");
+		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_link_an_fail_cause_str(fail_cause));
 }

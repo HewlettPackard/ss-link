@@ -229,7 +229,6 @@ ${postinst} %{name} %{version}-%{release}
 %{_includedir}/linux/sl_test.h
 %{_includedir}/linux/sl_fec.h
 %{prefix}/src/sl/*/Module.symvers
-/usr/bin/sl_sysfs_dump.sh
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin
 /usr/bin/slstat

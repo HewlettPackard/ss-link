@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+MAJOR=1
+MINOR=0
+
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
 PORT_DIR_SYSFS=port
@@ -94,12 +97,12 @@ function print_ldev {
         local hash=$(cat ${LDEV_PATH}/sl_info/mod_hash)
 
         echo "-------------------------------------------------------------------------------------------"
-        printf "SL %-19s %68s\n" "${ver}" "hash: ${hash}"
+        printf " %-19s SL %-19s %45s\n" "${cmd} v${MAJOR}.${MINOR}" "${ver}" "hash: ${hash}"
         echo "--------+----------------------------------------------------------------------------------"
 }
 
 function print_jack_state {
-        if [ ! -e ${LGRP_PATH} ] ; then
+        if [ ! -e ${LGRP_PATH}/media ] ; then
                 return;
         fi
 
@@ -156,9 +159,9 @@ function print_llr_state {
 }
 
 function print_link_counters {
-        if [ ! -e ${LINK_PATH} ] ; then
-                return
-        fi
+        if [ ! -e ${LINK_PATH}/counters ] ; then
+		return
+	fi
 
         local first=0;
 
@@ -175,7 +178,7 @@ function print_link_counters {
 }
 
 function print_mac_counters {
-        if [ ! -e ${MAC_PATH} ] ; then
+        if [ ! -e ${MAC_PATH}/counters ] ; then
                 return
         fi
 
@@ -194,7 +197,7 @@ function print_mac_counters {
 }
 
 function print_llr_counters {
-        if [ ! -e ${LLR_PATH} ] ; then
+        if [ ! -e ${LLR_PATH}/counters ] ; then
                 return
         fi
 
@@ -213,7 +216,7 @@ function print_llr_counters {
 }
 
 function print_jack {
-        if [ ! -e ${LGRP_PATH} ] ; then
+        if [ ! -e ${LGRP_PATH}/media ] ; then
                 return
         fi
 
@@ -236,7 +239,7 @@ function print_jack {
 	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
 	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
 
-	if [ "${length}" == "invalid_format" ] || [ "${length}" == "no_cable" ] ] ; then
+	if [ "${length}" == "invalid_format" ] || [ "${length}" == "no_cable" ] ; then
 		local units="";
 	else
 		local units="cm";
@@ -283,7 +286,7 @@ function print_jack {
 }
 
 function print_lgrp {
-        if [ ! -e ${LGRP_PATH} ] ; then
+        if [ ! -e ${LGRP_PATH}/config ] ; then
                 return
         fi
 
@@ -369,7 +372,7 @@ function print_llr {
 }
 
 function print_serdes {
-        if [ ! -e ${LGRP_PATH} ] ; then
+        if [ ! -e ${LGRP_PATH}/serdes ] ; then
                 return
         fi
 
@@ -379,8 +382,8 @@ function print_serdes {
         printf "serdes     | hw: ${hw_ver}, fw: ${fw_ver}\n"
 }
 
-function print_col_state {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col_serdes_state {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -393,8 +396,8 @@ function print_col_state {
         printf "\n"
 }
 
-function print_col_swizzle {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col_serdes_swizzle {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -407,8 +410,8 @@ function print_col_swizzle {
         printf "\n"
 }
 
-function print_col_eye_high {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col_serdes_eye_high {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -421,8 +424,8 @@ function print_col_eye_high {
         printf "\n"
 }
 
-function print_col_eye_low {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col_serdes_eye_low {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -435,8 +438,8 @@ function print_col_eye_low {
         printf "\n"
 }
 
-function print_col1 {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col1_serdes {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -451,8 +454,8 @@ function print_col1 {
         printf "\n"
 }
 
-function print_col {
-        if [ ! -e ${LGRP_PATH} ] ; then
+function print_col_serdes {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
                 return
         fi
 
@@ -468,7 +471,7 @@ function print_col {
 }
 
 function print_fec {
-        if [ ! -e ${LINK_PATH} ] ; then
+        if [ ! -e ${LINK_PATH}/fec ] ; then
                 return
         fi
 
@@ -490,7 +493,7 @@ function print_fec {
 }
 
 function print_fec_current {
-        if [ ! -e ${LINK_PATH} ] ; then
+        if [ ! -e ${LINK_PATH}/fec/current ] ; then
                 return
         fi
 
@@ -536,7 +539,7 @@ function print_lane_state {
         fi
 
         print_serdes_header
-        print_col_state
+        print_col_serdes_state
         print_serdes_footer
 }
 
@@ -546,25 +549,25 @@ function print_serdes_settings {
         fi
 
         print_serdes_header
-        print_col_state
-        print_col_swizzle
-        print_col_eye_high
-        print_col_eye_low
+        print_col_serdes_state
+        print_col_serdes_swizzle
+        print_col_serdes_eye_high
+        print_col_serdes_eye_low
         printf "  settings |"
-        print_col1 "settings/pre1" "pre1"
-        print_col "settings/pre2" "pre2"
-        print_col "settings/pre3" "pre3"
-        print_col "settings/cursor" "cursor"
-        print_col "settings/post1" "post1"
-        print_col "settings/post2" "post2"
-        print_col "settings/width" "width"
-        print_col "settings/dfe" "dfe"
-        print_col "settings/encoding" "encoding"
-        print_col "settings/link_training" "link_train"
-        print_col "settings/media" "media"
-        print_col "settings/osr" "osr"
-        print_col "settings/scramble" "scramble"
-        print_col "settings/clocking" "clocking"
+        print_col1_serdes "settings/pre1" "pre1"
+        print_col_serdes "settings/pre2" "pre2"
+        print_col_serdes "settings/pre3" "pre3"
+        print_col_serdes "settings/cursor" "cursor"
+        print_col_serdes "settings/post1" "post1"
+        print_col_serdes "settings/post2" "post2"
+        print_col_serdes "settings/width" "width"
+        print_col_serdes "settings/dfe" "dfe"
+        print_col_serdes "settings/encoding" "encoding"
+        print_col_serdes "settings/link_training" "link_train"
+        print_col_serdes "settings/media" "media"
+        print_col_serdes "settings/osr" "osr"
+        print_col_serdes "settings/scramble" "scramble"
+        print_col_serdes "settings/clocking" "clocking"
         print_serdes_footer
 }
 

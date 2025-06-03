@@ -75,6 +75,21 @@ static int sl_ctl_link_up_fail_notif_send(struct sl_ctl_lgrp *ctl_lgrp, struct s
 		&info, info_map);
 }
 
+static int sl_ctl_async_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_map, u64 info_map)
+{
+	union sl_lgrp_notif_info info;
+	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+
+	info.cause_map = cause_map;
+
+	sl_link_down_cause_map_with_info_str(cause_map, cause_str, sizeof(cause_str));
+	sl_ctl_log_dbg(ctl_link, LOG_NAME,
+		"async down_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
+
+	return sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
+		SL_LGRP_NOTIF_LINK_ASYNC_DOWN, &info, info_map);
+}
+
 static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
@@ -87,7 +102,7 @@ static int sl_ctl_link_down_notif_send(struct sl_ctl_link *ctl_link, u64 cause_m
 		"down_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
 
 	return sl_ctl_lgrp_notif_enqueue(ctl_link->ctl_lgrp, ctl_link->num,
-		SL_LGRP_NOTIF_LINK_ASYNC_DOWN, &info, info_map);
+		SL_LGRP_NOTIF_LINK_DOWN, &info, info_map);
 }
 
 void sl_ctl_link_up_clock_start(struct sl_ctl_link *ctl_link)
@@ -400,7 +415,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 		sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctl_link->down_complete);
 
-		rtn = sl_ctl_link_down_notif_send(ctl_link, core_cause_map, core_imap);
+		rtn = sl_ctl_async_link_down_notif_send(ctl_link, core_cause_map, core_imap);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"fault callback ctl_lgrp_notif_link_async_down_send failed [%d]", rtn);

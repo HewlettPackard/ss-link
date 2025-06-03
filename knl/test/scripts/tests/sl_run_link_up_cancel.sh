@@ -94,12 +94,12 @@ function test_verify {
 						continue
 				fi
 
-				if [[ "${notif_type}" == "link-async-down" && \
+				if [[ "${notif_type}" == "link-down" && \
 					"${notif_fields[7]}" == "canceled" && \
 					"${notif_fields[8]}" == "retryable" && \
 					"${notif_fields[9]}" == "origin-up" ]]; then
 						sl_test_info_log "${FUNCNAME}" \
-							"link-async-down found (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
+							"link-down found (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
 						link_down_found=true
 						continue
@@ -215,10 +215,10 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
 	sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-		"link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_down_notif
+		"link-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_down_notif
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
 		sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
