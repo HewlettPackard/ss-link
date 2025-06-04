@@ -4,14 +4,118 @@
 #ifndef _LINUX_SL_LINK_H_
 #define _LINUX_SL_LINK_H_
 
-#include "uapi/sl_link.h"
+#include <linux/bitops.h>
+#include <linux/kobject.h>
 
 struct sl_lgrp;
 struct sl_link;
-struct sl_link_config;
-struct sl_link_policy;
-struct sl_link_caps;
-struct kobject;
+
+#define SL_LINK_INFO_STRLEN 128
+
+enum sl_link_state {
+	SL_LINK_STATE_INVALID,
+	SL_LINK_STATE_DOWN,
+	SL_LINK_STATE_AN,
+	SL_LINK_STATE_STARTING,
+	SL_LINK_STATE_UP,
+	SL_LINK_STATE_STOPPING,
+};
+
+#define SL_LINK_CAPS_MAGIC 0x6D676774
+#define SL_LINK_CAPS_VER   1
+struct sl_link_caps {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	u32 pause_map;
+	u32 tech_map;
+	u32 fec_map;
+	u32 hpe_map;
+};
+
+#define SL_LINK_CONFIG_PAUSE_ASYM        BIT(1)
+#define SL_LINK_CONFIG_PAUSE_SYM         BIT(0)
+
+#define SL_LINK_CONFIG_PAUSE_MASK (SL_LINK_CONFIG_PAUSE_ASYM | \
+				   SL_LINK_CONFIG_PAUSE_SYM)
+
+#define SL_LINK_CONFIG_HPE_LINKTRAIN     BIT(18)
+#define SL_LINK_CONFIG_HPE_PRECODING     BIT(17)
+#define SL_LINK_CONFIG_HPE_PCAL          BIT(16)  /* progressive calibration */
+/* Rosetta versions */
+#define SL_LINK_CONFIG_HPE_R3            BIT(10)
+#define SL_LINK_CONFIG_HPE_R2            BIT(9)
+#define SL_LINK_CONFIG_HPE_R1            BIT(8)
+/* Cassini versions */
+#define SL_LINK_CONFIG_HPE_C3            BIT(6)
+#define SL_LINK_CONFIG_HPE_C2            BIT(5)
+#define SL_LINK_CONFIG_HPE_C1            BIT(4)
+/* bit 3 used for credits */
+/* bit 2 used for v1 */
+/* bit 1 used for v1 */
+#define SL_LINK_CONFIG_HPE_LLR           BIT(0)
+
+#define SL_LINK_CONFIG_HPE_MASK (SL_LINK_CONFIG_HPE_LINKTRAIN | \
+				 SL_LINK_CONFIG_HPE_PRECODING | \
+				 SL_LINK_CONFIG_HPE_PCAL      | \
+				 SL_LINK_CONFIG_HPE_R3        | \
+				 SL_LINK_CONFIG_HPE_R2        | \
+				 SL_LINK_CONFIG_HPE_R1        | \
+				 SL_LINK_CONFIG_HPE_C3        | \
+				 SL_LINK_CONFIG_HPE_C2        | \
+				 SL_LINK_CONFIG_HPE_C1        | \
+				 SL_LINK_CONFIG_HPE_LLR)
+
+#define SL_LINK_CONFIG_MAGIC 0x6c6b6366
+#define SL_LINK_CONFIG_VER   2
+struct sl_link_config {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	u32 link_up_timeout_ms;
+	u32 link_up_tries_max;
+
+	s32 fec_up_settle_wait_ms;
+	s32 fec_up_check_wait_ms;
+	s32 fec_up_ucw_limit;
+	s32 fec_up_ccw_limit;
+
+	u32 pause_map;
+	u32 hpe_map;
+
+	u32 options;
+};
+
+#define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE              BIT(0)
+#define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE   BIT(1)
+#define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE   BIT(2)
+#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE      BIT(3)
+#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE        BIT(4)
+/* BIT 30 Reserved */
+/* BIT 31 Reserved */
+
+#define SL_LINK_POLICY_MAGIC 0x6c6b706f
+#define SL_LINK_POLICY_VER   2
+struct sl_link_policy {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	s32 fec_mon_ucw_down_limit;
+	s32 fec_mon_ucw_warn_limit;
+	s32 fec_mon_ccw_down_limit;
+	s32 fec_mon_ccw_warn_limit;
+	s32 fec_mon_period_ms;
+
+	u32 options;
+};
+
+#define SL_LINK_POLICY_OPT_KEEP_SERDES_UP        BIT(0) /* Keep serdes running when link is down */
+#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE BIT(1) /* Try to bring the link up even if cable is not supported*/
+/* BIT 30 Reserved */
+/* BIT 31 Reserved */
 
 #define SL_LINK_INFINITE_UP_TRIES ~0
 

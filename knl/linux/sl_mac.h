@@ -1,14 +1,18 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_MAC_H_
 #define _LINUX_SL_MAC_H_
 
-#include "uapi/sl_mac.h"
+#include <linux/kobject.h>
 
 struct sl_lgrp;
 struct sl_mac;
-struct kobject;
+
+enum sl_mac_state {
+	SL_MAC_STATE_OFF,
+	SL_MAC_STATE_ON,
+};
 
 struct sl_mac *sl_mac_new(struct sl_lgrp *lgrp, u8 mac_num, struct kobject *sysfs_parent);
 int            sl_mac_del(struct sl_mac *mac);

@@ -2,6 +2,7 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/debugfs.h>
+
 #include <linux/sl_test.h>
 
 #include "core/hw/sl_core_hw_serdes_lane.h"

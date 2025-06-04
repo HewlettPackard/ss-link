@@ -5,7 +5,8 @@
 #include <linux/errno.h>
 #include <linux/string.h>
 
-#include "uapi/sl_media.h"
+#include <linux/sl_media.h>
+
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_media_eeprom.h"

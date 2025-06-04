@@ -4,8 +4,9 @@
 #ifndef _SL_MEDIA_DATA_JACK_H_
 #define _SL_MEDIA_DATA_JACK_H_
 
-#include "uapi/sl_media.h"
 #include "sl_media_lgrp.h"
+#include "sl_media_ldev.h"
+#include "sl_media_jack.h"
 
 /*
  * These states reflect the state of media attr for both real and fake cables
@@ -13,8 +14,6 @@
 #define CABLE_MEDIA_ATTR_REMOVED  0
 #define CABLE_MEDIA_ATTR_ADDED    1
 #define CABLE_MEDIA_ATTR_STASHED  2
-
-struct sl_media_lgrp_cable_info;
 
 void                  sl_media_data_jack_del(u8 ldev_num, u8 jack_num);
 int                   sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);

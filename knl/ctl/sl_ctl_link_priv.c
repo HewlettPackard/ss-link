@@ -3,7 +3,7 @@
 
 #include <linux/spinlock.h>
 
-#include "uapi/sl_link.h"
+#include <linux/sl_link.h>
 
 #include "base/sl_ctl_log.h"
 

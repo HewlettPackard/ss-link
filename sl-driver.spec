@@ -227,13 +227,7 @@ ${postinst} %{name} %{version}-%{release}
 %{_includedir}/linux/sl_mac.h
 %{_includedir}/linux/sl_media.h
 %{_includedir}/linux/sl_test.h
-%{_includedir}/uapi/sl_ldev.h
-%{_includedir}/uapi/sl_lgrp.h
-%{_includedir}/uapi/sl_link.h
 %{_includedir}/linux/sl_fec.h
-%{_includedir}/uapi/sl_llr.h
-%{_includedir}/uapi/sl_mac.h
-%{_includedir}/uapi/sl_media.h
 %{prefix}/src/sl/*/Module.symvers
 /usr/bin/sl_sysfs_dump.sh
 /lib/firmware/sl_fw_quad_3.04.bin

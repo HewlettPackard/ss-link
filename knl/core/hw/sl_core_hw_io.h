@@ -4,7 +4,8 @@
 #ifndef _SL_CORE_HW_IO_H_
 #define _SL_CORE_HW_IO_H_
 
-#include "linux/sl_ldev.h"
+#include <linux/sl_ldev.h>
+
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"

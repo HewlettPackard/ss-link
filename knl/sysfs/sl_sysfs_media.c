@@ -3,8 +3,9 @@
 
 #include <linux/kobject.h>
 
+#include <linux/sl_media.h>
+
 #include "sl_log.h"
-#include "linux/sl_media.h"
 #include "sl_sysfs.h"
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_ldev.h"
@@ -55,6 +56,58 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 		"power state show (media_lgrp = 0x%p, state = %s)", media_lgrp, is_high_powered ? "high_powered" : "low_powered");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high_powered" : "low_powered");
+}
+
+static ssize_t temperature_celcius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                   rtn;
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    temp;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp   = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	rtn = sl_media_jack_cable_temp_get(media_lgrp->media_ldev->num, media_lgrp->num, &temp);
+	if (rtn == -EBADRQC)
+		return scnprintf(buf, PAGE_SIZE, "not_active\n");
+	if (rtn == -EIO)
+		return scnprintf(buf, PAGE_SIZE, "io_error\n");
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"temperature_celcius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", temp);
+}
+
+static ssize_t high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	bool                  is_high_temp;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctl_lgrp   = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
+		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+	}
+
+	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
+
+	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+		"high_temp show (media_lgrp = 0x%p, is_high_temp = %s)",
+		media_lgrp, is_high_temp ? "yes" : "no");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_temp ? "yes" : "no");
 }
 
 static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -537,6 +590,8 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 
 static struct kobj_attribute media_state                      = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state           = __ATTR_RO(jack_power_state);
+static struct kobj_attribute media_temperature                = __ATTR_RO(temperature_celcius);
+static struct kobj_attribute media_high_temp                  = __ATTR_RO(high_temp);
 static struct kobj_attribute media_vendor                     = __ATTR_RO(vendor);
 static struct kobj_attribute media_type                       = __ATTR_RO(type);
 static struct kobj_attribute media_length_cm                  = __ATTR_RO(length_cm);
@@ -562,6 +617,8 @@ static struct kobj_attribute media_last_fault_time            = __ATTR_RO(last_f
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
 	&media_jack_power_state.attr,
+	&media_temperature.attr,
+	&media_high_temp.attr,
 	&media_vendor.attr,
 	&media_type.attr,
 	&media_length_cm.attr,

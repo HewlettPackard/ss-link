@@ -1,14 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_DATA_LGRP_H_
 #define _SL_MEDIA_DATA_LGRP_H_
-
-#include <linux/spinlock.h>
-
-#include "sl_log.h"
-
-#include "uapi/sl_media.h"
 
 struct sl_media_lgrp;
 

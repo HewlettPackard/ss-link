@@ -9,10 +9,8 @@
 #include <linux/workqueue.h>
 #include <linux/kobject.h>
 
+#include <linux/sl_link.h>
 #include <linux/sl_lgrp.h>
-
-#include "uapi/sl_lgrp.h"
-#include "uapi/sl_link.h"
 
 #include "sl_ctl_link_fec_priv.h"
 

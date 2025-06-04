@@ -4,11 +4,12 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 
+#include <linux/sl_media.h>
+
 #include "sl_asic.h"
 #include "sl_media_jack.h"
 #include "sl_media_data_cable_db.h"
 #include "sl_media_data_cable_db_ops.h"
-#include "uapi/sl_media.h"
 #include "base/sl_media_log.h"
 
 #define LOG_NAME SL_MEDIA_CABLE_LOG_NAME

@@ -2,6 +2,7 @@
 /* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
+
 #include <linux/sl_media.h>
 
 #include "sl_log.h"
@@ -11,6 +12,24 @@
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_MEDIA_LOG_NAME
+
+int sl_media_headshell_temp_get(struct sl_lgrp *lgrp, u8 *temp)
+{
+	int rtn;
+
+	rtn = sl_lgrp_check(lgrp);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "temp get fail [%d]", rtn);
+		return rtn;
+	}
+	if (!temp) {
+		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL temp");
+		return -EINVAL;
+	}
+
+	return sl_media_jack_cable_temp_get(lgrp->ldev_num, lgrp->num, temp);
+}
+EXPORT_SYMBOL(sl_media_headshell_temp_get);
 
 const char *sl_media_furcation_str(u32 furcation)
 {

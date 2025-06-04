@@ -336,7 +336,7 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 						media_jack->cable_info[0].lgrp_num))
 		return false;
 
-	rtn = sl_media_io_read8(media_jack, 0x00, 0x09, &data);
+	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 			"high temp page read failed [%d]", rtn);
@@ -345,4 +345,26 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 	}
 
 	return ((data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) != 0);
+}
+
+int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
+{
+	int rtn;
+	u8  data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable temp get");
+
+	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num))
+		return -EBADRQC;
+
+	rtn = sl_media_io_read8(media_jack, 0, 14, &data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME,
+			"temp get read failed [%d]", rtn);
+		return -EIO;
+	}
+
+	*temp = data;
+	return 0;
 }

@@ -7,9 +7,10 @@
 #include <linux/spinlock.h>
 #include <linux/ktime.h>
 
-#include "sl_kconfig.h"
 #include <linux/sl_link.h>
 #include <linux/sl_lgrp.h>
+
+#include "sl_kconfig.h"
 #include "sl_ctl_link_fec_priv.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link_an.h"

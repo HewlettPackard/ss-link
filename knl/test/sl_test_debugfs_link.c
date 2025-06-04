@@ -2,9 +2,10 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/debugfs.h>
+#include <linux/kobject.h>
+
 #include <linux/sl_link.h>
 #include <linux/sl_test.h>
-#include <linux/kobject.h>
 
 #include "sl_asic.h"
 #include "sl_lgrp.h"

@@ -3,9 +3,10 @@
 
 #include <linux/kobject.h>
 
+#include <linux/sl_media.h>
+
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "linux/sl_media.h"
 #include "sl_ctl_link.h"
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_ldev.h"

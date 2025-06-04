@@ -372,6 +372,9 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		return;
 	}
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_link->core_lgrp->core_ldev))
+		sl_core_hw_pcs_tx_start(core_link);
+
 	sl_core_hw_pcs_rx_start(core_link);
 }
 

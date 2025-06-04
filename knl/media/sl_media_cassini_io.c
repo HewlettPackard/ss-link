@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024 Hewlett Packard Enterprise Development LP */
 
-#include "linux/sl_ldev.h"
+#include <linux/sl_ldev.h>
+
 #include "sl_media_ldev.h"
 #include "sl_media_io.h"
 #include "sl_media_jack.h"

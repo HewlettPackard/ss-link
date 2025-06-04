@@ -107,8 +107,19 @@ function print_jack_state {
         local jack_num=$(cat ${LGRP_PATH}/media/jack_num)
         local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
 	local power=$(cat ${LGRP_PATH}/media/jack_power_state)
+        local type=$(cat ${LGRP_PATH}/media/type)
 
-        printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}\n" ${jack_num}
+       	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
+
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
+		local temp=$(cat ${LGRP_PATH}/media/temperature_celcius)
+		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
+		if [ "${temp}" == "invalid_format" ] || [ "${temp}" == "no_cable" ] || [ "${temp}" == "not_active" ] || [ "${temp}" == "io_error" ] ; then
+        		printf "           | temperature: ${temp}"
+		else
+        		printf "           | temperature: ${temp}c (high = ${high_temp})"
+		fi
+	fi
 }
 
 function print_link_state {
@@ -225,14 +236,21 @@ function print_jack {
 	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
 	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
 
+	if [ "${length}" == "invalid_format" ] || [ "${length}" == "no_cable" ] ] ; then
+		local units="";
+	else
+		local units="cm";
+	fi
+
         print_jack_state
 
-        printf "           | cable: ${vendor} ${type} ${length}cm, type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
+        printf "           | cable: ${vendor} ${type} ${length}${units}\n"
+        printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
         printf "           | supported: ${supported}, furcation: ${furcation}\n"
-	if [ "$type" != "PEC" ]; then
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
 		printf "           | active cable: firmware version: ${fw_ver}\n"
-		printf "           | active cable 200g: host_iface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appsel_no: ${appsel_no_200}\n"
-		printf "           | active cable 400g: host_iface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appsel_no: ${appsel_no_400}\n"
+		printf "           | active cable 200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
+		printf "           | active cable 400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
 	fi
 	printf "           | speeds: "
         if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
@@ -344,7 +362,7 @@ function print_llr {
         print_llr_state
 
         printf "           | loop_calc: ${calc}ns, loop_min: ${min}ns, loop_max: ${max}ns, loop_avg: ${avg}ns\n"
-        printf "           | mode: ${mode}, link_down_bahavior: ${down_bahavior}\n"
+        printf "           | mode: ${mode}, link_down_behavior: ${down_bahavior}\n"
         printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
         printf "           | continuous_tries: ${tries}\n"
         printf "           | last_fail_cause: [${last_fail_time}] ${last_fail_cause}\n"

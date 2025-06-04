@@ -4,15 +4,13 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
-#include <linux/sl_media.h>
 #include <linux/string.h>
 
-#include "sl_asic.h"
+#include <linux/sl_media.h>
 
+#include "sl_asic.h"
 #include "base/sl_media_log.h"
 #include "base/sl_media_eeprom.h"
-
-#include "uapi/sl_media.h"
 #include "sl_media_jack.h"
 #include "sl_media_io.h"
 #include "sl_media_data_jack.h"
@@ -1138,9 +1136,9 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 		return false;
 
 	data.addr   = 0;
-	data.page   = 0x00;
+	data.page   = 0;
 	data.bank   = 0;
-	data.offset = 0x09;
+	data.offset = 9;
 	data.len    = 1;
 
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &data);
@@ -1152,4 +1150,32 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 	}
 
 	return ((data.data[0] & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) != 0);
+}
+
+int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
+{
+	int                  rtn;
+	struct xcvr_i2c_data data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable temp get");
+
+	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num))
+		return -EBADRQC;
+
+	data.addr   = 0;
+	data.page   = 0;
+	data.bank   = 0;
+	data.offset = 14;
+	data.len    = 1;
+
+	rtn = hsnxcvr_i2c_read(media_jack->hdl, &data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME,
+			"temp get read failed [%d]", rtn);
+		return -EIO;
+	}
+
+	*temp = data.data[0];
+	return 0;
 }

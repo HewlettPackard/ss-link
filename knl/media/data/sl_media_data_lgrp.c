@@ -4,16 +4,15 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 
+#include <linux/sl_media.h>
+
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
 #include "sl_media_data_lgrp.h"
 #include "sl_media_data_ldev.h"
 #include "sl_media_data_jack.h"
 #include "sl_asic.h"
-
 #include "base/sl_media_log.h"
-#include "uapi/sl_media.h"
-
 #include "sl_media_data_jack_rosetta.h"
 #include "sl_media_data_jack_cassini_emulator.h"
 

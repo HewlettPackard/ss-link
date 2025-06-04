@@ -5,13 +5,12 @@
 #include <linux/spinlock.h>
 #include <linux/types.h>
 #include <linux/slab.h>
+
 #include <linux/sl_mac.h>
 
 #include "sl_asic.h"
 #include "sl_sysfs.h"
-
 #include "base/sl_ctl_log.h"
-
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_mac.h"
 #include "sl_core_mac.h"

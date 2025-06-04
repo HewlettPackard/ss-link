@@ -4,12 +4,20 @@
 #ifndef _LINUX_SL_LDEV_H_
 #define _LINUX_SL_LDEV_H_
 
-#include "uapi/sl_ldev.h"
-#include "linux/sl_lgrp.h"
+#include <linux/kobject.h>
+#include <linux/workqueue.h>
 
-struct workqueue_struct;
-struct sl_dev;
-struct kobject;
+struct sl_dt_lgrp_info;
+
+#define SL_LDEV_POLICY_MAGIC 0x736c6470
+#define SL_LDEV_POLICY_VER   1
+struct sl_ldev_policy {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	u32 options;
+};
 
 typedef void (*sl_intr_handler_t)(u64 *err_flags, int flag_count, void *data);
 
@@ -107,14 +115,14 @@ struct sl_ops {
 #define SL_LDEV_ATTR_MAGIC 0x736c6461
 #define SL_LDEV_ATTR_VER   1
 struct sl_ldev_attr {
-	__u32 magic;
-	__u32 ver;
-	__u32 size;
+	u32 magic;
+	u32 ver;
+	u32 size;
 
 	struct sl_ops       *ops;
 	struct sl_accessors *accessors;
 
-	__u32 options;
+	u32 options;
 };
 
 struct sl_ldev *sl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,

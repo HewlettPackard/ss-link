@@ -3,6 +3,7 @@
 
 #include <linux/module.h>
 #include <linux/err.h>
+
 #include <linux/sl_mac.h>
 
 #include "sl_asic.h"

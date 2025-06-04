@@ -3,9 +3,10 @@
 
 #include <linux/kobject.h>
 
+#include <linux/sl_lgrp.h>
+
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include <linux/sl_lgrp.h>
 #include "sl_ctl_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK

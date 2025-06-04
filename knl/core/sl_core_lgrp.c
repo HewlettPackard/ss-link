@@ -2,6 +2,7 @@
 /* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
+
 #include <linux/sl_lgrp.h>
 
 #include "sl_core_lgrp.h"

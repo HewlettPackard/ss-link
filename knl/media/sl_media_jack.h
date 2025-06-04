@@ -5,10 +5,11 @@
 #define _SL_MEDIA_JACK_H_
 
 #include <linux/spinlock.h>
+
+#include <linux/sl_media.h>
+
 #include "sl_asic.h"
 #include "sl_media_ldev.h"
-#include "base/sl_media_log.h"
-#include "uapi/sl_media.h"
 
 #ifdef BUILDSYS_FRAMEWORK_ROSETTA
 #ifndef BUILDSYS_FRAMEWORK_EMULATOR
@@ -210,5 +211,6 @@ void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_
 const char *sl_media_fault_cause_str(u32 fault_cause);
 
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
+int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 
 #endif /* _SL_MEDIA_JACK_H_ */

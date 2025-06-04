@@ -6,6 +6,7 @@
 
 #include <linux/kobject.h>
 #include <linux/workqueue.h>
+
 #include <linux/sl_ldev.h>
 
 #include "data/sl_media_data_cable_db.h"

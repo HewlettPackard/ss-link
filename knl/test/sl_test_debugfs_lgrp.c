@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
-#include "uapi/sl_lgrp.h"
 #include <linux/debugfs.h>
-#include <linux/sl_lgrp.h>
-#include <linux/sl_media.h>
 #include <linux/kobject.h>
 #include <linux/kfifo.h>
 #include <linux/poll.h>
 #include <linux/mutex.h>
 #include <linux/wait.h>
 #include <linux/timekeeping.h>
+
+#include <linux/sl_lgrp.h>
+#include <linux/sl_lgrp.h>
+#include <linux/sl_media.h>
 
 #include "sl_asic.h"
 #include "sl_lgrp.h"

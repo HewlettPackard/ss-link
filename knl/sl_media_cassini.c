@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
+
 #include <linux/sl_media.h>
 
-#include "sl_log.h"
+#include "base/sl_media_log.h"
 #include "sl_lgrp.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack_cassini.h"

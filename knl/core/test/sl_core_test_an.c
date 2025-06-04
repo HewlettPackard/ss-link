@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 
-#include "uapi/sl_lgrp.h"
+#include <linux/sl_lgrp.h>
 
 #include "sl_link.h"
 

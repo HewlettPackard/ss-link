@@ -66,3 +66,9 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 {
 	return false;
 }
+
+int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
+{
+	*temp = 24;
+	return 0;
+}

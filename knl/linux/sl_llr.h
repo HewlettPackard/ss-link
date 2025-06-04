@@ -4,13 +4,53 @@
 #ifndef _LINUX_SL_LLR_H_
 #define _LINUX_SL_LLR_H_
 
-#include "uapi/sl_llr.h"
+#include <linux/bitops.h>
+#include <linux/kobject.h>
 
 struct sl_lgrp;
 struct sl_llr;
-struct sl_llr_config;
-struct sl_llr_policy;
-struct kobject;
+
+#define SL_LLR_LINK_DN_BEHAVIOR_DISCARD     BIT(0)
+#define SL_LLR_LINK_DN_BEHAVIOR_BLOCK       BIT(1)
+#define SL_LLR_LINK_DN_BEHAVIOR_BEST_EFFORT BIT(2)
+
+#define SL_LLR_CONFIG_MAGIC 0x636c6c72
+#define SL_LLR_CONFIG_VER   1
+struct sl_llr_config {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	u32 mode;
+	u32 setup_timeout_ms;
+	u32 start_timeout_ms;
+	u32 link_dn_behavior;
+
+	u32 options;
+};
+
+#define SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES BIT(0)
+
+#define SL_LLR_POLICY_MAGIC 0x636c6c72
+#define SL_LLR_POLICY_VER   1
+struct sl_llr_policy {
+	u32 magic;
+	u32 ver;
+	u32 size;
+
+	u32 options;
+};
+
+enum sl_llr_state {
+	SL_LLR_STATE_OFF          = 1,
+	SL_LLR_STATE_CONFIGURED,
+	SL_LLR_STATE_SETUP_BUSY,
+	SL_LLR_STATE_SETUP,
+	SL_LLR_STATE_START_BUSY,
+	SL_LLR_STATE_RUNNING,
+	SL_LLR_STATE_CANCELING,
+	SL_LLR_STATE_STOP_BUSY,
+};
 
 struct sl_llr_data {
 	u32 magic;

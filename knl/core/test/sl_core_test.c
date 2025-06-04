@@ -7,24 +7,21 @@
 #include <linux/mutex.h>
 #include <linux/err.h>
 
+#include <linux/sl_media.h>
+#include <linux/sl_test.h>
+
 #include "sl_kconfig.h"
 #include "sl_asic.h"
-
 #include "base/sl_core_log.h"
-
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
-#include <linux/sl_media.h>
-#include <linux/sl_test.h>
-
 #include "sl_ctl_ldev.h"
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_link.h"
 #include "sl_ctl_link_priv.h"
 #include "sl_ctl_llr.h"
-
 #include "test/sl_core_test.h"
 #include "test/sl_core_test_fec.h"
 

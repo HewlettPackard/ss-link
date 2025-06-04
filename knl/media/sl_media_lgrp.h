@@ -7,9 +7,9 @@
 #include <linux/spinlock.h>
 #include <linux/kobject.h>
 
-#include "sl_lgrp.h"
+#include <linux/sl_media.h>
 
-#include "uapi/sl_media.h"
+#include "sl_lgrp.h"
 #include "sl_media_ldev.h"
 #include "base/sl_media_log.h"
 

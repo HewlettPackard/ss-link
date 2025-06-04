@@ -3,6 +3,7 @@
 
 #include <linux/module.h>
 #include <linux/err.h>
+
 #include <linux/sl_link.h>
 
 #include "sl_asic.h"

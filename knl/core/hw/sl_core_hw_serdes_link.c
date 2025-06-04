@@ -4,6 +4,9 @@
 #include <linux/types.h>
 #include <linux/umh.h>
 
+#include <linux/sl_media.h>
+#include <linux/sl_link.h>
+
 #include "sl_asic.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
@@ -15,8 +18,6 @@
 #include "hw/sl_core_hw_settings.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
-#include "uapi/sl_media.h"
-#include "uapi/sl_link.h"
 #include "data/sl_core_data_link.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME

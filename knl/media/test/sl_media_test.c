@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
+
 #include <linux/sl_media.h>
+#include <linux/sl_lgrp.h>
 
 #include "sl_asic.h"
 #include "sl_lgrp.h"
-
-#include "uapi/sl_media.h"
-#include "uapi/sl_lgrp.h"
-
 #include "sl_media_test.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_ldev.h"

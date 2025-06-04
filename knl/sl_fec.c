@@ -2,6 +2,7 @@
 /* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
+
 #include <linux/sl_fec.h>
 
 #include "sl_log.h"

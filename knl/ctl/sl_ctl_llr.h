@@ -7,9 +7,8 @@
 #include <linux/workqueue.h>
 #include <linux/spinlock.h>
 #include <linux/kobject.h>
-#include <linux/sl_llr.h>
 
-#include "uapi/sl_llr.h"
+#include <linux/sl_llr.h>
 
 #define SL_LLR_DATA_MAGIC 0x636c6c72
 #define SL_LLR_DATA_VER   2

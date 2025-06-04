@@ -485,3 +485,8 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 {
 	return sl_media_data_jack_cable_is_high_temp(media_jack);
 }
+
+int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
+{
+	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
+}

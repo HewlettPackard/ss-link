@@ -6,11 +6,9 @@
 
 #include <linux/spinlock.h>
 
-#include "sl_kconfig.h"
 #include <linux/sl_lgrp.h>
+
 #include "sl_asic.h"
-#include "uapi/sl_lgrp.h"
-#include "uapi/sl_media.h"
 #include "base/sl_core_log.h"
 #include "sl_core_ldev.h"
 

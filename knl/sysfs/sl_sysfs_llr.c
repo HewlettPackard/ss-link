@@ -2,6 +2,7 @@
 /* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+
 #include <linux/sl_llr.h>
 
 #include "sl_log.h"

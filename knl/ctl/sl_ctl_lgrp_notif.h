@@ -5,6 +5,7 @@
 #define _SL_CTL_LGRP_NOTIF_H_
 
 #include <linux/kfifo.h>
+
 #include <linux/sl_lgrp.h>
 #include <linux/sl_llr.h>
 

@@ -59,13 +59,6 @@ INSTALL_LINUX_HDRS     += linux/sl_mac.h
 INSTALL_LINUX_HDRS     += linux/sl_media.h
 INSTALL_LINUX_HDRS     += linux/sl_test.h
 
-UAPI_HDRS   := sl_media.h
-UAPI_HDRS   += sl_ldev.h
-UAPI_HDRS   += sl_lgrp.h
-UAPI_HDRS   += sl_link.h
-UAPI_HDRS   += sl_llr.h
-UAPI_HDRS   += sl_mac.h
-
 UNINSTALL_LINUX_HDRS     := sl_kconfig.h
 UNINSTALL_LINUX_HDRS     += sl.h
 UNINSTALL_LINUX_HDRS     += sl_ldev.h
@@ -128,8 +121,6 @@ stage_install: modules fw
 	$(INSTALL) -m 644 Module.symvers $(KNL_MOD_DIR)/module.symvers.sl
 	$(INSTALL) -d $(STAGING_DIR)/usr/include/linux
 	$(INSTALL) -m 644 $(INSTALL_LINUX_HDRS) $(STAGING_DIR)/usr/include/linux
-	$(INSTALL) -d $(STAGING_DIR)/usr/include/uapi
-	$(INSTALL) -m 644 $(patsubst %,uapi/%,$(UAPI_HDRS)) $(STAGING_DIR)/usr/include/uapi
 	$(INSTALL) -d $(STAGING_DIR)/lib/udev/rules.d
 	$(INSTALL) -d $(STAGING_DIR)/usr/lib/modules-load.d
 	$(INSTALL) -d $(STAGING_DIR)/usr/bin
@@ -140,7 +131,6 @@ stage_install: modules fw
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin $(STAGING_DIR)/lib/firmware
 
 stage_uninstall: test_stage_uninstall
-	$(RM) $(patsubst %,$(STAGING_DIR)/usr/include/uapi/%,$(UAPI_HDRS))
 	$(RM) $(patsubst %,$(STAGING_DIR)/usr/include/linux/%,$(UNINSTALL_LINUX_HDRS))
 	$(RM) $(KNL_MOD_DIR)/sshot/$(MOD_NAME).ko
 	$(RM) $(KNL_MOD_DIR)/module.symvers.sl
