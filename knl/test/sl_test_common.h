@@ -109,4 +109,6 @@ int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct d
 
 int sl_test_furcation_from_str(const char *str, u32 *furcation);
 
+void sl_test_pg_cfg_set(u8 ldev_num, u8 lgrp_num, u8 data);
+
 #endif /* _SL_TEST_COMMON_H_ */

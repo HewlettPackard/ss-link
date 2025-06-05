@@ -393,6 +393,20 @@ function print_col_state {
         printf "\n"
 }
 
+function print_col_swizzle {
+        if [ ! -e ${LGRP_PATH} ] ; then
+                return
+        fi
+
+        printf "  swizzle  |        tx,rx | "
+        for lane in {0..3} ; do
+                tx_source=$(cat ${LGRP_PATH}/serdes/lane/${lane}/swizzle/tx_source)
+                rx_source=$(cat ${LGRP_PATH}/serdes/lane/${lane}/swizzle/rx_source)
+                printf "%15s " "${tx_source},${rx_source}"
+        done
+        printf "\n"
+}
+
 function print_col_eye_high {
         if [ ! -e ${LGRP_PATH} ] ; then
                 return
@@ -533,6 +547,7 @@ function print_serdes_settings {
 
         print_serdes_header
         print_col_state
+        print_col_swizzle
         print_col_eye_high
         print_col_eye_low
         printf "  settings |"

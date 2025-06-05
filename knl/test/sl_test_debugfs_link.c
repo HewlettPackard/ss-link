@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
+#include <linux/types.h>
 #include <linux/debugfs.h>
 #include <linux/kobject.h>
 
@@ -230,6 +231,16 @@ static struct kobj_type sl_test_link_kobj_type = {
 	.field   = SL_LINK_POLICY_OPT_##_bit_field,                                                            \
 }
 
+#define STATIC_HPE_MAP_ENTRY(_name, _bit_field) static struct options_field_entry hpe_map_##_name##_set = { \
+	.options = &link_config.hpe_map,                                                                    \
+	.field   = SL_LINK_CONFIG_HPE_##_bit_field,                                                         \
+}
+
+#define STATIC_PAUSE_MAP_ENTRY(_name, _bit_field) static struct options_field_entry pause_map_##_name##_set = { \
+	.options = &link_config.pause_map,                                                                      \
+	.field   = SL_LINK_CONFIG_PAUSE_##_bit_field,                                                           \
+}
+
 STATIC_CONFIG_OPT_ENTRY(lock,                 LOCK);
 STATIC_CONFIG_OPT_ENTRY(autoneg,              AUTONEG_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(headshell_loopback,   HEADSHELL_LOOPBACK_ENABLE);
@@ -239,6 +250,20 @@ STATIC_CONFIG_OPT_ENTRY(extended_reach_force, EXTENDED_REACH_FORCE);
 STATIC_POLICY_OPT_ENTRY(lock,                  LOCK);
 STATIC_POLICY_OPT_ENTRY(keep_serdes_up,        KEEP_SERDES_UP);
 STATIC_POLICY_OPT_ENTRY(use_unsupported_cable, USE_UNSUPPORTED_CABLE);
+
+STATIC_HPE_MAP_ENTRY(linktrain, LINKTRAIN);
+STATIC_HPE_MAP_ENTRY(precode, PRECODING);
+STATIC_HPE_MAP_ENTRY(pcal, PCAL);
+STATIC_HPE_MAP_ENTRY(r3, R3);
+STATIC_HPE_MAP_ENTRY(r2, R2);
+STATIC_HPE_MAP_ENTRY(r1, R1);
+STATIC_HPE_MAP_ENTRY(c3, C3);
+STATIC_HPE_MAP_ENTRY(c2, C2);
+STATIC_HPE_MAP_ENTRY(c1, C1);
+STATIC_HPE_MAP_ENTRY(llr, LLR);
+
+STATIC_PAUSE_MAP_ENTRY(asym, ASYM);
+STATIC_PAUSE_MAP_ENTRY(sym, SYM);
 
 static u64 fec_ucw;
 static u64 fec_ccw;
@@ -302,6 +327,26 @@ static struct sl_link *sl_test_link_get(void)
 	return &link;
 }
 
+#define SL_TEST_HPE_MAP_NODE(_name)                                                                                 \
+	do {                                                                                                        \
+		rtn = sl_test_debugfs_create_opt("hpe_map_"#_name"_set", 0644, config_dir, &hpe_map_##_name##_set); \
+		if (rtn) {                                                                                          \
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                 \
+				"link config hpe map %s set debugfs_create_opt failed", #_name);                    \
+			return -ENOMEM;                                                                             \
+		}                                                                                                   \
+	} while (0)
+
+#define SL_TEST_PAUSE_MAP_NODE(_name)                                                                           \
+	do {                                                                                                    \
+		rtn = sl_test_debugfs_create_opt("pause_map_"#_name"_set", 0644, config_dir, &pause_map_##_name##_set); \
+		if (rtn) {                                                                                              \
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                     \
+				"link config pause map %s set debugfs_create_opt failed", #_name);                      \
+			return -ENOMEM;                                                                                 \
+		}                                                                                                       \
+	} while (0)
+
 int sl_test_debugfs_link_create(struct dentry *top_dir)
 {
 	int            rtn;
@@ -331,8 +376,20 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	sl_test_link_config_init();
 
 	debugfs_create_u32("link_up_timeout_ms", 0644, config_dir, &link_config.link_up_timeout_ms);
-	debugfs_create_u32("hpe_map",            0644, config_dir, &link_config.hpe_map);
-	debugfs_create_u32("pause_map",          0644, config_dir, &link_config.pause_map);
+
+	SL_TEST_HPE_MAP_NODE(linktrain);
+	SL_TEST_HPE_MAP_NODE(precode);
+	SL_TEST_HPE_MAP_NODE(pcal);
+	SL_TEST_HPE_MAP_NODE(r3);
+	SL_TEST_HPE_MAP_NODE(r2);
+	SL_TEST_HPE_MAP_NODE(r1);
+	SL_TEST_HPE_MAP_NODE(c3);
+	SL_TEST_HPE_MAP_NODE(c2);
+	SL_TEST_HPE_MAP_NODE(c1);
+	SL_TEST_HPE_MAP_NODE(llr);
+
+	SL_TEST_PAUSE_MAP_NODE(asym);
+	SL_TEST_PAUSE_MAP_NODE(sym);
 
 	sl_test_debugfs_create_s32("link_up_tries_max",     0644, config_dir, &link_config.link_up_tries_max);
 	sl_test_debugfs_create_s32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);

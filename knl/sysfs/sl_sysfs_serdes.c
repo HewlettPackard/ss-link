@@ -13,6 +13,7 @@
 #include "sl_sysfs_serdes_settings.h"
 #include "sl_sysfs_serdes_eye.h"
 #include "sl_sysfs_serdes_state.h"
+#include "sl_sysfs_serdes_swizzle.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -204,6 +205,13 @@ int sl_sysfs_serdes_create(struct sl_ctl_lgrp *ctl_lgrp)
 			goto out_lanes;
 		}
 
+		rtn = sl_sysfs_serdes_lane_swizzle_create(ctl_lgrp, asic_lane_num);
+		if (rtn) {
+			sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+				"serdes_lane_swizzle_create failed [%d]", rtn);
+			goto out_swizzle;
+		}
+
 		rtn = sl_sysfs_serdes_lane_settings_create(ctl_lgrp, asic_lane_num);
 		if (rtn) {
 			sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME,
@@ -227,12 +235,15 @@ out_settings:
 	sl_sysfs_serdes_lane_settings_delete(ctl_lgrp, asic_lane_num);
 out_state:
 	sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
+out_swizzle:
+	sl_sysfs_serdes_lane_swizzle_delete(ctl_lgrp, asic_lane_num);
 out_lanes:
 	kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 out_all:
 	for (asic_lane_num = asic_lane_num - 1; asic_lane_num >= 0; --asic_lane_num) {
 		sl_sysfs_serdes_lane_eye_delete(ctl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_settings_delete(ctl_lgrp, asic_lane_num);
+		sl_sysfs_serdes_lane_swizzle_delete(ctl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
 		kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 	}
@@ -256,6 +267,7 @@ void sl_sysfs_serdes_delete(struct sl_ctl_lgrp *ctl_lgrp)
 	for (asic_lane_num = 0; asic_lane_num < SL_ASIC_MAX_LANES; ++asic_lane_num) {
 		sl_sysfs_serdes_lane_eye_delete(ctl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_settings_delete(ctl_lgrp, asic_lane_num);
+		sl_sysfs_serdes_lane_swizzle_delete(ctl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_state_delete(ctl_lgrp, asic_lane_num);
 		kobject_put(&(ctl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 	}

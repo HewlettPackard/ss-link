@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
+#include <linux/types.h>
 #include <linux/debugfs.h>
 #include <linux/kobject.h>
 #include <linux/kfifo.h>
@@ -9,7 +10,6 @@
 #include <linux/wait.h>
 #include <linux/timekeeping.h>
 
-#include <linux/sl_lgrp.h>
 #include <linux/sl_lgrp.h>
 #include <linux/sl_media.h>
 
@@ -524,11 +524,32 @@ static struct str_conv_u32 lgrp_furcation = {
 	.field   = SL_LGRP_POLICY_OPT_##_bit_field,                                                            \
 }
 
+#define STATIC_FEC_MAP_ENTRY(_name, _bit_field) static struct options_field_entry fec_map_##_name##_set = { \
+	.options = &lgrp_config.fec_map,                                                                    \
+	.field   = SL_LGRP_CONFIG_FEC_##_bit_field,                                                         \
+}
+
+#define STATIC_TECH_MAP_ENTRY(_name, _bit_field) static struct options_field_entry tech_map_##_name##_set = { \
+	.options = &lgrp_config.tech_map,                                                                     \
+	.field   = SL_LGRP_CONFIG_TECH_##_bit_field,                                                          \
+}
+
 STATIC_OPT_ENTRY(lock, LOCK);
 
 STATIC_CONFIG_OPT_ENTRY(fabric_link,     FABRIC);
 STATIC_CONFIG_OPT_ENTRY(r1_partner,      R1);
 STATIC_CONFIG_OPT_ENTRY(serdes_loopback, SERDES_LOOPBACK_ENABLE);
+
+STATIC_FEC_MAP_ENTRY(rs, RS);
+STATIC_FEC_MAP_ENTRY(rs_ll, RS_LL);
+
+STATIC_TECH_MAP_ENTRY(ck400g, CK_400G);
+STATIC_TECH_MAP_ENTRY(ck200g, CK_200G);
+STATIC_TECH_MAP_ENTRY(ck100g, CK_100G);
+STATIC_TECH_MAP_ENTRY(bs200g, BS_200G);
+STATIC_TECH_MAP_ENTRY(cd100g, CD_100G);
+STATIC_TECH_MAP_ENTRY(cd50g,  CD_50G);
+STATIC_TECH_MAP_ENTRY(bj100g, BJ_100G);
 
 static void sl_test_lgrp_config_init(void)
 {
@@ -557,6 +578,26 @@ struct sl_lgrp *sl_test_lgrp_get(void)
 
 	return &lgrp;
 }
+
+#define SL_TEST_FEC_MAP_SET_NODE(_name)                                                                             \
+	do {                                                                                                        \
+		rtn = sl_test_debugfs_create_opt("fec_map_"#_name"_set", 0644, config_dir, &fec_map_##_name##_set); \
+		if (rtn) {                                                                                          \
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                 \
+				"link config fec map %s set debugfs_create_opt failed", #_name);                    \
+			return -ENOMEM;                                                                             \
+		}                                                                                                   \
+	} while (0)
+
+#define SL_TEST_TECH_MAP_SET_NODE(_name)                                                                              \
+	do {                                                                                                          \
+		rtn = sl_test_debugfs_create_opt("tech_map_"#_name"_set", 0644, config_dir, &tech_map_##_name##_set); \
+		if (rtn) {                                                                                            \
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                   \
+				"link config tech map %s set debugfs_create_opt failed", #_name);                     \
+			return -ENOMEM;                                                                               \
+		}                                                                                                     \
+	} while (0)
 
 int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 {
@@ -588,10 +629,20 @@ int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 		return -ENOMEM;
 	}
 
-	debugfs_create_u32("mfs",       0644, config_dir, &lgrp_config.mfs);
-	debugfs_create_u32("fec_map",   0644, config_dir, &lgrp_config.fec_map);
-	debugfs_create_u32("fec_mode",  0644, config_dir, &lgrp_config.fec_mode);
-	debugfs_create_u32("tech_map",  0644, config_dir, &lgrp_config.tech_map);
+	debugfs_create_u32("mfs", 0644, config_dir, &lgrp_config.mfs);
+
+	SL_TEST_FEC_MAP_SET_NODE(rs);
+	SL_TEST_FEC_MAP_SET_NODE(rs_ll);
+
+	debugfs_create_u32("fec_mode", 0644, config_dir, &lgrp_config.fec_mode);
+
+	SL_TEST_TECH_MAP_SET_NODE(ck400g);
+	SL_TEST_TECH_MAP_SET_NODE(ck200g);
+	SL_TEST_TECH_MAP_SET_NODE(ck100g);
+	SL_TEST_TECH_MAP_SET_NODE(bs200g);
+	SL_TEST_TECH_MAP_SET_NODE(cd100g);
+	SL_TEST_TECH_MAP_SET_NODE(cd50g);
+	SL_TEST_TECH_MAP_SET_NODE(bj100g);
 
 	sl_test_debugfs_create_str_conv_u32("furcation", 0644, config_dir, &lgrp_furcation);
 
@@ -755,7 +806,30 @@ int sl_test_lgrp_del(void)
 
 int sl_test_lgrp_config_set(void)
 {
-	return sl_lgrp_config_set(sl_test_lgrp_get(), &lgrp_config);
+	int rtn;
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_config_set");
+
+	rtn = sl_lgrp_config_set(sl_test_lgrp_get(), &lgrp_config);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_config_set failed [%d]", rtn);
+		return rtn;
+	}
+
+	switch (lgrp_config.furcation) {
+	default:
+	case SL_MEDIA_FURCATION_X1:
+		sl_test_pg_cfg_set(sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
+		break;
+	case SL_MEDIA_FURCATION_X2:
+		sl_test_pg_cfg_set(sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 1);
+		break;
+	case SL_MEDIA_FURCATION_X4:
+		sl_test_pg_cfg_set(sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 2);
+		break;
+	}
+
+	return 0;
 }
 
 int sl_test_lgrp_policy_set(void)

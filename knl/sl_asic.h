@@ -34,6 +34,9 @@
 
 #define SS2_PORT_BASE(port) SS2_PORT_PML_BASE(port)
 
+// FIXME: temporary addition in anticipation of CSR changes
+#define PORT_PML_CFG_PORT_GROUP	(SS2_PORT_PML_BASE(port) + SS2_PORT_PML_CFG_PORT_GROUP_OFFSET)
+
 #define SL_MEDIA_MAX_JACK_NUM          32
 #define SL_MEDIA_MAX_LGRPS_PER_JACK    4
 #define SL_MEDIA_LGRPS_PER_PORT        2
@@ -47,6 +50,10 @@
 #else /* Cassini */
 
 #include "sbl/sbl_pml.h"
+
+// FIXME: temporary addition in anticipation of CSR changes
+#define PORT_PML_CFG_PORT_GROUP	SS2_PORT_PML_CFG_PORT_GROUP
+#define SS2_PORT_PML_CFG_PORT_GROUP_PG_CFG_UPDATE(_a, _b) C_UPDATE(_a, _b, ss2_port_pml_cfg_port_group, pg_cfg)
 
 #define SL_ASIC_MAX_LDEVS  16
 #define SL_ASIC_MAX_LGRPS  1

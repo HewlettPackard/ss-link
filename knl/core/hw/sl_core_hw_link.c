@@ -39,6 +39,8 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	u64                 rx_state;
 	u64                 tx_state;
 
+	sl_core_log_dbg(core_link, LOG_NAME, "link off");
+
 	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
 				   core_link->core_lgrp->num, core_link->num);
 	core_llr = sl_core_llr_get(core_link->core_lgrp->core_ldev->num,

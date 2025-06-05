@@ -147,74 +147,78 @@ void sl_core_hw_pcs_tx_start(struct sl_core_link *core_link)
 	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
 }
 
-void sl_core_hw_pcs_rx_start(struct sl_core_link *link)
+void sl_core_hw_pcs_rx_start(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u64 lanes;
 	u32 port;
 
-	port = link->core_lgrp->num;
+	port = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(link, LOG_NAME, "rx start (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"rx start (port = %u, active_lanes = 0x%X)",
+		port, core_link->pcs.settings.rx_active_lanes);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(link->num), &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), &data64);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 1);
-	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(link->num), data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
 	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
-	lanes |= link->pcs.settings.rx_active_lanes;
+	lanes |= core_link->pcs.settings.rx_active_lanes;
 	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
-	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS, data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
 
-	sl_core_flush64(link, SS2_PORT_PML_CFG_RX_PCS);
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
 }
 
-void sl_core_hw_pcs_stop(struct sl_core_link *link)
+void sl_core_hw_pcs_stop(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u64 lanes;
 	u32 port;
 
-	port = link->core_lgrp->num;
+	port = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(link, LOG_NAME, "stop (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"stop (port = %u, active_lanes = 0x%X)",
+		port, core_link->pcs.settings.rx_active_lanes);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
 	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
-	lanes &= ~link->pcs.settings.rx_active_lanes;
+	lanes &= ~core_link->pcs.settings.rx_active_lanes;
 	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
-	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS, data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
 
-	sl_core_flush64(link, SS2_PORT_PML_CFG_RX_PCS);
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
 
 	msleep(20);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num), &data64);
 	data64 = SS2_PORT_PML_CFG_PCS_SUBPORT_PCS_ENABLE_UPDATE(data64, 0);
-	sl_core_write64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num), data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num), data64);
 
-	sl_core_read64(link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(link->num), &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), &data64);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 0);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_RX_SM_UPDATE(data64, 0);
-	sl_core_write64(link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(link->num), data64);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
 
-	sl_core_flush64(link, SS2_PORT_PML_CFG_PCS_SUBPORT(link->num));
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num));
 
-	sl_core_data_link_info_map_clr(link, SL_CORE_INFO_MAP_PCS_LINK_UP);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_PCS_LINK_UP);
 }
 
-bool sl_core_hw_pcs_is_ok(struct sl_core_link *link)
+bool sl_core_hw_pcs_is_ok(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
 
-	port = link->core_lgrp->num;
+	port = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(link, LOG_NAME, "is ok (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME, "is ok (port = %u)", port);
 
-	sl_core_read64(link, SS2_PORT_PML_STS_RX_PCS_SUBPORT(link->num), &data64);
+	sl_core_read64(core_link, SS2_PORT_PML_STS_RX_PCS_SUBPORT(core_link->num), &data64);
 
 	return (SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) != 0);
 }

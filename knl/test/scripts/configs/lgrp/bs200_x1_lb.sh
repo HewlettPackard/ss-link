@@ -4,11 +4,18 @@
 #
 
 fabric_link=0
-fec_map=$((1 << 0))   # SL_LGRP_CONFIG_FEC_RS
+fec_map_rs_set=1
+fec_map_rs_ll_set=0
 fec_mode=0
 furcation=unfurcated
 lock=0
 mfs=1500
 r1_partner=0
 serdes_loopback=1
-tech_map=$((1 << 15)) # SL_LGRP_CONFIG_TECH_BS_200G
+tech_map_ck400g_set=0
+tech_map_ck200g_set=0
+tech_map_ck100g_set=0
+tech_map_bs200g_set=1
+tech_map_cd100g_set=0
+tech_map_cd50g_set=0
+tech_map_bj100g_set=0

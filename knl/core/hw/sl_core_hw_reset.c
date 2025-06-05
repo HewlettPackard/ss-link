@@ -25,7 +25,7 @@ static void sl_core_hw_reset_on(struct sl_core_lgrp *core_lgrp, u8 link_num)
 	port = core_lgrp->num;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"link (port = %u, link = %u)", port, link_num);
+		"on (port = %u, link_num = %u)", port, link_num);
 
 	core_lgrp->core_ldev->ops.write64(core_lgrp->core_ldev->accessors.pci,
 		SS2_PORT_PML_CFG_SUBPORT_RESET(link_num),
@@ -42,7 +42,7 @@ static void sl_core_hw_reset_off(struct sl_core_lgrp *core_lgrp, u8 link_num)
 	port = core_lgrp->num;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
-		"link (port = %u, link = %u)", port, link_num);
+		"off (port = %u, link_num = %u)", port, link_num);
 
 	core_lgrp->core_ldev->ops.write64(core_lgrp->core_ldev->accessors.pci,
 		SS2_PORT_PML_CFG_SUBPORT_RESET(link_num),

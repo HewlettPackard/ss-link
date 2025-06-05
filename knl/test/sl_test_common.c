@@ -11,6 +11,9 @@
 #include "test/sl_ctl_test_ldev.h"
 #include "test/sl_ctl_test_lgrp.h"
 
+#include "sl_core_lgrp.h"
+#include "hw/sl_core_hw_io.h"
+
 #define LOG_BLOCK "common"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
@@ -246,7 +249,7 @@ int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *pa
 
 	dentry = debugfs_create_file(name, mode, parent, option, &sl_test_option_fops);
 	if (!dentry) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_opt failed");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_file failed");
 		return -ENOMEM;
 	}
 
@@ -560,7 +563,6 @@ int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct d
 }
 EXPORT_SYMBOL_GPL(sl_test_debugfs_create_str_conv_u32);
 
-// FIXME: is the correct place to put this?
 int sl_test_furcation_from_str(const char *str, u32 *furcation)
 {
 	if (!str || !furcation)
@@ -584,3 +586,22 @@ int sl_test_furcation_from_str(const char *str, u32 *furcation)
 	return -ENOENT;
 }
 EXPORT_SYMBOL(sl_test_furcation_from_str);
+
+void sl_test_pg_cfg_set(u8 ldev_num, u8 lgrp_num, u8 data)
+{
+	struct sl_core_lgrp *core_lgrp;
+	u8                   port;
+	u64                  data64;
+
+	port      = lgrp_num;
+	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
+
+	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
+		"pg_cfg_set (port = %u, data = %u)", port, data);
+
+	sl_core_lgrp_read64(core_lgrp, PORT_PML_CFG_PORT_GROUP, &data64);
+	data64 = SS2_PORT_PML_CFG_PORT_GROUP_PG_CFG_UPDATE(data64, data);
+	sl_core_lgrp_write64(core_lgrp, PORT_PML_CFG_PORT_GROUP, data64);
+	sl_core_lgrp_flush64(core_lgrp, PORT_PML_CFG_PORT_GROUP);
+}
+EXPORT_SYMBOL(sl_test_pg_cfg_set);
