@@ -4,6 +4,7 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+#include <linux/delay.h>
 
 #include "sl_asic.h"
 #include "sl_sysfs.h"
@@ -108,9 +109,25 @@ out:
 	return rtn;
 }
 
+#define SERDES_INIT_MAX_TRIES 3
+#define SERDES_INIT_DELAY_MS  1000
 int sl_ctl_ldev_serdes_init(u8 ldev_num)
 {
-	return sl_core_ldev_serdes_init(ldev_num);
+	int rtn;
+	int tries;
+
+	tries = SERDES_INIT_MAX_TRIES;
+	do {
+		rtn = sl_core_ldev_serdes_init(ldev_num);
+		if (rtn == 0)
+			goto out;
+		tries--;
+		if (tries)
+			msleep(SERDES_INIT_DELAY_MS);
+	} while (tries);
+
+out:
+	return rtn;
 }
 
 void sl_ctl_ldev_del(u8 ldev_num)
