@@ -371,14 +371,91 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 	return 0;
 }
 
+/*
+ * FIXME: Eventually remove this struct array and get this info from cable DB
+ */
+struct sl_media_fw_info {
+	u32 type;
+	u32 vendor;
+	u8  fw_major_ver;
+	u8  fw_minor_ver;
+};
+
+static struct sl_media_fw_info fw_db[] = {
+		{
+				.type         = SL_MEDIA_TYPE_AOC,
+				.vendor       = SL_MEDIA_VENDOR_TE,
+				.fw_major_ver = 0x04,
+				.fw_minor_ver = 0x01,
+		},
+		{
+				.type         = SL_MEDIA_TYPE_AEC,
+				.vendor       = SL_MEDIA_VENDOR_TE,
+				.fw_major_ver = 0x00,
+				.fw_minor_ver = 0x04,
+		},
+		{
+				.type         = SL_MEDIA_TYPE_AEC,
+				.vendor       = SL_MEDIA_VENDOR_MOLEX,
+				.fw_major_ver = 0x01,
+				.fw_minor_ver = 0x01,
+		},
+		{
+				.type         = SL_MEDIA_TYPE_AOC,
+				.vendor       = SL_MEDIA_VENDOR_FINISAR,
+				.fw_major_ver = 0x02,
+				.fw_minor_ver = 0x06,
+		},
+};
+
+static bool sl_media_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(fw_db); ++i) {
+		if ((fw_db[i].type == media_attr->type) &&
+			(fw_db[i].vendor == media_attr->vendor) &&
+			(fw_db[i].fw_major_ver == media_attr->fw_ver[0]) &&
+			(fw_db[i].fw_minor_ver == media_attr->fw_ver[1])) {
+			return true;
+		}
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+		"not valid (vendor = %u, type = 0x%X, fw_major = 0x%X, fw_minor = 0x%X)",
+		media_attr->vendor, media_attr->type, media_attr->fw_ver[0], media_attr->fw_ver[1]);
+
+	return false;
+}
+
+void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
+{
+	u32 type;
+	u32 vendor;
+	int i;
+
+	type   = media_jack->cable_info[0].media_attr.type;
+	vendor = media_jack->cable_info[0].media_attr.vendor;
+
+	for (i = 0; i < ARRAY_SIZE(fw_db); ++i) {
+		if (fw_db[i].type != type)
+			continue;
+		if (fw_db[i].vendor != vendor)
+			continue;
+		snprintf(target_fw_str, target_fw_size, "0x%u%u",
+			 fw_db[i].fw_major_ver, fw_db[i].fw_minor_ver);
+		return;
+	}
+
+	strncpy(target_fw_str, "none", target_fw_size - 1);
+	target_fw_str[target_fw_size - 1] = '\0';
+}
+
 int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	u8 format;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "parse");
-
-	media_attr->magic = SL_MEDIA_ATTR_MAGIC;
-	media_attr->ver   = SL_MEDIA_ATTR_VER;
 
 	if (sl_media_eeprom_format_get(media_jack, &format)                                           ||
 		sl_media_eeprom_type_get(media_jack, format, &(media_attr->type))                     ||
@@ -393,13 +470,19 @@ int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr
 		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))
 		return -ENODATA;
 
+	if ((media_attr->type == SL_MEDIA_TYPE_AOC) || (media_attr->type == SL_MEDIA_TYPE_AEC))
+		if (!sl_media_is_fw_version_valid(media_jack, media_attr))
+			media_attr->options |= SL_MEDIA_OPT_CABLE_FW_INVALID;
+
 	if (media_attr->type == SL_MEDIA_TYPE_PEC)
-		media_attr->options = SL_MEDIA_OPT_AUTONEG;
+		media_attr->options |= SL_MEDIA_OPT_AUTONEG;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X, hpe_pn = %u, serial_num_str = %s",
-		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map, media_attr->hpe_pn,
-		media_attr->serial_num_str);
+		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X)",
+		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+		"parse (hpe_pn = %u, serial_num = %s, options = 0x%X)",
+		media_attr->hpe_pn, media_attr->serial_num_str, media_attr->options);
 
 	return 0;
 }

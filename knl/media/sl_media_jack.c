@@ -19,36 +19,6 @@ enum sl_media_cable_shift {
 	SL_MEDIA_JACK_CABLE_UPSHIFT,
 };
 
-/*
- * FIXME: Eventually remove this struct array and get this info from cable DB
- */
-static struct sl_media_downshift_info downshift_cable_db[] = {
-		{
-				.type = SL_MEDIA_TYPE_AOC,
-				.vendor = SL_MEDIA_VENDOR_TE,
-				.fw_major_ver = 0x04,
-				.fw_minor_ver = 0x01,
-		},
-		{
-				.type = SL_MEDIA_TYPE_AEC,
-				.vendor = SL_MEDIA_VENDOR_TE,
-				.fw_major_ver = 0x00,
-				.fw_minor_ver = 0x04,
-		},
-		{
-				.type = SL_MEDIA_TYPE_AEC,
-				.vendor = SL_MEDIA_VENDOR_MOLEX,
-				.fw_major_ver = 0x01,
-				.fw_minor_ver = 0x01,
-		},
-		{
-				.type = SL_MEDIA_TYPE_AOC,
-				.vendor = SL_MEDIA_VENDOR_FINISAR,
-				.fw_major_ver = 0x02,
-				.fw_minor_ver = 0x06,
-		},
-};
-
 int sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 {
 	return sl_media_data_jack_new(media_ldev, jack_num);
@@ -239,31 +209,6 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 	return 0;
 }
 
-#define SL_MEDIA_JACK_FW_MAJOR_VER_OFFSET 0
-#define SL_MEDIA_JACK_FW_MINOR_VER_OFFSET 1
-static bool sl_media_jack_cable_firmware_version_check(struct sl_media_lgrp *media_lgrp)
-{
-	int i;
-	u32 type;
-	u32 vendor;
-	u8  fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
-
-	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
-	type = sl_media_lgrp_type_get(media_lgrp);
-	vendor = sl_media_lgrp_vendor_get(media_lgrp);
-
-	for (i = 0; i < ARRAY_SIZE(downshift_cable_db); ++i) {
-		if ((downshift_cable_db[i].type == type) &&
-			(downshift_cable_db[i].vendor == vendor) &&
-			(downshift_cable_db[i].fw_major_ver == fw_ver[SL_MEDIA_JACK_FW_MAJOR_VER_OFFSET]) &&
-			(downshift_cable_db[i].fw_minor_ver == fw_ver[SL_MEDIA_JACK_FW_MINOR_VER_OFFSET])) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8 shift_state)
 {
 	u8 i;
@@ -328,6 +273,7 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_core_link  *core_link;
+	struct sl_media_attr  media_attr;
 
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
@@ -352,7 +298,8 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 
 	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
-		if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+		if (media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
 			return 0;
 		}
@@ -375,6 +322,7 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_core_link  *core_link;
+	struct sl_media_attr  media_attr;
 
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
@@ -399,7 +347,8 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 
 	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
-		if (!sl_media_jack_cable_firmware_version_check(media_lgrp)) {
+		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+		if (media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
 			return 0;
 		}
@@ -527,27 +476,4 @@ void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state)
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "headshell led set");
 
 	sl_media_data_jack_headshell_led_set(media_lgrp->media_jack, jack_state);
-}
-
-void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
-{
-	u32 type;
-	u32 vendor;
-	int i;
-
-	type   = media_jack->cable_info[0].media_attr.type;
-	vendor = media_jack->cable_info[0].media_attr.vendor;
-
-	for (i = 0; i < ARRAY_SIZE(downshift_cable_db); ++i) {
-		if ((downshift_cable_db[i].type == type) &&
-			(downshift_cable_db[i].vendor == vendor)) {
-			snprintf(target_fw_str, target_fw_size, "0x%u%u",
-				 downshift_cable_db[i].fw_major_ver,
-				 downshift_cable_db[i].fw_minor_ver);
-			return;
-		}
-	}
-
-	strncpy(target_fw_str, "none", target_fw_size - 1);
-	target_fw_str[target_fw_size - 1] = '\0';
 }

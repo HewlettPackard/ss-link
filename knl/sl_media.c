@@ -54,7 +54,7 @@ const char *sl_media_state_str(u8 state)
 	case SL_MEDIA_JACK_CABLE_INSERTED:
 		return "inserted";
 	case SL_MEDIA_JACK_CABLE_GOING_ONLINE:
-		return "going online";
+		return "going-online";
 	case SL_MEDIA_JACK_CABLE_ONLINE:
 		return "online";
 	case SL_MEDIA_JACK_CABLE_ERROR:
@@ -73,13 +73,13 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED:
 		return "downshifted";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE:
-		return "failed_no_cable";
+		return "failed-no-cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE:
-		return "failed_fake_cable";
+		return "failed-fake-cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT:
-		return "failed_no_support";
+		return "failed-no-support";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO:
-		return "failed_invalid_info";
+		return "failed-invalid-info";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED:
 		return "failed";
 	default:
@@ -174,7 +174,7 @@ const char *sl_media_vendor_str(u32 vendor)
 	case SL_MEDIA_VENDOR_HPE:
 		return "hpe";
 	case SL_MEDIA_VENDOR_CLOUD_LIGHT:
-		return "cloud_light";
+		return "cloud-light";
 	case SL_MEDIA_VENDOR_MULTILANE:
 		return "multilane";
 	case SL_MEDIA_VENDOR_AMPHENOL:
@@ -214,13 +214,13 @@ const char *sl_media_ber_str(u8 media_interface)
 {
 	switch (media_interface) {
 	case 1:
-		return "< 1E-12";
+		return "<1E-12";
 	case 2:
-		return "< 5E-5";
+		return "<5E-5";
 	case 3:
-		return "< 2.6E-4";
+		return "<2.6E-4";
 	case 4:
-		return "< 1E-6";
+		return "<1E-6";
 	default:
 		return "undefined";
 	}
@@ -246,7 +246,7 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 		case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
 			return "800GBASE-CR8";
 		case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
-			return "BJ 100G";
+			return "BJ-100G";
 		default:
 			return "unknown";
 		}
@@ -254,21 +254,21 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 
 	switch (speed) {
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
-		return "50GAUI-1 C2M";
+		return "50GAUI-1-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
-		return "100GAUI-2 C2M";
+		return "100GAUI-2-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
-		return "100GAUI-1-L C2M";
+		return "100GAUI-1-L-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
-		return "200GAUI-4 C2M";
+		return "200GAUI-4-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
-		return "200GAUI-2-S C2M";
+		return "200GAUI-2-S-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_400G:
-		return "400GAUI-4-S C2M";
+		return "400GAUI-4-S-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
-		return "800GAUI-8-S C2M";
+		return "800GAUI-8-S-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
-		return "BJ 100G";
+		return "BJ-100G";
 	default:
 		return "unknown";
 	}
@@ -287,6 +287,14 @@ const char *sl_media_opt_str(u32 option)
 		return "resettable";
 	case SL_MEDIA_OPT_LINKTRAIN:
 		return "linktrain";
+	case SL_MEDIA_OPT_CABLE_NOT_SUPPORTED:
+		return "not-supported";
+	case SL_MEDIA_OPT_CABLE_FORMAT_INVALID:
+		return "invalid-format";
+	case SL_MEDIA_OPT_SS200_CABLE:
+		return "SS200-cable";
+	case SL_MEDIA_OPT_CABLE_FW_INVALID:
+		return "fw-invalid";
 	default:
 		return "unknown";
 	}

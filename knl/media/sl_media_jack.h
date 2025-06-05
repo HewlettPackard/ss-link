@@ -74,16 +74,6 @@
 
 #define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
 
-/*
- * FIXME: Eventually remove this struct and get this info from cable DB
- */
-struct sl_media_downshift_info {
-	u32 type;
-	u32 vendor;
-	u8  fw_major_ver;
-	u8  fw_minor_ver;
-};
-
 struct sl_media_serdes_settings {
 	s16 pre1;
 	s16 pre2;

@@ -31,9 +31,10 @@ static int sl_ctl_lgrp_notif_list_state_get(struct sl_ctl_lgrp *ctl_lgrp)
 int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t callback,
 				   u32 types, void *tag)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
-	u8                  reg_idx;
-	u8                  counter;
+	struct sl_ctl_lgrp   *ctl_lgrp;
+	u8                    reg_idx;
+	u8                    counter;
+	struct sl_media_attr  media_attr;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
@@ -81,6 +82,11 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 
 	if (types & SL_LGRP_NOTIF_MEDIA_ERROR)
 		sl_media_lgrp_real_cable_if_invalid_error_send(ldev_num, lgrp_num);
+
+	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+	if ((media_attr.options & SL_MEDIA_OPT_CABLE_NOT_SUPPORTED) ||
+		(media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID))
+		sl_media_lgrp_real_cable_incompatible_send(ldev_num, lgrp_num);
 
 	return 0;
 }

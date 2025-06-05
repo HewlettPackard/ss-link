@@ -443,7 +443,7 @@ static ssize_t target_firmware_version_show(struct kobject *kobj, struct kobj_at
 		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
 	}
 
-	sl_media_jack_target_fw_ver_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
+	sl_media_eeprom_target_fw_ver_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
 		"target firmware version show (media_lgrp = 0x%p, target_firmware_version = %s)",

@@ -53,9 +53,11 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	memset(&media_attr, 0, sizeof(struct sl_media_attr));
 
+	media_attr.magic   = SL_MEDIA_ATTR_MAGIC;
+	media_attr.ver     = SL_MEDIA_ATTR_VER;
+	media_attr.options = 0;
+
 	if (flags & SL_MEDIA_TYPE_BACKPLANE) {
-		media_attr.magic         = SL_MEDIA_ATTR_MAGIC;
-		media_attr.ver           = SL_MEDIA_ATTR_VER;
 		media_attr.vendor        = SL_MEDIA_VENDOR_HPE;
 		media_attr.type          = SL_MEDIA_TYPE_BKP;
 		media_attr.options       = SL_MEDIA_OPT_AUTONEG;
@@ -94,7 +96,11 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				}
 				sl_media_lgrp_real_cable_if_invalid_error_send(ldev_num, lgrp_num);
 			}
+		} else {
+			if (media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID)
+				sl_media_lgrp_real_cable_incompatible_send(ldev_num, lgrp_num);
 		}
+
 		/*
 		 * disallow BJ100 speed on active cables
 		 */
@@ -114,6 +120,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				media_attr.length_cm, media_attr.speeds_map);
 			media_jack->is_cable_not_supported = true;
 			media_attr.options |= SL_MEDIA_OPT_CABLE_NOT_SUPPORTED;
+			sl_media_lgrp_real_cable_incompatible_send(ldev_num, lgrp_num);
 		}
 		media_attr.jack_type = SL_MEDIA_JACK_TYPE_QSFP;
 		media_attr.jack_type_info.qsfp.density = SL_MEDIA_QSFP_DENSITY_SINGLE;

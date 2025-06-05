@@ -35,7 +35,7 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(16)  /* media/cable error               */
 #define SL_LGRP_NOTIF_AN_DATA           BIT(17)  /* autoneg data                    */
 #define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(18)  /* autoneg timeout                 */
-#define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* automeg error                   */
+#define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* autoneg error                   */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 

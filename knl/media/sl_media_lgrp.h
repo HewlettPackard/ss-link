@@ -54,6 +54,7 @@ void                  sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, con
 
 void                  sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num);
 void                  sl_media_lgrp_real_cable_if_invalid_error_send(u8 ldev_num, u8 lgrp_num);
+void                  sl_media_lgrp_real_cable_incompatible_send(u8 ldev_num, u8 lgrp_num);
 
 void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
 bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num);
