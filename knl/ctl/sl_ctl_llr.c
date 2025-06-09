@@ -19,32 +19,10 @@
 #include "sl_core_str.h"
 
 #define LOG_NAME SL_CTL_LLR_LOG_NAME
+#define SL_CTL_LLR_DEL_WAIT_TIMEOUT_MS 2000
 
 static struct sl_ctl_llr *ctl_llrs[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(ctl_llrs_lock);
-
-static void sl_ctl_llr_is_deleting_set(struct sl_ctl_llr *ctl_llr)
-{
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "is_deleting set");
-
-	spin_lock(&ctl_llr->data_lock);
-	ctl_llr->is_deleting = true;
-	spin_unlock(&ctl_llr->data_lock);
-}
-
-static bool sl_ctl_llr_is_deleting(struct sl_ctl_llr *ctl_llr)
-{
-	bool is_deleting;
-
-	spin_lock(&ctl_llr->data_lock);
-	is_deleting = ctl_llr->is_deleting;
-	spin_unlock(&ctl_llr->data_lock);
-
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME,
-		"is_deleting = %s", is_deleting ? "true" : "false");
-
-	return is_deleting;
-}
 
 static void sl_ctl_llr_setup_callback(void *tag, u32 core_llr_state,
 	u64 core_imap, struct sl_llr_data core_llr_data)
@@ -170,8 +148,7 @@ int sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_p
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
 	if (ctl_llr) {
-		sl_ctl_log_err(ctl_llr, LOG_NAME, "exists (llr = 0x%p, is_deleting = %s)",
-			ctl_llr, sl_ctl_llr_is_deleting(ctl_llr) ? "true" : "false");
+		sl_ctl_log_err(ctl_llr, LOG_NAME, "exists (ctl_llr = 0x%p)", ctl_llr);
 		return -EBADRQC;
 	}
 
@@ -185,6 +162,8 @@ int sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_p
 	ctl_llr->ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 
 	spin_lock_init(&(ctl_llr->data_lock));
+	kref_init(&ctl_llr->ref_cnt);
+	init_completion(&ctl_llr->del_complete);
 
 	rtn = sl_core_llr_new(ldev_num, lgrp_num, llr_num);
 	if (rtn) {
@@ -208,7 +187,7 @@ int sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_p
 	ctl_llrs[ldev_num][lgrp_num][llr_num] = ctl_llr;
 	spin_unlock(&ctl_llrs_lock);
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "new (llr = 0x%p)", ctl_llr);
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "new (ctl_llr = 0x%p)", ctl_llr);
 
 	return 0;
 
@@ -217,32 +196,25 @@ out:
 	return -ENOMEM;
 }
 
-void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+void sl_ctl_llr_release(struct kref *kref)
 {
 	int                rtn;
 	struct sl_ctl_llr *ctl_llr;
+	u8                 ldev_num;
+	u8                 lgrp_num;
+	u8                 llr_num;
 
-	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
-	if (!ctl_llr) {
-		sl_ctl_log_err_trace(NULL, LOG_NAME,
-			"del not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
-			ldev_num, lgrp_num, llr_num);
-		return;
-	}
+	ctl_llr = container_of(kref, struct sl_ctl_llr, ref_cnt);
+	ldev_num = ctl_llr->ctl_lgrp->ctl_ldev->num;
+	lgrp_num = ctl_llr->ctl_lgrp->num;
+	llr_num = ctl_llr->num;
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del (llr = 0x%p)", ctl_llr);
-
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
-		return;
-	}
-
-	sl_ctl_llr_is_deleting_set(ctl_llr);
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "release (ctl_llr = 0x%p)", ctl_llr);
 
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
-			"del core_llr_stop failed [%d[", rtn);
+			"release core_llr_stop failed [%d[", rtn);
 
 	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 
@@ -252,7 +224,57 @@ void sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	ctl_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&ctl_llrs_lock);
 
+	complete_all(&ctl_llr->del_complete);
+
 	kfree(ctl_llr);
+}
+
+int sl_ctl_llr_put(struct sl_ctl_llr *ctl_llr)
+{
+	return kref_put(&ctl_llr->ref_cnt, sl_ctl_llr_release);
+}
+
+int sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+{
+	struct sl_ctl_llr *ctl_llr;
+	unsigned long      timeleft;
+
+	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
+	if (!ctl_llr) {
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+			ldev_num, lgrp_num, llr_num);
+		return -EBADRQC;
+	}
+
+	/* Release occurs on the last caller. Block until complete. */
+	if (!sl_ctl_llr_put(ctl_llr)) {
+		timeleft = wait_for_completion_timeout(&ctl_llr->del_complete,
+			msecs_to_jiffies(SL_CTL_LLR_DEL_WAIT_TIMEOUT_MS));
+
+		if (timeleft == 0) {
+			sl_ctl_log_err(ctl_llr, LOG_NAME,
+				"del completion_timeout (ctl_llr = 0x%p)", ctl_llr);
+			return -ETIMEDOUT;
+		}
+	}
+
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del complete (ctl_llr = 0x%p, timeleft = %lu)", ctl_llr, timeleft);
+
+	return 0;
+}
+
+static bool sl_ctl_llr_kref_get_unless_zero(struct sl_ctl_llr *ctl_llr)
+{
+	bool incremented;
+
+	incremented = (kref_get_unless_zero(&ctl_llr->ref_cnt) != 0);
+
+	if (!incremented)
+		sl_ctl_log_warn(ctl_llr, LOG_NAME,
+			"kref_get_unless_zero ref unavailable (ctl_llr = 0x%p)", ctl_llr);
+
+	return incremented;
 }
 
 struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
@@ -263,7 +285,7 @@ struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	ctl_llr = ctl_llrs[ldev_num][lgrp_num][llr_num];
 	spin_unlock(&ctl_llrs_lock);
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "get (llr = 0x%p)", ctl_llr);
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "get (ctl_llr = 0x%p)", ctl_llr);
 
 	return ctl_llr;
 }
@@ -281,27 +303,32 @@ int sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_co
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"config set kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_llr, LOG_NAME,
 		"config set (setup timeout = %d, start timeout = %d)",
 		llr_config->setup_timeout_ms, llr_config->start_timeout_ms);
-
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
-		return -EBADRQC;
-	}
 
 	rtn = sl_core_llr_config_set(ldev_num, lgrp_num, llr_num, llr_config);
 	if (rtn) {
 		sl_ctl_log_err(ctl_llr, LOG_NAME,
 			"core_llr_config_set failed [%d]", rtn);
-		return rtn;
+		goto out;
 	}
 
 	spin_lock(&ctl_llr->data_lock);
 	ctl_llr->config = *llr_config;
 	spin_unlock(&ctl_llr->data_lock);
 
-	return 0;
+out:
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "config set - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }
 
 int sl_ctl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_policy *llr_policy)
@@ -317,29 +344,35 @@ int sl_ctl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_po
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "policy set");
-
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"policy set kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
 		return -EBADRQC;
 	}
+
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "policy set");
 
 	rtn = sl_core_llr_policy_set(ldev_num, lgrp_num, llr_num, llr_policy);
 	if (rtn) {
 		sl_ctl_log_err(ctl_llr, LOG_NAME,
 			"core_llr_policy_set failed [%d]", rtn);
-		return rtn;
+		goto out;
 	}
 
 	spin_lock(&ctl_llr->data_lock);
 	ctl_llr->policy = *llr_policy;
 	spin_unlock(&ctl_llr->data_lock);
 
-	return 0;
+out:
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "policy set - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }
 
 int sl_ctl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
+	int                rtn;
 	struct sl_ctl_llr *ctl_llr;
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -350,19 +383,29 @@ int sl_ctl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "setup");
-
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"setup kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
 		return -EBADRQC;
 	}
 
-	return sl_core_llr_setup(ldev_num, lgrp_num, llr_num,
-				 sl_ctl_llr_setup_callback, ctl_llr, 0);
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "setup");
+
+	rtn = sl_core_llr_setup(ldev_num, lgrp_num, llr_num,
+		sl_ctl_llr_setup_callback, ctl_llr, 0);
+	if (rtn)
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
+			"core_llr_setup failed [%d]", rtn);
+
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "setup - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }
 
 int sl_ctl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
+	int                rtn;
 	struct sl_ctl_llr *ctl_llr;
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -373,19 +416,29 @@ int sl_ctl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "start");
-
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"start kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
 		return -EBADRQC;
 	}
 
-	return sl_core_llr_start(ldev_num, lgrp_num, llr_num,
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "start");
+
+	rtn = sl_core_llr_start(ldev_num, lgrp_num, llr_num,
 				 sl_ctl_llr_start_callback, ctl_llr, 0);
+	if (rtn)
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
+			"core_llr_start failed [%d]", rtn);
+
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "start - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }
 
 int sl_ctl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
+	int                rtn;
 	struct sl_ctl_llr *ctl_llr;
 
 	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -393,17 +446,26 @@ int sl_ctl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		sl_ctl_log_err(NULL, LOG_NAME,
 			"stop NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 			ldev_num, lgrp_num, llr_num);
-		return 0;
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"stop kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
+		return -EBADRQC;
 	}
 
 	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "stop");
 
-	if (sl_ctl_llr_is_deleting(ctl_llr)) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "del in progress");
-		return -EBADRQC;
-	}
+	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
+	if (rtn)
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
+			"core_llr_stop failed [%d]", rtn);
 
-	return sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "stop - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }
 
 int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
@@ -417,14 +479,22 @@ int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 		sl_ctl_log_err(NULL, LOG_NAME,
 			"state get NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 			ldev_num, lgrp_num, llr_num);
-		return SL_LLR_STATE_OFF;
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"state get kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
+		return -EBADRQC;
 	}
 
 	rtn = sl_core_llr_state_get(ldev_num, lgrp_num, llr_num, &core_llr_state);
 	if (rtn) {
-		sl_ctl_log_dbg(ctl_llr, LOG_NAME,
+		sl_ctl_log_err_trace(ctl_llr, LOG_NAME,
 			"core_llr_state_get failed [%d]", rtn);
-		return SL_LLR_STATE_OFF;
+		*state = SL_LLR_STATE_OFF;
+		rtn = 0;
+		goto out;
 	}
 
 	switch (core_llr_state) {
@@ -465,5 +535,9 @@ int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 		core_llr_state, sl_core_llr_state_str(core_llr_state),
 		*state, sl_llr_state_str(*state));
 
-	return 0;
+out:
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "state get - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return rtn;
 }

@@ -152,9 +152,7 @@ int sl_llr_del(struct sl_llr *llr)
 		return rtn;
 	}
 
-	sl_ctl_llr_del(llr->ldev_num, llr->lgrp_num, llr->num);
-
-	return 0;
+	return sl_ctl_llr_del(llr->ldev_num, llr->lgrp_num, llr->num);
 }
 EXPORT_SYMBOL(sl_llr_del);
 

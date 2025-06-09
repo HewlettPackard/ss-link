@@ -43,11 +43,12 @@ struct sl_ctl_llr {
 	struct kobject              policy_kobj;
 	struct kobject              loop_time_kobj;
 
-	bool                        is_deleting;
+	struct kref                 ref_cnt;
+	struct completion           del_complete;
 };
 
 int		   sl_ctl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_parent);
-void		   sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num);
+int		   sl_ctl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 struct sl_ctl_llr *sl_ctl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 int  sl_ctl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_config *llr_config);
