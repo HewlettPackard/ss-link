@@ -75,6 +75,26 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	}
 }
 
+static void sl_core_hw_link_high_ser_intr_work_priv(struct sl_core_link *core_link)
+{
+	sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work priv");
+
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
+
+	sl_core_log_warn_trace(core_link, LOG_NAME, "high symbol error ratio occurred");
+
+	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
+		if (sl_core_link_is_canceled_or_timed_out(core_link))
+			return;
+		if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN)
+			return;
+		usleep_range(10000, 12000);
+		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
+	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_HIGH_SER);
+}
+
 void sl_core_hw_link_up_callback(struct sl_core_link *core_link, struct sl_core_link_up_info *core_link_up_info)
 {
 	int rtn;
@@ -427,50 +447,51 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
-	if (rtn != 0) {
+	if (rtn == -EAGAIN) {
+		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
+		sl_core_hw_link_high_ser_intr_work_priv(core_link);
+	} else if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link high SER enable failed [%d]", rtn);
-
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
-
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 		return;
 	}
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
-	if (rtn != 0) {
+	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link llr max starvation enable failed [%d]", rtn);
 
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
-	if (rtn != 0) {
+	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link llr starved enable failed [%d]", rtn);
 
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	if (rtn != 0) {
+	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"up success link fault enable failed [%d]", rtn);
 
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -488,12 +509,13 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	}
 
-	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP);
-
 	spin_lock(&core_link->link.data_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
+		sl_core_log_dbg(core_link, LOG_NAME, "up success - up");
+		set_bit(SL_CORE_INFO_MAP_LINK_UP, (unsigned long *)&(core_link->info_map));
+
 		core_link->link.state                  = SL_CORE_LINK_STATE_UP;
 		core_link->link.last_up_fail_cause_map = SL_LINK_DOWN_CAUSE_NONE;
 		core_link->link.last_up_fail_time      = 0;
@@ -505,7 +527,6 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		link_up_info.fec_mode                  = core_link->fec.settings.mode;
 		link_up_info.fec_type                  = core_link->fec.settings.type;
 
-		sl_core_log_dbg(core_link, LOG_NAME, "up success - up");
 		spin_unlock(&core_link->link.data_lock);
 		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, SL_CORE_LINK_STATE_UP);
@@ -918,20 +939,7 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 		return;
 	}
 
-	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
-
-	sl_core_log_warn_trace(core_link, LOG_NAME, "high symbol error ratio occurred");
-
-	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
-		if (sl_core_link_is_canceled_or_timed_out(core_link))
-			return;
-		if (sl_core_data_link_state_get(core_link) == SL_CORE_LINK_STATE_GOING_DOWN)
-			return;
-		usleep_range(10000, 12000);
-		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
-	}
-
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_HIGH_SER);
+	sl_core_hw_link_high_ser_intr_work_priv(core_link);
 }
 
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
