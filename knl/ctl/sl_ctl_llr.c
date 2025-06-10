@@ -214,7 +214,7 @@ void sl_ctl_llr_release(struct kref *kref)
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
-			"release core_llr_stop failed [%d[", rtn);
+			"release core_llr_stop failed [%d]", rtn);
 
 	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 
@@ -503,6 +503,7 @@ int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 		break;
 	case SL_CORE_LLR_STATE_CONFIGURED:
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
 		*state = SL_LLR_STATE_CONFIGURED;
 		break;
 	case SL_CORE_LLR_STATE_SETTING_UP:
@@ -521,7 +522,8 @@ int sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 	case SL_CORE_LLR_STATE_STOPPING:
 		*state = SL_LLR_STATE_STOP_BUSY;
 		break;
-	case SL_CORE_LLR_STATE_CANCELING:
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_START_CANCELING:
 		*state = SL_LLR_STATE_CANCELING;
 		break;
 	default:

@@ -164,16 +164,20 @@ const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 		return "setting-up";
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
 		return "setup-timeout";
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+		return "setup-canceling";
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
+		return "setup-stopping";
 	case SL_CORE_LLR_STATE_SETUP:
 		return "setup";
 	case SL_CORE_LLR_STATE_STARTING:
 		return "starting";
 	case SL_CORE_LLR_STATE_START_TIMEOUT:
 		return "start-timeout";
+	case SL_CORE_LLR_STATE_START_CANCELING:
+		return "start-canceling";
 	case SL_CORE_LLR_STATE_RUNNING:
 		return "running";
-	case SL_CORE_LLR_STATE_CANCELING:
-		return "canceling";
 	case SL_CORE_LLR_STATE_STOPPING:
 		return "stopping";
 	default:

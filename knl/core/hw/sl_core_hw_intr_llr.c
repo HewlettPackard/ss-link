@@ -8,13 +8,20 @@
 #include "sl_kconfig.h"
 
 #include "sl_core_llr.h"
-#include "base/sl_core_work_llr.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_intr_llr.h"
 
 #define LOG_NAME SL_CORE_HW_INTR_LLR_LOG_NAME
 
+/**
+ * sl_core_hw_intr_llr_hdlr - Interrupt handler for LLR error flags.
+ * @err_flgs: Pointer to an array of set error flags.
+ * @num_err_flgs: Number of error flags in the array.
+ * @data: Pointer context for handling the interrupt.
+ *
+ * Context: Interrupt context.
+ */
 void sl_core_hw_intr_llr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
 {
 	int                              rtn;
@@ -37,7 +44,7 @@ void sl_core_hw_intr_llr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
 	memcpy(&(core_llr->intrs[info->intr_num].source), err_flgs,
 		sizeof(core_llr->intrs[info->intr_num].source));
 
-	sl_core_work_llr_queue(core_llr, info->work_num);
+	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[info->work_num]));
 }
 
 int sl_core_hw_intr_llr_hdlr_register(struct sl_core_llr *core_llr)

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 
 #include "sl_kconfig.h"
+#include "sl_core_str.h"
 #include "sl_core_llr.h"
 #include "base/sl_core_timer_llr.h"
 #include "base/sl_core_work_llr.h"
@@ -15,6 +16,8 @@
 
 void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 {
+	u32 llr_state;
+
 	if (core_llr->timers[timer_num].data.timeout_ms == 0) {
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"begin - %s timeout is 0", core_llr->timers[timer_num].data.log);
@@ -30,15 +33,29 @@ void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 		core_llr->timers[timer_num].data.timeout_ms,
 		core_llr->timers[timer_num].timer.expires);
 
-	if (sl_core_llr_is_canceled(core_llr)) {
-		sl_core_log_dbg(core_llr, LOG_NAME,
-			"begin - canceled (timer = %u)", timer_num);
+	spin_lock(&core_llr->data_lock);
+	llr_state = core_llr->state;
+	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETTING_UP:
+	case SL_CORE_LLR_STATE_STARTING:
+		add_timer(&(core_llr->timers[timer_num].timer));
+		spin_unlock(&core_llr->data_lock);
+		return;
+	default:
+		sl_core_log_err(core_llr, LOG_NAME, "begin - invalid state (llr_state = %u %s)",
+			llr_state, sl_core_llr_state_str(llr_state));
+		spin_unlock(&core_llr->data_lock);
 		return;
 	}
-
-	add_timer(&(core_llr->timers[timer_num].timer));
 }
 
+
+/**
+ * sl_core_timer_llr_timeout - Timer callback function executed in interrupt context.
+ * @timer: Pointer to the timer_list structure associated with the timer.
+ *
+ * Context: Interrupt context.
+ */
 void sl_core_timer_llr_timeout(struct timer_list *timer)
 {
 	struct sl_core_timer_llr_info *info;
@@ -52,7 +69,7 @@ void sl_core_timer_llr_timeout(struct timer_list *timer)
 		info->data.log, core_llr,
 		info->data.timer_num, info->data.work_num);
 
-	sl_core_work_llr_queue(core_llr, info->data.work_num);
+	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[info->data.work_num]));
 }
 
 void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num)

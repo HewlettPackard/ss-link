@@ -187,40 +187,44 @@ int sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - already off");
 		spin_unlock(&core_llr->data_lock);
 		return 0;
-	case SL_CORE_LLR_STATE_CANCELING:
-	case SL_CORE_LLR_STATE_STOPPING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "stop - waiting");
-		spin_unlock(&core_llr->data_lock);
-		return sl_core_hw_llr_stop_wait(core_llr);
 	case SL_CORE_LLR_STATE_SETTING_UP:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel setting up");
-		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
+		core_llr->state = SL_CORE_LLR_STATE_SETUP_CANCELING;
 		spin_unlock(&core_llr->data_lock);
+		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_CANCELED);
 		sl_core_hw_llr_settingup_cancel_cmd(core_llr);
-		return 0;
-	case SL_CORE_LLR_STATE_STARTING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel starting");
-		core_llr->state = SL_CORE_LLR_STATE_CANCELING;
-		spin_unlock(&core_llr->data_lock);
-		sl_core_hw_llr_starting_cancel_cmd(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_SETUP:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - in setup");
-		core_llr->state = SL_CORE_LLR_STATE_STOPPING;
+		core_llr->state = SL_CORE_LLR_STATE_SETUP_STOPPING;
 		spin_unlock(&core_llr->data_lock);
+		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_COMMAND);
 		sl_core_hw_llr_setup_stop_cmd(core_llr);
+		return 0;
+	case SL_CORE_LLR_STATE_STARTING:
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - cancel starting");
+		core_llr->state = SL_CORE_LLR_STATE_START_CANCELING;
+		spin_unlock(&core_llr->data_lock);
+		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_CANCELED);
+		sl_core_hw_llr_starting_cancel_cmd(core_llr);
 		return 0;
 	case SL_CORE_LLR_STATE_RUNNING:
 		sl_core_log_dbg(core_llr, LOG_NAME, "stop - in running");
 		core_llr->state = SL_CORE_LLR_STATE_STOPPING;
 		spin_unlock(&core_llr->data_lock);
+		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_COMMAND);
 		sl_core_hw_llr_running_stop_cmd(core_llr);
 		return 0;
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
 	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
-		/* do nothing */
+	case SL_CORE_LLR_STATE_START_CANCELING:
+	case SL_CORE_LLR_STATE_STOPPING:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+		sl_core_log_dbg(core_llr, LOG_NAME, "stop - waiting (llr_state = %u %s)",
+			llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
-		return 0;
+		return sl_core_hw_llr_stop_wait(core_llr);
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
 			"stop - invalid (llr_state = %u %s)",
@@ -255,36 +259,85 @@ struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	return sl_core_data_llr_data_get(core_llr);
 }
 
-bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr)
+bool sl_core_llr_start_should_stop(struct sl_core_llr *core_llr)
 {
-	bool is_canceled;
+	u32  llr_state;
+	bool start_should_stop;
 
 	spin_lock(&core_llr->data_lock);
-	is_canceled  = core_llr->is_canceled;
-	spin_unlock(&core_llr->data_lock);
-
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"is_canceled = %s", is_canceled ? "true" : "false");
-
-	return is_canceled;
+	llr_state = core_llr->state;
+	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_START_CANCELING:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
+	case SL_CORE_LLR_STATE_STOPPING:
+		start_should_stop = true;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"start_should_stop = %s", start_should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return start_should_stop;
+	default:
+		start_should_stop = false;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"start_should_stop = %s", start_should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return start_should_stop;
+	}
 }
 
-void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr)
+bool sl_core_llr_setup_should_stop(struct sl_core_llr *core_llr)
 {
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_canceled_set");
+	u32  llr_state;
+	bool setup_should_stop;
 
 	spin_lock(&core_llr->data_lock);
-	core_llr->is_canceled = true;
-	spin_unlock(&core_llr->data_lock);
+	llr_state = core_llr->state;
+	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
+		setup_should_stop = true;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"setup_should_stop = %s", setup_should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return setup_should_stop;
+	default:
+		setup_should_stop = false;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"setup_should_stop = %s", setup_should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return setup_should_stop;
+	}
 }
 
-void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr)
+bool sl_core_llr_should_stop(struct sl_core_llr *core_llr)
 {
-	sl_core_log_dbg(core_llr, LOG_NAME, "is_canceled_clr");
+	u32  llr_state;
+	bool should_stop;
 
 	spin_lock(&core_llr->data_lock);
-	core_llr->is_canceled = false;
-	spin_unlock(&core_llr->data_lock);
+	llr_state = core_llr->state;
+	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_START_CANCELING:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
+	case SL_CORE_LLR_STATE_STOPPING:
+		should_stop = true;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"should_stop = %s", should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return should_stop;
+	default:
+		should_stop = false;
+		sl_core_log_dbg(core_llr, LOG_NAME,
+			"should_stop = %s", should_stop ? "true" : "false");
+		spin_unlock(&core_llr->data_lock);
+		return should_stop;
+	}
 }
 
 void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 llr_fail_cause)

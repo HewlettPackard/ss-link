@@ -24,24 +24,28 @@ struct work_struct;
 #define SL_CORE_LLR_DATA_MAGIC 0x736c4C52
 
 enum sl_core_llr_state {
-	SL_CORE_LLR_STATE_NEW      = 1,   /* next: config         */
-	SL_CORE_LLR_STATE_CONFIGURED,     /* next: config | setup */
-	SL_CORE_LLR_STATE_SETTING_UP,     /* -- BUSY --           */
-	SL_CORE_LLR_STATE_SETUP_TIMEOUT,  /* -- transient --      */
-	SL_CORE_LLR_STATE_SETUP,          /* next: start          */
-	SL_CORE_LLR_STATE_STARTING,       /* -- BUSY --           */
-	SL_CORE_LLR_STATE_START_TIMEOUT,  /* -- transient --      */
-	SL_CORE_LLR_STATE_RUNNING,        /* next: stop           */
-	SL_CORE_LLR_STATE_CANCELING,      /* -- BUSY --           */
-	SL_CORE_LLR_STATE_STOPPING,       /* -- BUSY --           */
+	SL_CORE_LLR_STATE_NEW              = 1,    /* next: CONFIGURED                */
+	SL_CORE_LLR_STATE_CONFIGURED,              /* next: SETTING_UP                */
+	SL_CORE_LLR_STATE_SETTING_UP,              /* -- BUSY --                      */
+	SL_CORE_LLR_STATE_SETUP_TIMEOUT,           /* next: CONFIGURED                */
+	SL_CORE_LLR_STATE_SETUP_CANCELING,         /* next: CONFIGURED                */
+	SL_CORE_LLR_STATE_SETUP_STOPPING,          /* next: CONFIGURED                */
+	SL_CORE_LLR_STATE_SETUP,                   /* next: STARTING | SETUP_STOPPING */
+	SL_CORE_LLR_STATE_STARTING,                /* -- BUSY --                      */
+	SL_CORE_LLR_STATE_START_TIMEOUT,           /* next: SETUP                     */
+	SL_CORE_LLR_STATE_START_CANCELING,         /* next: SETUP                     */
+	SL_CORE_LLR_STATE_RUNNING,                 /* next: STOPPING                  */
+	SL_CORE_LLR_STATE_STOPPING,                /* next: SETUP                     */
 };
 
 #define SL_LLR_FAIL_CAUSE_NONE                   0
-#define SL_LLR_FAIL_CAUSE_SETUP_CONFIG           BIT(0) /* llr setup config invalid                            */
-#define SL_LLR_FAIL_CAUSE_SETUP_INTR_ENABLE      BIT(1) /* llr setup interrupt enable failed                   */
-#define SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT          BIT(2) /* llr setup timeout                                   */
-#define SL_LLR_FAIL_CAUSE_START_INTR_ENABLE      BIT(3) /* llr start interrupt enable failed                   */
-#define SL_LLR_FAIL_CAUSE_START_TIMEOUT          BIT(4) /* llr start timeout                                   */
+#define SL_LLR_FAIL_CAUSE_SETUP_CONFIG           BIT(0) /* llr setup config invalid             */
+#define SL_LLR_FAIL_CAUSE_SETUP_INTR_ENABLE      BIT(1) /* llr setup interrupt enable failed    */
+#define SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT          BIT(2) /* llr setup timeout                    */
+#define SL_LLR_FAIL_CAUSE_START_INTR_ENABLE      BIT(3) /* llr start interrupt enable failed    */
+#define SL_LLR_FAIL_CAUSE_START_TIMEOUT          BIT(4) /* llr start timeout                    */
+#define SL_LLR_FAIL_CAUSE_COMMAND                BIT(5) /* running llr was commanded to stop    */
+#define SL_LLR_FAIL_CAUSE_CANCELED               BIT(6) /* llr operation was canceled by client */
 
 #define SL_LLR_FAIL_CAUSE_STR_SIZE 128
 
@@ -119,9 +123,9 @@ int  sl_core_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_state)
 
 struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
-bool sl_core_llr_is_canceled(struct sl_core_llr *core_llr);
-void sl_core_llr_is_canceled_set(struct sl_core_llr *core_llr);
-void sl_core_llr_is_canceled_clr(struct sl_core_llr *core_llr);
+bool sl_core_llr_setup_should_stop(struct sl_core_llr *core_llr);
+bool sl_core_llr_start_should_stop(struct sl_core_llr *core_llr);
+bool sl_core_llr_should_stop(struct sl_core_llr *core_llr);
 
 void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 llr_fail_cause);
 void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_fail_cause,

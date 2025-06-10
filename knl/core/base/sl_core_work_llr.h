@@ -4,8 +4,6 @@
 #ifndef _SL_CORE_WORK_LLR_H_
 #define _SL_CORE_WORK_LLR_H_
 
-struct sl_core_llr;
-
 enum {
 	SL_CORE_WORK_LLR_SETUP                  = 0,
 	SL_CORE_WORK_LLR_SETUP_TIMEOUT,
@@ -17,7 +15,5 @@ enum {
 
 	SL_CORE_WORK_LLR_COUNT                         /* must be last */
 };
-
-void sl_core_work_llr_queue(struct sl_core_llr *core_llr, u32 work_num);
 
 #endif /* _SL_CORE_WORK_LLR_H_ */

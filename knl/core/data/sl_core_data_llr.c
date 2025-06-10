@@ -131,21 +131,21 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	core_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&core_llrs_lock);
 
-	sl_core_llr_is_canceled_set(core_llr);
-
-	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
-	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
-	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_TIMEOUT]));
-	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
-	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_TIMEOUT]));
+
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
+	sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
+
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
+	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]));
 
 	sl_core_hw_intr_llr_hdlr_unregister(core_llr);
@@ -301,13 +301,6 @@ int sl_core_data_llr_settings(struct sl_core_llr *core_llr)
 
 void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 {
-	if (sl_core_llr_is_canceled(core_llr)) {
-		sl_core_log_dbg(core_llr, LOG_NAME,
-			"llr_state_set canceled (core_state = %u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
-		return;
-	}
-
 	spin_lock(&core_llr->data_lock);
 	core_llr->state = llr_state;
 	spin_unlock(&core_llr->data_lock);

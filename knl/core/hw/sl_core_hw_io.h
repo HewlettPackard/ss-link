@@ -277,7 +277,7 @@ static inline int sl_core_hw_intr_llr_enable(struct sl_core_llr *core_llr,
 		"EN (hdlr = 0x%p, ptr = 0x%p, flgs = 0x%016llX, 0x%016llX, 0x%016llX, 0x%016llX)",
 		handler, err_flgs, err_flgs[0], err_flgs[1], err_flgs[2], err_flgs[3]);
 
-	if (sl_core_llr_is_canceled(core_llr)) {
+	if (sl_core_llr_should_stop(core_llr)) {
 		sl_core_log_dbg(core_llr, SL_CORE_HW_IO_LOG_NAME, "canceled");
 		return 0;
 	}
