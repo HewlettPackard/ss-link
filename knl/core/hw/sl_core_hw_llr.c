@@ -531,7 +531,7 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 	case SL_CORE_LLR_STATE_SETTING_UP:
 		core_llr->state = SL_CORE_LLR_STATE_SETUP_TIMEOUT;
 		spin_unlock(&core_llr->data_lock);
-		return;
+		break;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME, "start timeout work - invalid state (llr_state = %u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
@@ -752,7 +752,7 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 	case SL_CORE_LLR_STATE_STARTING:
 		core_llr->state = SL_CORE_LLR_STATE_START_TIMEOUT;
 		spin_unlock(&core_llr->data_lock);
-		return;
+		break;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME, "start timeout work - invalid state (llr_state = %u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
