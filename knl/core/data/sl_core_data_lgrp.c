@@ -88,12 +88,13 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 void sl_core_data_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 {
 	struct sl_core_lgrp *core_lgrp;
+	unsigned long        irq_flags;
 
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 
-	spin_lock(&(core_lgrp->log_lock));
+	spin_lock_irqsave(&(core_lgrp->log_lock), irq_flags);
 	strncpy(core_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
-	spin_unlock(&(core_lgrp->log_lock));
+	spin_unlock_irqrestore(&(core_lgrp->log_lock), irq_flags);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "connect_id = %s", connect_id);
 }

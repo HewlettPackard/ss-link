@@ -221,6 +221,7 @@ struct sl_ctl_lgrp *sl_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num)
 int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 {
 	struct sl_ctl_lgrp *ctl_lgrp;
+	unsigned long       irq_flags;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
@@ -233,9 +234,9 @@ int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 		return -EBADRQC;
 	}
 
-	spin_lock(&ctl_lgrp->log_lock);
+	spin_lock_irqsave(&ctl_lgrp->log_lock, irq_flags);
 	strncpy(ctl_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
-	spin_unlock(&ctl_lgrp->log_lock);
+	spin_unlock_irqrestore(&ctl_lgrp->log_lock, irq_flags);
 
 	sl_media_lgrp_connect_id_set(ldev_num, lgrp_num, connect_id);
 
