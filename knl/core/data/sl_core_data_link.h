@@ -55,4 +55,6 @@ void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 
 void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time);
 void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fail_cause);
 
+u32 sl_core_data_link_an_retry_count_get(struct sl_core_link *core_link);
+
 #endif /* _SL_CORE_DATA_LINK_H_ */

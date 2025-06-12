@@ -517,10 +517,16 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	return 0;
 }
 
+
+/**
+ * sl_core_hw_an_page_recv_intr - Handle page AN receive interrupt
+ * @core_link: Pointer to the core link structure
+ *
+ * Context: Interrupt Context
+ */
 static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 {
-	int                 rtn;
-	struct sl_ctl_link *ctl_link;
+	int rtn;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"page recv intr (state = %u)", core_link->an.state);
@@ -561,9 +567,7 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 	}
 
 	if (core_link->an.state == SL_CORE_HW_AN_STATE_RETRY) {
-		ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, core_link->num);
-		SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_HW_AN_RETRY);
+		atomic_inc(&core_link->an.retry_count);
 		rtn = sl_core_hw_an_next_page_send(core_link);
 		if (rtn != 0) {
 			sl_core_log_err_trace(core_link, LOG_NAME,

@@ -188,7 +188,8 @@ static ssize_t link_autoneg_np_retry_show(struct kobject *kobj, struct kobj_attr
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_HW_AN_RETRY);
+	counter = sl_ctl_link_an_retry_count_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+		ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link autoneg np retry show (counter = %u)", counter);
 

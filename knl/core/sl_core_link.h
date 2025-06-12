@@ -239,6 +239,8 @@ struct sl_core_link {
 	struct sl_link_degrade_info      degrade_info;
 	u64                              info_map;
 
+	spinlock_t                       irq_data_lock;
+
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   state;
@@ -287,6 +289,7 @@ struct sl_core_link {
 		struct sl_link_caps                   test_caps;
 		bool                                  use_test_caps;
 		u16                                   restart_sleep_ms;
+		atomic_t                              retry_count;
 	} an;
 
 	struct {

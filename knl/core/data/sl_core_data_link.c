@@ -74,6 +74,7 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	core_link->core_lgrp     = core_lgrp;
 	core_link->an.fail_cause = SL_CORE_HW_AN_FAIL_CAUSE_NONE;
 	spin_lock_init(&(core_link->data_lock));
+	spin_lock_init(&(core_link->irq_data_lock));
 	spin_lock_init(&(core_link->serdes.data_lock));
 
 	/* ----- link ----- */
@@ -171,6 +172,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_hw_link_up_fec_check_work);
 
 	spin_lock_init(&core_link->fec.test_lock);
+
+	atomic_set(&core_link->an.retry_count, 0);
 
 	/* ----- ald ----- */
 
@@ -634,7 +637,9 @@ u16 sl_core_data_link_clocking_get(struct sl_core_link *core_link)
 
 void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 {
-	spin_lock(&core_link->link.data_lock);
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
 
 	if (bit_num == SL_CORE_INFO_MAP_NUM_BITS)
 		bitmap_zero((unsigned long *)&(core_link->info_map), SL_CORE_INFO_MAP_NUM_BITS);
@@ -644,28 +649,31 @@ void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"clr info map 0x%016llX", core_link->info_map);
 
-	spin_unlock(&core_link->link.data_lock);
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 }
 
 void sl_core_data_link_info_map_set(struct sl_core_link *core_link, u32 bit_num)
 {
-	spin_lock(&core_link->link.data_lock);
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
 
 	set_bit(bit_num, (unsigned long *)&(core_link->info_map));
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"set info map 0x%016llX", core_link->info_map);
 
-	spin_unlock(&core_link->link.data_lock);
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 }
 
 u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 {
-	u64 info_map;
+	u64           info_map;
+	unsigned long irq_flags;
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
 	info_map = core_link->info_map;
-	spin_unlock(&core_link->link.data_lock);
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"get info map 0x%016llX", info_map);
@@ -871,10 +879,12 @@ void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 
 
 void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time)
 {
-	spin_lock(&core_link->an.data_lock);
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
 	*fail_cause = core_link->an.fail_cause;
 	*fail_time  = core_link->an.fail_time;
-	spin_unlock(&core_link->an.data_lock);
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause get (fail_cause = %u %s)",
 		*fail_cause, sl_core_link_an_fail_cause_str(*fail_cause));
@@ -882,11 +892,24 @@ void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fa
 
 void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fail_cause)
 {
-	spin_lock(&core_link->an.data_lock);
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
 	core_link->an.fail_cause = fail_cause;
 	core_link->an.fail_time  = ktime_get_real_seconds();
-	spin_unlock(&core_link->an.data_lock);
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause set (fail_cause = %u %s)",
 		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
+}
+
+u32 sl_core_data_link_an_retry_count_get(struct sl_core_link *core_link)
+{
+	u32 retry_count;
+
+	retry_count = atomic_read(&core_link->an.retry_count);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "an retry count get (retry_count = %u)", retry_count);
+
+	return retry_count;
 }

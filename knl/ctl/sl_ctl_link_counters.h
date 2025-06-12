@@ -20,7 +20,6 @@ enum sl_ctl_link_counters {
 	LINK_RECOVERING,          /* FIXME: need to implement this  */
 	LINK_CCW_WARN_CROSSED,    /* ccw warn limit crossed         */
 	LINK_UCW_WARN_CROSSED,    /* ucw warn limit crossed         */
-	LINK_HW_AN_RETRY,         /* link an retry                  */
 	LINK_HW_AN_ATTEMPT,       /* link an attempt                */
 	SL_CTL_LINK_COUNTERS_COUNT
 };

@@ -92,6 +92,11 @@ void sl_core_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *
 	sl_core_data_link_an_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num), fail_cause, fail_time);
 }
 
+u32 sl_core_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	return sl_core_data_link_an_retry_count_get(sl_core_link_get(ldev_num, lgrp_num, link_num));
+}
+
 const char *sl_core_link_an_fail_cause_str(u32 fail_cause)
 {
 	switch (fail_cause) {

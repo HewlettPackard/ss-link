@@ -136,4 +136,6 @@ int sl_ctl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 
 
 void sl_ctl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time);
 
+u32 sl_ctl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
+
 #endif /* _SL_CTL_LINK_H_ */

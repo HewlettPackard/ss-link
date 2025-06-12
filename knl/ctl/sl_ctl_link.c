@@ -18,6 +18,7 @@
 #include "sl_ctl_link_counters.h"
 #include "sl_core_str.h"
 #include "sl_core_link.h"
+#include "sl_core_link_an.h"
 #include "sl_core_mac.h"
 #include "sl_core_llr.h"
 #include "sl_core_link_an.h"
@@ -1034,4 +1035,9 @@ void sl_ctl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *f
 	}
 
 	sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
+}
+
+u32 sl_ctl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	return sl_core_link_an_retry_count_get(ldev_num, lgrp_num, link_num);
 }
