@@ -635,7 +635,7 @@ void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[SL_CORE_WORK_LLR_START]));
 }
 
-void sl_core_hw_llr_start_fail(struct sl_core_llr *core_llr)
+static void sl_core_hw_llr_start_fail(struct sl_core_llr *core_llr)
 {
 	u32 llr_state;
 

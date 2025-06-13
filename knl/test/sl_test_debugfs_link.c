@@ -544,7 +544,7 @@ static int sl_test_link_sysfs_init(u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
+static void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
 {
 	if (sl_link_num_dir[lgrp_num][link_num]) {
 		kobject_put(sl_link_num_dir[lgrp_num][link_num]);

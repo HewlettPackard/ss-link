@@ -183,6 +183,7 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 	};
 }
 
+static char event_str[SL_TEST_EVENT_STR_SIZE];
 static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, size_t count, loff_t *f_pos)
 {
 	int                          rtn;
@@ -191,7 +192,6 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 	ssize_t                      bytes;
 	struct lgrp_notif_interface *interface;
 	struct lgrp_notif_event      event;
-	char                         event_str[SL_TEST_EVENT_STR_SIZE];
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 		"lgrp_notif_read (count = %lu, f_pos = %lld)", count, *f_pos);

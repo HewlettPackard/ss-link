@@ -5,6 +5,7 @@
 #define _SL_MEDIA_JACK_H_
 
 #include <linux/spinlock.h>
+#include <linux/time64.h>
 
 #include <linux/sl_media.h>
 

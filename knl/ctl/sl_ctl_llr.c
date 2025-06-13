@@ -196,7 +196,7 @@ out:
 	return -ENOMEM;
 }
 
-void sl_ctl_llr_release(struct kref *kref)
+static void sl_ctl_llr_release(struct kref *kref)
 {
 	int                rtn;
 	struct sl_ctl_llr *ctl_llr;
@@ -229,7 +229,7 @@ void sl_ctl_llr_release(struct kref *kref)
 	kfree(ctl_llr);
 }
 
-int sl_ctl_llr_put(struct sl_ctl_llr *ctl_llr)
+static int sl_ctl_llr_put(struct sl_ctl_llr *ctl_llr)
 {
 	return kref_put(&ctl_llr->ref_cnt, sl_ctl_llr_release);
 }

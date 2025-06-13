@@ -22,7 +22,7 @@
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
 static struct dentry *mac_dir;
-struct sl_mac         mac;
+static struct sl_mac  mac;
 
 enum mac_cmd_index {
 	MAC_NEW_CMD,

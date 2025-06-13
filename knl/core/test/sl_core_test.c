@@ -208,7 +208,7 @@ static int sl_core_test_link_up_callback(void *tag, struct sl_core_link_up_info 
 {
 	struct sl_core_test_tag_data test_tag;
 	struct sl_core_link_up_info  link_up_info;
-	char                         info_map_str[1024];
+	char                         info_map_str[900];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
 	link_up_info = *core_link_up_info;
@@ -279,7 +279,7 @@ static void sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
 	u64 info_map, struct sl_llr_data llr_data)
 {
 	struct sl_core_test_tag_data test_tag;
-	char                         info_map_str[1024];
+	char                         info_map_str[900];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
 
@@ -298,7 +298,7 @@ static void sl_core_test_llr_setup_callback(void *tag, u32 llr_state,
 static void sl_core_test_llr_start_callback(void *tag, u32 llr_state, u64 info_map)
 {
 	struct sl_core_test_tag_data test_tag;
-	char                         info_map_str[1024];
+	char                         info_map_str[900];
 
 	test_tag = *(struct sl_core_test_tag_data *)tag;
 
@@ -395,7 +395,7 @@ static int sl_core_test11(struct sl_core_test_args test_args)
 {
 	int  rtn;
 	u64  info_map;
-	char info_map_str[1024];
+	char info_map_str[900];
 
 	rtn = sl_core_info_map_get(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &info_map);
 	if (rtn != 0)

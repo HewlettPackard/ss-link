@@ -21,10 +21,10 @@
 #define LOG_BLOCK "llr"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
-static struct dentry *llr_dir;
-struct sl_llr         llr;
-struct sl_llr_config  llr_config;
-struct sl_llr_policy  llr_policy;
+static struct dentry        *llr_dir;
+static struct sl_llr         llr;
+static struct sl_llr_config  llr_config;
+static struct sl_llr_policy  llr_policy;
 
 enum llr_cmd_index {
 	LLR_NEW_CMD,
