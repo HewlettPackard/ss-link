@@ -14,7 +14,7 @@ struct sl_ctl_mac;
 
 u8 lane_num_to_link_num(struct sl_ctl_lgrp *ctl_lgrp, u8 lane_num);
 
-int  sl_sysfs_ldev_create(struct sl_ctl_ldev *ctl_ldev);
+int  sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent_kobj);
 void sl_sysfs_ldev_delete(struct sl_ctl_ldev *ctl_ldev);
 
 int  sl_sysfs_lgrp_create(struct sl_ctl_lgrp *ctl_lgrp);

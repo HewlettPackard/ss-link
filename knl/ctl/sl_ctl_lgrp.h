@@ -8,6 +8,7 @@
 #include <linux/spinlock.h>
 #include <linux/kobject.h>
 #include <linux/wait.h>
+#include <linux/completion.h>
 
 #include "sl_asic.h"
 
@@ -60,12 +61,16 @@ struct sl_ctl_lgrp {
 	bool                             err_trace_enable;
 	bool                             warn_trace_enable;
 
-	bool                             is_deleting;
 	spinlock_t                       data_lock;
+
+	struct kref                      ref_cnt;
+	struct completion			     del_complete;
 };
 
 int		    sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent);
-void		    sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num);
+int		    sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num);
+bool        sl_ctl_lgrp_kref_get_unless_zero(struct sl_ctl_lgrp *ctl_lgrp);
+int         sl_ctl_lgrp_put(struct sl_ctl_lgrp *ctl_lgrp);
 struct sl_ctl_lgrp *sl_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
 int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id);

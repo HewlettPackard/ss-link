@@ -216,9 +216,10 @@ static void sl_ctl_llr_release(struct kref *kref)
 		sl_ctl_log_warn_trace(ctl_llr, LOG_NAME,
 			"release core_llr_stop failed [%d]", rtn);
 
-	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
-
+	/* Must delete sysfs first to guarantee nobody is reading */
 	sl_sysfs_llr_delete(ctl_llr);
+
+	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 
 	spin_lock(&ctl_llrs_lock);
 	ctl_llrs[ldev_num][lgrp_num][llr_num] = NULL;

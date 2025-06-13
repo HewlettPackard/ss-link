@@ -4,6 +4,7 @@
 #ifndef _SL_CTL_MAC_H_
 #define _SL_CTL_MAC_H_
 
+#include "linux/kref.h"
 #include <linux/spinlock.h>
 #include <linux/kobject.h>
 
@@ -24,11 +25,12 @@ struct sl_ctl_mac {
 	struct kobject     *parent_kobj;
 	struct kobject      kobj;
 
-	bool                is_deleting;
+	struct kref         ref_cnt;
+	struct completion   del_complete;
 };
 
 int		   sl_ctl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_parent);
-void		   sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num);
+int		   sl_ctl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 struct sl_ctl_mac *sl_ctl_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 
 int sl_ctl_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num);

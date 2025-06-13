@@ -284,29 +284,45 @@ static int sl_sysfs_cable_info_create(struct sl_ctl_ldev *ctl_ldev)
 	return 0;
 }
 
-int sl_sysfs_ldev_create(struct sl_ctl_ldev *ctl_ldev)
+int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 {
-	int rtn;
+	int                 rtn;
+	struct sl_ctl_ldev *ctl_ldev;
+
+	ctl_ldev = sl_ctl_ldev_get(ldev_num);
+	if (!ctl_ldev) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sysfs create ldev not found (ldev_num = %u)", ldev_num);
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_ldev_kref_get_unless_zero(ctl_ldev)) {
+		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME, "kref_get_unless_zero failed (ldev = 0x%p)", ctl_ldev);
+		return -EBADRQC;
+	}
 
 	sl_log_dbg(ctl_ldev, LOG_BLOCK, LOG_NAME, "ldev create (ldev = 0x%p)", ctl_ldev);
 
-	if (!ctl_ldev->parent_kobj) {
-		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME, "ldev create missing parent");
-		return -EBADRQC;
-	}
+	ctl_ldev->parent_kobj = parent;
 
 	rtn = kobject_init_and_add(&(ctl_ldev->sl_info_kobj), &sl_info, ctl_ldev->parent_kobj, "sl_info");
 	if (rtn) {
 		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME, "sl_info create failed [%d]", rtn);
 		kobject_put(&(ctl_ldev->sl_info_kobj));
-		return -ENOMEM;
+		rtn = -ENOMEM;
+		goto out;
 	}
 
 	rtn = sl_sysfs_cable_info_create(ctl_ldev);
 	if (rtn) {
 		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME, "cable info create failed [%d]", rtn);
-		return rtn;
+		goto out;
 	}
+
+	rtn = 0;
+
+out:
+	if (sl_ctl_ldev_put(ctl_ldev))
+		sl_log_dbg(ctl_ldev, LOG_BLOCK, LOG_NAME, "ldev create - ldev removed (ldev = 0x%p)", ctl_ldev);
 
 	return 0;
 }

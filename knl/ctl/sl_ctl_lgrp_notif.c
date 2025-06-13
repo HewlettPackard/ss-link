@@ -31,6 +31,7 @@ static int sl_ctl_lgrp_notif_list_state_get(struct sl_ctl_lgrp *ctl_lgrp)
 int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t callback,
 				   u32 types, void *tag)
 {
+	int                   rtn;
 	struct sl_ctl_lgrp   *ctl_lgrp;
 	u8                    reg_idx;
 	u8                    counter;
@@ -39,6 +40,11 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
 		sl_ctl_log_err(NULL, LOG_NAME, "NULL ctl lgrp");
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctl_lgrp = 0x%p)", ctl_lgrp);
 		return -EBADRQC;
 	}
 
@@ -52,7 +58,8 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 		counter++;
 		if (counter >= 10) {
 			sl_ctl_log_err(ctl_lgrp, LOG_NAME, "registration timed out");
-			return -ETIMEDOUT;
+			rtn = -ETIMEDOUT;
+			goto out;
 		}
 	}
 
@@ -60,7 +67,8 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 	if (ctl_lgrp->ctl_notif.list_state == SL_CTL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		spin_unlock(&ctl_lgrp->ctl_notif.lock);
 		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "notif list is currently being used");
-		return -EBUSY;
+		rtn = -EBUSY;
+		goto out;
 	}
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(ctl_lgrp->ctl_notif.reg_entry); ++reg_idx) {
 		if (ctl_lgrp->ctl_notif.reg_entry[reg_idx].types == 0) {
@@ -74,7 +82,8 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 
 	if (reg_idx >= ARRAY_SIZE(ctl_lgrp->ctl_notif.reg_entry)) {
 		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "registration list is full");
-		return -ENOSPC;
+		rtn = -ENOSPC;
+		goto out;
 	}
 
 	if (types & SL_LGRP_NOTIF_MEDIA_PRESENT)
@@ -88,12 +97,19 @@ int sl_ctl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t cal
 		(media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID))
 		sl_media_lgrp_real_cable_incompatible_send(ldev_num, lgrp_num);
 
-	return 0;
+	rtn = 0;
+
+out:
+	if (sl_ctl_lgrp_put(ctl_lgrp))
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "notif callback reg - lgrp removed (ctl_lgrp = 0x%p)", ctl_lgrp);
+
+	return rtn;
 }
 
 int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t callback,
 				     u32 types)
 {
+	int                 rtn;
 	struct sl_ctl_lgrp *ctl_lgrp;
 	u8                  reg_idx;
 	u8                  counter;
@@ -104,13 +120,19 @@ int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t c
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctl_lgrp = 0x%p)", ctl_lgrp);
+		return -EBADRQC;
+	}
+
 	counter = 0;
 	while (sl_ctl_lgrp_notif_list_state_get(ctl_lgrp) == SL_CTL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		msleep(20);
 		counter++;
 		if (counter >= 10) {
 			sl_ctl_log_err(ctl_lgrp, LOG_NAME, "unregistration timed out");
-			return -ETIMEDOUT;
+			rtn = -ETIMEDOUT;
+			goto out;
 		}
 	}
 
@@ -118,7 +140,8 @@ int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t c
 	if (ctl_lgrp->ctl_notif.list_state == SL_CTL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		spin_unlock(&ctl_lgrp->ctl_notif.lock);
 		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "notif list is currently being used");
-		return -EBUSY;
+		rtn = -EBUSY;
+		goto out;
 	}
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(ctl_lgrp->ctl_notif.reg_entry); ++reg_idx) {
 		if ((ctl_lgrp->ctl_notif.reg_entry[reg_idx].types == types) &&
@@ -133,7 +156,13 @@ int sl_ctl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t c
 
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "notif callback unreg (types = 0x%X)", types);
 
-	return 0;
+	rtn = 0;
+
+out:
+	if (sl_ctl_lgrp_put(ctl_lgrp))
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "notif callback unreg - lgrp removed (ctl_lgrp = 0x%p)", ctl_lgrp);
+
+	return rtn;
 }
 
 int sl_ctl_lgrp_notif_enqueue(struct sl_ctl_lgrp *ctl_lgrp, u8 link_num,

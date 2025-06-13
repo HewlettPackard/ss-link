@@ -21,26 +21,10 @@
 
 #define LOG_NAME SL_CTL_LGRP_LOG_NAME
 
+#define SL_CTL_LGRP_DEL_TIMEOUT_MS 2000
+
 static struct sl_ctl_lgrp *ctl_lgrps[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS];
 static DEFINE_SPINLOCK(ctl_lgrps_lock);
-
-static void sl_ctl_lgrp_is_deleting_set(struct sl_ctl_lgrp *ctl_lgrp)
-{
-	spin_lock(&ctl_lgrp->data_lock);
-	ctl_lgrp->is_deleting = true;
-	spin_unlock(&ctl_lgrp->data_lock);
-}
-
-static bool sl_ctl_lgrp_is_deleting(struct sl_ctl_lgrp *ctl_lgrp)
-{
-	bool is_deleting;
-
-	spin_lock(&ctl_lgrp->data_lock);
-	is_deleting = ctl_lgrp->is_deleting;
-	spin_unlock(&ctl_lgrp->data_lock);
-
-	return is_deleting;
-}
 
 int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 {
@@ -56,8 +40,7 @@ int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (ctl_lgrp) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "exists (lgrp = 0x%p, is_deleting = %s)",
-			ctl_lgrp, sl_ctl_lgrp_is_deleting(ctl_lgrp) ? "true" : "false");
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "exists (lgrp = 0x%p)", ctl_lgrp);
 		return -EBADRQC;
 	}
 
@@ -71,6 +54,9 @@ int sl_ctl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 	ctl_lgrp->ver      = SL_CTL_LGRP_VER;
 	ctl_lgrp->num      = lgrp_num;
 	ctl_lgrp->ctl_ldev = sl_ctl_ldev_get(ldev_num);
+
+	kref_init(&ctl_lgrp->ref_cnt);
+	init_completion(&ctl_lgrp->del_complete);
 
 	spin_lock_init(&ctl_lgrp->data_lock);
 	spin_lock_init(&ctl_lgrp->config_lock);
@@ -127,32 +113,33 @@ out_free:
 	return rtn;
 }
 
-void sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
+static void sl_ctl_lgrp_release(struct kref *ref)
 {
 	struct sl_ctl_lgrp *ctl_lgrp;
-	int                 link_num;
+	u8                  ldev_num;
+	u8                  lgrp_num;
+	u8                  link_num;
+
+	ctl_lgrp = container_of(ref, struct sl_ctl_lgrp, ref_cnt);
+	ldev_num = ctl_lgrp->ctl_ldev->num;
+	lgrp_num = ctl_lgrp->num;
 
 	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctl_lgrp) {
 		sl_ctl_log_err_trace(NULL, LOG_NAME,
-			"del not found (lgrp_num = %u)", lgrp_num);
+			"release lgrp not found (lgrp_num = %u)", lgrp_num);
 		return;
 	}
 
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "del (lgrp = 0x%p)", ctl_lgrp);
-
-	if (sl_ctl_lgrp_is_deleting(ctl_lgrp)) {
-		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "del in progress");
-		return;
-	}
-
-	sl_ctl_lgrp_is_deleting_set(ctl_lgrp);
 
 	for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
 		sl_ctl_link_del(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num, link_num);
 		sl_ctl_llr_del(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num, link_num);
 		sl_ctl_mac_del(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num, link_num);
 	}
+
+	/* Must delete sysfs first to guarantee nobody is reading */
 	sl_sysfs_lgrp_delete(ctl_lgrp);
 
 	sl_core_lgrp_del(ldev_num, lgrp_num);
@@ -165,7 +152,57 @@ void sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
 	ctl_lgrps[ldev_num][lgrp_num] = NULL;
 	spin_unlock(&ctl_lgrps_lock);
 
+	complete_all(&ctl_lgrp->del_complete);
+
 	kfree(ctl_lgrp);
+}
+
+int sl_ctl_lgrp_put(struct sl_ctl_lgrp *ctl_lgrp)
+{
+	return kref_put(&ctl_lgrp->ref_cnt, sl_ctl_lgrp_release);
+}
+
+int sl_ctl_lgrp_del(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_ctl_lgrp *ctl_lgrp;
+	unsigned long       timeleft;
+
+	ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
+	if (!ctl_lgrp) {
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (ldev_num = %u, lgrp_num = %u)", ldev_num, lgrp_num);
+		return -EBADRQC;
+	}
+
+	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "del (lgrp = 0x%p)", ctl_lgrp);
+
+	if (!sl_ctl_lgrp_put(ctl_lgrp)) {
+		timeleft = wait_for_completion_timeout(&ctl_lgrp->del_complete,
+			msecs_to_jiffies(SL_CTL_LGRP_DEL_TIMEOUT_MS));
+
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "del completion_timeout (timeleft = %lums)", timeleft);
+
+		if (timeleft == 0) {
+			sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME, "del timed out (ctl_lgrp = 0x%p)", ctl_lgrp);
+			return -ETIMEDOUT;
+		}
+	}
+
+
+	return 0;
+}
+
+bool sl_ctl_lgrp_kref_get_unless_zero(struct sl_ctl_lgrp *ctl_lgrp)
+{
+	bool incremented;
+
+	incremented = (kref_get_unless_zero(&ctl_lgrp->ref_cnt) != 0);
+
+	if (!incremented)
+		sl_ctl_log_warn(ctl_lgrp, LOG_NAME,
+			"kref_get_unless_zero ref unavailable (ctl_lgrp = 0x%p)", ctl_lgrp);
+
+	return incremented;
 }
 
 struct sl_ctl_lgrp *sl_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num)
@@ -191,6 +228,11 @@ int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctl_lgrp = 0x%p)", ctl_lgrp);
+		return -EBADRQC;
+	}
+
 	spin_lock(&ctl_lgrp->log_lock);
 	strncpy(ctl_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
 	spin_unlock(&ctl_lgrp->log_lock);
@@ -198,6 +240,9 @@ int sl_ctl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)
 	sl_media_lgrp_connect_id_set(ldev_num, lgrp_num, connect_id);
 
 	sl_core_lgrp_connect_id_set(ldev_num, lgrp_num, connect_id);
+
+	if (sl_ctl_lgrp_put(ctl_lgrp))
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "connect_id set - lgrp removed (ctl_lgrp = 0x%p)", ctl_lgrp);
 
 	return 0;
 }
@@ -213,6 +258,11 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctl_lgrp = 0x%p)", ctl_lgrp);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "config set:");
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "  mfs       = %d",   lgrp_config->mfs);
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "  furcation = 0x%X", lgrp_config->furcation);
@@ -224,14 +274,20 @@ int sl_ctl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp
 	rtn = sl_core_lgrp_config_set(ldev_num, lgrp_num, lgrp_config);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_lgrp, LOG_NAME, "core_lgrp_config_set failed [%d]", rtn);
-		return rtn;
+		goto out;
 	}
 
 	spin_lock(&(ctl_lgrp->config_lock));
 	ctl_lgrp->config = *lgrp_config;
 	spin_unlock(&(ctl_lgrp->config_lock));
 
-	return 0;
+	rtn = 0;
+
+out:
+	if (sl_ctl_lgrp_put(ctl_lgrp))
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "config set - lgrp removed (ctl_lgrp = 0x%p)", ctl_lgrp);
+
+	return rtn;
 }
 
 int sl_ctl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp_policy)
@@ -244,11 +300,19 @@ int sl_ctl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (lgrp = 0x%p)", ctl_lgrp);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "policy set");
 
 	spin_lock(&(ctl_lgrp->config_lock));
 	ctl_lgrp->policy = *lgrp_policy;
 	spin_unlock(&(ctl_lgrp->config_lock));
+
+	if (sl_ctl_lgrp_put(ctl_lgrp))
+		sl_ctl_log_dbg(ctl_lgrp, LOG_NAME, "policy set - lgrp removed (ctl_lgrp = 0x%p)", ctl_lgrp);
 
 	return 0;
 }

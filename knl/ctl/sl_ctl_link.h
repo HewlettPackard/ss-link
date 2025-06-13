@@ -103,13 +103,14 @@ struct sl_ctl_link {
 		struct kobject               up_check_kobj;
 	} fec;
 
-	bool              is_deleting;
 	u32               state;
 	struct completion down_complete;
+	struct kref       ref_cnt;
+	struct completion del_complete;
 };
 
 int		    sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent);
-void		    sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num);
+int		    sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num);
 struct sl_ctl_link *sl_ctl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,

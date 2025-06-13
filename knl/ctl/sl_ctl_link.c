@@ -26,27 +26,10 @@
 #define LOG_NAME SL_CTL_LINK_LOG_NAME
 
 #define SL_CTL_LINK_DOWN_WAIT_TIMEOUT_MS 2000
+#define SL_CTL_LINK_DEL_WAIT_TIMEOUT_MS  2000
 
 static struct sl_ctl_link *ctl_links[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(ctl_links_lock);
-
-static void sl_ctl_link_is_deleting_set(struct sl_ctl_link *ctl_link)
-{
-	spin_lock(&ctl_link->data_lock);
-	ctl_link->is_deleting = true;
-	spin_unlock(&ctl_link->data_lock);
-}
-
-static bool sl_ctl_link_is_deleting(struct sl_ctl_link *ctl_link)
-{
-	bool is_deleting;
-
-	spin_lock(&ctl_link->data_lock);
-	is_deleting = ctl_link->is_deleting;
-	spin_unlock(&ctl_link->data_lock);
-
-	return is_deleting;
-}
 
 int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent)
 {
@@ -62,8 +45,7 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
 	if (ctl_link) {
-		sl_ctl_log_err(ctl_link, LOG_NAME, "new exists (link = 0x%p, is_deleting = %s)",
-			ctl_link, sl_ctl_link_is_deleting(ctl_link) ? "true" : "false");
+		sl_ctl_log_err(ctl_link, LOG_NAME, "new exists (link = 0x%p)", ctl_link);
 		return -EBADRQC;
 	}
 
@@ -75,6 +57,9 @@ int sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs
 	ctl_link->ver      = SL_CTL_LINK_VER;
 	ctl_link->num      = link_num;
 	ctl_link->ctl_lgrp = sl_ctl_lgrp_get(ldev_num, lgrp_num);
+
+	kref_init(&ctl_link->ref_cnt);
+	init_completion(&ctl_link->del_complete);
 
 	spin_lock_init(&ctl_link->config_lock);
 	spin_lock_init(&ctl_link->data_lock);
@@ -209,27 +194,20 @@ static void sl_ctl_link_down_wait(struct sl_ctl_link *ctl_link)
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "del completion (timeleft = %lu)", timeleft);
 }
 
-void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
+static void sl_ctl_link_release(struct kref *kref)
 {
 	struct sl_ctl_link *ctl_link;
 	u32                 link_state;
+	u8                  ldev_num;
+	u8                  lgrp_num;
+	u8                  link_num;
 
-	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
-	if (!ctl_link) {
-		sl_ctl_log_err_trace(NULL, LOG_NAME,
-			"del not found (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return;
-	}
+	ctl_link = container_of(kref, struct sl_ctl_link, ref_cnt);
+	ldev_num = ctl_link->ctl_lgrp->ctl_ldev->num;
+	lgrp_num = ctl_link->ctl_lgrp->num;
+	link_num = ctl_link->num;
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "del (link = 0x%p)", ctl_link);
-
-	if (sl_ctl_link_is_deleting(ctl_link)) {
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del in progress");
-		return;
-	}
-
-	sl_ctl_link_is_deleting_set(ctl_link);
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "release (link = 0x%p)", ctl_link);
 
 	spin_lock(&ctl_link->data_lock);
 	link_state = ctl_link->state;
@@ -243,39 +221,93 @@ void sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		break;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del stopping");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "release stopping");
 		spin_unlock(&ctl_link->data_lock);
 		sl_ctl_link_down_cmd(ctl_link);
 		sl_ctl_link_down_wait(ctl_link);
 		break;
 	case SL_LINK_STATE_STOPPING:
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del already stopping");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "release already stopping");
 		spin_unlock(&ctl_link->data_lock);
 		sl_ctl_link_down_wait(ctl_link);
 		break;
 	case SL_LINK_STATE_DOWN:
-		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del already down");
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "release already down");
 		spin_unlock(&ctl_link->data_lock);
 		break;
 	case SL_LINK_STATE_INVALID:
 	default:
-		sl_ctl_log_err(ctl_link, LOG_NAME, "del invalid state (link_state = %u %s)",
+		sl_ctl_log_err(ctl_link, LOG_NAME, "release invalid state (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctl_link->data_lock);
 		return;
 	}
 
+	/* Must delete sysfs first to guarantee nobody is reading */
+	sl_sysfs_link_delete(ctl_link);
+
 	sl_core_link_del(ldev_num, lgrp_num, link_num);
 
 	sl_ctl_link_counters_del(ctl_link);
-
-	sl_sysfs_link_delete(ctl_link);
 
 	spin_lock(&ctl_links_lock);
 	ctl_links[ldev_num][lgrp_num][link_num] = NULL;
 	spin_unlock(&ctl_links_lock);
 
+	complete_all(&ctl_link->del_complete);
+
 	kfree(ctl_link);
+}
+
+static int sl_ctl_link_put(struct sl_ctl_link *ctl_link)
+{
+	return kref_put(&ctl_link->ref_cnt, sl_ctl_link_release);
+}
+
+int sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	struct sl_ctl_link *ctl_link;
+	unsigned long timeleft;
+
+	sl_ctl_log_dbg(NULL, LOG_NAME, "link del (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+		ldev_num, lgrp_num, link_num);
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"link del link not found (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	/* Release occurs on the last caller. Block until complete. */
+	if (!sl_ctl_link_put(ctl_link)) {
+		timeleft = wait_for_completion_timeout(&ctl_link->del_complete,
+			msecs_to_jiffies(SL_CTL_LINK_DEL_WAIT_TIMEOUT_MS));
+
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "del completion_timeout (timeleft = %lums)", timeleft);
+
+		if (timeleft == 0) {
+			sl_ctl_log_err(ctl_link, LOG_NAME,
+				"del completion_timeout (ctl_link = 0x%p)", ctl_link);
+			return -ETIMEDOUT;
+		}
+	}
+
+	return 0;
+}
+
+static bool sl_ctl_link_kref_get_unless_zero(struct sl_ctl_link *ctl_link)
+{
+	bool incremented;
+
+	incremented = (kref_get_unless_zero(&ctl_link->ref_cnt) != 0);
+
+	if (!incremented)
+		sl_ctl_log_warn(ctl_link, LOG_NAME,
+			"kref_get_unless_zero ref unavailable (ctl_link = 0x%p)", ctl_link);
+
+	return incremented;
 }
 
 struct sl_ctl_link *sl_ctl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -383,6 +415,12 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "config set link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	link_state = sl_ctl_link_state_get(ctl_link);
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "config set (link_state = %u %s)",
 		link_state, sl_link_state_str(link_state));
@@ -393,9 +431,11 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		rtn = sl_ctl_link_config_set_cmd(ctl_link, link_config);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_config_set_cmd failed [%d]", rtn);
-			return rtn;
+			goto out;
 		}
-		return 0;
+
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_STARTING:
 	case SL_LINK_STATE_INVALID:
 	case SL_LINK_STATE_STOPPING:
@@ -403,8 +443,15 @@ int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	default:
 		sl_ctl_log_err(ctl_link, LOG_NAME, "config - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "config - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -423,6 +470,12 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "policy set link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	/* Check if the policy is locked. If we are performing an admin operation, then we can ignore the
 	 * lock bit and continue to write the config.
 	 */
@@ -431,7 +484,8 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		(ctl_link->policy.options & SL_LINK_POLICY_OPT_LOCK)) {
 		sl_ctl_log_info(ctl_link, LOG_NAME, "link policy locked (options: 0x%X)", ctl_link->policy.options);
 		spin_unlock(&ctl_link->config_lock);
-		return 0;
+		rtn = 0;
+		goto out;
 	}
 	spin_unlock(&ctl_link->config_lock);
 
@@ -455,7 +509,8 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			&core_link_policy);
 	if (rtn) {
 		sl_core_log_err(ctl_link, LOG_NAME, "core link policy set failed [%d]", rtn);
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
 
 	sl_core_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
@@ -464,17 +519,25 @@ int sl_ctl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	if (link_state != SL_CORE_LINK_STATE_UP) {
 		sl_core_log_dbg(ctl_link, LOG_NAME, "link_policy_set not up (link_state = %u %s)", link_state,
 		  sl_core_link_state_str(link_state));
-		return 0;
+		rtn = 0;
+		goto out;
 	}
 
 	sl_ctl_link_fec_mon_start(ctl_link);
 
-	return 0;
+	rtn = 0;
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "policy set - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 int sl_ctl_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			       struct sl_link_caps *caps, u32 timeout_ms, u32 flags)
 {
+	int                 rtn;
 	struct sl_ctl_link *ctl_link;
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
@@ -485,14 +548,29 @@ int sl_ctl_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "caps get link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "an lp caps get");
 
-	return sl_core_link_an_lp_caps_get(ldev_num, lgrp_num, link_num,
+	rtn = sl_core_link_an_lp_caps_get(ldev_num, lgrp_num, link_num,
 		sl_ctl_link_an_lp_caps_get_callback, ctl_link, caps, timeout_ms, flags);
+	if (rtn)
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+			"core_link_an_lp_caps_get failed [%d]", rtn);
+
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "an lp caps get - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 int sl_ctl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
+	int                 rtn;
 	struct sl_ctl_link *ctl_link;
 
 	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
@@ -503,9 +581,23 @@ int sl_ctl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "caps stop link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "an lp caps stop");
 
-	return sl_core_link_an_lp_caps_stop(ldev_num, lgrp_num, link_num);
+	rtn = sl_core_link_an_lp_caps_stop(ldev_num, lgrp_num, link_num);
+	if (rtn)
+		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
+			"core_link_an_lp_caps_stop failed [%d]", rtn);
+
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "an lp caps stop - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 static int sl_ctl_link_up_cmd(struct sl_ctl_link *ctl_link)
@@ -555,6 +647,12 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "link up ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "up");
 
 	spin_lock(&ctl_link->data_lock);
@@ -567,25 +665,36 @@ int sl_ctl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		rtn = sl_ctl_link_up_cmd(ctl_link);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_up_cmd failed [%d]", rtn);
-			return rtn;
+			goto out;
 		}
-		return 0;
+
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_STARTING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already starting");
 		spin_unlock(&ctl_link->data_lock);
-		return -EINPROGRESS;
+		rtn = -EINPROGRESS;
+		goto out;
 	case SL_LINK_STATE_UP:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - already up");
 		spin_unlock(&ctl_link->data_lock);
-		return -EALREADY;
+		rtn = -EALREADY;
+		goto out;
 	case SL_LINK_STATE_STOPPING:
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctl_link->data_lock);
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "up - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -602,6 +711,12 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "link down ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "down");
 
 	spin_lock(&ctl_link->data_lock);
@@ -615,10 +730,11 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		rtn = sl_ctl_link_cancel_cmd(ctl_link);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "cancel_cmd failed [%d]", rtn);
-			return rtn;
+			goto out;
 		}
 
-		return 0;
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_UP:
 		ctl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - stopping");
@@ -626,25 +742,35 @@ int sl_ctl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		rtn = sl_ctl_link_down_cmd(ctl_link);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "down_cmd failed [%d]", rtn);
-			return rtn;
+			goto out;
 		}
 
-		return 0;
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_DOWN:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already down");
 		spin_unlock(&ctl_link->data_lock);
-		return -EALREADY;
+		rtn = -EALREADY;
+		goto out;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already stopping");
 		spin_unlock(&ctl_link->data_lock);
-		return -EINPROGRESS;
+		rtn = -EINPROGRESS;
+		goto out;
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctl_link->data_lock);
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
@@ -712,6 +838,12 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "link reset ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset");
 
 	spin_lock(&ctl_link->data_lock);
@@ -728,26 +860,36 @@ int sl_ctl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		rtn = sl_ctl_link_reset_cmd(ctl_link);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME, "link_reset_cmd failed [%d]", rtn);
-			return rtn;
+			goto out;
 		}
 
-		return 0;
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_DOWN:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - already down");
 		spin_unlock(&ctl_link->data_lock);
-		return 0;
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "down - already stopping");
 		spin_unlock(&ctl_link->data_lock);
 
-		return 0;
+		rtn = 0;
+		goto out;
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctl_link->data_lock);
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "reset - link removed (link = 0x%p)", ctl_link);
+
+	return rtn;
 }
 
 void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
@@ -760,6 +902,12 @@ void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_ctl_log_err(NULL, LOG_NAME,
 			"clocks get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
+		return;
+	}
+
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "clocks get link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
 		return;
 	}
 
@@ -779,6 +927,9 @@ void sl_ctl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"clocks get (attempt_time = %lld, total_time = %lld)", *attempt_time, *total_time);
+
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "clocks get - link removed (link = 0x%p)", ctl_link);
 }
 
 void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attempt_count)
@@ -793,11 +944,20 @@ void sl_ctl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attemp
 		return;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "count get link ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return;
+	}
+
 	spin_lock(&ctl_link->up_clock.lock);
 	*attempt_count = ctl_link->up_clock.attempt_count;
 	spin_unlock(&ctl_link->up_clock.lock);
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "count get (attempt_count = %u)", *attempt_count);
+
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "count get - link removed (link = 0x%p)", ctl_link);
 }
 
 int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
@@ -815,11 +975,17 @@ int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 		return 0;
 	}
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_dbg(ctl_link, LOG_NAME,
+			"state get kref unavailable (ctl_link = 0x%p)", ctl_link);
+		return -EBADRQC;
+	}
+
 	core_link_state = SL_CORE_LINK_STATE_INVALID;
 	rtn = sl_core_link_state_get(ldev_num, lgrp_num, link_num, &core_link_state);
 	if (rtn) {
 		sl_ctl_log_err_trace(NULL, LOG_NAME, "core state get invalid");
-		return 0;
+		goto out;
 	}
 
 	if (core_link_state == SL_CORE_LINK_STATE_AN)
@@ -830,6 +996,10 @@ int sl_ctl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"state get (state = %u %s)",
 		*state, sl_link_state_str(*state));
+
+out:
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "state get - link removed (link = 0x%p)", ctl_link);
 
 	return 0;
 }

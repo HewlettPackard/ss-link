@@ -107,9 +107,7 @@ int sl_mac_del(struct sl_mac *mac)
 		return rtn;
 	}
 
-	sl_ctl_mac_del(mac->ldev_num, mac->lgrp_num, mac->num);
-
-	return 0;
+	return sl_ctl_mac_del(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_del);
 

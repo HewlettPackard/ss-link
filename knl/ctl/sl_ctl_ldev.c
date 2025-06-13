@@ -4,6 +4,7 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+#include <linux/completion.h>
 #include <linux/delay.h>
 
 #include "sl_asic.h"
@@ -18,26 +19,10 @@
 
 #define LOG_NAME SL_CTL_LDEV_LOG_NAME
 
+#define SL_CTL_LDEV_DEL_TIMEOUT_MS 2000
+
 static struct sl_ctl_ldev *ctl_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(ctl_ldevs_lock);
-
-static void sl_ctl_ldev_is_deleting_set(struct sl_ctl_ldev *ctl_ldev)
-{
-	spin_lock(&ctl_ldev->data_lock);
-	ctl_ldev->is_deleting = true;
-	spin_unlock(&ctl_ldev->data_lock);
-}
-
-static bool sl_ctl_ldev_is_deleting(struct sl_ctl_ldev *ctl_ldev)
-{
-	bool is_deleting;
-
-	spin_lock(&ctl_ldev->data_lock);
-	is_deleting = ctl_ldev->is_deleting;
-	spin_unlock(&ctl_ldev->data_lock);
-
-	return is_deleting;
-}
 
 int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		    struct sl_ldev_attr *ldev_attr)
@@ -47,8 +32,7 @@ int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 
 	ctl_ldev = sl_ctl_ldev_get(ldev_num);
 	if (ctl_ldev) {
-		sl_ctl_log_err(ctl_ldev, LOG_NAME, "exists (ldev = 0x%p, is_deleting = %s)",
-			ctl_ldev, sl_ctl_ldev_is_deleting(ctl_ldev) ? "true" : "false");
+		sl_ctl_log_err(ctl_ldev, LOG_NAME, "exists (ldev = 0x%p)", ctl_ldev);
 		return -EBADRQC;
 	}
 
@@ -60,6 +44,9 @@ int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 	ctl_ldev->ver   = SL_CTL_LDEV_VER;
 	ctl_ldev->num   = ldev_num;
 	ctl_ldev->attr  = *ldev_attr;
+
+	kref_init(&ctl_ldev->ref_cnt);
+	init_completion(&ctl_ldev->del_complete);
 
 	spin_lock_init(&ctl_ldev->data_lock);
 
@@ -115,6 +102,20 @@ int sl_ctl_ldev_serdes_init(u8 ldev_num)
 {
 	int rtn;
 	int tries;
+	struct sl_ctl_ldev *ctl_ldev;
+
+	ctl_ldev = sl_ctl_ldev_get(ldev_num);
+	if (!ctl_ldev) {
+		sl_ctl_log_err(NULL, LOG_NAME, "ldev not found (ldev_num = %u)", ldev_num);
+		return -EBADRQC;
+	}
+
+	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "serdes init (ldev = 0x%p)", ctl_ldev);
+
+	if (!sl_ctl_ldev_kref_get_unless_zero(ctl_ldev)) {
+		sl_ctl_log_err(ctl_ldev, LOG_NAME, "kref_get_unless_zero failed (ldev = 0x%p)", ctl_ldev);
+		return -EBADRQC;
+	}
 
 	tries = SERDES_INIT_MAX_TRIES;
 	do {
@@ -127,32 +128,28 @@ int sl_ctl_ldev_serdes_init(u8 ldev_num)
 	} while (tries);
 
 out:
+	if (sl_ctl_ldev_put(ctl_ldev))
+		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "serdes init - ldev removed (ldev = 0x%p)", ctl_ldev);
+
 	return rtn;
 }
 
-void sl_ctl_ldev_del(u8 ldev_num)
+static void sl_ctl_ldev_release(struct kref *ref)
 {
 	struct sl_ctl_ldev *ctl_ldev;
+	u8                  ldev_num;
 	u8                  lgrp_num;
 
-	ctl_ldev = sl_ctl_ldev_get(ldev_num);
-	if (!ctl_ldev) {
-		sl_ctl_log_err_trace(NULL, LOG_NAME,
-			"del not found (ldev_num = %u)", ldev_num);
-		return;
-	}
+	ctl_ldev = container_of(ref, struct sl_ctl_ldev, ref_cnt);
+	ldev_num = ctl_ldev->num;
 
-	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "del (ldev = 0x%p)", ctl_ldev);
-
-	if (sl_ctl_ldev_is_deleting(ctl_ldev)) {
-		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "del in progress");
-		return;
-	}
-
-	sl_ctl_ldev_is_deleting_set(ctl_ldev);
+	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "release (ldev = 0x%p)", ctl_ldev);
 
 	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num)
 		sl_ctl_lgrp_del(ldev_num, lgrp_num);
+
+	/* Must delete sysfs first to guarantee nobody is reading */
+	sl_sysfs_ldev_delete(ctl_ldev);
 
 	sl_core_ldev_del(ldev_num);
 	sl_media_ldev_del(ldev_num);
@@ -160,13 +157,61 @@ void sl_ctl_ldev_del(u8 ldev_num)
 	if (ctl_ldev->create_workq)
 		destroy_workqueue(ctl_ldev->workq);
 
-	sl_sysfs_ldev_delete(ctl_ldev);
-
 	spin_lock(&ctl_ldevs_lock);
 	ctl_ldevs[ldev_num] = NULL;
 	spin_unlock(&ctl_ldevs_lock);
 
+	complete_all(&ctl_ldev->del_complete);
+
 	kfree(ctl_ldev);
+}
+
+int sl_ctl_ldev_put(struct sl_ctl_ldev *ctl_ldev)
+{
+	return kref_put(&ctl_ldev->ref_cnt, sl_ctl_ldev_release);
+}
+
+int sl_ctl_ldev_del(u8 ldev_num)
+{
+	struct sl_ctl_ldev *ctl_ldev;
+	unsigned long       timeleft;
+
+	ctl_ldev = sl_ctl_ldev_get(ldev_num);
+	if (!ctl_ldev) {
+		sl_ctl_log_err_trace(NULL, LOG_NAME,
+			"del not found (ldev_num = %u)", ldev_num);
+		return -EBADRQC;
+	}
+
+	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "del (ldev = 0x%p)", ctl_ldev);
+
+	if (!sl_ctl_ldev_put(ctl_ldev)) {
+		timeleft = wait_for_completion_timeout(&ctl_ldev->del_complete,
+			msecs_to_jiffies(SL_CTL_LDEV_DEL_TIMEOUT_MS));
+
+		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "del completion_timeout (timeleft = %lums)", timeleft);
+
+		if (timeleft == 0) {
+			sl_ctl_log_err_trace(ctl_ldev, LOG_NAME,
+				"del timed out (ctl_ldev = 0x%p)", ctl_ldev);
+			return -ETIMEDOUT;
+		}
+	}
+
+	return 0;
+}
+
+bool sl_ctl_ldev_kref_get_unless_zero(struct sl_ctl_ldev *ctl_ldev)
+{
+	bool incremented;
+
+	incremented = (kref_get_unless_zero(&ctl_ldev->ref_cnt) != 0);
+
+	if (!incremented)
+		sl_ctl_log_warn(ctl_ldev, LOG_NAME,
+			"kref_get_unless_zero ref unavailable (ldev = 0x%p)", ctl_ldev);
+
+	return incremented;
 }
 
 struct sl_ctl_ldev *sl_ctl_ldev_get(u8 ldev_num)

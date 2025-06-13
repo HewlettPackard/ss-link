@@ -152,9 +152,7 @@ int sl_link_del(struct sl_link *link)
 		return rtn;
 	}
 
-	sl_ctl_link_del(link->ldev_num, link->lgrp_num, link->num);
-
-	return 0;
+	return sl_ctl_link_del(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_del);
 

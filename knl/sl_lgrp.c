@@ -170,9 +170,7 @@ int sl_lgrp_del(struct sl_lgrp *lgrp)
 		return rtn;
 	}
 
-	sl_ctl_lgrp_del(lgrp->ldev_num, lgrp->num);
-
-	return 0;
+	return sl_ctl_lgrp_del(lgrp->ldev_num, lgrp->num);
 }
 EXPORT_SYMBOL(sl_lgrp_del);
 

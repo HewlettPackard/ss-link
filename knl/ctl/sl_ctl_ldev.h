@@ -6,7 +6,7 @@
 
 #include <linux/kobject.h>
 #include <linux/workqueue.h>
-
+#include <linux/completion.h>
 #include <linux/sl_ldev.h>
 
 #include "data/sl_media_data_cable_db.h"
@@ -44,19 +44,23 @@ struct sl_ctl_ldev {
 	struct kobject            sl_info_kobj;
 
 	spinlock_t                data_lock;
-	bool                      is_deleting;
 
 	struct kobject            supported_cables_kobj;
 	struct kobject            cable_types_kobj[SL_CABLE_TYPES_NUM];
 	struct kobject            cable_vendors_kobj[SL_CABLE_TYPES_NUM][SL_CABLE_VENDORS_NUM];
 	struct sl_ctl_ldev_cable_hpe_pn_kobj cable_hpe_pns_kobj[ARRAY_SIZE(cable_db)];
+
+	struct kref       ref_cnt;
+	struct completion del_complete;
 };
 
 int                 sl_ctl_ldev_new(u8 ldev_num,
 				    struct workqueue_struct *workq,
 				    struct sl_ldev_attr *ldev_attr);
 int                 sl_ctl_ldev_serdes_init(u8 ldev_num);
-void                sl_ctl_ldev_del(u8 ldev_num);
+int                 sl_ctl_ldev_del(u8 ldev_num);
+bool                sl_ctl_ldev_kref_get_unless_zero(struct sl_ctl_ldev *ctl_ldev);
+int                 sl_ctl_ldev_put(struct sl_ctl_ldev *ctl_ldev);
 struct sl_ctl_ldev *sl_ctl_ldev_get(u8 ldev_num);
 
 void                sl_ctl_ldev_exit(void);

@@ -223,22 +223,9 @@ int sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent)
 		return -EINVAL;
 	}
 
-	ctl_ldev = sl_ctl_ldev_get(ldev->num);
-	if (!ctl_ldev) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ldev");
-		return -ENOMEM;
-	}
-
-	if (ctl_ldev->parent_kobj) {
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "parent already set");
-		return 0;
-	}
-
-	ctl_ldev->parent_kobj = parent;
-
-	rtn = sl_sysfs_ldev_create(ctl_ldev);
+	rtn = sl_sysfs_ldev_create(ldev->num, parent);
 	if (rtn) {
-		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME,
+		sl_log_err_trace(ctl_ldev, LOG_BLOCK, LOG_NAME,
 			"sysfs_ldev_create failed");
 		return -ENOMEM;
 	}
@@ -271,9 +258,7 @@ int sl_ldev_del(struct sl_ldev *ldev)
 		return rtn;
 	}
 
-	sl_ctl_ldev_del(ldev->num);
-
-	return 0;
+	return sl_ctl_ldev_del(ldev->num);
 }
 EXPORT_SYMBOL(sl_ldev_del);
 
