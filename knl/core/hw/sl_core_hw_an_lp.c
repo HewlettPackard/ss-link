@@ -8,6 +8,7 @@
 #include "sl_kconfig.h"
 #include "sl_asic.h"
 #include "sl_core_link.h"
+#include "sl_core_str.h"
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_intr.h"
@@ -78,20 +79,23 @@ void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *core_link, u32 link_stat
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get cmd - an page recv disable failed [%d]", rtn);
 
-	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_AN_LP_CAPS_GET);
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]));
 }
 
 void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work");
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work canceled");
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -151,13 +155,16 @@ void sl_core_hw_an_lp_caps_get_timeout_work(struct work_struct *work)
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work");
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work canceled");
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -180,13 +187,16 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 	int                  rtn;
 	int                  x;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_DONE]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work");
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work canceled");
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 

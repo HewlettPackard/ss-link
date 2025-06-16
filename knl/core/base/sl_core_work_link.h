@@ -36,6 +36,4 @@ enum {
 	SL_CORE_WORK_LINK_COUNT                         /* must be last */
 };
 
-void sl_core_work_link_queue(struct sl_core_link *core_link, u32 work_num);
-
 #endif /* _SL_CORE_WORK_LINK_H_ */

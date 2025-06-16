@@ -69,7 +69,7 @@ void sl_core_hw_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
 
 	sl_core_hw_intr_flgs_clr_source(core_link, info->intr_num);
 
-	sl_core_work_link_queue(core_link, info->work_num);
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[info->work_num]));
 }
 
 int sl_core_hw_intr_hdlr_register(struct sl_core_link *core_link)

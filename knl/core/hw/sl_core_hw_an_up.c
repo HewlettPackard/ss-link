@@ -75,10 +75,18 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 void sl_core_hw_an_up_start_work(struct work_struct *work)
 {
 	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_UP_START]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start work (link = 0x%p)", core_link);
+
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "up start work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
+		return;
+	}
 
 	sl_core_hw_an_stop(core_link);
 
@@ -96,7 +104,7 @@ void sl_core_hw_an_up_start_work(struct work_struct *work)
 		return;
 	}
 
-	sl_core_work_link_queue(core_link, SL_CORE_WORK_LINK_AN_UP);
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_AN_UP]));
 }
 
 static void sl_core_hw_an_up(struct sl_core_link *core_link)
@@ -131,13 +139,16 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_UP]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up work");
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up work canceled");
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "up work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -180,13 +191,16 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 	int                  x;
 	struct sl_core_link *core_link;
 	struct sl_link_caps  my_caps;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_AN_UP_DONE]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up done work");
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up done work canceled");
+	link_state = sl_core_data_link_state_get(core_link);
+	if (link_state != SL_CORE_LINK_STATE_AN) {
+		sl_core_log_dbg(core_link, LOG_NAME, "up done work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 

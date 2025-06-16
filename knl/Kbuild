@@ -73,7 +73,6 @@ $(SL_NAME)-y += \
 	core/sl_core_str.o                  \
 	core/base/sl_core_timer_link.o      \
 	core/base/sl_core_timer_llr.o       \
-	core/base/sl_core_work_link.o       \
 	core/data/sl_core_data_ldev.o       \
 	core/data/sl_core_data_lgrp.o       \
 	core/data/sl_core_data_link.o       \

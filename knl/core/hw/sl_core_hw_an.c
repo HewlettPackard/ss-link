@@ -608,7 +608,7 @@ out:
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "page recv intr disable failed [%d]", rtn);
 
-	sl_core_work_link_queue(core_link, core_link->an.done_work_num);
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[core_link->an.done_work_num]));
 }
 
 void sl_core_hw_an_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)

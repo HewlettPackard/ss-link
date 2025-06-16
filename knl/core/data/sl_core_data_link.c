@@ -82,7 +82,7 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	spin_lock_init(&(core_link->link.data_lock));
 
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP].timer),
-		sl_core_timer_link_up_timeout, 0);
+		sl_core_timer_link_timeout, 0);
 	SL_CORE_TIMER_INIT(core_link, SL_CORE_TIMER_LINK_UP,
 		SL_CORE_WORK_LINK_UP_TIMEOUT, "link up");
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP_CHECK].timer),
@@ -258,32 +258,43 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 static void sl_core_data_link_free(struct sl_core_link *core_link)
 {
-	int x;
-
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"link free (link = 0x%p, lgrp = 0x%p)", core_link, core_link->core_lgrp);
 
-	/* an */
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_AN_LP_CAPS_GET);
-
-	/* fec */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
 
-	/* link */
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_DONE]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_DONE]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_START]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_TIMEOUT]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_CHECK]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_SETTLE]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FEC_CHECK]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_FAIL]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_DOWN]));
+
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
 
-	/* work */
-	for (x = 0; x < SL_CORE_WORK_LINK_COUNT; ++x)
-		cancel_work_sync(&(core_link->work[x]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 }
 
 void sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
