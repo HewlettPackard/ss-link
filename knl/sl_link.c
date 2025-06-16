@@ -335,6 +335,21 @@ const char *sl_link_state_str(u32 state)
 }
 EXPORT_SYMBOL(sl_link_state_str);
 
+const char *sl_link_degrade_state_str(int degrade_state)
+{
+	switch (degrade_state) {
+	case SL_LINK_DEGRADE_STATE_ENABLED:
+		return "enabled";
+	case SL_LINK_DEGRADE_STATE_DISABLED:
+		return "disabled";
+	case SL_LINK_DEGRADE_STATE_FAILED:
+		return "failed";
+	default:
+		return "invalid";
+	}
+}
+EXPORT_SYMBOL(sl_link_degrade_state_str);
+
 const char *sl_link_an_lp_caps_state_str(u32 lp_caps_state)
 {
 	switch (lp_caps_state) {

@@ -358,6 +358,8 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "an-timeout";
 	case SL_LGRP_NOTIF_AN_ERROR:
 		return "an-error";
+	case SL_LGRP_NOTIF_LANE_DEGRADE:
+		return "auto-lane-degrade";
 	default:
 		return "unknown";
 	}

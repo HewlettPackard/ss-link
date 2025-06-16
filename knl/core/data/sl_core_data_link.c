@@ -172,6 +172,14 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	spin_lock_init(&core_link->fec.test_lock);
 
+	/* ----- ald ----- */
+
+	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LANE_DEGRADE,
+		SL_CORE_WORK_LINK_LANE_DEGRADE_INTR, "lane degrade");
+
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]),
+		sl_core_hw_link_lane_degrade_intr_work);
+
 	/* do very last thing */
 	core_link->link.state = SL_CORE_LINK_STATE_UNCONFIGURED;
 	sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
@@ -405,6 +413,8 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 			core_link->pcs.settings.cw_gap                     = 6;
 		}
+		if (sl_core_link_config_is_enable_ald_set(core_link))
+			core_link->pcs.settings.tx_gearbox_credits = 12;
 	}
 	if (SL_LGRP_CONFIG_TECH_CK_200G & link_caps->tech_map) {
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_200G;
@@ -450,6 +460,8 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 			else
 				core_link->pcs.settings.cw_gap             = 6;
 		}
+		if (sl_core_link_config_is_enable_ald_set(core_link))
+			core_link->pcs.settings.tx_gearbox_credits = 12;
 	}
 	if (SL_LGRP_CONFIG_TECH_CD_100G & link_caps->tech_map) {
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CD_100G;

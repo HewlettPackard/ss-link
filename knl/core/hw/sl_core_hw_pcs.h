@@ -15,4 +15,6 @@ void sl_core_hw_pcs_stop(struct sl_core_link *link);
 
 bool sl_core_hw_pcs_is_ok(struct sl_core_link *link);
 
+void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link);
+
 #endif /* _SL_CORE_HW_PCS_H_ */

@@ -31,6 +31,8 @@ enum {
 	SL_CORE_WORK_LINK_UP_CANCEL,
 	SL_CORE_WORK_LINK_DOWN,
 
+	SL_CORE_WORK_LINK_LANE_DEGRADE_INTR,
+
 	SL_CORE_WORK_LINK_COUNT                         /* must be last */
 };
 

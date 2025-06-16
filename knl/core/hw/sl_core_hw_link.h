@@ -29,5 +29,6 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work);
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work);
 void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work);
 void sl_core_hw_link_fault_intr_work(struct work_struct *work);
+void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work);
 
 #endif /* _SL_CORE_HW_LINK_H_ */

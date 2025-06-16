@@ -336,6 +336,157 @@ static ssize_t last_autoneg_fail_time_show(struct kobject *kobj, struct kobj_att
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fail_time, &fail_time);
 }
 
+static ssize_t degrade_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	int                  degrade_state;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	spin_lock(&core_link->data_lock);
+	degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "degrade state show (degrade_state = %u %s)",
+		degrade_state, sl_link_degrade_state_str(degrade_state));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_link_degrade_state_str(degrade_state));
+}
+
+static ssize_t rx_degrade_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	bool                 is_rx_degrade;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	is_rx_degrade = core_link->degrade_info.is_rx_degrade;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "rx degrade state state show (rx_degrade_state = %u %s)",
+		is_rx_degrade, is_rx_degrade ? "yes" : "no");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_rx_degrade ? "yes" : "no");
+}
+
+static ssize_t rx_degrade_lane_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	u8                   rx_degrade_lane_map;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	rx_degrade_lane_map = core_link->degrade_info.rx_lane_map;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"rx degrade lane map show (rx_degrade_lane_map = 0x%X)", rx_degrade_lane_map);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n", rx_degrade_lane_map);
+}
+
+static ssize_t rx_degrade_link_speed_gbps_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	u16                  rx_degrade_link_speed;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	rx_degrade_link_speed = core_link->degrade_info.rx_link_speed;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"rx degrade link speed gbps show (rx_degrade_link_speed = %u)", rx_degrade_link_speed);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", rx_degrade_link_speed);
+}
+
+static ssize_t tx_degrade_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	bool    		     is_tx_degrade;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	is_tx_degrade = core_link->degrade_info.is_tx_degrade;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "tx degrade state show (tx_degrade_state = %u %s)",
+		is_tx_degrade, is_tx_degrade ? "yes" : "no");
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_tx_degrade ? "yes" : "no");
+}
+
+static ssize_t tx_degrade_lane_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	u8                   tx_degrade_lane_map;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	tx_degrade_lane_map = core_link->degrade_info.tx_lane_map;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"tx degrade lane map show (tx_degrade_lane_map = 0x%X)", tx_degrade_lane_map);
+
+	return scnprintf(buf, PAGE_SIZE, "0x%X\n", tx_degrade_lane_map);
+}
+
+static ssize_t tx_degrade_link_speed_gbps_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link  *ctl_link;
+	struct sl_core_link *core_link;
+	u16                  tx_degrade_link_speed;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
+
+	if (!sl_core_link_is_degrade_state_enabled(core_link))
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+
+	spin_lock(&core_link->data_lock);
+	tx_degrade_link_speed = core_link->degrade_info.tx_link_speed;
+	spin_unlock(&core_link->data_lock);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"tx degrade link speed gbps show (tx_degrade_link_speed = %u)", tx_degrade_link_speed);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", tx_degrade_link_speed);
+}
+
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
 static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
@@ -350,8 +501,15 @@ static struct kobj_attribute link_up_count                         = __ATTR_RO(u
 static struct kobj_attribute link_time_to_link_up_ms               = __ATTR_RO(time_to_link_up_ms);
 static struct kobj_attribute link_total_time_to_link_up_ms         = __ATTR_RO(total_time_to_link_up_ms);
 static struct kobj_attribute link_lp_caps_state                    = __ATTR_RO(lp_caps_state);
-static struct kobj_attribute link_last_autoneg_fail_cause         = __ATTR_RO(last_autoneg_fail_cause);
-static struct kobj_attribute link_last_autoneg_fail_time          = __ATTR_RO(last_autoneg_fail_time);
+static struct kobj_attribute link_last_autoneg_fail_cause          = __ATTR_RO(last_autoneg_fail_cause);
+static struct kobj_attribute link_last_autoneg_fail_time           = __ATTR_RO(last_autoneg_fail_time);
+static struct kobj_attribute link_degrade_state                    = __ATTR_RO(degrade_state);
+static struct kobj_attribute link_rx_degrade_state                 = __ATTR_RO(rx_degrade_state);
+static struct kobj_attribute link_rx_degrade_lane_map              = __ATTR_RO(rx_degrade_lane_map);
+static struct kobj_attribute link_rx_degrade_link_speed_gbps       = __ATTR_RO(rx_degrade_link_speed_gbps);
+static struct kobj_attribute link_tx_degrade_state                 = __ATTR_RO(tx_degrade_state);
+static struct kobj_attribute link_tx_degrade_lane_map              = __ATTR_RO(tx_degrade_lane_map);
+static struct kobj_attribute link_tx_degrade_link_speed_gbps       = __ATTR_RO(tx_degrade_link_speed_gbps);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -370,6 +528,13 @@ static struct attribute *link_attrs[] = {
 	&link_lp_caps_state.attr,
 	&link_last_autoneg_fail_cause.attr,
 	&link_last_autoneg_fail_time.attr,
+	&link_degrade_state.attr,
+	&link_rx_degrade_state.attr,
+	&link_rx_degrade_lane_map.attr,
+	&link_rx_degrade_link_speed_gbps.attr,
+	&link_tx_degrade_state.attr,
+	&link_tx_degrade_lane_map.attr,
+	&link_tx_degrade_link_speed_gbps.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link);

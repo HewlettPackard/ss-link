@@ -326,6 +326,13 @@ function print_link {
         local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
         local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
         local loopback=$(cat ${LINK_PATH}/config/loopback)
+	local ald_state=$(cat ${LINK_PATH}/degrade_state)
+        local rx_degrade_state=$(cat ${LINK_PATH}/rx_degrade_state)
+        local rx_degrade_lane_map=$(cat ${LINK_PATH}/rx_degrade_lane_map)
+        local rx_degrade_link_speed=$(cat ${LINK_PATH}/rx_degrade_link_speed_gbps)
+        local tx_degrade_state=$(cat ${LINK_PATH}/tx_degrade_state)
+        local tx_degrade_lane_map=$(cat ${LINK_PATH}/tx_degrade_lane_map)
+        local tx_degrade_link_speed=$(cat ${LINK_PATH}/tx_degrade_link_speed_gbps)
 
         print_link_state
 
@@ -341,6 +348,9 @@ function print_link {
         printf "           |      fec_caps          : ${caps_fec}\n"
         printf "           |      hpe_caps          : ${caps_hpe}\n"
         printf "           | loopback               : ${loopback}\n"
+        printf "           | degrade_state          : ${ald_state}\n"
+        printf "           | rx_degrade             : ${rx_degrade_state} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}Gbps)\n"
+        printf "           | tx_degrade             : ${tx_degrade_state} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}Gbps)\n"
 }
 
 function print_mac {

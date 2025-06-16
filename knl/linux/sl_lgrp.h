@@ -36,6 +36,7 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_AN_DATA           BIT(17)  /* autoneg data                    */
 #define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(18)  /* autoneg timeout                 */
 #define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* autoneg error                   */
+#define SL_LGRP_NOTIF_LANE_DEGRADE      BIT(20)  /* auto lane degrade               */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -147,6 +148,7 @@ union sl_lgrp_notif_info {
 	struct sl_link_caps                       lp_link_caps;
 	struct sl_llr_data                        llr_data;
 	struct sl_media_attr                      media_attr;
+	struct sl_link_degrade_info               degrade_info;
 	int                                       error;
 	u64                                       cause_map;
 };

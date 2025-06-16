@@ -42,6 +42,7 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	{ .desc = "link-up-timeout"    },
 	{ .desc = "link-up"            },
 	{ .desc = "recover-timeout"    },
+	{ .desc = "link-degraded"      },
 	{ .desc = "mac-rx-config"      },
 	{ .desc = "mac-tx-config"      },
 	{ .desc = "mac-rx"             },
