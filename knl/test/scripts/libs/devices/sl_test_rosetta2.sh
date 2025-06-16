@@ -10,6 +10,12 @@ function sl_test_rosetta2_kill_services {
         services=(fabric-agent-host rossw_daemon hsnd)
         disable_services=(fabric-agent-host)
 
+        init_rossw_pids=($([ -e /dev/rossw0 ] && lsof -t /dev/rossw0 | xargs))
+
+        for pid in "${init_rossw_pids[@]}"; do
+                sl_test_debug_log "${FUNCNAME}" "(pid = ${pid}, comm = $(ps -p ${pid} -o comm=), state = $(ps -p ${pid} -o state=))"
+        done
+
         for service in "${services[@]}"; do
                 sl_test_debug_log "${FUNCNAME}" "stopping ${service}"
                 systemctl stop ${service}
@@ -34,12 +40,22 @@ function sl_test_rosetta2_kill_services {
 
         for pid in "${rossw_pids[@]}"; do
                 sl_test_debug_log "${FUNCNAME}" "killing process (pid = ${pid}, comm = $(ps -p ${pid} -o comm=))"
-                kill ${pid}
+                kill -9 ${pid}
                 rtn=$?
                 if [[ "${rtn}" != 0 ]]; then
                         sl_test_error_log "${FUNCNAME}" \
 				"kill failed [${rtn}] (pid = ${pid}, comm = $(ps -p ${pid} -o comm=))"
                         return ${rtn}
+                fi
+        done
+
+        # Check if we have any of the initial PIDs still running. We may have a zombie process
+        for pid in "${init_rossw_pids[@]}"; do
+                # Wait 10 seconds for the process to exit from the previous SIGKILL
+                timeout 10 tail --pid=${pid} -f /dev/null
+                if kill -0 ${pid} > /dev/null 2>&1; then
+                        sl_test_error_log "${FUNCNAME}" "rossw process still running (pid = ${pid}, comm = $(ps -p ${pid} -o comm=), state = $(ps -p ${pid} -o state=))"
+                        return 1
                 fi
         done
 
