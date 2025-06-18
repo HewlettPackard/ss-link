@@ -3,3 +3,4 @@
 [amd64] lib/modules/5.10.35-amd64-slingshot/sshot/sl.ko  opt/hpe/r2/lib/modules/5.10.35-amd64-slingshot/sshot
 lib/firmware/sl_fw_quad_3.04.bin  opt/hpe/r2/lib/firmware/
 lib/firmware/sl_fw_octet_3.08.bin opt/hpe/r2/lib/firmware/
+usr/bin/slstat

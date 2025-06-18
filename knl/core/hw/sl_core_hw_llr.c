@@ -408,7 +408,7 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 
 	llr_state = sl_core_data_llr_state_get(core_llr);
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME, "setup work - invalid state (%u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -444,7 +444,7 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	llr_state = sl_core_data_llr_state_get(core_llr);
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "loop time intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME, "loop time intr work - invalid state (%u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -517,7 +517,7 @@ void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
 
 	llr_state = sl_core_data_llr_state_get(core_llr);
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "unexpected loop time intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME, "unexpected loop time intr work - invalid state (%u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -669,7 +669,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 
 	llr_state = sl_core_data_llr_state_get(core_llr);
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "start work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME, "start work - invalid state (%u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -698,7 +698,7 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 
 	llr_state = sl_core_data_llr_state_get(core_llr);
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
-		sl_core_log_dbg(core_llr, LOG_NAME, "start init complete intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME, "start init complete intr work - invalid state (%u %s)",
 			llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}

@@ -183,7 +183,7 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up start work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up start work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -343,7 +343,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -417,7 +417,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 		if (rtn) {
-			sl_core_log_err(core_link, LOG_NAME, "up work link ald enable failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "up work link ald enable failed [%d]", rtn);
 			spin_lock(&core_link->data_lock);
 			core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
 			spin_unlock(&core_link->data_lock);
@@ -446,7 +446,7 @@ void sl_core_hw_link_up_intr_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up intr work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -594,7 +594,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up check work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up check work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -648,7 +648,7 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up fec settle work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up fec settle work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -680,7 +680,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up fec check work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up fec check work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -808,7 +808,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 		sl_core_link_state_str(link_state));
 
 	if (link_state != SL_CORE_LINK_STATE_CANCELING) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up cancel work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up cancel work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -877,7 +877,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if (link_state != SL_CORE_LINK_STATE_GOING_DOWN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up fail work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "up fail work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -947,7 +947,7 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if (link_state != SL_CORE_LINK_STATE_GOING_DOWN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "down work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "down work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -1011,7 +1011,7 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 	case SL_CORE_LINK_STATE_AN:
 		break;
 	default:
-		sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work - invalid state (%u %s)",
+		sl_core_log_err(core_link, LOG_NAME, "high SER intr work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 			return;
 	}
@@ -1030,7 +1030,7 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 
 	link_state = sl_core_data_link_state_get(core_link);
 	if (link_state != SL_CORE_LINK_STATE_UP) {
-		sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "llr max starvation intr work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
@@ -1184,7 +1184,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SM(core_link->num), &data64);
 		replay_ct_max = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_GET(data64);
 		if (replay_ct_max == 0xFF) {
-			sl_core_log_err(core_link, LOG_NAME, "llr replay max occurred, ignored");
+			sl_core_log_err_trace(core_link, LOG_NAME, "llr replay max occurred, ignored");
 			if (!local_fault && !remote_fault && !link_down)
 				return;
 		} else {
@@ -1315,5 +1315,5 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 	if (rtn)
-		sl_core_log_err(core_link, LOG_NAME, "intr work ald enable failed [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "intr work ald enable failed [%d]", rtn);
 }

@@ -26,7 +26,8 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 
 	if (core_link->timers[timer_num].data.timeout_ms == 0) {
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"begin - %s timeout is 0", core_link->timers[timer_num].data.log);
+			"begin %s timeout is 0 (timer_num = %u)",
+			core_link->timers[timer_num].data.log, timer_num);
 		return;
 	}
 
@@ -34,14 +35,15 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 		jiffies + msecs_to_jiffies(core_link->timers[timer_num].data.timeout_ms);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"begin - %s (link = 0x%p, timer = %d, timeout = %dms, jiffies = %ld)",
+		"begin %s (core_link = 0x%p, timer_num = %u, timeout = %dms, jiffies = %ld)",
 		core_link->timers[timer_num].data.log, core_link, timer_num,
 		core_link->timers[timer_num].data.timeout_ms,
 		core_link->timers[timer_num].timer.expires);
 
 	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
 		sl_core_log_dbg(core_link, LOG_NAME,
-			"begin - canceled (timer = %u)", timer_num);
+			"begin %s canceled (timer_num = %u)",
+			core_link->timers[timer_num].data.log, timer_num);
 		return;
 	}
 
@@ -60,8 +62,9 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
-			"begin - invalid state (link_state = %u %s)",
-			link_state, sl_core_link_state_str(link_state));
+			"begin %s invalid state (link_state = %u %s, timer_num = %u)",
+			core_link->timers[timer_num].data.log,
+			link_state, sl_core_link_state_str(link_state), timer_num);
 		spin_unlock(&core_link->link.data_lock);
 		return;
 	}
@@ -81,13 +84,17 @@ void sl_core_timer_link_timeout(struct timer_list *timer)
 	info = from_timer(info, timer, timer);
 	core_link = info->data.link;
 
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"timeout %s (core_link = 0x%p, timer_num = %u, work_num = %u)",
+		info->data.log, core_link, info->data.timer_num, info->data.work_num);
+
 	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[info->data.work_num]));
 }
 
 void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
 {
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"end - %s (link = 0x%p, timer = %d)",
+		"end %s (core_link = 0x%p, timer_num = %u)",
 		core_link->timers[timer_num].data.log, core_link, timer_num);
 
 	del_timer_sync(&(core_link->timers[timer_num].timer));

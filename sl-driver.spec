@@ -216,6 +216,7 @@ ${postinst} %{name} %{version}-%{release}
 %files
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin
+/usr/bin/slstat
 
 %files devel
 %{_includedir}/linux/sl_kconfig.h

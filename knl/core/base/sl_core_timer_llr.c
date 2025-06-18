@@ -20,7 +20,8 @@ void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 
 	if (core_llr->timers[timer_num].data.timeout_ms == 0) {
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"begin - %s timeout is 0", core_llr->timers[timer_num].data.log);
+			"begin %s timeout is 0 (timer_num = %u)",
+			core_llr->timers[timer_num].data.log, timer_num);
 		return;
 	}
 
@@ -28,7 +29,7 @@ void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 		jiffies + msecs_to_jiffies(core_llr->timers[timer_num].data.timeout_ms);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
-		"begin - %s (llr = 0x%p, timer = %d, timeout = %dms, jiffies = %ld)",
+		"begin %s (core_llr = 0x%p, timer_num = %u, timeout = %dms, jiffies = %ld)",
 		core_llr->timers[timer_num].data.log, core_llr, timer_num,
 		core_llr->timers[timer_num].data.timeout_ms,
 		core_llr->timers[timer_num].timer.expires);
@@ -42,8 +43,10 @@ void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 		spin_unlock(&core_llr->data_lock);
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "begin - invalid state (llr_state = %u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME,
+			"begin %s invalid state (llr_state = %u %s, timer_num = %u)",
+			core_llr->timers[timer_num].data.log,
+			llr_state, sl_core_llr_state_str(llr_state), timer_num);
 		spin_unlock(&core_llr->data_lock);
 		return;
 	}
@@ -65,7 +68,7 @@ void sl_core_timer_llr_timeout(struct timer_list *timer)
 	core_llr = info->data.core_llr;
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
-		"timeout %s (llr = 0x%p, timer = %u, work = %u)",
+		"timeout %s (core_llr = 0x%p, timer_num = %u, work_num = %u)",
 		info->data.log, core_llr,
 		info->data.timer_num, info->data.work_num);
 
@@ -75,7 +78,7 @@ void sl_core_timer_llr_timeout(struct timer_list *timer)
 void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num)
 {
 	sl_core_log_dbg(core_llr, LOG_NAME,
-		"end - %s (llr = 0x%p, timer = %d)",
+		"end %s (core_llr = 0x%p, timer_num = %u)",
 		core_llr->timers[timer_num].data.log, core_llr, timer_num);
 
 	del_timer_sync(&(core_llr->timers[timer_num].timer));
