@@ -740,10 +740,26 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 {
 	struct sl_core_link         *core_link;
 	struct sl_core_link_up_info  link_up_info;
+	u32                          link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_TIMEOUT]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up timeout work");
+
+	spin_lock(&core_link->link.data_lock);
+	link_state = core_link->link.state;
+	switch (link_state) {
+	case SL_CORE_LINK_STATE_GOING_UP:
+		sl_core_log_dbg(core_link, LOG_NAME, "up timeout work - going down");
+		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		spin_unlock(&core_link->link.data_lock);
+		break;
+	default:
+		sl_core_log_err(core_link, LOG_NAME, "up timeout work - invalid state (%u %s)",
+			link_state, sl_core_link_state_str(link_state));
+		spin_unlock(&core_link->link.data_lock);
+		return;
+	}
 
 	/* stop timers */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
