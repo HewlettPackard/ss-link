@@ -125,6 +125,7 @@ static int sl_test_lgrp_notif_setup(void)
 		INIT_KFIFO(lgrp_notif_interfaces[lgrp_num].lgrp_events);
 		init_waitqueue_head(&lgrp_notif_interfaces[lgrp_num].wait);
 		mutex_init(&lgrp_notif_interfaces[lgrp_num].read_lock);
+		spin_lock_init(&lgrp_notif_interfaces[lgrp_num].data_lock);
 	}
 
 	return 0;
