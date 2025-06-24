@@ -140,10 +140,8 @@ static int sl_ctl_link_down_cmd(struct sl_ctl_link *ctl_link)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"del core_link_an_lp_caps_stop failed [%d]", rtn);
 
-	sl_core_link_last_down_cause_map_set(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-		SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-		sl_ctl_link_down_callback, ctl_link);
+		sl_ctl_link_down_callback, ctl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 			"core_link_down failed [%d]", rtn);
@@ -166,8 +164,6 @@ static int sl_ctl_link_cancel_cmd(struct sl_ctl_link *ctl_link)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 			"del core_link_an_lp_caps_stop failed [%d]", rtn);
 
-	sl_core_link_last_up_fail_cause_map_set(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
 	rtn = sl_core_link_cancel(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
 		sl_ctl_link_down_callback, ctl_link);
 	if (rtn) {
@@ -807,8 +803,8 @@ static int sl_ctl_link_reset_cmd(struct sl_ctl_link *ctl_link)
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
-	sl_core_link_last_down_cause_map_set(ldev_num, lgrp_num, link_num, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
-	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_callback, ctl_link);
+	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctl_link_down_callback,
+		ctl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	if (rtn)
 		sl_ctl_log_warn_trace(ctl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 

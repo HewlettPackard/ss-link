@@ -111,6 +111,10 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    | \
 		SL_LINK_DOWN_RETRYABLE               | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_CANCELED_MAP (              \
+		SL_LINK_DOWN_CAUSE_CANCELED          | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
 
 #define SL_LINK_DEGRADE_STATE_INVALID   0
 #define SL_LINK_DEGRADE_STATE_ENABLED   1
@@ -393,7 +397,7 @@ int sl_core_link_up_fail(struct sl_core_link *core_link);
 int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		      sl_core_link_down_callback_t callback, void *tag);
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag);
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map);
 int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state);

@@ -542,10 +542,8 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down - stopping");
 		spin_unlock(&ctl_link->data_lock);
 
-		sl_core_link_last_down_cause_map_set(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-			ctl_link->num, down_cause_map);
 		rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-			sl_ctl_link_down_callback, ctl_link);
+			sl_ctl_link_down_callback, ctl_link, down_cause_map);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"core_link_down failed [%d]", rtn);

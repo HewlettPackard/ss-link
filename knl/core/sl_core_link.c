@@ -140,9 +140,10 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "canceling");
-		core_link->link.tags.down      = tag;
-		core_link->link.callbacks.down = callback;
-		core_link->link.state = SL_CORE_LINK_STATE_CANCELING;
+		core_link->link.tags.down               = tag;
+		core_link->link.callbacks.down          = callback;
+		core_link->link.state                   = SL_CORE_LINK_STATE_CANCELING;
+		core_link->link.last_up_fail_cause_map |= SL_LINK_DOWN_CAUSE_CANCELED_MAP;
 		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
 			&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL])))
 			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
@@ -159,7 +160,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 }
 
 int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag)
+		      sl_core_link_down_callback_t callback, void *tag, u64 down_cause_map)
 {
 	u32                  link_state;
 	struct sl_core_link *core_link;
@@ -185,9 +186,10 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
-		core_link->link.tags.down      = tag;
-		core_link->link.callbacks.down = callback;
-		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		core_link->link.tags.down            = tag;
+		core_link->link.callbacks.down       = callback;
+		core_link->link.state                = SL_CORE_LINK_STATE_GOING_DOWN;
+		core_link->link.last_down_cause_map |= down_cause_map;
 		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
 			&(core_link->work[SL_CORE_WORK_LINK_DOWN])))
 			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",

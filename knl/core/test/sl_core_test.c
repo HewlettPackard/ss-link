@@ -418,10 +418,8 @@ static int sl_core_test12(struct sl_core_test_args test_args)
 
 static int sl_core_test13(struct sl_core_test_args test_args)
 {
-	sl_core_link_last_down_cause_map_set(test_args.ldev_num, test_args.lgrp_num, test_args.link_num,
-		SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	return sl_core_link_down(test_args.ldev_num, test_args.lgrp_num, test_args.link_num,
-		sl_core_test_link_down_callback, test_args.tag);
+		sl_core_test_link_down_callback, test_args.tag, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 }
 
 static int sl_core_test14(struct sl_core_test_args test_args)

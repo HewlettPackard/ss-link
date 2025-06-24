@@ -750,8 +750,10 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
+	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up timeout work - going down");
-		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		core_link->link.state                   = SL_CORE_LINK_STATE_TIMEOUT;
+		core_link->link.last_up_fail_cause_map |= SL_LINK_DOWN_CAUSE_TIMEOUT_MAP;
 		spin_unlock(&core_link->link.data_lock);
 		break;
 	default:
