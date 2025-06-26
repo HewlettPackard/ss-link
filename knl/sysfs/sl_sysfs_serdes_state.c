@@ -24,7 +24,7 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
+		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
 	state     = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);
@@ -44,7 +44,7 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no_lane\n");
+		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctl_lgrp->ctl_ldev->num, lane_kobj->ctl_lgrp->num);
 	state     = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);

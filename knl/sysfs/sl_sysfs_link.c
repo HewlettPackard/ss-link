@@ -46,7 +46,7 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		state, sl_link_state_str(state), speed, sl_lgrp_config_tech_str(speed));
 
 	if (state != SL_LINK_STATE_UP)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_config_tech_str(speed));
 }
@@ -74,9 +74,9 @@ static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_att
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+			return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 		else
-			return scnprintf(buf, PAGE_SIZE, "no_record\n");
+			return scnprintf(buf, PAGE_SIZE, "no-record\n");
 	}
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
@@ -102,9 +102,9 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 		sl_ctl_link_state_get_cmd(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
 		ctl_link->num, &state);
 		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+			return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 		else
-			return scnprintf(buf, PAGE_SIZE, "no_record\n");
+			return scnprintf(buf, PAGE_SIZE, "no-record\n");
 	}
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
@@ -185,7 +185,7 @@ static ssize_t ccw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
-		return scnprintf(buf, PAGE_SIZE, "not_crossed\n");
+		return scnprintf(buf, PAGE_SIZE, "not-crossed\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
 }
@@ -224,7 +224,7 @@ static ssize_t ucw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
-		return scnprintf(buf, PAGE_SIZE, "not_crossed\n");
+		return scnprintf(buf, PAGE_SIZE, "not-crossed\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
 }
@@ -311,7 +311,7 @@ static ssize_t last_autoneg_fail_cause_show(struct kobject *kobj, struct kobj_at
 		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_link_an_fail_cause_str(fail_cause));
 }
@@ -331,7 +331,7 @@ static ssize_t last_autoneg_fail_time_show(struct kobject *kobj, struct kobj_att
 		fail_cause, sl_core_link_an_fail_cause_str(fail_cause), fail_time, &fail_time, &fail_time);
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fail_time, &fail_time);
 }
@@ -365,7 +365,7 @@ static ssize_t rx_degrade_state_show(struct kobject *kobj, struct kobj_attribute
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	is_rx_degrade = core_link->degrade_info.is_rx_degrade;
@@ -387,7 +387,7 @@ static ssize_t rx_degrade_lane_map_show(struct kobject *kobj, struct kobj_attrib
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	rx_degrade_lane_map = core_link->degrade_info.rx_lane_map;
@@ -409,7 +409,7 @@ static ssize_t rx_degrade_link_speed_gbps_show(struct kobject *kobj, struct kobj
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	rx_degrade_link_speed = core_link->degrade_info.rx_link_speed;
@@ -431,7 +431,7 @@ static ssize_t tx_degrade_state_show(struct kobject *kobj, struct kobj_attribute
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	is_tx_degrade = core_link->degrade_info.is_tx_degrade;
@@ -453,7 +453,7 @@ static ssize_t tx_degrade_lane_map_show(struct kobject *kobj, struct kobj_attrib
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	tx_degrade_lane_map = core_link->degrade_info.tx_lane_map;
@@ -475,7 +475,7 @@ static ssize_t tx_degrade_link_speed_gbps_show(struct kobject *kobj, struct kobj
 	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num);
 
 	if (!sl_core_link_is_degrade_state_enabled(core_link))
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald_inactive");
+		return scnprintf(buf, PAGE_SIZE, "%s\n", "ald-inactive");
 
 	spin_lock(&core_link->data_lock);
 	tx_degrade_link_speed = core_link->degrade_info.tx_link_speed;

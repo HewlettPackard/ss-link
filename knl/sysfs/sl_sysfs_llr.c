@@ -30,7 +30,7 @@ static ssize_t last_fail_cause_show(struct kobject *kobj, struct kobj_attribute 
 		"last fail cause show (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_llr_fail_cause_str(llr_fail_cause));
 }
@@ -52,7 +52,7 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 		llr_fail_time, &llr_fail_time, &llr_fail_time);
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fail\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &llr_fail_time, &llr_fail_time);
 }

@@ -96,7 +96,7 @@ static ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribu
 
 	fecl_kobj = container_of(kobj, struct sl_ctl_link_fecl_kobj, kobj);
 	if (!fecl_kobj->ctl_link)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctl_link_fec_down_cache_lane_cntrs_get(fecl_kobj->ctl_link, &lane_cntrs);
 

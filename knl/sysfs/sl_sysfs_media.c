@@ -46,16 +46,17 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	is_high_powered = sl_media_jack_is_high_powered(media_lgrp->media_jack);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"power state show (media_lgrp = 0x%p, state = %s)", media_lgrp, is_high_powered ? "high_powered" : "low_powered");
+		"power state show (media_lgrp = 0x%p, state = %s)",
+		media_lgrp, is_high_powered ? "high_powered" : "low_powered");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high_powered" : "low_powered");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high-powered" : "low-powered");
 }
 
 static ssize_t temperature_celcius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -70,15 +71,15 @@ static ssize_t temperature_celcius_show(struct kobject *kobj, struct kobj_attrib
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	rtn = sl_media_jack_cable_temp_get(media_lgrp->media_ldev->num, media_lgrp->num, &temp);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "not_active\n");
+		return scnprintf(buf, PAGE_SIZE, "not-active\n");
 	if (rtn == -EIO)
-		return scnprintf(buf, PAGE_SIZE, "io_error\n");
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
 		"temperature_celcius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
@@ -97,8 +98,8 @@ static ssize_t high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
@@ -121,8 +122,8 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	vendor = sl_media_lgrp_vendor_get(media_lgrp);
@@ -144,8 +145,8 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	type = sl_media_lgrp_type_get(media_lgrp);
@@ -167,8 +168,8 @@ static ssize_t shape_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	shape = sl_media_lgrp_shape_get(media_lgrp);
@@ -190,8 +191,8 @@ static ssize_t cable_end_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	cable_end = sl_media_jack_cable_end_get(media_lgrp->media_jack);
@@ -214,8 +215,8 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	length_cm = sl_media_lgrp_length_get(media_lgrp);
@@ -237,8 +238,8 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	max_speed = sl_media_lgrp_max_speed_get(media_lgrp);
@@ -260,8 +261,8 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	sl_media_lgrp_serial_num_get(media_lgrp, serial_num_str);
@@ -283,8 +284,8 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	sl_media_lgrp_hpe_pn_get(media_lgrp, hpe_pn_str);
@@ -322,8 +323,8 @@ static ssize_t jack_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	jack_type = sl_media_lgrp_jack_type_get(media_lgrp);
@@ -346,8 +347,8 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	furcation = sl_media_lgrp_furcation_get(media_lgrp);
@@ -369,8 +370,8 @@ static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	not_supported = sl_media_lgrp_is_cable_not_supported(media_lgrp);
@@ -392,8 +393,8 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	sl_media_lgrp_date_code_get(media_lgrp, date_code_str);
@@ -415,8 +416,8 @@ static ssize_t firmware_version_show(struct kobject *kobj, struct kobj_attribute
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
@@ -439,8 +440,8 @@ static ssize_t target_firmware_version_show(struct kobject *kobj, struct kobj_at
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	sl_media_eeprom_target_fw_ver_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
@@ -463,8 +464,8 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	cable_shift_state = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack);
@@ -487,8 +488,8 @@ static ssize_t active_cable_200g_host_iface_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	host_iface = sl_media_jack_active_cable_200g_host_iface_get(media_lgrp->media_jack);
@@ -510,8 +511,8 @@ static ssize_t active_cable_200g_lane_cnt_show(struct kobject *kobj, struct kobj
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	lane_cnt = sl_media_jack_active_cable_200g_lane_count_get(media_lgrp->media_jack);
@@ -533,8 +534,8 @@ static ssize_t active_cable_200g_appsel_no_show(struct kobject *kobj, struct kob
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	appsel_no = sl_media_jack_active_cable_200g_appsel_no_get(media_lgrp->media_jack);
@@ -556,8 +557,8 @@ static ssize_t active_cable_400g_host_iface_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	host_iface = sl_media_jack_active_cable_400g_host_iface_get(media_lgrp->media_jack);
@@ -579,8 +580,8 @@ static ssize_t active_cable_400g_lane_cnt_show(struct kobject *kobj, struct kobj
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	lane_cnt = sl_media_jack_active_cable_400g_lane_count_get(media_lgrp->media_jack);
@@ -602,8 +603,8 @@ static ssize_t active_cable_400g_appsel_no_show(struct kobject *kobj, struct kob
 
 	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	appsel_no = sl_media_jack_active_cable_400g_appsel_no_get(media_lgrp->media_jack);
@@ -631,7 +632,7 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 		sl_media_fault_cause_str(fault_cause));
 
 	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fault\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fault\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_fault_cause_str(fault_cause));
 }
@@ -654,7 +655,7 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 		fault_time, &fault_time, &fault_time);
 
 	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no_fault\n");
+		return scnprintf(buf, PAGE_SIZE, "no-fault\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fault_time, &fault_time);
 }
@@ -739,8 +740,8 @@ static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *
 
 	if (!sl_media_jack_is_cable_online(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(speed_kobj->media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	type = sl_media_lgrp_type_get(speed_kobj->media_lgrp);
@@ -767,8 +768,8 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 
 	if (!sl_media_jack_is_cable_online(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_invalid(speed_kobj->media_lgrp->media_jack))
-			return scnprintf(buf, PAGE_SIZE, "invalid_format\n");
-		return scnprintf(buf, PAGE_SIZE, "no_cable\n");
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
 	type = sl_media_lgrp_type_get(speed_kobj->media_lgrp);

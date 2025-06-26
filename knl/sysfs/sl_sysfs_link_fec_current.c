@@ -29,7 +29,7 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	rtn = sl_core_link_fec_cw_cntrs_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &cw_cntrs);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"ccw show (link = 0x%p, ccw = %llu)", ctl_link, cw_cntrs.ccw);
@@ -48,7 +48,7 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	rtn = sl_core_link_fec_cw_cntrs_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &cw_cntrs);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"ucw show (link = 0x%p, ucw = %llu)", ctl_link, cw_cntrs.ucw);
@@ -67,7 +67,7 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	rtn = sl_core_link_fec_cw_cntrs_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &cw_cntrs);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"gcw show (link = 0x%p, gcw = %llu)", ctl_link, cw_cntrs.gcw);
@@ -112,14 +112,14 @@ static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attr
 
 	fecl_kobj = container_of(kobj, struct sl_ctl_link_fecl_kobj, kobj);
 	if (!fecl_kobj->ctl_link)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	ctl_link = fecl_kobj->ctl_link;
 
 	rtn = sl_core_link_fec_lane_cntrs_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &lane_cntrs);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	fecl_num = ((4 * fecl_kobj->lane_num) + num);
 
@@ -148,7 +148,7 @@ static ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attri
 	rtn = sl_core_link_fec_tail_cntrs_get(ctl_link->ctl_lgrp->ctl_ldev->num,
 		ctl_link->ctl_lgrp->num, ctl_link->num, &tail_cntrs);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"current bin show (link = 0x%p, bin %u = %llu)",
