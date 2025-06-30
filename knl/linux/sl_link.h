@@ -155,6 +155,7 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(25) /* no media present                     */
 #define SL_LINK_DOWN_CAUSE_CCW               BIT(26) /* link up or fec mon CCW limit crossed */
 #define SL_LINK_DOWN_CAUSE_HIGH_TEMP         BIT(27) /* active cable too hot                 */
+#define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(28) /* link up interrupt register failure   */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */

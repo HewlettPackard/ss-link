@@ -83,6 +83,8 @@ int sl_core_hw_intr_hdlr_register(struct sl_core_link *core_link)
 		if (x == SL_CORE_HW_INTR_AN_PAGE_RECV)
 			rtn = sl_core_hw_intr_register(core_link, core_link->intrs[x].flgs,
 				sl_core_hw_an_intr_hdlr, &(core_link->intrs[x].data));
+		else if (x == SL_CORE_HW_INTR_LANE_DEGRADE)
+			continue;
 		else
 			rtn = sl_core_hw_intr_register(core_link, core_link->intrs[x].flgs,
 				sl_core_hw_intr_hdlr, &(core_link->intrs[x].data));

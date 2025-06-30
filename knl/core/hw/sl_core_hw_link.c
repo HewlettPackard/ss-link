@@ -350,6 +350,23 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_serdes_link_down(core_link);
 
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+		(core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+		rtn = sl_core_hw_intr_register(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
+		if (rtn != 0) {
+			   sl_core_log_err(core_link, LOG_NAME,
+					   "up work - lane degrade register failed [%d]", rtn);
+
+			   sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
+			   rtn = sl_core_link_up_fail(core_link);
+			   if (rtn)
+				   sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+
+			   return;
+		}
+	}
+
 	sl_core_hw_pcs_config(core_link);
 
 	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
@@ -418,9 +435,16 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "up work link ald enable failed [%d]", rtn);
+
 			spin_lock(&core_link->data_lock);
 			core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
 			spin_unlock(&core_link->data_lock);
+
+			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+			rtn = sl_core_link_up_fail(core_link);
+			if (rtn)
+				sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+
 			return;
 		}
 
@@ -741,6 +765,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	struct sl_core_link         *core_link;
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
+	int                          rtn;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_TIMEOUT]);
 
@@ -790,6 +815,15 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					    sl_core_hw_intr_hdlr);
+	   if (rtn != 0)
+		   sl_core_log_warn(core_link, LOG_NAME,
+				   "up timeout - lane degrade unregister failed [%d]", rtn);
+	}
+
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
@@ -817,6 +851,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	struct sl_core_link         *core_link;
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
+	int                          rtn;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CANCEL]);
 
@@ -858,6 +893,15 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					    sl_core_hw_intr_hdlr);
+	   if (rtn != 0)
+		   sl_core_log_warn(core_link, LOG_NAME,
+				   "up cancel - lane degrade unregister failed [%d]", rtn);
+	}
+
 	/* Cancel work queued from interrupt */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
@@ -888,6 +932,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	struct sl_core_link         *core_link;
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
+	int                          rtn;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_FAIL]);
 
@@ -926,6 +971,15 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
+
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					    sl_core_hw_intr_hdlr);
+	   if (rtn != 0)
+		   sl_core_log_warn(core_link, LOG_NAME,
+				   "up fail - lane degrade unregister failed [%d]", rtn);
+	}
 
 	/* Cancel work queued from interrupt */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
@@ -990,6 +1044,16 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work lane degrade disable failed [%d]", rtn);
+
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					    sl_core_hw_intr_hdlr);
+	   if (rtn != 0)
+		   sl_core_log_warn(core_link, LOG_NAME,
+				   "down - lane degrade unregister failed [%d]", rtn);
+	}
+
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]);
