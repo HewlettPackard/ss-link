@@ -315,24 +315,32 @@ static u8 sl_test_debugfs_llr_num_get(void)
 void sl_test_llr_remove(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	int           rtn;
-	struct sl_llr sl_llr;
+	struct sl_llr llr;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 		"llr remove (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 		ldev_num, lgrp_num, llr_num);
 
-	sl_test_llr_init(&sl_llr, ldev_num, lgrp_num, llr_num);
+	sl_test_llr_init(&llr, ldev_num, lgrp_num, llr_num);
 
-	rtn = sl_llr_del(&sl_llr);
+	rtn = sl_llr_del(&llr);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
+		return;
+	}
+
+	rtn = sl_test_port_num_entry_put(lgrp_num, llr_num);
 	if (rtn)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_put failed [%d]", rtn);
 }
 
 int sl_test_llr_new(void)
 {
 	u8              llr_num;
+	int             rtn;
 	struct sl_lgrp *lgrp;
-	struct kobject *llr_kobj;
+	struct kobject *port_num_kobj;
 
 	lgrp = sl_test_lgrp_get();
 	llr_num = sl_test_debugfs_llr_num_get();
@@ -341,22 +349,46 @@ int sl_test_llr_new(void)
 		"llr new (lgrp_num = %u, llr_num = %u)",
 		lgrp->num, llr_num);
 
-	// NOTE: assumes the link is made first
-	llr_kobj = sl_test_link_sysfs_get(lgrp->num, llr_num);
-	if (!llr_kobj) {
+	rtn = sl_test_port_num_entry_init(lgrp->num, llr_num);
+	switch (rtn) {
+	case 0:
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, llr_num);
+		break;
+	case -EALREADY:
+		sl_test_port_num_entry_get_unless_zero(lgrp->num, llr_num);
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, llr_num);
+		break;
+	default:
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_link_sysfs_get NULL");
-		return -EBADRQC;
+			"sl_test_port_num_entry_init failed [%d]", rtn);
+		return rtn;
 	}
 
-	return IS_ERR(sl_llr_new(lgrp, llr_num, llr_kobj));
+	return IS_ERR(sl_llr_new(lgrp, llr_num, port_num_kobj));
 }
 
 int sl_test_llr_del(void)
 {
-	sl_llr_del(sl_test_llr_get());
+	int            rtn;
+	struct sl_llr *llr;
 
-	return 0;
+	llr = sl_test_llr_get();
+
+	rtn = sl_llr_del(llr);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_llr_del failed [%d]", rtn);
+		return rtn;
+	}
+
+	rtn = sl_test_port_num_entry_put(llr->lgrp_num, llr->num);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_put failed [%d]", rtn);
+		return rtn;
+	}
+
+	return rtn;
 }
 
 int sl_test_llr_setup(void)

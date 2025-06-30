@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
+#include <linux/kref.h>
+#include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/debugfs.h>
 #include <linux/kobject.h>
@@ -20,12 +22,18 @@
 #define LOG_BLOCK "link"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
 
-static struct dentry         *link_dir;
-static struct sl_link         link;
-static struct sl_link_config  link_config;
-static struct sl_link_policy  link_policy;
-static struct kobject        *sl_link_num_dir[SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
-static struct kobject         sl_link_num_dir_kobj[SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
+struct port_num_sysfs_entry {
+	u8             lgrp_num;
+	u8             link_num;
+	struct kobject kobj;
+	struct kref    ref_count;
+};
+
+static struct dentry               *link_dir;
+static struct sl_link               link;
+static struct sl_link_config        link_config;
+static struct sl_link_policy        link_policy;
+static struct port_num_sysfs_entry *test_port_num_entries[SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 
 enum link_cmd_index {
 	LINK_NEW_CMD,
@@ -215,8 +223,15 @@ static const struct file_operations sl_test_link_cmds_fops = {
 	.release = single_release,
 };
 
-static struct kobj_type sl_test_link_kobj_type = {
+void sl_test_port_num_sysfs_release(struct kobject *kobj)
+{
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"test_port_num_sysfs_release (kobj = 0x%p)", kobj);
+}
+
+static struct kobj_type sl_test_port_num_kobj_type = {
 	.sysfs_ops = &kobj_sysfs_ops,
+	.release = sl_test_port_num_sysfs_release,
 };
 
 #define SL_TEST_OPT_USE_FEC_CNTR BIT(0)
@@ -516,10 +531,11 @@ u8 sl_test_debugfs_link_num_get(void)
 	return link.num;
 }
 
-static int sl_test_link_sysfs_init(u8 lgrp_num, u8 link_num)
+int sl_test_port_num_entry_init(u8 lgrp_num, u8 link_num)
 {
-	int             rtn;
-	struct kobject *port_kobj;
+	int                          rtn;
+	struct kobject              *port_kobj;
+	struct port_num_sysfs_entry *port_num_entry;
 
 	port_kobj = sl_test_port_sysfs_kobj_get(lgrp_num);
 	if (!port_kobj) {
@@ -527,31 +543,35 @@ static int sl_test_link_sysfs_init(u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
-	if (sl_link_num_dir[lgrp_num][link_num])
-		return 0;
+	if (test_port_num_entries[lgrp_num][link_num]) {
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_init already exists (lgrp_num = %u, link_num = %u)",
+			lgrp_num, link_num);
+		return -EALREADY;
+	}
 
-	rtn = kobject_init_and_add(&sl_link_num_dir_kobj[lgrp_num][link_num], &sl_test_link_kobj_type,
-		port_kobj, "%d", link_num);
+	port_num_entry = kzalloc(sizeof(*port_num_entry), GFP_KERNEL);
+	if (!port_num_entry)
+		return -ENOMEM;
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"sl_test_port_num_entry_init (port_num_entry = 0x%p)", port_num_entry);
+
+	rtn = kobject_init_and_add(&port_num_entry->kobj, &sl_test_port_num_kobj_type, port_kobj, "%d", link_num);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&sl_link_num_dir_kobj[lgrp_num][link_num]);
+			"kobject_init_and_add failed (lgrp_num = %u, link_num = %u) [%d]", lgrp_num, link_num, rtn);
 		return -ENOMEM;
 	}
 
-	sl_link_num_dir[lgrp_num][link_num] = &sl_link_num_dir_kobj[lgrp_num][link_num];
+	kref_init(&port_num_entry->ref_count);
+
+	port_num_entry->lgrp_num = lgrp_num;
+	port_num_entry->link_num = link_num;
+
+	test_port_num_entries[lgrp_num][link_num] = port_num_entry;
 
 	return 0;
-}
-
-static void sl_test_link_sysfs_remove(u8 lgrp_num, u8 link_num)
-{
-	if (sl_link_num_dir[lgrp_num][link_num]) {
-		kobject_put(sl_link_num_dir[lgrp_num][link_num]);
-		/* Need to clear kobject state_initialized */
-		memset(&sl_link_num_dir_kobj[lgrp_num][link_num], 0, sizeof(sl_link_num_dir_kobj[lgrp_num][link_num]));
-		sl_link_num_dir[lgrp_num][link_num] = NULL;
-	}
 }
 
 void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -566,15 +586,80 @@ void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_test_link_init(&sl_link, ldev_num, lgrp_num, link_num);
 
 	rtn = sl_link_del(&sl_link);
-	if (rtn)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
+		return;
+	}
 
-	sl_test_link_sysfs_remove(sl_link.lgrp_num, sl_link.num);
+	rtn = sl_test_port_num_entry_put(lgrp_num, link_num);
+	if (rtn)
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_put failed [%d]", rtn);
 }
 
-struct kobject *sl_test_link_sysfs_get(u8 lgrp_num, u8 link_num)
+static void sl_test_port_num_entry_release(struct kref *kref)
 {
-	return sl_link_num_dir[lgrp_num][link_num];
+	struct port_num_sysfs_entry *port_num_entry;
+
+	port_num_entry = container_of(kref, struct port_num_sysfs_entry, ref_count);
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"test_port_num_entry_release (port_num_entry = 0x%p)", port_num_entry);
+
+	kobject_put(&port_num_entry->kobj);
+
+	kfree(port_num_entry);
+
+	test_port_num_entries[port_num_entry->lgrp_num][port_num_entry->link_num] = NULL;
+}
+
+int sl_test_port_num_entry_get_unless_zero(u8 lgrp_num, u8 link_num)
+{
+	struct port_num_sysfs_entry *port_num_entry;
+
+	port_num_entry = test_port_num_entries[lgrp_num][link_num];
+
+	if (!port_num_entry) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"test_port_num_entry_get_unless_zero called on non-existing entry (lgrp_num = %u, link_num = %u)",
+			lgrp_num, link_num);
+		return -ENOENT;
+	}
+
+	return kref_get_unless_zero(&port_num_entry->ref_count);
+}
+
+int sl_test_port_num_entry_put(u8 lgrp_num, u8 link_num)
+{
+	struct port_num_sysfs_entry *port_num_entry;
+
+	port_num_entry = test_port_num_entries[lgrp_num][link_num];
+
+	if (!port_num_entry) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			"test_port_num_entry_put called on non-existing entry (lgrp_num = %u, link_num = %u)",
+			lgrp_num, link_num);
+		return -ENOENT;
+	}
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		"test_port_num_entry_put (ref_count = %u)", kref_read(&port_num_entry->ref_count));
+
+	kref_put(&port_num_entry->ref_count, sl_test_port_num_entry_release);
+
+	return 0;
+}
+
+struct kobject *sl_test_port_num_sysfs_get(u8 lgrp_num, u8 link_num)
+{
+	struct port_num_sysfs_entry *port_num_entry;
+
+	port_num_entry = test_port_num_entries[lgrp_num][link_num];
+
+	if (!port_num_entry)
+		return NULL;
+
+	return &port_num_entry->kobj;
 }
 
 int sl_test_link_new(void)
@@ -582,7 +667,7 @@ int sl_test_link_new(void)
 	int             rtn;
 	u8              link_num;
 	struct sl_lgrp *lgrp;
-	struct kobject *link_kobj;
+	struct kobject *port_num_kobj;
 
 	lgrp = sl_test_lgrp_get();
 	link_num = sl_test_debugfs_link_num_get();
@@ -591,36 +676,46 @@ int sl_test_link_new(void)
 		"link new (lgrp_num = %u, link_num = %u)",
 		lgrp->num, link_num);
 
-	rtn = sl_test_link_sysfs_init(lgrp->num, link_num);
-	if (rtn) {
+	rtn = sl_test_port_num_entry_init(lgrp->num, link_num);
+	switch (rtn) {
+	case 0:
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, link_num);
+		break;
+	case -EALREADY:
+		sl_test_port_num_entry_get_unless_zero(lgrp->num, link_num);
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, link_num);
+		break;
+	default:
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_link_sysfs_init failed [%d]", rtn);
+			"sl_test_port_num_entry_init failed [%d]", rtn);
 		return rtn;
 	}
 
-	link_kobj = sl_test_link_sysfs_get(lgrp->num, link_num);
-	if (!link_kobj) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_link_sysfs_get NULL");
-		return -EBADRQC;
-	}
-
-	return IS_ERR(sl_link_new(lgrp, link_num, link_kobj));
+	return IS_ERR(sl_link_new(lgrp, link_num, port_num_kobj));
 }
 
 int sl_test_link_del(void)
 {
-	u8              lgrp_num;
+	int             rtn;
 	struct sl_link *link;
 
 	link = sl_test_link_get();
-	lgrp_num = sl_test_debugfs_lgrp_num_get();
 
-	sl_link_del(link);
+	rtn = sl_link_del(link);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_link_del failed [%d]", rtn);
+		return rtn;
+	}
 
-	sl_test_link_sysfs_remove(lgrp_num, link->num);
+	rtn = sl_test_port_num_entry_put(link->lgrp_num, link->num);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_put failed [%d]", rtn);
+		return rtn;
+	}
 
-	return 0;
+	return rtn;
 }
 
 int sl_test_link_up(void)

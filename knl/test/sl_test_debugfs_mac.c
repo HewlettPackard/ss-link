@@ -210,15 +210,23 @@ void sl_test_mac_remove(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	sl_test_mac_init(&sl_mac, ldev_num, lgrp_num, mac_num);
 
 	rtn = sl_mac_del(&sl_mac);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
+		return;
+	}
+
+	rtn = sl_test_port_num_entry_put(lgrp_num, mac_num);
 	if (rtn)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_sysfs_put failed [%d]", rtn);
 }
 
 int sl_test_mac_new(void)
 {
 	u8              mac_num;
+	int             rtn;
 	struct sl_lgrp *lgrp;
-	struct kobject *mac_kobj;
+	struct kobject *port_num_kobj;
 
 	lgrp = sl_test_lgrp_get();
 	mac_num = sl_test_debugfs_mac_num_get();
@@ -227,22 +235,46 @@ int sl_test_mac_new(void)
 		"mac new (lgrp_num = %u, mac_num = %u)",
 		lgrp->num, mac_num);
 
-	// NOTE: assumes the link is made first
-	mac_kobj = sl_test_link_sysfs_get(lgrp->num, mac_num);
-	if (!mac_kobj) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_link_sysfs_get NULL");
-		return -EBADRQC;
+	rtn = sl_test_port_num_entry_init(lgrp->num, mac_num);
+	switch (rtn) {
+	case 0:
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, mac_num);
+		break;
+	case -EALREADY:
+		sl_test_port_num_entry_get_unless_zero(lgrp->num, mac_num);
+		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, mac_num);
+		break;
+	default:
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_init failed [%d]", rtn);
+		return rtn;
 	}
 
-	return IS_ERR(sl_mac_new(lgrp, mac_num, mac_kobj));
+	return IS_ERR(sl_mac_new(lgrp, mac_num, port_num_kobj));
 }
 
 int sl_test_mac_del(void)
 {
-	sl_mac_del(sl_test_mac_get());
+	int            rtn;
+	struct sl_mac *sl_mac;
 
-	return 0;
+	sl_mac = sl_test_mac_get();
+
+	rtn = sl_mac_del(sl_mac);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_mac_del failed [%d]", rtn);
+		return rtn;
+	}
+
+	rtn = sl_test_port_num_entry_put(sl_mac->lgrp_num, sl_mac->num);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+			"sl_test_port_num_entry_put failed [%d]", rtn);
+		return rtn;
+	}
+
+	return rtn;
 }
 
 int sl_test_mac_tx_start(void)
