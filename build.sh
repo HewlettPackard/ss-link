@@ -15,10 +15,10 @@ else
     git clone --branch "${CE_CONFIG_BRANCH}" https://$HPE_GITHUB_TOKEN@github.hpe.com/hpe/${CE_BUILD_SCRIPT_REPO}.git
 fi
 
-
 . ${CE_BUILD_SCRIPT_REPO}/build/sh/rpmbuild/load.sh
 
 setup_dst_env
 
 dst_build_rpm -c ${CE_BUILD_SCRIPT_REPO}/build/configs/sl.yaml $@
-#dst_build_deb --yamlfile ${CE_BUILD_SCRIPT_REPO}/build/configs/${CE_CONFIG_FILE} --ps ${PRODUCT} --main-branch "main" --main-quality-stream "main" $@
+cp sl-driver-scb.spec sl-driver.spec
+dst_build_deb --yamlfile ${CE_BUILD_SCRIPT_REPO}/build/configs/${CE_CONFIG_FILE} --ps ${PRODUCT} --main-branch "main" --main-quality-stream "main" $@
