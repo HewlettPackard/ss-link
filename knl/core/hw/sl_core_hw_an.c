@@ -508,6 +508,8 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	}
 	link_caps->pause_map = pause_map & my_caps->pause_map;
 	link_caps->fec_map   = fec_map & my_caps->fec_map;
+	//FIXME: SSHOTPLAT-6075 Workaround to support v1 switches.
+	link_caps->fec_map  |= SL_LGRP_CONFIG_FEC_RS;
 	link_caps->hpe_map   = hpe_map & my_caps->hpe_map;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
