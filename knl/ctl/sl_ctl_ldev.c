@@ -66,17 +66,25 @@ int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "client workqueue (workq = 0x%p)", ctl_ldev->workq);
 	}
 
+	ctl_ldev->notif_workq = alloc_workqueue("%s%u-notif", WQ_MEM_RECLAIM,
+		CONFIG_SL_DEFAULT_WQ_MAX_ACTIVE, "sl-ldev", ldev_num);
+	if (IS_ERR(ctl_ldev->notif_workq)) {
+		rtn = PTR_ERR(ctl_ldev->notif_workq);
+		sl_ctl_log_err(ctl_ldev, LOG_NAME, "alloc_workqueue notif failed [%d]", rtn);
+		goto out_del_wq;
+	}
+
 	rtn = sl_core_ldev_new(ldev_num, ctl_ldev->attr.accessors,
 		ctl_ldev->attr.ops, ctl_ldev->workq);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_ldev, LOG_NAME, "core_ldev_new failed [%d]", rtn);
-		goto out_del_wq;
+		goto out_del_notif_wq;
 	}
 
 	rtn = sl_media_ldev_new(ldev_num);
 	if (rtn) {
 		sl_ctl_log_err_trace(ctl_ldev, LOG_NAME, "media_ldev_new failed [%d]", rtn);
-		goto out_del_wq;
+		goto out_del_notif_wq;
 	}
 
 	spin_lock(&ctl_ldevs_lock);
@@ -86,6 +94,9 @@ int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "new (ldev = 0x%p)", ctl_ldev);
 
 	return 0;
+
+out_del_notif_wq:
+	destroy_workqueue(ctl_ldev->notif_workq);
 
 out_del_wq:
 	if (ctl_ldev->create_workq)
@@ -153,6 +164,8 @@ static void sl_ctl_ldev_release(struct kref *ref)
 
 	sl_core_ldev_del(ldev_num);
 	sl_media_ldev_del(ldev_num);
+
+	destroy_workqueue(ctl_ldev->notif_workq);
 
 	if (ctl_ldev->create_workq)
 		destroy_workqueue(ctl_ldev->workq);

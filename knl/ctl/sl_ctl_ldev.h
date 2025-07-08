@@ -37,6 +37,7 @@ struct sl_ctl_ldev {
 
 	struct sl_ldev_attr       attr;
 	struct workqueue_struct  *workq;
+	struct workqueue_struct  *notif_workq;
 	bool                      create_workq;
 	u64                       lgrp_map;
 

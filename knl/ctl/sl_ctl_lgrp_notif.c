@@ -204,7 +204,7 @@ int sl_ctl_lgrp_notif_enqueue(struct sl_ctl_lgrp *ctl_lgrp, u8 link_num,
 	}
 
 	/* Don't catch the return as it might already be running.  This is ok */
-	queue_work(ctl_lgrp->ctl_ldev->workq, &ctl_lgrp->notif_work);
+	queue_work(ctl_lgrp->ctl_ldev->notif_workq, &ctl_lgrp->notif_work);
 
 	return 0;
 }
