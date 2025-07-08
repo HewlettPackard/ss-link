@@ -117,7 +117,7 @@ function print_jack_state {
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
 		local temp=$(cat ${LGRP_PATH}/media/temperature_celcius)
 		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
-		if [ "${temp}" == "invalid_format" ] || [ "${temp}" == "no_cable" ] || [ "${temp}" == "not_active" ] || [ "${temp}" == "io_error" ] ; then
+		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
 		else
 			printf "           | temperature: ${temp}c (high = ${high_temp})\n"
@@ -243,7 +243,7 @@ function print_jack {
 	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
 
 
-	if [ "${length}" == "invalid_format" ] || [ "${length}" == "no_cable" ] ; then
+	if [ "${length}" == "invalid-format" ] || [ "${length}" == "no-cable" ] ; then
 		local units="";
 	else
 		local units="cm";
@@ -262,30 +262,42 @@ function print_jack {
 		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
 	fi
 	printf "           | speeds: "
+	local have_speed=no
         if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
-                printf "cd50 "
+                printf "cd50G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/bj100G ] ; then
-                printf "bj100 "
+                printf "bj100G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/cd100G ] ; then
-                printf "cd100 "
+                printf "cd100G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/bs200G ] ; then
-                printf "bs200 "
+                printf "bs200G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/ck100G ] ; then
-                printf "ck100 "
+                printf "ck100G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/ck200G ] ; then
-                printf "ck200 "
+                printf "ck200G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/ck400G ] ; then
-                printf "ck400 "
+                printf "ck400G "
+		have_speed=yes
         fi
         if [ -e ${LGRP_PATH}/media/speeds/ck800G ] ; then
-                printf "ck800 "
+                printf "ck800G "
+		have_speed=yes
         fi
+	if [ "${have_speed}" != "yes" ] ; then
+		printf "none "
+	fi
         printf "\n"
         printf "           | max_speed: ${max_speed}\n"
         printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
@@ -349,8 +361,18 @@ function print_link {
         printf "           |      hpe_caps          : ${caps_hpe}\n"
         printf "           | loopback               : ${loopback}\n"
         printf "           | degrade_state          : ${ald_state}\n"
-        printf "           | rx_degrade             : ${rx_degrade_state} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}Gbps)\n"
-        printf "           | tx_degrade             : ${tx_degrade_state} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}Gbps)\n"
+	if [ "${rx_degrade_state}" == "ald-inactive" ] ; then
+		local rx_units=""
+	else
+		local rx_units="Gbps"
+	fi
+        printf "           | rx_degrade             : ${rx_degrade_state} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
+	if [ "${tx_degrade_state}" == "ald-inactive" ] ; then
+		local tx_units=""
+	else
+		local tx_units="Gbps"
+	fi
+        printf "           | tx_degrade             : ${tx_degrade_state} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
 }
 
 function print_mac {
@@ -508,32 +530,63 @@ function print_fec {
         printf "           | mon_ucw_down_limit: ${mon_ucw_down_limit}, mon_ucw_warn_limit: ${mon_ucw_warn_limit}\n"
 }
 
-function print_fec_current {
+function print_fec_bins {
+        if [ ! -e ${LINK_PATH}/fec/up ] ; then
+                return
+        fi
         if [ ! -e ${LINK_PATH}/fec/current ] ; then
                 return
         fi
 
-        local ccw=$(cat ${LINK_PATH}/fec/current/ccw)
-        local ucw=$(cat ${LINK_PATH}/fec/current/ucw)
+        local up_ccw=$(cat ${LINK_PATH}/fec/up/ccw)
+        local current_ccw=$(cat ${LINK_PATH}/fec/current/ccw)
+        local up_ucw=$(cat ${LINK_PATH}/fec/up/ucw)
+        local current_ucw=$(cat ${LINK_PATH}/fec/current/ucw)
 
-        printf "           | current_ccw: ${ccw}, current_ucw: ${ucw}\n"
-        count=$(cat ${LINK_PATH}/fec/current/tail/bin00)
-        printf "           | current_bins: [00] ${count}\n"
+	if [ "${current_ccw}" == "no-link" ] || [ "${current_ucw}" == "no-link" ] ; then
+        	printf "           | ccw: no-link, ucw: no-link\n"
+	else
+        	printf "           | ccw: $((current_ccw-up_ccw)), ucw: $((current_ucw-up_ucw))\n"
+	fi
+
+        up_count=$(cat ${LINK_PATH}/fec/up/tail/bin00)
+        current_count=$(cat ${LINK_PATH}/fec/current/tail/bin00)
+	if [ "${current_count}" == "no-link" ] ; then
+        	printf "           | bins: [00] no-link\n"
+	else
+        	printf "           | bins: [00] $((current_count-up_count))\n"
+	fi
         for bin in {1..9} ; do
-                count=$(cat ${LINK_PATH}/fec/current/tail/bin0${bin})
-                printf "           |               [0${bin}] ${count}\n"
+                up_count=$(cat ${LINK_PATH}/fec/up/tail/bin0${bin})
+                current_count=$(cat ${LINK_PATH}/fec/current/tail/bin0${bin})
+		if [ "${current_count}" == "no-link" ] ; then
+                	printf "           |       [0${bin}] no-link\n"
+		else
+                	printf "           |       [0${bin}] $((current_count-up_count))\n"
+		fi
         done
         for bin in {10..14} ; do
-                count=$(cat ${LINK_PATH}/fec/current/tail/bin${bin})
-                printf "           |               [${bin}] ${count}\n"
+                up_count=$(cat ${LINK_PATH}/fec/up/tail/bin${bin})
+                current_count=$(cat ${LINK_PATH}/fec/current/tail/bin${bin})
+		if [ "${current_count}" == "no-link" ] ; then
+                	printf "           |       [${bin}] no-link\n"
+		else
+                	printf "           |       [${bin}] $((current_count-up_count))\n"
+		fi
         done
-        printf "           | current_fecls:         fecl0           fecl1           fecl2           fecl3\n"
+
+        printf "           | fecls:                 fecl0           fecl1           fecl2           fecl3\n"
         printf "           |            +----------------------------------------------------------------\n"
         for lane in {0..3} ; do
                 printf "           | %10s | " "lane${lane}"
                 for fecl in {0..3} ; do
-                        fecl=$(cat ${LINK_PATH}/fec/current/lane/${lane}/fecl${fecl})
-                        printf "%15s " ${fecl}
+                        up_fecl=$(cat ${LINK_PATH}/fec/up/lane/${lane}/fecl${fecl})
+                        current_fecl=$(cat ${LINK_PATH}/fec/current/lane/${lane}/fecl${fecl})
+			if [ "${current_count}" == "no-link" ] ; then
+                        	printf "%15s " "no-link"
+			else
+                        	printf "%15s " $((current_fecl-up_fecl))
+			fi
                 done
                 printf "\n"
         done
@@ -643,7 +696,7 @@ case $option in
                         print_llr_counters
                         print_serdes_settings
                         print_fec
-                        print_fec_current
+                        print_fec_bins
                 fi
                 exit
                 ;;
