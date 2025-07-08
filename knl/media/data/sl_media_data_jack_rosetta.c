@@ -353,55 +353,86 @@ static struct notifier_block event_notifier = {
 	.priority = 0,
 };
 
+static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 ldev_num,
+					struct sl_media_attr *media_attr)
+{
+	u8  i;
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr set");
+
+	for (i = 0; i < media_jack->jack_data.port_count; ++i) {
+		media_jack->cable_info[i].ldev_num = ldev_num;
+		media_jack->cable_info[i].lgrp_num = media_jack->jack_data.asic_port[i];
+		rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i], media_attr);
+		if (rtn) {
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
+			sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
+			return rtn;
+		}
+	}
+
+	return 0;
+}
+
 int sl_media_data_jack_scan(u8 ldev_num)
 {
 	u8                       jack_num;
 	u8                       physical_jack_num;
-	struct xcvr_status_data  status;
-	struct xcvr_jack_data    jack;
 	struct sl_media_jack    *media_jack;
+	struct sl_media_attr     media_attr;
 	void                    *hdl;
 	int                      rtn;
 	bool                     is_removed;
 
 	sl_media_log_dbg(NULL, LOG_NAME, "jack scan");
 
+	memset(&media_attr, 0, sizeof(struct sl_media_attr));
 	hdl = NULL;
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		media_jack = sl_media_data_jack_get(ldev_num, jack_num);
+
 		hdl = hsnxcvr_get_next_hdl(hdl);
 		if (!hdl) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET);
 			sl_media_log_err_trace(NULL, LOG_NAME, "hdl not found (jack_num = %u)", jack_num);
 			return 0;
 		}
-		rtn = hsnxcvr_status_get(hdl, &status);
-		if (rtn) {
-			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
-			sl_media_log_err(NULL, LOG_NAME, "status get failed (jack_num = %u)", jack_num);
-			continue;
-		}
-		rtn = hsnxcvr_jack_get(hdl, &jack);
+		media_jack->hdl = hdl;
+
+		rtn = hsnxcvr_jack_get(hdl, &media_jack->jack_data);
 		if (rtn) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET);
 			sl_media_log_err_trace(NULL, LOG_NAME, "jack_get failed (jack_num = %u)", jack_num);
 			continue;
 		}
 
-		rtn = kstrtou8(jack.name + 1, 10, &physical_jack_num);
+		rtn = kstrtou8(media_jack->jack_data.name + 1, 10, &physical_jack_num);
 		if (rtn) {
 			sl_media_log_err(NULL, LOG_NAME, "kstrtou8 failed [%d]", rtn);
 			return -EFAULT;
 		}
-		spin_lock(&media_jack->data_lock);
+
 		/*
 		 * Don't use media_jack in the log messages before this point as they
 		 * don't have real physical numbers yet
 		 */
+		spin_lock(&media_jack->data_lock);
 		media_jack->physical_num = physical_jack_num;
 		spin_unlock(&media_jack->data_lock);
 
-		if (status.flags & XCVR_PRESENT) {
+		rtn = hsnxcvr_status_get(hdl, &media_jack->status_data);
+		if (rtn) {
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
+			sl_media_log_err(media_jack, LOG_NAME, "status get failed (jack_num = %u)", jack_num);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
+			if (rtn)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			continue;
+		}
+
+		if (media_jack->status_data.flags & XCVR_PRESENT) {
 			/*
 			 * If the jack fails to come online, we set its state to Error and
 			 * continue the scan
@@ -421,8 +452,6 @@ int sl_media_data_jack_scan(u8 ldev_num)
 						media_jack->physical_num, rtn);
 				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			}
-		} else {
-			media_jack->jack_data = jack;
 		}
 	}
 
@@ -444,6 +473,10 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
 			sl_media_log_err(media_jack, LOG_NAME, "status get failed (jack_num = %u)",
 					media_jack->physical_num);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
+			if (rtn)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
 			continue;
 		}
 
@@ -466,8 +499,8 @@ void sl_media_data_jack_unregister_event_notifier(void)
 int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 {
 	int                   rtn;
+	int                   ret;
 	u32                   flags;
-	u8                    i;
 	struct sl_media_jack *media_jack;
 	struct sl_media_attr  media_attr;
 	u8                    count;
@@ -498,10 +531,20 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	media_jack->hdl = hdl;
 
+	memset(&media_attr, 0, sizeof(struct sl_media_attr));
+	media_attr.magic    = SL_MEDIA_ATTR_MAGIC;
+	media_attr.ver      = SL_MEDIA_ATTR_VER;
+	media_attr.errors   = 0;
+	media_attr.info     = 0;
+
 	rtn = hsnxcvr_jack_get(media_jack->hdl, &media_jack->jack_data);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "jack get failed [%d]", rtn);
+		media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+		if (ret)
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 		return rtn;
 	}
 
@@ -509,14 +552,12 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET);
 		sl_media_log_err(media_jack, LOG_NAME, "status get failed [%d]", rtn);
+		media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+		if (ret)
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 		return rtn;
 	}
-
-	memset(&media_attr, 0, sizeof(struct sl_media_attr));
-
-	media_attr.magic   = SL_MEDIA_ATTR_MAGIC;
-	media_attr.ver     = SL_MEDIA_ATTR_VER;
-	media_attr.options = 0;
 
 	switch (media_jack->jack_data.jack_type) {
 	case XCVR_JACK_BACKPLANE:
@@ -558,6 +599,10 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		default:
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			if (ret)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 			return rtn;
 		}
 
@@ -569,36 +614,35 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			return rtn;
 		}
 
-		rtn = sl_media_eeprom_parse(media_jack, &media_attr);
+		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
 		if (rtn) {
-			sl_media_log_err(media_jack, LOG_NAME, "eeprom parse failed [%d]", rtn);
-			if (sl_media_jack_is_cable_format_invalid(media_jack)) {
-				memset(&media_attr, 0, sizeof(struct sl_media_attr));
-				media_attr.options |= SL_MEDIA_OPT_CABLE_FORMAT_INVALID;
-				for (i = 0; i < media_jack->jack_data.port_count; ++i) {
-					media_jack->cable_info[i].ldev_num = ldev_num;
-					media_jack->cable_info[i].lgrp_num = media_jack->jack_data.asic_port[i];
-					rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i],
-										&media_attr);
-					if (rtn) {
-						sl_media_jack_fault_cause_set(media_jack,
-							SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
-						sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]",
-								 rtn);
-						return rtn;
-					}
-				}
-			}
+			memset(&media_attr, 0, sizeof(struct sl_media_attr));
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_INVALID;
+			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
+			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			if (ret)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 			return -EFAULT;
 		}
-		/*
-		 * disallow BJ100 speed on active cables
-		 */
-		if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC))
+
+		sl_media_eeprom_parse(media_jack, &media_attr);
+
+		if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
+			if (!sl_media_is_fw_version_valid(media_jack, &media_attr)) {
+				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
+				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
+			}
+			/*
+			 * disallow BJ100 speed on active cables
+			 */
 			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
+		}
+
+		if (media_attr.type == SL_MEDIA_TYPE_PEC)
+			media_attr.info |= SL_MEDIA_INFO_AUTONEG;
 
 		if (media_jack->is_ss200_cable)
-			media_attr.options |= SL_MEDIA_OPT_SS200_CABLE;
+			media_attr.info |= SL_MEDIA_INFO_SS200_CABLE;
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
@@ -608,13 +652,15 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 				media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
 				media_attr.type, sl_media_type_str(media_attr.type),
 				media_attr.length_cm, media_attr.speeds_map);
+
 			media_jack->is_cable_not_supported = true;
-			media_attr.options |= SL_MEDIA_OPT_CABLE_NOT_SUPPORTED;
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
+			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 		}
 	} else {
 		media_attr.vendor        = SL_MEDIA_VENDOR_HPE;
 		media_attr.type          = SL_MEDIA_TYPE_BKP;
-		media_attr.options       = SL_MEDIA_OPT_AUTONEG;
+		media_attr.info          = SL_MEDIA_INFO_AUTONEG;
 		media_attr.length_cm     = 25;
 		media_attr.hpe_pn        = 60821555;
 		media_attr.furcation     = SL_MEDIA_FURCATION_X1;
@@ -644,18 +690,30 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
+		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+		if (ret)
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 		return rtn;
 	}
 
-	for (i = 0; i < media_jack->jack_data.port_count; ++i) {
-		media_jack->cable_info[i].ldev_num = ldev_num;
-		media_jack->cable_info[i].lgrp_num = media_jack->jack_data.asic_port[i];
-		rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i], &media_attr);
+	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
+		media_attr.type == SL_MEDIA_TYPE_AEC) {
+		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
-			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
-			sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
+			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			if (ret)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 			return rtn;
 		}
+	}
+
+	rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+		return rtn;
 	}
 
 	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
@@ -665,15 +723,6 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 		else
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID);
-	}
-
-	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
-		media_attr.type == SL_MEDIA_TYPE_AEC) {
-		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
-		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
-			return rtn;
-		}
 	}
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);

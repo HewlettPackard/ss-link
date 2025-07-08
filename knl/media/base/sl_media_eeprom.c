@@ -19,40 +19,6 @@
 
 #define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
 
-#define IDENTIFIER_OFFSET    0
-#define REV_CMPL_OFFSET      1
-static int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
-{
-	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x0D) ||
-	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x11)) {
-		if (media_jack->eeprom_page0[REV_CMPL_OFFSET] < 0x27) {
-			*format = SL_MEDIA_MGMT_IF_SFF8636;
-			return 0;
-		}
-	}
-
-	if ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x18) ||
-	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] == 0x19) ||
-	    ((media_jack->eeprom_page0[IDENTIFIER_OFFSET] >= 0x1E) &&
-	    (media_jack->eeprom_page0[IDENTIFIER_OFFSET] <= 0x25))) {
-		if (((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x30) ||
-		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x40) ||
-		    ((media_jack->eeprom_page0[REV_CMPL_OFFSET] & 0xF0) == 0x50)) {
-			*format = SL_MEDIA_MGMT_IF_CMIS;
-			return 0;
-		}
-	}
-
-	media_jack->is_cable_format_invalid = true;
-
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID);
-	sl_media_log_err(media_jack, LOG_NAME,
-		"invalid format (id = 0x%X, rev = 0x%X)",
-		media_jack->eeprom_page0[IDENTIFIER_OFFSET], media_jack->eeprom_page0[REV_CMPL_OFFSET]);
-
-	return -EMEDIUMTYPE;
-}
-
 static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, u8 host_interface,
 					      u32 *speeds_map, u8 appsel_no, u8 lane_count)
 {
@@ -256,7 +222,7 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID);
 	sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom vendor get invalid");
 
-	return -EFAULT;
+	return 0;
 }
 
 static bool is_valid_char(char c)
@@ -409,7 +375,7 @@ static struct sl_media_fw_info fw_db[] = {
 		},
 };
 
-static bool sl_media_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
+bool sl_media_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	int i;
 
@@ -452,41 +418,67 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 	target_fw_str[target_fw_size - 1] = '\0';
 }
 
-int sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
+void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
-	u8 format;
-
 	sl_media_log_dbg(media_jack, LOG_NAME, "parse");
 
-	if (sl_media_eeprom_format_get(media_jack, &format)                                           ||
-		sl_media_eeprom_type_get(media_jack, format, &(media_attr->type))                     ||
-		sl_media_eeprom_vendor_get(media_jack, format, &(media_attr->vendor))                 ||
-		sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str) ||
-		sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str)                ||
-		sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str)                  ||
-		sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver)                            ||
-		sl_media_eeprom_cable_end_get(media_jack)                                             ||
-		sl_media_eeprom_length_get(media_jack, format, &(media_attr->length_cm))              ||
-		sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map))                ||
-		sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation)))
-		return -ENODATA;
-
-	if ((media_attr->type == SL_MEDIA_TYPE_AOC) || (media_attr->type == SL_MEDIA_TYPE_AEC))
-		if (!sl_media_is_fw_version_valid(media_jack, media_attr))
-			media_attr->options |= SL_MEDIA_OPT_CABLE_FW_INVALID;
-
-	if (media_attr->type == SL_MEDIA_TYPE_PEC)
-		media_attr->options |= SL_MEDIA_OPT_AUTONEG;
+	sl_media_eeprom_type_get(media_jack, media_attr->format, &(media_attr->type));
+	sl_media_eeprom_vendor_get(media_jack, media_attr->format, &(media_attr->vendor));
+	sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
+	sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str);
+	sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str);
+	sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver);
+	sl_media_eeprom_cable_end_get(media_jack);
+	sl_media_eeprom_length_get(media_jack, media_attr->format, &(media_attr->length_cm));
+	sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map));
+	sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation));
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X)",
 		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map);
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"parse (hpe_pn = %u, serial_num = %s, options = 0x%X)",
-		media_attr->hpe_pn, media_attr->serial_num_str, media_attr->options);
+		"parse (hpe_pn = %u, serial_num = %s, errors = 0x%X, info = 0x%X)",
+		media_attr->hpe_pn, media_attr->serial_num_str, media_attr->errors, media_attr->info);
 
-	return 0;
 }
+
+#define IDENTIFIER_OFFSET 0
+#define REV_CMPL_OFFSET   1
+int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
+{
+    u8   identifier;
+    u8   revision;
+    bool is_sff8636;
+    bool is_cmis;
+
+    sl_media_log_dbg(media_jack, LOG_NAME, "format get");
+
+    identifier = media_jack->eeprom_page0[IDENTIFIER_OFFSET];
+    revision   = media_jack->eeprom_page0[REV_CMPL_OFFSET];
+
+    is_sff8636 = (identifier == 0x0D || identifier == 0x11) && (revision < 0x27);
+    is_cmis    = ((identifier == 0x18) || (identifier == 0x19) || (identifier >= 0x1E && identifier <= 0x25)) &&
+                  ((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
+
+    if (is_sff8636) {
+        *format = SL_MEDIA_MGMT_IF_SFF8636;
+        sl_media_log_dbg(media_jack, LOG_NAME, "format (id = 0x%X, rev = 0x%X)", identifier, revision);
+        return 0;
+    }
+
+    if (is_cmis) {
+        *format = SL_MEDIA_MGMT_IF_CMIS;
+        sl_media_log_dbg(media_jack, LOG_NAME, "format (id = 0x%X, rev = 0x%X)", identifier, revision);
+        return 0;
+    }
+
+    media_jack->is_cable_format_invalid = true;
+    sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID);
+    sl_media_log_err(media_jack, LOG_NAME, "invalid format (id = 0x%X, rev = 0x%X)", identifier, revision);
+
+    return -EMEDIUMTYPE;
+}
+
 
 #define MEDIA_INTERFACE_CODE_OFFSET 87
 u8 sl_media_eeprom_media_interface_get(struct sl_media_jack *media_jack)

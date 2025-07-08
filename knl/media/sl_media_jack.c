@@ -245,7 +245,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8
 		if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
 			(media_lgrp->media_jack->lane_count_200_gaui != 0x44) ||
 			(media_lgrp->media_jack->host_interface_400_gaui == 0)) {
-			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO;
 			spin_unlock(&media_lgrp->media_jack->data_lock);
 			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
 					 "downshift check failed - invalid host interface and/or lane count");
@@ -255,7 +255,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8
 		if (((media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M) &&
 			(media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M)) ||
 			(media_lgrp->media_jack->lane_count_400_gaui != 0x44)) {
-			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO;
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO;
 			spin_unlock(&media_lgrp->media_jack->data_lock);
 			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
 					 "upshift check failed - invalid host interface and/or lane count");
@@ -297,9 +297,9 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
+	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
 		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID) {
+		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_INVALID) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
 			return 0;
 		}
@@ -346,9 +346,9 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	if (!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
+	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
 		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.options & SL_MEDIA_OPT_CABLE_FW_INVALID) {
+		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_INVALID) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
 			return 0;
 		}

@@ -50,13 +50,13 @@ int                   sl_media_lgrp_new(u8 ldev_num, u8 lgrp_num);
 void                  sl_media_lgrp_del(u8 ldev_num, u8 lgrp_num);
 struct sl_media_lgrp *sl_media_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
-void                  sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id);
+void sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id);
 
-void                  sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num);
-void                  sl_media_lgrp_real_cable_if_invalid_error_send(u8 ldev_num, u8 lgrp_num);
-void                  sl_media_lgrp_real_cable_incompatible_send(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num);
 
 void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
+bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp);
 bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num);
 void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 					     struct sl_media_serdes_settings *media_serdes_settings);

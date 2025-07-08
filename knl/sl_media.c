@@ -78,7 +78,7 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 		return "failed-fake-cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT:
 		return "failed-no-support";
-	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INAVLID_INFO:
+	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO:
 		return "failed-invalid-info";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED:
 		return "failed";
@@ -276,31 +276,41 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 }
 EXPORT_SYMBOL(sl_media_host_interface_str);
 
-const char *sl_media_opt_str(u32 option)
+const char *sl_media_info_str(u32 info)
 {
-	switch (option) {
-	case SL_MEDIA_OPT_AUTONEG:
+	switch (info) {
+	case SL_MEDIA_INFO_AUTONEG:
 		return "autoneg";
-	case SL_MEDIA_OPT_FAKE:
+	case SL_MEDIA_INFO_FAKE:
 		return "fake";
-	case SL_MEDIA_OPT_RESETTABLE:
+	case SL_MEDIA_INFO_RESETTABLE:
 		return "resettable";
-	case SL_MEDIA_OPT_LINKTRAIN:
+	case SL_MEDIA_INFO_LINKTRAIN:
 		return "linktrain";
-	case SL_MEDIA_OPT_CABLE_NOT_SUPPORTED:
-		return "not-supported";
-	case SL_MEDIA_OPT_CABLE_FORMAT_INVALID:
-		return "invalid-format";
-	case SL_MEDIA_OPT_SS200_CABLE:
+	case SL_MEDIA_INFO_SS200_CABLE:
 		return "SS200-cable";
-	case SL_MEDIA_OPT_CABLE_FW_INVALID:
-		return "fw-invalid";
 	default:
 		return "unknown";
 	}
-
 }
-EXPORT_SYMBOL(sl_media_opt_str);
+EXPORT_SYMBOL(sl_media_info_str);
+
+const char *sl_media_error_str(u32 error)
+{
+	switch (error) {
+	case SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED:
+		return "not-supported";
+	case SL_MEDIA_ERROR_CABLE_FORMAT_INVALID:
+		return "invalid-format";
+	case SL_MEDIA_ERROR_CABLE_FW_INVALID:
+		return "invalid-fw";
+	case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
+		return "headshell-fault";
+	default:
+		return "unknown";
+	}
+}
+EXPORT_SYMBOL(sl_media_error_str);
 
 const char *sl_media_jack_type_str(u32 jack_type, u32 density)
 {

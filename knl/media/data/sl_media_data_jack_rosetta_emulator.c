@@ -46,9 +46,9 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 
 	if (media_lgrp) {
 		if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_STASHED)
-			sl_media_data_jack_cable_not_present_send(media_lgrp);
+			sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 
-		sl_media_data_jack_cable_present_send(media_lgrp);
+		sl_media_data_jack_cable_if_present_send(media_lgrp);
 	}
 
 	return 0;
@@ -79,8 +79,8 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 	spin_unlock(&media_jack->data_lock);
 
 	if (media_lgrp) {
-		sl_media_data_jack_cable_not_present_send(media_lgrp);
+		sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 		if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED)
-			sl_media_data_jack_cable_present_send(media_lgrp);
+			sl_media_data_jack_cable_if_present_send(media_lgrp);
 	}
 }

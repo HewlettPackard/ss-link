@@ -439,7 +439,18 @@ bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_
 	bool is_policy_set;
 
 	spin_lock(&core_link->serdes.data_lock);
-	is_policy_set = (core_link->policy.options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) != 0;
+	is_policy_set = is_flag_set(core_link->policy.options, SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE);
+	spin_unlock(&core_link->serdes.data_lock);
+
+	return is_policy_set;
+}
+
+bool sl_core_link_policy_is_ignore_media_errors_set(struct sl_core_link *core_link)
+{
+	bool is_policy_set;
+
+	spin_lock(&core_link->serdes.data_lock);
+	is_policy_set = is_flag_set(core_link->policy.options, SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR);
 	spin_unlock(&core_link->serdes.data_lock);
 
 	return is_policy_set;

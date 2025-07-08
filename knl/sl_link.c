@@ -391,6 +391,8 @@ const char *sl_link_policy_opt_str(u32 option)
 		return "keep-serdes-up";
 	case SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE:
 		return "use-unsupported-cable";
+	case SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR:
+		return "ignore-media-error";
 	default:
 		return "unknown";
 	}
@@ -501,6 +503,9 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 			break;
 		case SL_LINK_DOWN_CAUSE_HIGH_TEMP:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "high-temp ");
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_ERROR:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-error ");
 			break;
 
 		case SL_LINK_DOWN_RETRYABLE:

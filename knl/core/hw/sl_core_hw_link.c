@@ -152,7 +152,18 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+
+		return;
+	}
+
+	if (sl_media_lgrp_media_has_error(media_lgrp) &&
+		!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
+
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -201,7 +212,7 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -292,7 +303,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -361,7 +372,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			   sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
 			   rtn = sl_core_link_up_fail(core_link);
 			   if (rtn)
-				   sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+				   sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			   return;
 		}
@@ -378,7 +389,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}
@@ -391,7 +402,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}
@@ -404,7 +415,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -418,7 +429,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -443,7 +454,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}
@@ -630,7 +641,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_PCS_FAULT_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -734,7 +745,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}
@@ -750,7 +761,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link down internal failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 		return;
 	}

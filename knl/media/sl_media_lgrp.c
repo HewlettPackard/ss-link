@@ -56,6 +56,18 @@ void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
+bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp)
+{
+	struct sl_media_attr media_attr;
+
+	sl_media_lgrp_media_attr_get(media_lgrp->media_ldev->num, media_lgrp->num, &media_attr);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media has error");
+
+	return ((media_attr.errors & (SL_MEDIA_ERROR_CABLE_FORMAT_INVALID |
+				      SL_MEDIA_ERROR_CABLE_FW_INVALID)) != 0);
+}
+
 void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 	struct sl_media_serdes_settings *media_serdes_settings)
 {
@@ -87,30 +99,21 @@ void sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num)
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+
 	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if present send");
-	sl_media_data_jack_cable_present_send(media_lgrp);
+
+	sl_media_data_jack_cable_if_present_send(media_lgrp);
 }
 
-void sl_media_lgrp_real_cable_if_invalid_error_send(u8 ldev_num, u8 lgrp_num)
-{
-	struct sl_media_lgrp *media_lgrp;
-
-	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if invalid error send");
-	if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
-		sl_media_data_jack_cable_error_send(media_lgrp);
-}
-
-void sl_media_lgrp_real_cable_incompatible_send(u8 ldev_num, u8 lgrp_num)
+void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num)
 {
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable incompatible send");
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if not present send");
 
-// FIXME: temp don't send to aviod coordinated merge
-//	sl_media_data_jack_cable_error_send(media_lgrp);
+	sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 }
 
 u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)

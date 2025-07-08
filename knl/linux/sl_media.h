@@ -79,14 +79,17 @@ enum sl_media_shape {
 #define SL_MEDIA_SPEEDS_SUPPORT_CK_800G BIT(7)
 #define SL_MEDIA_SPEEDS_SUPPORT_INVALID BIT(8)
 
-#define SL_MEDIA_OPT_AUTONEG              BIT(0)
-#define SL_MEDIA_OPT_FAKE                 BIT(1)
-#define SL_MEDIA_OPT_RESETTABLE           BIT(2)
-#define SL_MEDIA_OPT_LINKTRAIN            BIT(3)
-#define SL_MEDIA_OPT_CABLE_NOT_SUPPORTED  BIT(4)
-#define SL_MEDIA_OPT_CABLE_FORMAT_INVALID BIT(5)
-#define SL_MEDIA_OPT_SS200_CABLE          BIT(6)
-#define SL_MEDIA_OPT_CABLE_FW_INVALID     BIT(7)
+#define SL_MEDIA_INFO_AUTONEG      BIT(0)
+#define SL_MEDIA_INFO_FAKE         BIT(1)
+#define SL_MEDIA_INFO_RESETTABLE   BIT(2)
+#define SL_MEDIA_INFO_LINKTRAIN    BIT(3)
+#define SL_MEDIA_INFO_SS200_CABLE  BIT(4)
+
+#define SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED   BIT(0)
+#define SL_MEDIA_ERROR_CABLE_FORMAT_INVALID  BIT(1)
+#define SL_MEDIA_ERROR_CABLE_FW_INVALID      BIT(2)
+#define SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT BIT(3)
+#define SL_MEDIA_ERROR_TRYABLE               BIT(31)
 
 #define SL_MEDIA_QSFP_DENSITY_INVALID  0
 #define SL_MEDIA_QSFP_DENSITY_SINGLE   1
@@ -116,12 +119,13 @@ struct sl_media_qsfp {
 #define SL_MEDIA_FIRMWARE_VERSION_SIZE 2
 
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
-#define SL_MEDIA_ATTR_VER   9
+#define SL_MEDIA_ATTR_VER   10
 struct sl_media_attr {
 	u32 magic;
 	u32 ver;
 	u32 size;
 
+	u8  format;
 	u32 type;
 	u32 vendor;
 	u32 length_cm;
@@ -141,7 +145,8 @@ struct sl_media_attr {
 		struct sl_media_qsfp qsfp;
 	} jack_type_info;
 
-	u32 options;
+	u32 info;
+	u32 errors;
 };
 
 struct sl_lgrp;
@@ -165,7 +170,8 @@ const char *sl_media_vendor_str(u32 vendor);
 const char *sl_media_speed_str(u32 speed);
 const char *sl_media_ber_str(u8 media_interface);
 const char *sl_media_host_interface_str(u32 speed, u32 type);
-const char *sl_media_opt_str(u32 option);
+const char *sl_media_info_str(u32 info);
+const char *sl_media_error_str(u32 error);
 const char *sl_media_jack_type_str(u32 jack_type, u32 density);
 
 #endif /* _LINUX_SL_MEDIA_H_ */

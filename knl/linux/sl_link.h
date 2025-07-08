@@ -123,7 +123,8 @@ struct sl_link_degrade_info {
 };
 
 #define SL_LINK_POLICY_OPT_KEEP_SERDES_UP        BIT(0) /* Keep serdes running when link is down */
-#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE BIT(1) /* Try to bring the link up even if cable is not supported*/
+#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE BIT(1) /* Try to bring the link up even if cable is not supported */
+#define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR    BIT(2) /* Try to bring the link up even if media has errors */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 
@@ -156,6 +157,7 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_CCW               BIT(26) /* link up or fec mon CCW limit crossed */
 #define SL_LINK_DOWN_CAUSE_HIGH_TEMP         BIT(27) /* active cable too hot                 */
 #define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(28) /* link up interrupt register failure   */
+#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(29) /* media has errors                     */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */

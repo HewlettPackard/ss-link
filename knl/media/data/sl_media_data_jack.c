@@ -96,8 +96,7 @@ void sl_media_data_cable_serdes_settings_clr(struct sl_media_jack *media_jack)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "serdes settings clr");
 
-	memset(&(media_jack->serdes_settings), 0,
-			sizeof(struct sl_media_serdes_settings));
+	memset(&(media_jack->serdes_settings), 0, sizeof(struct sl_media_serdes_settings));
 }
 
 void sl_media_data_jack_eeprom_clr(struct sl_media_jack *media_jack)
@@ -136,7 +135,7 @@ int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
 		cable_info->real_cable_status = CABLE_MEDIA_ATTR_ADDED;
 		spin_unlock(&media_jack->data_lock);
 		if (media_lgrp)
-			sl_media_data_jack_cable_present_send(media_lgrp);
+			sl_media_data_jack_cable_if_present_send(media_lgrp);
 	}
 
 	return 0;
@@ -166,59 +165,43 @@ void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 	if (media_lgrp) {
 		/* Only send notification if both real and fake cables are removed */
 		if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_REMOVED)
-			sl_media_data_jack_cable_not_present_send(media_lgrp);
+			sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 	}
 }
 
-void sl_media_data_jack_cable_present_send(struct sl_media_lgrp *media_lgrp)
+void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp)
 {
-	int                       rtn;
-	union sl_lgrp_notif_info  info;
+	int                      rtn;
+	union sl_lgrp_notif_info info;
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "present send");
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
-	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED ||
-				media_lgrp->cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		spin_unlock(&media_lgrp->media_jack->data_lock);
+	if ((media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) ||
+		(media_lgrp->cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED)) {
 		info.media_attr = media_lgrp->cable_info->media_attr;
 		rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
 			SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_PRESENT, &info, 0);
 		if (rtn)
 			sl_media_log_warn_trace(media_lgrp, LOG_NAME,
 				"present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
-		return;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
-void sl_media_data_jack_cable_not_present_send(struct sl_media_lgrp *media_lgrp)
+void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lgrp)
 {
 	int rtn;
 
 	sl_media_log_dbg(media_lgrp, LOG_NAME, "not present send");
 
-	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
-		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NOT_PRESENT, NULL, 0);
-	if (rtn)
-		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
-			"not_present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
-}
-
-void sl_media_data_jack_cable_error_send(struct sl_media_lgrp *media_lgrp)
-{
-	int                      rtn;
-	union sl_lgrp_notif_info info;
-
-	sl_media_log_dbg(media_lgrp, LOG_NAME, "error send");
-
-	/*
-	 * error info in media_attr.options
-	 */
-	info.media_attr = media_lgrp->cable_info->media_attr;
-	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
-		SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_ERROR, &info, 0);
-	if (rtn)
-		sl_media_log_warn_trace(media_lgrp, LOG_NAME,
-			"error_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_REMOVED) {
+		rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num),
+			SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NOT_PRESENT, NULL, 0);
+		if (rtn)
+			sl_media_log_warn_trace(media_lgrp, LOG_NAME,
+				"not_present_send ctl_lgrp_notif_enqueue failed [%d]", rtn);
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
