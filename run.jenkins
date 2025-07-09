@@ -4,5 +4,5 @@ DIR=$(cd $(dirname $0) && pwd)
 
 PRODUCT=slingshot-host-software \
 CE_CONFIG_FILE=sl.yaml \
-CE_CONFIG_BRANCH="ubuntu" \
+CE_CONFIG_BRANCH="main" \
   bash -x $DIR/build.sh -n $@
