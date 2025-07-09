@@ -15,7 +15,6 @@ else
     git clone --branch "${CE_CONFIG_BRANCH}" https://$HPE_GITHUB_TOKEN@github.hpe.com/hpe/${CE_BUILD_SCRIPT_REPO}.git
 fi
 
-cp sl-driver-scb.spec sl-driver.spec
 
 . ${CE_BUILD_SCRIPT_REPO}/build/sh/rpmbuild/load.sh
 
