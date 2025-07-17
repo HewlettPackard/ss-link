@@ -1235,6 +1235,11 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	return 0;
 }
 
+#define LED_OFF        XCVR_LED_OFF
+#define LED_ON_GRN     XCVR_LED_A_STEADY
+#define LED_FAST_GRN   XCVR_LED_A_FAST
+#define LED_ON_AMBER   XCVR_LED_B_STEADY
+#define LED_FAST_AMBER XCVR_LED_B_FAST
 void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "link led set (state = %u)", link_state);
@@ -1245,14 +1250,14 @@ void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_
 	case SL_CORE_LINK_STATE_DOWN:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
-		sl_media_io_led_set(media_jack, XCVR_LED_OFF);
+		sl_media_io_led_set(media_jack, LED_OFF);
 		break;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
-		sl_media_io_led_set(media_jack, XCVR_LED_A_FAST);
+		sl_media_io_led_set(media_jack, LED_FAST_GRN);
 		break;
 	case SL_CORE_LINK_STATE_UP:
-		sl_media_io_led_set(media_jack, XCVR_LED_A_STEADY);
+		sl_media_io_led_set(media_jack, LED_ON_GRN);
 		break;
 	}
 }
@@ -1263,13 +1268,13 @@ void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 j
 
 	switch (jack_state) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
-		sl_media_io_led_set(media_jack, XCVR_LED_OFF);
+		sl_media_io_led_set(media_jack, LED_OFF);
 		break;
 	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
-		sl_media_io_led_set(media_jack, XCVR_LED_A_STEADY);
+		sl_media_io_led_set(media_jack, LED_ON_AMBER);
 		break;
 	case SL_MEDIA_JACK_CABLE_ERROR:
-		sl_media_io_led_set(media_jack, XCVR_LED_B_FAST);
+		sl_media_io_led_set(media_jack, LED_FAST_AMBER);
 		break;
 	}
 }
