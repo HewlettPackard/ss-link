@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 
@@ -18,12 +18,11 @@ int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info)
 
 	rtn = sl_link_check(link);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK,
-			LOG_NAME, "fec info get failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fec info get fail");
 		return rtn;
 	}
 	if (!fec_info) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME, "NULL fec_info");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL fec_info");
 		return -EINVAL;
 	}
 
@@ -37,12 +36,11 @@ int sl_fec_tail_get(struct sl_link *link, struct sl_fec_tail *fec_tail)
 
 	rtn = sl_link_check(link);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK,
-			LOG_NAME, "fec tail get failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fec tail get fail");
 		return rtn;
 	}
 	if (!fec_tail) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME, "NULL fec_tail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL fec_tail");
 		return -EINVAL;
 	}
 

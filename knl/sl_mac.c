@@ -81,15 +81,13 @@ struct sl_mac *sl_mac_new(struct sl_lgrp *lgrp, u8 mac_num, struct kobject *sysf
 		return ERR_PTR(rtn);
 	}
 	if (mac_num >= SL_ASIC_MAX_LINKS) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"invalid (mac_num = %u)", mac_num);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid (mac_num = %u)", mac_num);
 		return ERR_PTR(-EINVAL);
 	}
 
 	rtn = sl_ctl_mac_new(lgrp->ldev_num, lgrp->num, mac_num, sysfs_parent);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"ctl_mac_new failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
 	}
 

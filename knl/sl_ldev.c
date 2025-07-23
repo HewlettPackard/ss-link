@@ -116,15 +116,6 @@ static int sl_ldev_attr_check(struct sl_ldev_attr *ldev_attr)
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops mb_info_get");
 		return -EINVAL;
 	}
-
-	/* Optional operations for use on systems supporting DMAC */
-	if (!ldev_attr->ops->dmac_alloc)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_alloc");
-	if (!ldev_attr->ops->dmac_free)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_free");
-	if (!ldev_attr->ops->dmac_xfer)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_xfer");
-
 	if (!ldev_attr->accessors->pci) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL accessor PCI");
 		return -EINVAL;
@@ -150,9 +141,24 @@ static int sl_ldev_attr_check(struct sl_ldev_attr *ldev_attr)
 		return -EINVAL;
 	}
 
-	/* Optional accessors for use on systems supporting DMAC */
-	if (!ldev_attr->accessors->dmac)
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "NULL accessor DMAC");
+#ifdef BUILDSYS_FRAMEWORK_CASSINI
+	if (!ldev_attr->ops->dmac_alloc) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_alloc");
+		return -EINVAL;
+	}
+	if (!ldev_attr->ops->dmac_free) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_free");
+		return -EINVAL;
+	}
+	if (!ldev_attr->ops->dmac_xfer) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops dmac_xfer");
+		return -EINVAL;
+	}
+	if (!ldev_attr->accessors->dmac) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL accessor DMAC");
+		return -EINVAL;
+	}
+#endif /* BUILDSYS_FRAMEWORK_CASSINI */
 
 	return 0;
 }
@@ -164,19 +170,11 @@ int sl_ldev_uc_ops_set(struct sl_ldev *ldev, struct sl_uc_ops *uc_ops,
 
 	rtn = sl_ldev_check(ldev);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "uc ops set fail");
 		return rtn;
 	}
 
-	sl_log_dbg(ldev, LOG_BLOCK, LOG_NAME, "uc ops_set");
-
-	rtn = sl_media_ldev_uc_ops_set(ldev->num, uc_ops, uc_accessor);
-	if (rtn) {
-		sl_log_err(ldev, LOG_BLOCK, LOG_NAME, "media_ldev_uc_ops_set failed [%d]", rtn);
-		return rtn;
-	}
-
-	return 0;
+	return sl_media_ldev_uc_ops_set(ldev->num, uc_ops, uc_accessor);
 }
 #ifdef BUILDSYS_FRAMEWORK_CASSINI
 EXPORT_SYMBOL(sl_ldev_uc_ops_set);
@@ -188,13 +186,12 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num,
 	int rtn;
 
 	if (ldev_num >= SL_ASIC_MAX_LDEVS) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"invalid (ldev_num = %u)", ldev_num);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid (ldev_num = %u)", ldev_num);
 		return ERR_PTR(-EINVAL);
 	}
 	rtn = sl_ldev_attr_check(ldev_attr);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
 	}
 
@@ -210,12 +207,11 @@ EXPORT_SYMBOL(sl_ldev_new);
 
 int sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent)
 {
-	int                 rtn;
-	struct sl_ctl_ldev *ctl_ldev;
+	int rtn;
 
 	rtn = sl_ldev_check(ldev);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "parent set fail");
 		return rtn;
 	}
 	if (!parent) {
@@ -223,14 +219,7 @@ int sl_ldev_sysfs_parent_set(struct sl_ldev *ldev, struct kobject *parent)
 		return -EINVAL;
 	}
 
-	rtn = sl_sysfs_ldev_create(ldev->num, parent);
-	if (rtn) {
-		sl_log_err_trace(ctl_ldev, LOG_BLOCK, LOG_NAME,
-			"sysfs_ldev_create failed");
-		return -ENOMEM;
-	}
-
-	return 0;
+	return sl_sysfs_ldev_create(ldev->num, parent);
 }
 EXPORT_SYMBOL(sl_ldev_sysfs_parent_set);
 
@@ -240,7 +229,7 @@ int sl_ldev_serdes_init(struct sl_ldev *ldev)
 
 	rtn = sl_ldev_check(ldev);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "serdes init fail");
 		return rtn;
 	}
 
@@ -254,7 +243,7 @@ int sl_ldev_del(struct sl_ldev *ldev)
 
 	rtn = sl_ldev_check(ldev);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "del fail");
 		return rtn;
 	}
 

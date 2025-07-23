@@ -112,17 +112,18 @@ struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num)
 }
 
 int sl_media_data_ldev_uc_ops_set(u8 ldev_num, struct sl_uc_ops *uc_ops,
-				struct sl_uc_accessor *uc_accessor)
+				  struct sl_uc_accessor *uc_accessor)
 {
 	struct sl_media_ldev *media_ldev;
 
 	media_ldev = sl_media_ldev_get(ldev_num);
 	if (!media_ldev) {
-		sl_media_log_err(NULL, LOG_NAME, "ldev not found (ldev_num = %u)", ldev_num);
+		sl_media_log_err(NULL, LOG_NAME,
+			"uc_ops_set ldev not found (ldev_num = %u)", ldev_num);
 		return -EINVAL;
 	}
 
-	sl_media_log_dbg(media_ldev, LOG_NAME, "media_data_ldev_uc_ops_set");
+	sl_media_log_dbg(media_ldev, LOG_NAME, "uc_ops_set");
 
 	media_ldev->uc_ops = uc_ops;
 	media_ldev->uc_accessor = uc_accessor;

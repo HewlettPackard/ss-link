@@ -223,7 +223,7 @@ static const struct file_operations sl_test_link_cmds_fops = {
 	.release = single_release,
 };
 
-void sl_test_port_num_sysfs_release(struct kobject *kobj)
+static void sl_test_port_num_sysfs_release(struct kobject *kobj)
 {
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 		"test_port_num_sysfs_release (kobj = 0x%p)", kobj);

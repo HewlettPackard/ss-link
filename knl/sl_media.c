@@ -19,11 +19,11 @@ int sl_media_headshell_temp_get(struct sl_lgrp *lgrp, u8 *temp)
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "temp get fail [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "headshell temp get fail");
 		return rtn;
 	}
 	if (!temp) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL temp");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL temp");
 		return -EINVAL;
 	}
 

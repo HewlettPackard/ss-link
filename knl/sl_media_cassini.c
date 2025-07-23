@@ -19,11 +19,11 @@ int sl_media_cable_insert(struct sl_lgrp *lgrp, u8 *eeprom_page0, u8 *eeprom_pag
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cable insert fail [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cable insert fail");
 		return rtn;
 	}
 	if (!eeprom_page0) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL eeprom");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL eeprom");
 		return -EINVAL;
 	}
 
@@ -41,7 +41,7 @@ int sl_media_cable_remove(struct sl_lgrp *lgrp)
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cable remove fail [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cable remove fail");
 		return rtn;
 	}
 

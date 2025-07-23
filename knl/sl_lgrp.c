@@ -120,17 +120,11 @@ int sl_lgrp_hw_attr_set(struct sl_lgrp *lgrp, struct sl_hw_attr *hw_attr)
 		return rtn;
 	}
 	if (!hw_attr) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL hw_attr");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL hw_attr");
 		return -EINVAL;
 	}
 
-	rtn = sl_core_lgrp_hw_attr_set(lgrp->ldev_num, lgrp->num, hw_attr);
-	if (rtn) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "core_lgrp_hw_attr_set failed [%d]", rtn);
-		return rtn;
-	}
-
-	return 0;
+	return sl_core_lgrp_hw_attr_set(lgrp->ldev_num, lgrp->num, hw_attr);
 }
 EXPORT_SYMBOL(sl_lgrp_hw_attr_set);
 
@@ -144,15 +138,13 @@ struct sl_lgrp *sl_lgrp_new(struct sl_ldev *ldev, u8 lgrp_num, struct kobject *s
 		return ERR_PTR(rtn);
 	}
 	if (lgrp_num >= SL_ASIC_MAX_LGRPS) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"invalid (lgrp_num = %u)", lgrp_num);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid (lgrp_num = %u)", lgrp_num);
 		return ERR_PTR(-EINVAL);
 	}
 
 	rtn = sl_ctl_lgrp_new(ldev->num, lgrp_num, sysfs_parent);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"ctl_lgrp_new failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -180,12 +172,12 @@ int sl_lgrp_config_set(struct sl_lgrp *lgrp, struct sl_lgrp_config *lgrp_config)
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "config set check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "config set fail");
 		return rtn;
 	}
 	rtn = sl_lgrp_config_check(lgrp_config);
 	if (rtn) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "config set config check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "config set fail");
 		return rtn;
 	}
 
@@ -204,7 +196,7 @@ int sl_lgrp_policy_set(struct sl_lgrp *lgrp, struct sl_lgrp_policy *lgrp_policy)
 	}
 	rtn = sl_lgrp_policy_check(lgrp_policy);
 	if (rtn) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "policy set fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "policy set fail");
 		return rtn;
 	}
 
@@ -223,7 +215,7 @@ int sl_lgrp_notif_callback_reg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 		return rtn;
 	}
 	if (!callback) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL callback");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL callback");
 		return -EINVAL;
 	}
 
@@ -242,7 +234,7 @@ int sl_lgrp_notif_callback_unreg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 		return rtn;
 	}
 	if (!callback) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL callback");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL callback");
 		return -EINVAL;
 	}
 
@@ -260,7 +252,7 @@ int sl_lgrp_connect_id_set(struct sl_lgrp *lgrp, const char *connect_id)
 		return rtn;
 	}
 	if (!connect_id) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "NULL connect_id");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL connect_id");
 		return -EINVAL;
 	}
 
@@ -292,9 +284,9 @@ EXPORT_SYMBOL(sl_lgrp_config_tech_str);
 const char *sl_lgrp_config_fec_str(u32 config)
 {
 	if (config == SL_LGRP_CONFIG_FEC_RS_LL)
-		return "reed-soloman-low-latency";
+		return "reed-solomon-low-latency";
 	if (config == SL_LGRP_CONFIG_FEC_RS)
-		return "reed-soloman";
+		return "reed-solomon";
 
 	return "unknown";
 }

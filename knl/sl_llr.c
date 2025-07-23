@@ -126,15 +126,13 @@ struct sl_llr *sl_llr_new(struct sl_lgrp *lgrp, u8 llr_num, struct kobject *sysf
 		return ERR_PTR(rtn);
 	}
 	if (llr_num >= SL_ASIC_MAX_LINKS) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"invalid (llr_num = %u)", llr_num);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid (llr_num = %u)", llr_num);
 		return ERR_PTR(-EINVAL);
 	}
 
 	rtn = sl_ctl_llr_new(lgrp->ldev_num, lgrp->num, llr_num, sysfs_parent);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"ctl_llr_new failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -167,7 +165,7 @@ int sl_llr_config_set(struct sl_llr *llr, struct sl_llr_config *llr_config)
 	}
 	rtn = sl_llr_config_check(llr_config);
 	if (rtn) {
-		sl_log_err(llr, LOG_BLOCK, LOG_NAME, "config set fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "config set fail");
 		return rtn;
 	}
 
@@ -186,7 +184,7 @@ int sl_llr_policy_set(struct sl_llr *llr, struct sl_llr_policy *llr_policy)
 	}
 	rtn = sl_llr_policy_check(llr_policy);
 	if (rtn) {
-		sl_log_err(llr, LOG_BLOCK, LOG_NAME, "policy set fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "policy set fail");
 		return rtn;
 	}
 

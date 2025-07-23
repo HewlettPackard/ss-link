@@ -19,13 +19,14 @@ int sl_media_fake_headshell_insert(struct sl_lgrp *lgrp,  struct sl_media_attr *
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fake headshell insert failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fake headshell insert fail");
 		return rtn;
 	}
 	if (!media_attr) {
-		sl_log_err(lgrp, LOG_BLOCK, LOG_NAME, "Invalid media attr");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid media attr");
 		return -EINVAL;
 	}
+
 	return sl_media_jack_fake_cable_insert(lgrp->ldev_num, lgrp->num, media_attr);
 }
 EXPORT_SYMBOL(sl_media_fake_headshell_insert);
@@ -36,9 +37,10 @@ int sl_media_fake_headshell_remove(struct sl_lgrp *lgrp)
 
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fake headshell remove failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fake headshell remove fail");
 		return -EINVAL;
 	}
+
 	sl_media_jack_fake_cable_remove(lgrp->ldev_num, lgrp->num);
 
 	return 0;

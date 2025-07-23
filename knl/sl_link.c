@@ -126,15 +126,13 @@ struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *s
 		return ERR_PTR(rtn);
 	}
 	if (link_num >= SL_ASIC_MAX_LINKS) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"invalid (link_num = %u)", link_num);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "invalid (link_num = %u)", link_num);
 		return ERR_PTR(-EINVAL);
 	}
 
 	rtn = sl_ctl_link_new(lgrp->ldev_num, lgrp->num, link_num, sysfs_parent);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"ctl_link_link_new failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -162,14 +160,12 @@ int sl_link_config_set(struct sl_link *link, struct sl_link_config *link_config)
 
 	rtn = sl_link_check(link);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"config link_check set fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "link config set fail");
 		return rtn;
 	}
 	rtn = sl_link_config_check(link_config);
 	if (rtn) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME,
-			"config set link_config_check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "link config set fail");
 		return rtn;
 	}
 
@@ -184,14 +180,12 @@ int sl_link_policy_set(struct sl_link *link, struct sl_link_policy *link_policy)
 
 	rtn = sl_link_check(link);
 	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"policy set link_check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "policy set fail");
 		return rtn;
 	}
 	rtn = sl_link_policy_check(link_policy);
 	if (rtn) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME,
-			"policy set link_policy_check fail");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "policy set fail");
 		return rtn;
 	}
 
@@ -209,11 +203,11 @@ int sl_link_an_lp_caps_get(struct sl_link *link, struct sl_link_caps *caps, u32 
 		return rtn;
 	}
 	if (!caps) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME, "NULL caps");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL caps");
 		return -EINVAL;
 	}
 	if (timeout_ms == 0) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME, "0 timeout");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "0 timeout");
 		return -EINVAL;
 	}
 
@@ -304,7 +298,7 @@ int sl_link_state_get(struct sl_link *link, u32 *state)
 		return rtn;
 	}
 	if (!state) {
-		sl_log_err(link, LOG_BLOCK, LOG_NAME, "NULL state");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL state");
 		return -EINVAL;
 	}
 
@@ -426,7 +420,6 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 	str_pos = 0;
 
 	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "bit = %d", which);
 
 		switch (BIT(which)) {
 		case SL_LINK_DOWN_CAUSE_UCW:
