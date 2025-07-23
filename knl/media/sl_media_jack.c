@@ -425,16 +425,16 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO:
 		return "shift-down-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET:
-		return "shift-down-low-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET:
-		return "shift-down-high-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET:
+		return "shift-down-jack-io-low-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET:
+		return "shift-down-jack-io-high-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO:
 		return "shift-up-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET:
-		return "shift-up-low-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET:
-		return "shift-up-high-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET:
+		return "shift-up-jack-io-low-power-set";
+	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET:
+		return "shift-up-jack-io-high-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO:
 		return "shift-state-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_OFFLINE:

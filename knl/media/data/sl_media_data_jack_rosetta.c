@@ -793,7 +793,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_LOW_POWER_SET);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -864,7 +864,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_HIGH_POWER_SET);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -994,7 +994,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_LOW_POWER_SET);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
 		return rtn;
 	}
@@ -1065,7 +1065,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_HIGH_POWER_SET);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
