@@ -1309,6 +1309,15 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"fault intr work link up disable failed [%d]", rtn);
 
+	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
+	    (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+		rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+						 sl_core_hw_intr_hdlr);
+		if (rtn != 0)
+			sl_core_log_warn(core_link, LOG_NAME,
+					 "fault intr - lane degrade unregister failed [%d]", rtn);
+	}
+
 	if (core_link->config.fault_intr_hdlr)
 		core_link->config.fault_intr_hdlr(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num);
