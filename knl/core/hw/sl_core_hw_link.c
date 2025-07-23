@@ -64,7 +64,7 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	sl_core_hw_serdes_link_down(core_link);
 
-	/* reset LLR to reset ordered sets */
+	/* resetting the link resets the LLR which is needed to reset ordered sets */
 	sl_core_hw_reset_link(core_link);
 
 	if (core_mac) {

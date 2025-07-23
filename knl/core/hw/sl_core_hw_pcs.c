@@ -304,5 +304,8 @@ bool sl_core_hw_pcs_is_ok(struct sl_core_link *core_link)
 
 	sl_core_read64(core_link, SS2_PORT_PML_STS_RX_PCS_SUBPORT(core_link->num), &data64);
 
-	return (SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) != 0);
+	return ((SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) != 0) &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_FAULT_GET(data64) == 0)        &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(data64) == 0)  &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_HI_SER_GET(data64) == 0));
 }
