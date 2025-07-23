@@ -289,14 +289,15 @@ void sl_core_hw_pcs_stop(struct sl_core_link *core_link)
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
 
 	sl_core_flush64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num));
-
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_PCS_LINK_UP);
 }
 
 bool sl_core_hw_pcs_is_ok(struct sl_core_link *core_link)
 {
-	u64 data64;
-	u32 port;
+	u64  data64;
+	u32  port;
+	bool pcs_is_ok;
+
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_CHECK);
 
 	port = core_link->core_lgrp->num;
 
@@ -304,8 +305,17 @@ bool sl_core_hw_pcs_is_ok(struct sl_core_link *core_link)
 
 	sl_core_read64(core_link, SS2_PORT_PML_STS_RX_PCS_SUBPORT(core_link->num), &data64);
 
-	return ((SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) != 0) &&
-		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_FAULT_GET(data64) == 0)        &&
-		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(data64) == 0)  &&
+	pcs_is_ok = ((SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) != 0) &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_FAULT_GET(data64) == 0)             &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(data64) == 0)       &&
 		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_HI_SER_GET(data64) == 0));
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_PCS_CHECK);
+
+	if (pcs_is_ok)
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_OK);
+	else
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_PCS_OK);
+
+	return pcs_is_ok;
 }

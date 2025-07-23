@@ -10,6 +10,7 @@
 #include "sl_ctl_ldev.h"
 #include "sl_ctl_link_priv.h"
 #include "sl_core_link.h"
+#include "sl_core_str.h"
 #include "hw/sl_core_hw_an.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -487,6 +488,31 @@ static ssize_t tx_degrade_link_speed_gbps_show(struct kobject *kobj, struct kobj
 	return scnprintf(buf, PAGE_SIZE, "%u\n", tx_degrade_link_speed);
 }
 
+static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                 rtn;
+	struct sl_ctl_link  *ctl_link;
+	u64                 info_map;
+	char                info_map_str[900];
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	rtn = sl_ctl_link_info_map_get(ctl_link->ctl_lgrp->ctl_ldev->num,
+		ctl_link->ctl_lgrp->num, ctl_link->num, &info_map);
+	if (rtn) {
+		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
+			"info map show sl_ctl_link_info_map_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+	}
+
+	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"info map show (info_map = 0x%llX %s)", info_map, info_map_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
+}
+
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
 static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
@@ -510,6 +536,7 @@ static struct kobj_attribute link_rx_degrade_link_speed_gbps       = __ATTR_RO(r
 static struct kobj_attribute link_tx_degrade_state                 = __ATTR_RO(tx_degrade_state);
 static struct kobj_attribute link_tx_degrade_lane_map              = __ATTR_RO(tx_degrade_lane_map);
 static struct kobj_attribute link_tx_degrade_link_speed_gbps       = __ATTR_RO(tx_degrade_link_speed_gbps);
+static struct kobj_attribute link_info_map                         = __ATTR_RO(info_map);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -535,6 +562,7 @@ static struct attribute *link_attrs[] = {
 	&link_tx_degrade_state.attr,
 	&link_tx_degrade_lane_map.attr,
 	&link_tx_degrade_link_speed_gbps.attr,
+	&link_info_map.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link);

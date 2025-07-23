@@ -10,6 +10,7 @@
 #include "sl_ctl_mac.h"
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_ldev.h"
+#include "sl_core_str.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -44,14 +45,41 @@ static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
 }
 
+static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                rtn;
+	struct sl_ctl_mac *ctl_mac;
+	u64                info_map;
+	char               info_map_str[900];
+
+	ctl_mac = container_of(kobj, struct sl_ctl_mac, kobj);
+
+	rtn = sl_ctl_mac_info_map_get(ctl_mac->ctl_lgrp->ctl_ldev->num,
+		ctl_mac->ctl_lgrp->num, ctl_mac->num, &info_map);
+	if (rtn) {
+		sl_log_err(ctl_mac, LOG_BLOCK, LOG_NAME,
+			"info map show sl_ctl_mac_info_map_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "no_mac\n");
+	}
+
+	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
+
+	sl_log_dbg(ctl_mac, LOG_BLOCK, LOG_NAME,
+		"info map show (info_map = 0x%llX %s)", info_map, info_map_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
+}
+
 // FIXME: add other mac info here
 
 static struct kobj_attribute rx_state = __ATTR_RO(rx_state);
 static struct kobj_attribute tx_state = __ATTR_RO(tx_state);
+static struct kobj_attribute info_map = __ATTR_RO(info_map);
 
 static struct attribute *mac_attrs[] = {
 	&rx_state.attr,
 	&tx_state.attr,
+	&info_map.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(mac);

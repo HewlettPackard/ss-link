@@ -43,4 +43,6 @@ int sl_ctl_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state);
 
 int sl_ctl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 
+int sl_ctl_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u64 *info_map);
+
 #endif /* _SL_CTL_MAC_H_ */

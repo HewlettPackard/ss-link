@@ -15,55 +15,40 @@ struct sl_core_info_map_str_item {
 	char desc[SL_CORE_INFO_MAP_DESC_SIZE];
 };
 static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
-	{ .desc = "hdshl-signal"       },
-	{ .desc = "hdshl-lock"         },
-	{ .desc = "hdshl-timeout"      },
-	{ .desc = "hdshl-ok"           },
-	{ .desc = "serdes-eidl0"       },
-	{ .desc = "serdes-eidl1"       },
-	{ .desc = "serdes-bad-params"  },
-	{ .desc = "serdes-bad-eyes"    },
-	{ .desc = "serdes-ok"          },
-	{ .desc = "pcs-bitlock-ok"     },
-
-	{ .desc = "pcs-align-ok"       },
-	{ .desc = "pcs-lcl-fault"      },
-	{ .desc = "pcs-rmt-fault"      },
-	{ .desc = "pcs-high-ser"       },
-	{ .desc = "pcs-link-down"      },
-	{ .desc = "pcs-link-up"        },
-	{ .desc = "pcs-timeout"        },
-	{ .desc = "pcs-ok"             },
-	{ .desc = "fec-check"          },
-	{ .desc = "fec-ucw-high"       },
-
-	{ .desc = "fec-ccw-high"       },
-	{ .desc = "fec-ok"             },
-	{ .desc = "link-up-timeout"    },
-	{ .desc = "link-up"            },
-	{ .desc = "recover-timeout"    },
-	{ .desc = "link-degraded"      },
-	{ .desc = "mac-rx-config"      },
-	{ .desc = "mac-tx-config"      },
-	{ .desc = "mac-rx"             },
-	{ .desc = "mac-tx"             },
-	{ .desc = "an-base-pg"         },
-
-	{ .desc = "an-next-pg"         },
-	{ .desc = "an-error"           },
-	{ .desc = "an-done"            },
-	{ .desc = "llr-config"         },
-	{ .desc = "llr-setting-up"     },
-	{ .desc = "llr-setup"          },
-	{ .desc = "llr-setup-timeout"  },
-	{ .desc = "llr-starting"       },
-	{ .desc = "llr-running"        },
-	{ .desc = "llr-start_timeout"  },
-
-	{ .desc = "high-ser"           },
-	{ .desc = "llr-max-starvation" },
-	{ .desc = "llr-starved"        },
-	{ .desc = "llr-replay-at-max"  },
+	[SL_CORE_INFO_MAP_MEDIA_CHECK]        = { .desc = "media-check"        },
+	[SL_CORE_INFO_MAP_MEDIA_OK]           = { .desc = "media-ok"           },
+	[SL_CORE_INFO_MAP_SERDES_OK]          = { .desc = "serdes-ok"          },
+	[SL_CORE_INFO_MAP_PCS_LOCAL_FAULT]    = { .desc = "pcs-local-fault"    },
+	[SL_CORE_INFO_MAP_PCS_REMOTE_FAULT]   = { .desc = "pcs-remote-fault"   },
+	[SL_CORE_INFO_MAP_PCS_LINK_DOWN]      = { .desc = "pcs-link-down"      },
+	[SL_CORE_INFO_MAP_PCS_OK]             = { .desc = "pcs-ok"             },
+	[SL_CORE_INFO_MAP_FEC_CHECK]          = { .desc = "fec-check"          },
+	[SL_CORE_INFO_MAP_FEC_OK]             = { .desc = "fec-ok"             },
+	[SL_CORE_INFO_MAP_LINK_DEGRADED]      = { .desc = "link-degraded"      },
+	[SL_CORE_INFO_MAP_LINK_DOWN]          = { .desc = "link-down"          },
+	[SL_CORE_INFO_MAP_LINK_UP_CANCEL]     = { .desc = "link-up-cancel"     },
+	[SL_CORE_INFO_MAP_LINK_UP_TIMEOUT]    = { .desc = "link-up-timeout"    },
+	[SL_CORE_INFO_MAP_LINK_UP_FAIL]       = { .desc = "link-up-fail"       },
+	[SL_CORE_INFO_MAP_LINK_UP]            = { .desc = "link-up"            },
+	[SL_CORE_INFO_MAP_MAC_RX_CONFIG]      = { .desc = "mac-rx-config"      },
+	[SL_CORE_INFO_MAP_MAC_TX_CONFIG]      = { .desc = "mac-tx-config"      },
+	[SL_CORE_INFO_MAP_MAC_RX]             = { .desc = "mac-rx"             },
+	[SL_CORE_INFO_MAP_MAC_TX]             = { .desc = "mac-tx"             },
+	[SL_CORE_INFO_MAP_AN_BASE_PAGE]       = { .desc = "an-base-page"       },
+	[SL_CORE_INFO_MAP_AN_NEXT_PAGE]       = { .desc = "an-next-page"       },
+	[SL_CORE_INFO_MAP_AN_ERROR]           = { .desc = "an-error"           },
+	[SL_CORE_INFO_MAP_AN_DONE]            = { .desc = "an-done"            },
+	[SL_CORE_INFO_MAP_LLR_CONFIG]         = { .desc = "llr-config"         },
+	[SL_CORE_INFO_MAP_LLR_SETTING_UP]     = { .desc = "llr-setting-up"     },
+	[SL_CORE_INFO_MAP_LLR_SETUP]          = { .desc = "llr-setup"          },
+	[SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT]  = { .desc = "llr-setup-timeout"  },
+	[SL_CORE_INFO_MAP_LLR_STARTING]       = { .desc = "llr-starting"       },
+	[SL_CORE_INFO_MAP_LLR_RUNNING]        = { .desc = "llr-running"        },
+	[SL_CORE_INFO_MAP_LLR_START_TIMEOUT]  = { .desc = "llr-start-timeout"  },
+	[SL_CORE_INFO_MAP_HIGH_SER]           = { .desc = "high-ser"           },
+	[SL_CORE_INFO_MAP_LLR_MAX_STARVATION] = { .desc = "llr-max-starvation" },
+	[SL_CORE_INFO_MAP_LLR_STARVED]        = { .desc = "llr-starved"        },
+	[SL_CORE_INFO_MAP_LLR_REPLAY_MAX]     = { .desc = "llr-replay-max"     },
 };
 
 #define SL_CORE_INFO_MAP_STR_MIN 10
@@ -72,8 +57,6 @@ int sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map
 	int          rtn;
 	unsigned int x;
 	unsigned int str_pos;
-
-	BUILD_BUG_ON(ARRAY_SIZE(sl_core_info_map_str_list) == (SL_CORE_INFO_MAP_NUM_BITS - 1));
 
 	if (!info_map_str)
 		return -EINVAL;

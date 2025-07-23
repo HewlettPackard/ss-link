@@ -145,7 +145,7 @@ function print_mac_state {
         local state_tx=$(cat ${MAC_PATH}/tx_state)
         local state_rx=$(cat ${MAC_PATH}/rx_state)
 
-        printf "mac%d       | state: tx ${state_tx}, rx ${state_rx}\n" ${LINK}
+        printf "mac%d       | state    : tx ${state_tx}, rx ${state_rx}\n" ${LINK}
 }
 
 function print_llr_state {
@@ -345,6 +345,7 @@ function print_link {
         local tx_degrade_state=$(cat ${LINK_PATH}/tx_degrade_state)
         local tx_degrade_lane_map=$(cat ${LINK_PATH}/tx_degrade_lane_map)
         local tx_degrade_link_speed=$(cat ${LINK_PATH}/tx_degrade_link_speed_gbps)
+        local info_map=$(cat ${LINK_PATH}/info_map)
 
         print_link_state
 
@@ -373,6 +374,7 @@ function print_link {
 		local tx_units="Gbps"
 	fi
         printf "           | tx_degrade             : ${tx_degrade_state} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
+        printf "           | info_map               : ${info_map}\n"
 }
 
 function print_mac {
@@ -380,7 +382,11 @@ function print_mac {
                 return
         fi
 
+        local info_map=$(cat ${MAC_PATH}/info_map)
+
         print_mac_state
+
+        printf "           | info_map : ${info_map}\n"
 }
 
 function print_llr {
@@ -399,6 +405,7 @@ function print_llr {
         local tries=$(cat ${LLR_PATH}/policies/continuous_tries)
         local last_fail_cause=$(cat ${LLR_PATH}/last_fail_cause)
         local last_fail_time=$(cat ${LLR_PATH}/last_fail_time)
+        local info_map=$(cat ${LLR_PATH}/info_map)
 
         print_llr_state
 
@@ -407,6 +414,7 @@ function print_llr {
         printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
         printf "           | continuous_tries: ${tries}\n"
         printf "           | last_fail_cause: [${last_fail_time}] ${last_fail_cause}\n"
+        printf "           | info_map: ${info_map}\n"
 }
 
 function print_serdes {

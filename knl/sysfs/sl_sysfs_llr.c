@@ -11,6 +11,7 @@
 #include "sl_ctl_lgrp.h"
 #include "sl_ctl_ldev.h"
 #include "sl_core_llr.h"
+#include "sl_core_str.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -72,14 +73,41 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_llr_state_str(state));
 }
 
+static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                rtn;
+	struct sl_ctl_llr *ctl_llr;
+	u64                info_map;
+	char               info_map_str[900];
+
+	ctl_llr = container_of(kobj, struct sl_ctl_llr, kobj);
+
+	rtn = sl_ctl_llr_info_map_get(ctl_llr->ctl_lgrp->ctl_ldev->num,
+		ctl_llr->ctl_lgrp->num, ctl_llr->num, &info_map);
+	if (rtn) {
+		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+			"info map show sl_ctl_llr_info_map_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "no_llr\n");
+	}
+
+	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
+
+	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
+		"info map show (info_map = 0x%llX %s)", info_map, info_map_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
+}
+
 static struct kobj_attribute llr_state           = __ATTR_RO(state);
 static struct kobj_attribute llr_last_fail_cause = __ATTR_RO(last_fail_cause);
 static struct kobj_attribute llr_last_fail_time  = __ATTR_RO(last_fail_time);
+static struct kobj_attribute llr_info_map        = __ATTR_RO(info_map);
 
 static struct attribute *llr_attrs[] = {
 	&llr_state.attr,
 	&llr_last_fail_cause.attr,
 	&llr_last_fail_time.attr,
+	&llr_info_map.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(llr);

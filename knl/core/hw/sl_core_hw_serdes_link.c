@@ -225,6 +225,8 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link up");
 
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_START);
+
 	/*
 	 * FIXME: remove it when this feature is needed
 	 */
@@ -257,6 +259,8 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	}
 
 	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_UP);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_START);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_OK);
 
 	return 0;
 }
@@ -312,4 +316,6 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 	memset(&(core_link->serdes.media_serdes_settings), 0, sizeof(struct sl_media_serdes_settings));
 
 	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_DOWN);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_CHECK);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_OK);
 }

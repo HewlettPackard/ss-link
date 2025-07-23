@@ -544,3 +544,31 @@ out:
 
 	return rtn;
 }
+
+int sl_ctl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map)
+{
+	struct sl_ctl_llr *ctl_llr;
+
+	ctl_llr = sl_ctl_llr_get(ldev_num, lgrp_num, llr_num);
+	if (!ctl_llr) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"info map get NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+			ldev_num, lgrp_num, llr_num);
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_llr_kref_get_unless_zero(ctl_llr)) {
+		sl_ctl_log_err(ctl_llr, LOG_NAME,
+			"info map get kref_get_unless_zero failed (ctl_llr = 0x%p)", ctl_llr);
+		return -EBADRQC;
+	}
+
+	*info_map = sl_core_llr_info_map_get(ldev_num, lgrp_num, llr_num);
+
+	sl_ctl_log_dbg(ctl_llr, LOG_NAME, "info map get (info_map = 0x%llX)", *info_map);
+
+	if (sl_ctl_llr_put(ctl_llr))
+		sl_ctl_log_dbg(ctl_llr, LOG_NAME, "info map get - llr removed (ctl_llr = 0x%p)", ctl_llr);
+
+	return 0;
+}

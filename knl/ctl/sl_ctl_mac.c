@@ -449,3 +449,31 @@ int sl_ctl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	return 0;
 }
+
+int sl_ctl_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u64 *info_map)
+{
+	struct sl_ctl_mac *ctl_mac;
+
+	ctl_mac = sl_ctl_mac_get(ldev_num, lgrp_num, mac_num);
+	if (!ctl_mac) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"info map get NULL mac (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
+			ldev_num, lgrp_num, mac_num);
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_mac_kref_get_unless_zero(ctl_mac)) {
+		sl_ctl_log_err(ctl_mac, LOG_NAME,
+			"info map get kref_get_unless_zero failed (ctl_mac = 0x%p)", ctl_mac);
+		return -EBADRQC;
+	}
+
+	*info_map = sl_core_mac_info_map_get(ldev_num, lgrp_num, mac_num);
+
+	sl_ctl_log_dbg(ctl_mac, LOG_NAME, "info map get (info_map = 0x%llX)", *info_map);
+
+	if (sl_ctl_mac_put(ctl_mac))
+		sl_ctl_log_dbg(ctl_mac, LOG_NAME, "info map get - mac removed (ctl_mac = 0x%p)", ctl_mac);
+
+	return 0;
+}

@@ -131,6 +131,8 @@ void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 l
 void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_fail_cause,
 	time64_t *llr_fail_time);
 
+u64 sl_core_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
+
 const char *sl_core_llr_fail_cause_str(u32 llr_fail_cause);
 
 #endif /* _SL_CORE_LLR_H_ */

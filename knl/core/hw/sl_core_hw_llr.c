@@ -547,6 +547,9 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 		return;
 	}
 
+	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
+	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT);
+
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 
@@ -556,9 +559,6 @@ void sl_core_hw_llr_setup_timeout_work(struct work_struct *work)
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"setup timeout work llr_flgs_disable failed [%d]", rtn);
-
-	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
-	sl_core_data_llr_info_map_set(core_llr, SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT);
 
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_SETUP_TIMEOUT);
 	sl_core_hw_llr_setup_callback(core_llr);

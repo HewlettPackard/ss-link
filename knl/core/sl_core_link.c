@@ -237,6 +237,20 @@ int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_stat
 	return 0;
 }
 
+u64 sl_core_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	struct sl_core_link *core_link;
+	u64                  info_map;
+
+	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+
+	info_map = sl_core_data_link_info_map_get(core_link);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "info map get (map = 0x%llX)", info_map);
+
+	return info_map;
+}
+
 int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 {
 	struct sl_core_link *core_link;

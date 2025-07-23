@@ -145,6 +145,8 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	core_link->link.tags.up      = tag;
 	core_link->link.callbacks.up = callback;
 
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_CHECK);
+
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp) &&
 		!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
@@ -167,6 +169,9 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 
 		return;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_MEDIA_CHECK);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_OK);
 
 	sl_core_link_ccw_warn_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
 		core_link->num, false);
@@ -366,15 +371,15 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		rtn = sl_core_hw_intr_register(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
 					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
 		if (rtn != 0) {
-			   sl_core_log_err(core_link, LOG_NAME,
-					   "up work - lane degrade register failed [%d]", rtn);
+			sl_core_log_err(core_link, LOG_NAME,
+				"up work - lane degrade register failed [%d]", rtn);
 
-			   sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
-			   rtn = sl_core_link_up_fail(core_link);
-			   if (rtn)
-				   sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
+			rtn = sl_core_link_up_fail(core_link);
+			if (rtn)
+				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
-			   return;
+			return;
 		}
 	}
 
@@ -740,8 +745,6 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 			fec_info.ucw, fec_info.ccw);
 
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
-		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_UCW_HIGH);
-
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -755,9 +758,6 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 			"CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 
-		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
-		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_CCW_HIGH);
-
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -766,6 +766,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		return;
 	}
 
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_CHECK);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_OK);
 
 	sl_core_hw_link_up_success(core_link);
@@ -798,6 +799,9 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 		spin_unlock(&core_link->link.data_lock);
 		return;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
 	/* stop timers */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -846,15 +850,14 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
 
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_AN_DONE);
-	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
-
 	if (!sl_core_hw_link_media_check(core_link))
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }
 
 void sl_core_hw_link_up_cancel_work(struct work_struct *work)
@@ -876,6 +879,9 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_CANCEL);
 
 	/* stop timers */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -925,9 +931,6 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
 
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
-
 	if (!sl_core_hw_link_media_check(core_link))
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
@@ -936,6 +939,8 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 
 	sl_core_hw_link_down_callback(core_link);
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }
 
 void sl_core_hw_link_up_fail_work(struct work_struct *work)
@@ -955,6 +960,9 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_FAIL);
 
 	/* stop timers */
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -1004,15 +1012,14 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
 
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
-
 	if (!sl_core_hw_link_media_check(core_link))
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }
 
 void sl_core_hw_link_down_work(struct work_struct *work)
@@ -1034,6 +1041,9 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 			link_state, sl_core_link_state_str(link_state));
 		return;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_DOWN);
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn != 0)
@@ -1080,12 +1090,12 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	sl_core_hw_link_off(core_link);
 
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_TIMEOUT);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	sl_core_hw_link_down_callback(core_link);
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }
 
 void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
@@ -1273,6 +1283,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
 		core_link->core_lgrp->num, SL_CORE_LINK_STATE_GOING_DOWN);
 
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+
 	if (llr_replay_max) {
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SM(core_link->num), &data64);
 		replay_ct_max = SS2_PORT_PML_CFG_LLR_SM_REPLAY_CT_MAX_GET(data64);
@@ -1301,8 +1313,6 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
-
-	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP);
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
@@ -1349,6 +1359,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"fault intr work callback failed [%d]", rtn);
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }
 
 static inline int sl_core_hw_link_speed_get(u32 pcs_mode, int hweight)

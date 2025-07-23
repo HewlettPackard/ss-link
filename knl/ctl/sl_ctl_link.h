@@ -134,4 +134,6 @@ void sl_ctl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *f
 
 u32 sl_ctl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
+int sl_ctl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
+
 #endif /* _SL_CTL_LINK_H_ */

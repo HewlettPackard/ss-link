@@ -60,4 +60,6 @@ int  sl_ctl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 int  sl_ctl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state);
 
+int sl_ctl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map);
+
 #endif /* _SL_CTL_LLR_H_ */

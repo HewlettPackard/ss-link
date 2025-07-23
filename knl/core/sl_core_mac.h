@@ -53,4 +53,6 @@ int sl_core_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state);
 
+u64 sl_core_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num);
+
 #endif /* _SL_CORE_MAC_H_ */

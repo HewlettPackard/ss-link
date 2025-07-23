@@ -714,6 +714,9 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg)
 #endif
 
 	if (!is_autoneg) {
+
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_CHECK);
+
 		for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 			rtn = sl_core_hw_serdes_lane_up_tx_check(core_link, serdes_lane_num);
 			if (rtn) {
@@ -757,6 +760,8 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg)
 				}
 			}
 		}
+
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_CHECK);
 	}
 
 	/* up */

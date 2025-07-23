@@ -1037,3 +1037,29 @@ u32 sl_ctl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	return sl_core_link_an_retry_count_get(ldev_num, lgrp_num, link_num);
 }
+
+int sl_ctl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
+{
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctl_link) {
+		sl_ctl_log_err(NULL, LOG_NAME,
+			"info map get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+			ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME, "info map get ref unavailable (ctl_link = 0x%p)",
+			ctl_link);
+		return -EBADRQC;
+	}
+
+	*info_map = sl_core_link_info_map_get(ldev_num, lgrp_num, link_num);
+
+	if (sl_ctl_link_put(ctl_link))
+		sl_ctl_log_dbg(ctl_link, LOG_NAME, "info map get - link removed (link = 0x%p)", ctl_link);
+
+	return 0;
+}

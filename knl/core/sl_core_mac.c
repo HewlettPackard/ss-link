@@ -127,3 +127,17 @@ int sl_core_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *mac_stat
 
 	return 0;
 }
+
+u64 sl_core_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
+{
+	struct sl_core_mac *core_mac;
+	u64                 info_map;
+
+	core_mac = sl_core_mac_get(ldev_num, lgrp_num, mac_num);
+
+	info_map = sl_core_data_mac_info_map_get(core_mac);
+
+	sl_core_log_dbg(core_mac, LOG_NAME, "info map get (map = 0x%llX)", info_map);
+
+	return info_map;
+}

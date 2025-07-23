@@ -352,6 +352,20 @@ void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *
 		llr_fail_cause, llr_fail_time);
 }
 
+u64 sl_core_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+{
+	struct sl_core_llr *core_llr;
+	u64                 info_map;
+
+	core_llr = sl_core_llr_get(ldev_num, lgrp_num, llr_num);
+
+	info_map = sl_core_data_llr_info_map_get(core_llr);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "info map get (map = 0x%llX)", info_map);
+
+	return info_map;
+}
+
 const char *sl_core_llr_fail_cause_str(u32 llr_fail_cause)
 {
 	switch (llr_fail_cause) {
