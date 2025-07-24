@@ -607,8 +607,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		link_up_info.fec_type                  = core_link->fec.settings.type;
 
 		spin_unlock(&core_link->link.data_lock);
-		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, SL_CORE_LINK_STATE_UP);
+		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
 		return;
 	default:
@@ -1281,8 +1280,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		return;
 	}
 
-	sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
-		core_link->core_lgrp->num, SL_CORE_LINK_STATE_GOING_DOWN);
+	sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 

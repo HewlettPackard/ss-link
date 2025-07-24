@@ -125,7 +125,7 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 	spin_unlock(&media_jack->data_lock);
-	sl_media_data_jack_headshell_led_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
+	sl_media_data_jack_led_set(media_jack);
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 }
 
@@ -279,7 +279,7 @@ static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 		is_removed = true;
 	}
 	spin_unlock(&media_jack->data_lock);
-	sl_media_data_jack_headshell_led_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
+	sl_media_data_jack_led_set(media_jack);
 
 	return is_removed;
 }
@@ -1240,41 +1240,82 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 #define LED_FAST_GRN   XCVR_LED_A_FAST
 #define LED_ON_AMBER   XCVR_LED_B_STEADY
 #define LED_FAST_AMBER XCVR_LED_B_FAST
-void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
+void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "link led set (state = %u)", link_state);
+	struct sl_core_link  *core_link;
+	struct sl_core_lgrp  *core_lgrp;
+	u32                   link_state;
+	bool                  link_going_up;
+	bool                  link_up;
+	u8                    link_num;
+	u8                    ldev_num;
+	u8                    lgrp_num;
+	u8                    max_links;
+	u8                    i;
 
-	switch (link_state) {
-	case SL_CORE_LINK_STATE_UNCONFIGURED:
-	case SL_CORE_LINK_STATE_CANCELING:
-	case SL_CORE_LINK_STATE_DOWN:
-	case SL_CORE_LINK_STATE_GOING_DOWN:
-	case SL_CORE_LINK_STATE_TIMEOUT:
-		sl_media_io_led_set(media_jack, LED_OFF);
-		break;
-	case SL_CORE_LINK_STATE_GOING_UP:
-	case SL_CORE_LINK_STATE_AN:
-		sl_media_io_led_set(media_jack, LED_FAST_GRN);
-		break;
-	case SL_CORE_LINK_STATE_UP:
-		sl_media_io_led_set(media_jack, LED_ON_GRN);
-		break;
-	}
-}
+	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
-void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state)
-{
-	sl_media_log_dbg(media_jack, LOG_NAME, "headshell led set (state = %u)", jack_state);
-
-	switch (jack_state) {
+	switch (sl_media_jack_state_get(media_jack)) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
 		sl_media_io_led_set(media_jack, LED_OFF);
-		break;
+		return;
 	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
 		sl_media_io_led_set(media_jack, LED_ON_AMBER);
-		break;
+		return;
 	case SL_MEDIA_JACK_CABLE_ERROR:
 		sl_media_io_led_set(media_jack, LED_FAST_AMBER);
-		break;
+		return;
 	}
+
+	link_going_up = false;
+	link_up       = false;
+	for (i = 0; i < media_jack->jack_data.port_count; ++i) {
+		ldev_num = media_jack->cable_info[i].ldev_num;
+		lgrp_num = media_jack->cable_info[i].lgrp_num;
+
+		core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
+		if (!core_lgrp)
+			continue;
+
+		switch (core_lgrp->config.furcation) {
+		case SL_MEDIA_FURCATION_X1:
+			max_links = 1;
+			break;
+		case SL_MEDIA_FURCATION_X2:
+			max_links = 2;
+			break;
+		case SL_MEDIA_FURCATION_X4:
+			max_links = 4;
+			break;
+		default:
+			max_links = 0;
+		}
+
+		for (link_num = 0; link_num < max_links; ++link_num) {
+			core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
+			if (!core_link)
+				continue;
+
+			sl_core_link_state_get(ldev_num, lgrp_num, link_num, &link_state);
+
+			switch (link_state) {
+			case SL_CORE_LINK_STATE_GOING_UP:
+			case SL_CORE_LINK_STATE_AN:
+				link_going_up = true;
+				break;
+			case SL_CORE_LINK_STATE_UP:
+				link_up = true;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	if (link_going_up)
+		sl_media_io_led_set(media_jack, LED_FAST_GRN);
+	else if (link_up)
+		sl_media_io_led_set(media_jack, LED_ON_GRN);
+	else
+		sl_media_io_led_set(media_jack, LED_OFF);
 }

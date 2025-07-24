@@ -64,8 +64,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
 		link_state = core_link->link.state;
 		spin_unlock(&core_link->link.data_lock);
-		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, link_state);
+		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_cmd(core_link, callback, tag);
 		return 0;
 	default:
@@ -101,8 +100,7 @@ int sl_core_link_up_fail(struct sl_core_link *core_link)
 			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
 				SL_CORE_WORK_LINK_UP_FAIL);
 		spin_unlock(&core_link->link.data_lock);
-		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, SL_CORE_LINK_STATE_GOING_DOWN);
+		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
@@ -195,8 +193,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
 				SL_CORE_WORK_LINK_DOWN);
 		spin_unlock(&core_link->link.data_lock);
-		sl_media_jack_link_led_set(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, SL_CORE_LINK_STATE_GOING_DOWN);
+		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,

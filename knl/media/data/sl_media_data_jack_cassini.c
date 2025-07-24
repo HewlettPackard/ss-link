@@ -382,9 +382,31 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	return 0;
 }
 
-void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
+void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "link led set (state = %u)", link_state);
+	struct sl_core_link *core_link;
+	u32                  link_state;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
+
+	core_link = sl_core_link_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num, 0);
+	if (!core_link)
+		return;
+
+	sl_core_link_state_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num,
+		0, &link_state); /* hardcoding 0 since only one link*/
+
+	switch (sl_media_jack_state_get(media_jack)) {
+	case SL_MEDIA_JACK_CABLE_REMOVED:
+		sl_media_io_led_set(media_jack, LED_OFF);
+		return;
+	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
+		sl_media_io_led_set(media_jack, LED_ON_YEL);
+		return;
+	case SL_MEDIA_JACK_CABLE_ERROR:
+		sl_media_io_led_set(media_jack, LED_FAST_YEL);
+		return;
+	}
 
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
@@ -400,23 +422,6 @@ void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_
 		break;
 	case SL_CORE_LINK_STATE_UP:
 		sl_media_io_led_set(media_jack, LED_ON_GRN);
-		break;
-	}
-}
-
-void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state)
-{
-	sl_media_log_dbg(media_jack, LOG_NAME, "headshell led set (state = %u)", jack_state);
-
-	switch (jack_state) {
-	case SL_MEDIA_JACK_CABLE_REMOVED:
-		sl_media_io_led_set(media_jack, LED_OFF);
-		break;
-	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
-		sl_media_io_led_set(media_jack, LED_ON_YEL);
-		break;
-	case SL_MEDIA_JACK_CABLE_ERROR:
-		sl_media_io_led_set(media_jack, LED_FAST_YEL);
 		break;
 	}
 }

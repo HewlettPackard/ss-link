@@ -208,8 +208,7 @@ const char *sl_media_fault_cause_str(u32 fault_cause);
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 
-void sl_media_jack_link_led_set(u8 ldev_num, u8 lgrp_num, u32 link_state);
-void sl_media_jack_headshell_led_set(u8 ldev_num, u8 lgrp_num, u8 jack_state);
+void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 
 void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size);
 

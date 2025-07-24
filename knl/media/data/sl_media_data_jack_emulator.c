@@ -73,10 +73,6 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	return 0;
 }
 
-void sl_media_data_jack_link_led_set(struct sl_media_jack *media_jack, u32 link_state)
-{
-}
-
-void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state)
+void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
 }
