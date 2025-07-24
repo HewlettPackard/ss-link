@@ -137,6 +137,7 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 
 	sl_core_data_link_is_last_down_new_set(core_link, true);
+	sl_core_data_link_last_up_fail_cause_map_clr(core_link);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"up cmd (link = 0x%p, callback = 0x%p, flags = 0x%X)",

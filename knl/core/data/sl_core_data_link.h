@@ -27,6 +27,7 @@ void sl_core_data_link_info_map_clr(struct sl_core_link *core_link, u32 bit_num)
 void sl_core_data_link_info_map_set(struct sl_core_link *core_link, u32 bit_num);
 u64  sl_core_data_link_info_map_get(struct sl_core_link *core_link);
 
+void sl_core_data_link_last_up_fail_cause_map_clr(struct sl_core_link *core_link);
 void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map);
 u64  sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link);
 void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,

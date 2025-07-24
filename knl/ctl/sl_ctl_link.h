@@ -103,6 +103,8 @@ struct sl_ctl_link {
 	struct completion down_complete;
 	struct kref       ref_cnt;
 	struct completion del_complete;
+	u64               last_up_fail_cause_map;
+	time64_t          last_up_fail_time;
 };
 
 int		    sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent);

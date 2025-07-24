@@ -57,13 +57,11 @@ static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_att
 	struct sl_ctl_link *ctl_link;
 	u32                 state;
 	u64                 up_fail_cause_map;
-	time64_t            up_fail_time;
 	char                cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_core_link_last_up_fail_cause_map_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, &up_fail_cause_map, &up_fail_time);
+	up_fail_cause_map = sl_ctl_link_last_up_fail_cause_map_get(ctl_link);
 
 	sl_link_down_cause_map_with_info_str(up_fail_cause_map, cause_str, sizeof(cause_str));
 
@@ -92,8 +90,7 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 
 	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
 
-	sl_core_link_last_up_fail_cause_map_get(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num,
-		ctl_link->num, &up_fail_cause_map, &up_fail_time);
+	sl_ctl_link_last_up_fail_cause_info_get(ctl_link, &up_fail_cause_map, &up_fail_time);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
 		"last up fail time show (cause_map = 0x%llX, time = %lld %ptTt %ptTd)",

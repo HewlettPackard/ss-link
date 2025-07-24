@@ -692,6 +692,17 @@ u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 	return info_map;
 }
 
+void sl_core_data_link_last_up_fail_cause_map_clr(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.last_up_fail_cause_map = 0;
+	core_link->link.last_up_fail_time      = 0;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+		"last up fail cause map clr");
+}
+
 void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
 {
 	if (sl_core_link_is_canceled_or_timed_out(core_link)) {

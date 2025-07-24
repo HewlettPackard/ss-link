@@ -33,4 +33,8 @@ u32  sl_ctl_link_state_get(struct sl_ctl_link *ctl_link);
 bool sl_ctl_link_is_canceled(struct sl_ctl_link *ctl_link);
 void sl_ctl_link_is_canceled_set(struct sl_ctl_link *ctl_link, bool canceled);
 
+u64  sl_ctl_link_last_up_fail_cause_map_get(struct sl_ctl_link *ctl_link);
+void sl_ctl_link_last_up_fail_cause_info_get(struct sl_ctl_link *ctl_link, u64 *last_up_fail_cause_map,
+	time64_t *last_up_fail_time);
+
 #endif /* _SL_CTL_LINK_PRIV_H_ */
