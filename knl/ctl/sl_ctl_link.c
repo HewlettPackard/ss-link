@@ -359,9 +359,9 @@ static int sl_ctl_link_config_set_cmd(struct sl_ctl_link *ctl_link, struct sl_li
 		return -EINVAL;
 	}
 
-	core_link_config.magic           = SL_CORE_LINK_CONFIG_MAGIC;
-	core_link_config.fault_callback  = sl_ctl_link_fault_callback;
-	core_link_config.fault_intr_hdlr = sl_ctl_link_fault_intr_hdlr;
+	core_link_config.magic                = SL_CORE_LINK_CONFIG_MAGIC;
+	core_link_config.fault_start_callback = sl_ctl_link_fault_start_callback;
+	core_link_config.fault_callback       = sl_ctl_link_fault_callback;
 
 	/* timeouts */
 	core_link_config.link_up_timeout_ms = link_config->link_up_timeout_ms;

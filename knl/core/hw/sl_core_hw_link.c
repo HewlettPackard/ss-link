@@ -1271,6 +1271,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		core_link->config.fault_start_callback(core_link->core_lgrp->core_ldev->num,
+						       core_link->core_lgrp->num, core_link->num);
 		spin_unlock(&core_link->link.data_lock);
 		break;
 	default:
@@ -1326,10 +1328,6 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 			sl_core_log_warn(core_link, LOG_NAME,
 					 "fault intr - lane degrade unregister failed [%d]", rtn);
 	}
-
-	if (core_link->config.fault_intr_hdlr)
-		core_link->config.fault_intr_hdlr(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, core_link->num);
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)

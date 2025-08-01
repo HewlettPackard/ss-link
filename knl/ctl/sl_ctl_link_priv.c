@@ -399,7 +399,7 @@ int sl_ctl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 	}
 }
 
-int sl_ctl_link_fault_intr_hdlr(u8 ldev_num, u8 lgrp_num, u8 link_num)
+int sl_ctl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	struct sl_ctl_link *ctl_link;
 
@@ -411,7 +411,9 @@ int sl_ctl_link_fault_intr_hdlr(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
-	sl_ctl_log_dbg(ctl_link, LOG_NAME, "link_fault_intr_hdlr");
+	sl_ctl_log_dbg(ctl_link, LOG_NAME, "fault start callback");
+
+	sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_STOPPING);
 
 	sl_ctl_link_fec_mon_stop(ctl_link);
 
@@ -432,7 +434,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
-		"fault callback work (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
+		"fault callback (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
 
 	sl_ctl_link_up_clock_reset(ctl_link);
@@ -464,7 +466,7 @@ int sl_ctl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 			SL_LGRP_NOTIF_LINK_ERROR, &info, core_imap);
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-				"fault callback work ctl_lgrp_notif_enqueue failed [%d]", rtn);
+				"fault callback ctl_lgrp_notif_enqueue failed [%d]", rtn);
 
 		return 0;
 	}

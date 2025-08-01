@@ -198,27 +198,27 @@ struct sl_core_link_up_info {
 
 typedef int (*sl_core_link_up_callback_t)(void *tag, struct sl_core_link_up_info *core_link_up_info);
 typedef int (*sl_core_link_down_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
+typedef int (*sl_core_link_fault_start_callback_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 typedef int (*sl_core_link_fault_callback_t)(void *tag, u32 state, u64 cause_map, u64 info_map);
-typedef int (*sl_core_link_fault_intr_hdlr_t)(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 // FIXME: think about doing link config better
 #define SL_CORE_LINK_CONFIG_MAGIC 0x736c4C43
 struct sl_core_link_config {
-	u32                            magic;
+	u32                                 magic;
 
-	u32                            link_up_timeout_ms;
-	sl_core_link_fault_callback_t  fault_callback;
-	sl_core_link_fault_intr_hdlr_t fault_intr_hdlr;
+	u32                                 link_up_timeout_ms;
+	sl_core_link_fault_start_callback_t fault_start_callback;
+	sl_core_link_fault_callback_t       fault_callback;
 
-	s32                            fec_up_settle_wait_ms;
-	s32                            fec_up_check_wait_ms;
-	s32                            fec_up_ucw_limit;
-	s32                            fec_up_ccw_limit;
+	s32                                 fec_up_settle_wait_ms;
+	s32                                 fec_up_check_wait_ms;
+	s32                                 fec_up_ucw_limit;
+	s32                                 fec_up_ccw_limit;
 
-	u32                            pause_map;
-	u32                            hpe_map;
+	u32                                 pause_map;
+	u32                                 hpe_map;
 
-	u32                            flags;
+	u32                                 flags;
 };
 
 struct sl_core_link_policy {
