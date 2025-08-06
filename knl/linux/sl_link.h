@@ -122,9 +122,9 @@ struct sl_link_degrade_info {
 	u8   rx_lane_map;
 };
 
-#define SL_LINK_POLICY_OPT_KEEP_SERDES_UP        BIT(0) /* Keep serdes running when link is down */
+#define SL_LINK_POLICY_OPT_KEEP_SERDES_UP        BIT(0) /* Keep serdes running when link is down                   */
 #define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE BIT(1) /* Try to bring the link up even if cable is not supported */
-#define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR    BIT(2) /* Try to bring the link up even if media has errors */
+#define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR    BIT(2) /* Try to bring the link up even if media has errors       */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 

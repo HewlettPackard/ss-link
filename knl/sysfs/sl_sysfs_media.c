@@ -660,6 +660,24 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &fault_time, &fault_time);
 }
 
+static ssize_t is_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_media_attr  media_attr;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+
+	sl_media_lgrp_media_attr_get(media_lgrp->media_ldev->num, media_lgrp->num, &media_attr);
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
+		"is ss200 cable show (media_info = 0x%X)", media_attr.info);
+
+	if (media_attr.info & SL_MEDIA_INFO_SS200_CABLE)
+		return scnprintf(buf, PAGE_SIZE, "yes\n");
+
+	return scnprintf(buf, PAGE_SIZE, "no\n");
+}
+
 static struct kobj_attribute media_state                        = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state             = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_temperature                  = __ATTR_RO(temperature_celcius);
@@ -688,6 +706,7 @@ static struct kobj_attribute media_active_cable_400g_lane_cnt   = __ATTR_RO(acti
 static struct kobj_attribute media_active_cable_400g_appsel_no  = __ATTR_RO(active_cable_400g_appsel_no);
 static struct kobj_attribute media_last_fault_cause             = __ATTR_RO(last_fault_cause);
 static struct kobj_attribute media_last_fault_time              = __ATTR_RO(last_fault_time);
+static struct kobj_attribute media_is_ss200_cable               = __ATTR_RO(is_ss200_cable);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -718,6 +737,7 @@ static struct attribute *media_attrs[] = {
 	&media_active_cable_400g_appsel_no.attr,
 	&media_last_fault_cause.attr,
 	&media_last_fault_time.attr,
+	&media_is_ss200_cable.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

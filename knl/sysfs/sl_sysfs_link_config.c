@@ -206,7 +206,7 @@ static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"autoneg show (link = 0x%p)", ctl_link);
+		"autoneg show (link = 0x%p, options = 0x%X)", ctl_link, ctl_link->config.options);
 
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
@@ -223,7 +223,7 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"loopback show (link = 0x%p)", ctl_link);
+		"loopback show (link = 0x%p, options = 0x%X)", ctl_link, ctl_link->config.options);
 
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled-headshell\n");
@@ -240,9 +240,24 @@ static ssize_t extended_reach_force_show(struct kobject *kobj, struct kobj_attri
 	ctl_link = container_of(kobj, struct sl_ctl_link, config_kobj);
 
 	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
-		"extended reach force show (link = 0x%p)", ctl_link);
+		"extended reach force show (link = 0x%p, options = 0x%X)", ctl_link, ctl_link->config.options);
 
 	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
+		return scnprintf(buf, PAGE_SIZE, "enabled\n");
+
+	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+}
+
+static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctl_link *ctl_link;
+
+	ctl_link = container_of(kobj, struct sl_ctl_link, kobj);
+
+	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+		"auto lane degrade show (link = 0x%p, options = 0x%X)", ctl_link, ctl_link->config.options);
+
+	if (is_flag_set(ctl_link->config.options, SL_LINK_CONFIG_OPT_ALD_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
@@ -260,6 +275,7 @@ static struct kobj_attribute hpe_map               = __ATTR_RO(hpe_map);
 static struct kobj_attribute autoneg               = __ATTR_RO(autoneg);
 static struct kobj_attribute loopback              = __ATTR_RO(loopback);
 static struct kobj_attribute extended_reach_force  = __ATTR_RO(extended_reach_force);
+static struct kobj_attribute auto_lane_degrade     = __ATTR_RO(auto_lane_degrade);
 
 static struct attribute *link_config_attrs[] = {
 	&link_up_timeout_ms.attr,
@@ -274,6 +290,7 @@ static struct attribute *link_config_attrs[] = {
 	&autoneg.attr,
 	&loopback.attr,
 	&extended_reach_force.attr,
+	&auto_lane_degrade.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_config);

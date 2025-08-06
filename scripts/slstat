@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=0
+MINOR=1
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -16,6 +16,8 @@ function usage {
         echo "    link_num = link number (0-3)"
         echo "  option:"
         echo "    state    = print state for the target"
+        echo "    link     = print all link info for the target"
+        echo "    serdes   = print all serdes info for the target"
         echo "    cable    = print cable info for the target"
         echo "    counters = print counters for a link target (requires #:#:#)"
         echo "    use_test = use the \"test_port\" directory"
@@ -32,6 +34,12 @@ elif [ "$#" -eq 2 ] ; then
         case $2 in
                 state )
                         option=state
+                        ;;
+                link )
+                        option=link
+                        ;;
+                serdes )
+                        option=serdes
                         ;;
                 cable )
                         option=cable
@@ -133,8 +141,10 @@ function print_link_state {
         local state=$(cat ${LINK_PATH}/state)
         local speed=$(cat ${LINK_PATH}/speed)
         local time_to_link_up=$(cat ${LINK_PATH}/time_to_link_up_ms)
+        local info_map=$(cat ${LINK_PATH}/info_map)
 
-        printf "link%d      | state: ${state} ${speed}, time_to_link_up: ${time_to_link_up}ms\n" ${LINK}
+        printf "link%d      | state: ${state}, speed: ${speed}, time_to_link_up: ${time_to_link_up}ms\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
 }
 
 function print_mac_state {
@@ -144,8 +154,10 @@ function print_mac_state {
 
         local state_tx=$(cat ${MAC_PATH}/tx_state)
         local state_rx=$(cat ${MAC_PATH}/rx_state)
+        local info_map=$(cat ${MAC_PATH}/info_map)
 
-        printf "mac%d       | state    : tx ${state_tx}, rx ${state_rx}\n" ${LINK}
+        printf "mac%d       | state: tx ${state_tx}, rx ${state_rx}\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
 }
 
 function print_llr_state {
@@ -154,8 +166,10 @@ function print_llr_state {
         fi
 
         local state=$(cat ${LLR_PATH}/state)
+        local info_map=$(cat ${LLR_PATH}/info_map)
 
         printf "llr%d       | state: ${state}\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
 }
 
 function print_link_counters {
@@ -226,6 +240,7 @@ function print_jack {
         local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
         local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
         local supported=$(cat ${LGRP_PATH}/media/supported)
+        local ss200_cable=$(cat ${LGRP_PATH}/media/is_ss200_cable)
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
@@ -253,11 +268,10 @@ function print_jack {
 
         printf "           | cable: ${vendor} ${type} ${length}${units}\n"
         printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
-        printf "           |        shape: ${shape}, end: ${cable_end}\n"
-        printf "           | supported: ${supported}, furcation: ${furcation}\n"
+        printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
+        printf "           | supported: ${supported}, is_ss200_cable: ${ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
-		printf "           | active_cable: fw_version: ${fw_ver}\n"
-		printf "           | active_cable: target_fw_version: ${target_fw_ver}\n"
+		printf "           | active_cable: fw_version: ${fw_ver}, (target = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
 		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
 	fi
@@ -299,7 +313,7 @@ function print_jack {
 		printf "none "
 	fi
         printf "\n"
-        printf "           | max_speed: ${max_speed}\n"
+        printf "           |   max_speed: ${max_speed}\n"
         printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
 }
 
@@ -312,7 +326,7 @@ function print_lgrp {
         local tech_map=$(cat ${LGRP_PATH}/config/tech_map)
         local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
 
-        printf "lgrp%02d     | furcation: ${furcation}\n" ${LGRP}
+        printf "lgrp%02d     | furcation  : ${furcation}\n" ${LGRP}
         printf "           | tech_config: ${tech_map}\n"
         printf "           | fec_config : ${fec_map}\n"
 }
@@ -322,59 +336,65 @@ function print_link {
                 return
         fi
 
+        local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
+        local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
         local an_fail_cause=$(cat ${LINK_PATH}/last_autoneg_fail_cause)
         local an_fail_time=$(cat ${LINK_PATH}/last_autoneg_fail_time)
         local down_cause_map=$(cat ${LINK_PATH}/last_down_cause_map)
         local down_time=$(cat ${LINK_PATH}/last_down_time)
         local up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail_cause_map)
         local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
+        local keep_serdes_up=$(cat ${LINK_PATH}/policies/keep_serdes_up)
+        local use_unsupported_cable=$(cat ${LINK_PATH}/policies/use_unsupported_cable)
+        local ignore_media_error=$(cat ${LINK_PATH}/policies/ignore_media_error)
         local hpe_map=$(cat ${LINK_PATH}/config/hpe_map)
         local pause_map=$(cat ${LINK_PATH}/config/pause_map)
-        local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
-        local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
         local autoneg=$(cat ${LINK_PATH}/config/autoneg)
         local caps_pause=$(cat ${LINK_PATH}/caps/pause_map)
         local caps_tech=$(cat ${LINK_PATH}/caps/tech_map)
         local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
         local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
         local loopback=$(cat ${LINK_PATH}/config/loopback)
-	local ald_state=$(cat ${LINK_PATH}/degrade_state)
-        local rx_degrade_state=$(cat ${LINK_PATH}/rx_degrade_state)
-        local rx_degrade_lane_map=$(cat ${LINK_PATH}/rx_degrade_lane_map)
-        local rx_degrade_link_speed=$(cat ${LINK_PATH}/rx_degrade_link_speed_gbps)
-        local tx_degrade_state=$(cat ${LINK_PATH}/tx_degrade_state)
-        local tx_degrade_lane_map=$(cat ${LINK_PATH}/tx_degrade_lane_map)
-        local tx_degrade_link_speed=$(cat ${LINK_PATH}/tx_degrade_link_speed_gbps)
-        local info_map=$(cat ${LINK_PATH}/info_map)
+	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
+	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
+        local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
+        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_lane_map)
+        local rx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/rx_link_speed_gbps)
+        local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
+        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_lane_map)
+        local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
 
         print_link_state
 
-        printf "           | last_autoneg_fail_cause: [${an_fail_time}] ${an_fail_cause}\n"
-        printf "           | last_down_cause        : [${down_time}] ${down_cause_map}\n"
-        printf "           | up_fail_cause          : [${up_fail_time}] ${up_fail_cause_map}\n"
-        printf "           | link_up_timeout        : ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
-        printf "           | hpe_config             : ${hpe_map}\n"
-        printf "           | pause_config           : ${pause_map}\n"
-        printf "           | autoneg                : ${autoneg}\n"
-        printf "           |      pause_caps        : ${caps_pause}\n"
-        printf "           |      tech_caps         : ${caps_tech}\n"
-        printf "           |      fec_caps          : ${caps_fec}\n"
-        printf "           |      hpe_caps          : ${caps_hpe}\n"
-        printf "           | loopback               : ${loopback}\n"
-        printf "           | degrade_state          : ${ald_state}\n"
-	if [ "${rx_degrade_state}" == "ald-inactive" ] ; then
-		local rx_units=""
-	else
+        printf "           | link_up_timeout: ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
+        printf "    causes | last_up_fail     : [${up_fail_time}] ${up_fail_cause_map}\n"
+        printf "           | last_autoneg_fail: [${an_fail_time}] ${an_fail_cause}\n"
+        printf "           | last_down        : [${down_time}] ${down_cause_map}\n"
+        printf "  policies | keep_serdes_up       : ${keep_serdes_up}\n"
+        printf "           | use_unsupported_cable: ${use_unsupported_cable}\n"
+        printf "           | ignore_media_error   : ${ignore_media_error}\n"
+        printf "    config | hpe     : ${hpe_map}\n"
+        printf "           | loopback: ${loopback}\n"
+        printf "           | pause   : ${pause_map}\n"
+        printf "           | autoneg : ${autoneg}\n"
+        printf "           |   pause_caps: ${caps_pause}\n"
+        printf "           |   tech_caps : ${caps_tech}\n"
+        printf "           |   fec_caps  : ${caps_fec}\n"
+        printf "           |   hpe_caps  : ${caps_hpe}\n"
+        printf "           | auto_lane_degrade: ${degrade_config}\n"
+	printf "       ALD | state: ${degrade_state}\n"
+	if [ "${degrade_state}" == "active" ] ; then
 		local rx_units="Gbps"
-	fi
-        printf "           | rx_degrade             : ${rx_degrade_state} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
-	if [ "${tx_degrade_state}" == "ald-inactive" ] ; then
-		local tx_units=""
 	else
-		local tx_units="Gbps"
+		local rx_units=""
 	fi
-        printf "           | tx_degrade             : ${tx_degrade_state} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
-        printf "           | info_map               : ${info_map}\n"
+        printf "           |   is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
+	if [ "${degrade_state}" == "active" ] ; then
+		local tx_units="Gbps"
+	else
+		local tx_units=""
+	fi
+        printf "           |   is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
 }
 
 function print_mac {
@@ -382,11 +402,7 @@ function print_mac {
                 return
         fi
 
-        local info_map=$(cat ${MAC_PATH}/info_map)
-
         print_mac_state
-
-        printf "           | info_map : ${info_map}\n"
 }
 
 function print_llr {
@@ -405,7 +421,6 @@ function print_llr {
         local tries=$(cat ${LLR_PATH}/policies/continuous_tries)
         local last_fail_cause=$(cat ${LLR_PATH}/last_fail_cause)
         local last_fail_time=$(cat ${LLR_PATH}/last_fail_time)
-        local info_map=$(cat ${LLR_PATH}/info_map)
 
         print_llr_state
 
@@ -414,7 +429,6 @@ function print_llr {
         printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
         printf "           | continuous_tries: ${tries}\n"
         printf "           | last_fail_cause: [${last_fail_time}] ${last_fail_cause}\n"
-        printf "           | info_map: ${info_map}\n"
 }
 
 function print_serdes {
@@ -668,6 +682,19 @@ case $option in
                 fi
                 exit
                 ;;
+        link )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_link
+                        print_link_counters
+		fi
+		;;
+        serdes )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_serdes_settings
+		fi
+		;;
         cable )
                 if [ ${num_args} -ge 2 ] ; then
                         print_ldev

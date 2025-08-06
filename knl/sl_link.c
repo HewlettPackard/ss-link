@@ -331,11 +331,11 @@ const char *sl_link_degrade_state_str(int degrade_state)
 {
 	switch (degrade_state) {
 	case SL_LINK_DEGRADE_STATE_ENABLED:
-		return "enabled";
+		return "active";
 	case SL_LINK_DEGRADE_STATE_DISABLED:
-		return "disabled";
+		return "inactive";
 	case SL_LINK_DEGRADE_STATE_FAILED:
-		return "failed";
+		return "error";
 	default:
 		return "invalid";
 	}
