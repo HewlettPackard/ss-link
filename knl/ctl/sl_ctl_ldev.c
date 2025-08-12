@@ -66,11 +66,10 @@ int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "client workqueue (workq = 0x%p)", ctl_ldev->workq);
 	}
 
-	ctl_ldev->notif_workq = alloc_workqueue("%s%u-notif", WQ_MEM_RECLAIM,
-		CONFIG_SL_DEFAULT_WQ_MAX_ACTIVE, "sl-ldev", ldev_num);
+	ctl_ldev->notif_workq = alloc_ordered_workqueue("%s%u-notif", WQ_MEM_RECLAIM, "sl-ldev", ldev_num);
 	if (IS_ERR(ctl_ldev->notif_workq)) {
 		rtn = PTR_ERR(ctl_ldev->notif_workq);
-		sl_ctl_log_err(ctl_ldev, LOG_NAME, "alloc_workqueue notif failed [%d]", rtn);
+		sl_ctl_log_err(ctl_ldev, LOG_NAME, "alloc_ordered_workqueue notif failed [%d]", rtn);
 		goto out_del_wq;
 	}
 
