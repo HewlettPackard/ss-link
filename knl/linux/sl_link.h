@@ -159,6 +159,7 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(28) /* link up interrupt register failure   */
 #define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(29) /* media has errors                     */
 #define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(30) /* link up canceled, link down          */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(31) /* unsupported speed                    */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */

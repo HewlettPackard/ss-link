@@ -663,16 +663,14 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 static ssize_t is_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
-	struct sl_media_attr  media_attr;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 
-	sl_media_lgrp_media_attr_get(media_lgrp->media_ldev->num, media_lgrp->num, &media_attr);
-
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
-		"is ss200 cable show (media_info = 0x%X)", media_attr.info);
+		"is ss200 cable show (is_ss200_cable = %s)",
+		media_lgrp->media_jack->is_ss200_cable ? "yes" : "no");
 
-	if (media_attr.info & SL_MEDIA_INFO_SS200_CABLE)
+	if (media_lgrp->media_jack->is_ss200_cable)
 		return scnprintf(buf, PAGE_SIZE, "yes\n");
 
 	return scnprintf(buf, PAGE_SIZE, "no\n");

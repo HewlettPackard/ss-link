@@ -350,9 +350,10 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 void sl_core_hw_link_up_work(struct work_struct *work)
 {
-	int                  rtn;
-	struct sl_core_link *core_link;
-	u32                  link_state;
+	int                   rtn;
+	struct sl_core_link  *core_link;
+	u32                   link_state;
+	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP]);
 
@@ -385,6 +386,19 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	}
 
 	sl_core_hw_pcs_config(core_link);
+
+	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+	if ((media_lgrp->media_jack->is_ss200_cable) &&
+		((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G) ||
+		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G)  ||
+		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G))) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "link_up failed - speed not supported [%d]", rtn);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+		return;
+	}
 
 	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
 		rtn = sl_media_jack_cable_downshift(core_link->core_lgrp->core_ldev->num,

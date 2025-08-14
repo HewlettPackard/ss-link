@@ -5,8 +5,8 @@
 # To run this script
 # python3 cable_list_parser_and_db_creator.py
 # The script will parse the excel sheet containing all the supported cables.
-# The excel sheet needs to be in the same folder as this script and must be named "SlingshotCableLookup_08082023.xlsm"
-# The Sheet with cable list inside the excel file must be named "S1 S2 Cable List'
+# The excel sheet needs to be in the same folder as this script and dataframe name should be changed accordingly
+# Similarly, the Sheet with cable list inside the excel file usually named "S1 S2 Cable List ..." should match the corresponding dataframe name
 # The script will create a header file called "sl_media_data_cable_db.h" which will contain a DB with all supported cables
 
 import pandas as pd
@@ -18,11 +18,11 @@ import re
 file1 = open("sl_media_data_cable_db.h", "w") 
 
 # Define variable to load the dataframe
-dataframe = openpyxl.load_workbook("SlingshotCableCompatibilityMatrix_rev_04.04.25.xlsm")
+dataframe = openpyxl.load_workbook("SlingshotCableCompatibilityMatrix.xlsm")
  
 # Define variable to read sheet
 #dataframe1 = dataframe.active
-dataframe1 = dataframe['S1 S2 Cable List']
+dataframe1 = dataframe['S1 S2 Cable List (7.16.25)']
 
 #find the numbe of rows in excel sheet
 curr_row = 1
@@ -161,6 +161,13 @@ for i in range(len(HP_PN)):
             num_length = str(num_length) #convert int to string
             file1.write("\t\t.length_cm              = " + num_length + ",\n")
 
+            cell_obj = dataframe1.cell(row = curr_row+1, column = 4) #check if SS200 cable
+            cell_value = str(cell_obj.value).strip() #remove whitespace
+            if cell_value == "SS200":
+                file1.write("\t\t.is_ss200_cable         = " + "true" + ",\n")
+            else:
+                file1.write("\t\t.is_ss200               = " + "false" + ",\n")
+
             cell_obj = dataframe1.cell(row = curr_row+1, column = 11) #read the speed
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "200G E":
@@ -191,7 +198,7 @@ for i in range(len(HP_PN)):
 
             file1.write("\t},\n")
 
-            sheet = dataframe['S1 S2 Cable List']
+            sheet = dataframe['S1 S2 Cable List (7.16.25)']
             sheet.delete_rows(curr_row+1, 1)
             break
             
@@ -199,5 +206,5 @@ for i in range(len(HP_PN)):
 
 
 file1.write("};\n\n")
-file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */")
+file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */\n")
 file1.close()

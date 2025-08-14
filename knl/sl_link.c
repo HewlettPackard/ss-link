@@ -458,6 +458,9 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
 			break;
+		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-speed ");
+			break;
 		case SL_LINK_DOWN_CAUSE_COMMAND:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
 			break;

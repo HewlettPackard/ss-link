@@ -86,12 +86,13 @@ struct sl_media_serdes_settings {
 };
 
 struct sl_media_cable_attr {
-	__u32                           type;
-	__u32                           vendor;
-	__u32                           length_cm;
-	__u32                           hpe_pn;      /* HPE part number */
-	__u32                           max_speed;
-	__u32                           shape;
+	u32                             type;
+	u32                             vendor;
+	u32                             length_cm;
+	u32                             hpe_pn;      /* HPE part number */
+	u32                             max_speed;
+	u32                             shape;
+	bool                            is_ss200_cable;
 
 	struct sl_media_serdes_settings serdes_settings;
 };

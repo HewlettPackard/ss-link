@@ -25,12 +25,10 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	switch (host_interface) {
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GAUI_1_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GBASE_CR:
-		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_100GAUI_2_C2M:
 	case SL_MEDIA_SS1_HOST_INTERFACE_100GBASE_CR2:
-		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_100G;
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_100GBASE_CR1:
@@ -40,12 +38,10 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_100G;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GBASE_CR4:
-		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
-		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		media_jack->appsel_no_200_gaui = appsel_no;
 		media_jack->lane_count_200_gaui = lane_count;
@@ -76,7 +72,6 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		media_jack->host_interface_400_gaui = host_interface;
 		fallthrough;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GBASE_CR8:
-		media_jack->is_ss200_cable = true;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
 		fallthrough;
 	case SL_MEDIA_SS1_HOST_INTERFACE_CAUI_4_C2M:
