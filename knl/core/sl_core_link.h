@@ -135,58 +135,59 @@ struct work_struct;
 
 enum sl_core_info_map_bits {
 	/* Media */
-	SL_CORE_INFO_MAP_MEDIA_CHECK,        /* Indicates the link up process is checking media */
-	SL_CORE_INFO_MAP_MEDIA_OK,           /* Indicates the link up media check completed successfully */
+	SL_CORE_INFO_MAP_MEDIA_CHECK,        /* link up process is checking media */
+	SL_CORE_INFO_MAP_MEDIA_OK,           /* link up media check completed successfully */
 
 	/* SerDes */
-	SL_CORE_INFO_MAP_SERDES_START,       /* Indicates the SerDes is starting */
-	SL_CORE_INFO_MAP_SERDES_CHECK,       /* Indicates the SerDes is being checked */
-	SL_CORE_INFO_MAP_SERDES_OK,          /* Indicates the SerDes check is complete */
+	SL_CORE_INFO_MAP_SERDES_START,       /* SerDes is starting */
+	SL_CORE_INFO_MAP_SERDES_CHECK,       /* SerDes is being checked */
+	SL_CORE_INFO_MAP_SERDES_OK,          /* SerDes check is complete */
 
 	/* PCS */
-	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,    /* Indicates the link is going down from a local fault interrupt */
-	SL_CORE_INFO_MAP_PCS_REMOTE_FAULT,   /* Indicates the link is going down from a remote fault interrupt */
-	SL_CORE_INFO_MAP_PCS_LINK_DOWN,      /* Indicates the link is going down from a link down interrupt */
-	SL_CORE_INFO_MAP_PCS_CHECK,          /* Indicates the PCS is being checked */
-	SL_CORE_INFO_MAP_PCS_OK,             /* Indicates the PCS check is complete */
+	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,    /* link is going down from a local fault interrupt */
+	SL_CORE_INFO_MAP_PCS_REMOTE_FAULT,   /* link is going down from a remote fault interrupt */
+	SL_CORE_INFO_MAP_PCS_LINK_DOWN,      /* link is going down from a link down interrupt */
+	SL_CORE_INFO_MAP_PCS_CHECK,          /* PCS is being checked */
+	SL_CORE_INFO_MAP_PCS_OK,             /* PCS check is complete */
 
 	/* Link Quality */
-	SL_CORE_INFO_MAP_FEC_CHECK,          /* Indicates link up process is checking FEC */
-	SL_CORE_INFO_MAP_FEC_OK,             /* Indicates link up FEC check completed successfully */
-	SL_CORE_INFO_MAP_LINK_DEGRADED,      /* Indicates the link degradation process started */
+	SL_CORE_INFO_MAP_FEC_CHECK,          /* link up process is checking FEC */
+	SL_CORE_INFO_MAP_FEC_OK,             /* link up FEC check completed successfully */
+	SL_CORE_INFO_MAP_LINK_DEGRADED,      /* link degradation process started */
 
 	/* Link Forward Progress */
-	SL_CORE_INFO_MAP_LINK_DOWN,          /* Indicates the link has been commanded down */
-	SL_CORE_INFO_MAP_LINK_UP_CANCEL,     /* Indicates the link up process has been canceled */
-	SL_CORE_INFO_MAP_LINK_UP_TIMEOUT,    /* Indicates the link up process has timed out */
-	SL_CORE_INFO_MAP_LINK_UP_FAIL,       /* Indicates the link up process has failed */
-	SL_CORE_INFO_MAP_LINK_UP,            /* Indicates the link up process completed successfully */
+	SL_CORE_INFO_MAP_LINK_DOWN,          /* link has been commanded down */
+	SL_CORE_INFO_MAP_LINK_UP_CANCEL,     /* link up process has been canceled */
+	SL_CORE_INFO_MAP_LINK_UP_TIMEOUT,    /* link up process has timed out */
+	SL_CORE_INFO_MAP_LINK_UP_FAIL,       /* link up process has failed */
+	SL_CORE_INFO_MAP_LINK_UP,            /* link up process completed successfully */
 
 	/* MAC */
-	SL_CORE_INFO_MAP_MAC_RX_CONFIG,      /* Indicates MAC RX configuration is in progress */
-	SL_CORE_INFO_MAP_MAC_TX_CONFIG,      /* Indicates MAC TX configuration is in progress */
-	SL_CORE_INFO_MAP_MAC_RX,             /* Indicates MAC RX is operational */
-	SL_CORE_INFO_MAP_MAC_TX,             /* Indicates MAC TX is operational */
+	SL_CORE_INFO_MAP_MAC_RX_CONFIG,      /* MAC RX configuration is in progress */
+	SL_CORE_INFO_MAP_MAC_TX_CONFIG,      /* MAC TX configuration is in progress */
+	SL_CORE_INFO_MAP_MAC_RX,             /* MAC RX is operational */
+	SL_CORE_INFO_MAP_MAC_TX,             /* MAC TX is operational */
 
 	/* Autoneg */
-	SL_CORE_INFO_MAP_AN_BASE_PAGE,       /* Indicates the base page of autonegotiation is being sent */
-	SL_CORE_INFO_MAP_AN_NEXT_PAGE,       /* Indicates the next page of autonegotiation is being sent */
-	SL_CORE_INFO_MAP_AN_ERROR,           /* Indicates an error occurred during autonegotiation */
-	SL_CORE_INFO_MAP_AN_DONE,            /* Indicates autonegotiation completed successfully */
+	SL_CORE_INFO_MAP_AN_BASE_PAGE,       /* base page of autonegotiation is being sent */
+	SL_CORE_INFO_MAP_AN_NEXT_PAGE,       /* next page of autonegotiation is being sent */
+	SL_CORE_INFO_MAP_AN_ERROR,           /* autonegotiation error */
+	SL_CORE_INFO_MAP_AN_DONE,            /* autonegotiation completed successfully */
 
 	/* LLR */
-	SL_CORE_INFO_MAP_LLR_CONFIG,         /* Indicates LLR is being configured */
-	SL_CORE_INFO_MAP_LLR_SETTING_UP,     /* Indicates LLR is setting up */
-	SL_CORE_INFO_MAP_LLR_SETUP,          /* Indicates LLR setup completed successfully */
-	SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT,  /* Indicates LLR setup has timed out */
-	SL_CORE_INFO_MAP_LLR_STARTING,       /* Indicates LLR is starting */
-	SL_CORE_INFO_MAP_LLR_RUNNING,        /* Indicates LLR is running */
-	SL_CORE_INFO_MAP_LLR_START_TIMEOUT,  /* Indicates LLR start process timed out */
+	SL_CORE_INFO_MAP_LLR_CONFIG,         /* LLR is being configured */
+	SL_CORE_INFO_MAP_LLR_SETTING_UP,     /* LLR is setting up */
+	SL_CORE_INFO_MAP_LLR_SETUP,          /* LLR setup completed successfully */
+	SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT,  /* LLR setup has timed out */
+	SL_CORE_INFO_MAP_LLR_STARTING,       /* LLR is starting */
+	SL_CORE_INFO_MAP_LLR_RUNNING,        /* LLR is running */
+	SL_CORE_INFO_MAP_LLR_START_TIMEOUT,  /* LLR start process timed out */
+	SL_CORE_INFO_MAP_LLR_MAX_STARVATION, /* LLR Max Starvation work started */
+	SL_CORE_INFO_MAP_LLR_STARVED,        /* LLR starved work started */
+	SL_CORE_INFO_MAP_LLR_REPLAY_MAX,     /* LLR replay at max */
 
-	SL_CORE_INFO_MAP_HIGH_SER,           /* Indicates High Symbol Error ratio work started */
-	SL_CORE_INFO_MAP_LLR_MAX_STARVATION, /* Inciates LLR Max Starvation work started */
-	SL_CORE_INFO_MAP_LLR_STARVED,        /* Indicates LLR starved work started */
-	SL_CORE_INFO_MAP_LLR_REPLAY_MAX,     /* Indicates link is going down from LLR replay at max */
+	/* fault */
+	SL_CORE_INFO_MAP_HIGH_SER,           /* High Symbol Error ratio work started */
 
 	SL_CORE_INFO_MAP_NUM_BITS            /* must be last */
 };

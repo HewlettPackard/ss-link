@@ -1019,6 +1019,8 @@ function sl_test_link_config_set {
 			return 1
 		fi
 
+		sl_test_info_log "${FUNCNAME}" "config.${item} = ${!item}"
+
 		echo ${!item} > ${filename}
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then

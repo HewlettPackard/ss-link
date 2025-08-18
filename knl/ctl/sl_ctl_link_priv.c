@@ -274,28 +274,6 @@ int sl_ctl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 		max_up_tries = ctl_link->config.link_up_tries_max;
 		spin_unlock(&ctl_link->config_lock);
 
-		/* check for fatal down causes */
-		if (sl_ctl_link_is_last_up_fail_cause_set(ctl_link, SL_LINK_DOWN_CAUSE_FATAL_MASK)) {
-			sl_ctl_link_up_clock_reset(ctl_link);
-
-			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work fatal down cause");
-
-			sl_ctl_link_state_stopping_set(ctl_link);
-
-			flush_work(&ctl_link->ctl_lgrp->notif_work);
-
-			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
-			complete_all(&ctl_link->down_complete);
-
-			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
-				sl_ctl_link_last_up_fail_cause_map_get(ctl_link), core_link_up_info.info_map);
-			if (rtn)
-				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
-					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
-
-			return 0;
-		}
-
 		/* canceled */
 		if (sl_ctl_link_is_canceled(ctl_link)) {
 			sl_ctl_link_up_clock_reset(ctl_link);
@@ -339,6 +317,28 @@ int sl_ctl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			if (rtn)
 				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
+			return 0;
+		}
+
+		/* check fatal down causes */
+		if (sl_ctl_link_is_last_up_fail_cause_set(ctl_link, SL_LINK_DOWN_CAUSE_FATAL_MASK)) {
+			sl_ctl_link_up_clock_reset(ctl_link);
+
+			sl_ctl_log_dbg(ctl_link, LOG_NAME, "up callback work fatal down cause");
+
+			sl_ctl_link_state_stopping_set(ctl_link);
+
+			flush_work(&ctl_link->ctl_lgrp->notif_work);
+
+			sl_ctl_link_state_set(ctl_link, SL_LINK_STATE_DOWN);
+			complete_all(&ctl_link->down_complete);
+
+			rtn = sl_ctl_link_up_fail_notif_send(ctl_link->ctl_lgrp, ctl_link,
+				sl_ctl_link_last_up_fail_cause_map_get(ctl_link), core_link_up_info.info_map);
+			if (rtn)
+				sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
+					"up callback work ctl_link_up_fail_notif_send failed [%d]", rtn);
+
 			return 0;
 		}
 

@@ -17,27 +17,37 @@ struct sl_core_info_map_str_item {
 static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	[SL_CORE_INFO_MAP_MEDIA_CHECK]        = { .desc = "media-check"        },
 	[SL_CORE_INFO_MAP_MEDIA_OK]           = { .desc = "media-ok"           },
+
+	[SL_CORE_INFO_MAP_SERDES_START]       = { .desc = "serdes-start"       },
+	[SL_CORE_INFO_MAP_SERDES_CHECK]       = { .desc = "serdes-check"       },
 	[SL_CORE_INFO_MAP_SERDES_OK]          = { .desc = "serdes-ok"          },
+
 	[SL_CORE_INFO_MAP_PCS_LOCAL_FAULT]    = { .desc = "pcs-local-fault"    },
 	[SL_CORE_INFO_MAP_PCS_REMOTE_FAULT]   = { .desc = "pcs-remote-fault"   },
 	[SL_CORE_INFO_MAP_PCS_LINK_DOWN]      = { .desc = "pcs-link-down"      },
+	[SL_CORE_INFO_MAP_PCS_CHECK]          = { .desc = "pcs-check"          },
 	[SL_CORE_INFO_MAP_PCS_OK]             = { .desc = "pcs-ok"             },
+
 	[SL_CORE_INFO_MAP_FEC_CHECK]          = { .desc = "fec-check"          },
 	[SL_CORE_INFO_MAP_FEC_OK]             = { .desc = "fec-ok"             },
 	[SL_CORE_INFO_MAP_LINK_DEGRADED]      = { .desc = "link-degraded"      },
+
 	[SL_CORE_INFO_MAP_LINK_DOWN]          = { .desc = "link-down"          },
 	[SL_CORE_INFO_MAP_LINK_UP_CANCEL]     = { .desc = "link-up-cancel"     },
 	[SL_CORE_INFO_MAP_LINK_UP_TIMEOUT]    = { .desc = "link-up-timeout"    },
 	[SL_CORE_INFO_MAP_LINK_UP_FAIL]       = { .desc = "link-up-fail"       },
 	[SL_CORE_INFO_MAP_LINK_UP]            = { .desc = "link-up"            },
+
 	[SL_CORE_INFO_MAP_MAC_RX_CONFIG]      = { .desc = "mac-rx-config"      },
 	[SL_CORE_INFO_MAP_MAC_TX_CONFIG]      = { .desc = "mac-tx-config"      },
 	[SL_CORE_INFO_MAP_MAC_RX]             = { .desc = "mac-rx"             },
 	[SL_CORE_INFO_MAP_MAC_TX]             = { .desc = "mac-tx"             },
+
 	[SL_CORE_INFO_MAP_AN_BASE_PAGE]       = { .desc = "an-base-page"       },
 	[SL_CORE_INFO_MAP_AN_NEXT_PAGE]       = { .desc = "an-next-page"       },
 	[SL_CORE_INFO_MAP_AN_ERROR]           = { .desc = "an-error"           },
 	[SL_CORE_INFO_MAP_AN_DONE]            = { .desc = "an-done"            },
+
 	[SL_CORE_INFO_MAP_LLR_CONFIG]         = { .desc = "llr-config"         },
 	[SL_CORE_INFO_MAP_LLR_SETTING_UP]     = { .desc = "llr-setting-up"     },
 	[SL_CORE_INFO_MAP_LLR_SETUP]          = { .desc = "llr-setup"          },
@@ -45,10 +55,11 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	[SL_CORE_INFO_MAP_LLR_STARTING]       = { .desc = "llr-starting"       },
 	[SL_CORE_INFO_MAP_LLR_RUNNING]        = { .desc = "llr-running"        },
 	[SL_CORE_INFO_MAP_LLR_START_TIMEOUT]  = { .desc = "llr-start-timeout"  },
-	[SL_CORE_INFO_MAP_HIGH_SER]           = { .desc = "high-ser"           },
 	[SL_CORE_INFO_MAP_LLR_MAX_STARVATION] = { .desc = "llr-max-starvation" },
 	[SL_CORE_INFO_MAP_LLR_STARVED]        = { .desc = "llr-starved"        },
 	[SL_CORE_INFO_MAP_LLR_REPLAY_MAX]     = { .desc = "llr-replay-max"     },
+
+	[SL_CORE_INFO_MAP_HIGH_SER]           = { .desc = "high-ser"           },
 };
 
 #define SL_CORE_INFO_MAP_STR_MIN 10

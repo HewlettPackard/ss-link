@@ -86,7 +86,6 @@ function test_verify {
 					"${notif_fields[7]}" == "ucw" && \
 					"${notif_fields[8]}" == "retryable" && \
 					"${notif_fields[9]}" == "origin-up" ]]; then
-						sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
 						found=true
 					break
 				fi
@@ -94,8 +93,8 @@ function test_verify {
 
 			if [[ "${found}" != true ]]; then
 				sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-				sl_test_debug_log "${FUNCNAME}" "Expected: link-up-fail ucw retryable origin-up"
-				sl_test_debug_log "${FUNCNAME}" "notif = ${notif}"
+				sl_test_error_log "${FUNCNAME}" "notif expected: link-up-fail ucw retryable origin-up"
+				sl_test_error_log "${FUNCNAME}" "notif actual: ${notif}"
 				return 1
 			fi
 
@@ -134,7 +133,7 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_setup (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), settings = ${settings})"
+		"lgrp_setup (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), settings = ${settings}, config = ${link_config})"
 
 	sl_test_lgrp_setup ${ldev_num} "${lgrp_nums[*]}" ${settings}
 	rtn=$?
@@ -195,7 +194,7 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"link_opt_use_fec_cntr_set on (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}),)"
+		"link_opt_use_fec_cntr_set on (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
 	sl_test_link_opt_use_fec_cntr_set ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}" on
 	rtn=$?

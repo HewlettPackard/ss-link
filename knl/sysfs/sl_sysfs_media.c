@@ -59,7 +59,7 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high-powered" : "low-powered");
 }
 
-static ssize_t temperature_celcius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
@@ -82,7 +82,7 @@ static ssize_t temperature_celcius_show(struct kobject *kobj, struct kobj_attrib
 		return scnprintf(buf, PAGE_SIZE, "io-error\n");
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"temperature_celcius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
+		"temperature_celsius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", temp);
 }
@@ -680,7 +680,7 @@ static ssize_t is_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *
 
 static struct kobj_attribute media_state                        = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state             = __ATTR_RO(jack_power_state);
-static struct kobj_attribute media_temperature                  = __ATTR_RO(temperature_celcius);
+static struct kobj_attribute media_temperature                  = __ATTR_RO(temperature_celsius);
 static struct kobj_attribute media_high_temp                    = __ATTR_RO(high_temp);
 static struct kobj_attribute media_vendor                       = __ATTR_RO(vendor);
 static struct kobj_attribute media_type                         = __ATTR_RO(type);

@@ -123,7 +123,7 @@ function print_jack_state {
        	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
 
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
-		local temp=$(cat ${LGRP_PATH}/media/temperature_celcius)
+		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
 		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
