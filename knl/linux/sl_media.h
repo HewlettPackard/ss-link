@@ -171,6 +171,7 @@ const char *sl_media_speed_str(u32 speed);
 const char *sl_media_ber_str(u8 media_interface);
 const char *sl_media_host_interface_str(u32 speed, u32 type);
 const char *sl_media_info_str(u32 info);
+const char *sl_media_opt_str(u32 option);
 const char *sl_media_error_str(u32 error);
 const char *sl_media_jack_type_str(u32 jack_type, u32 density);
 
