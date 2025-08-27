@@ -168,6 +168,10 @@ struct sl_core_llr *sl_core_data_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	return core_llr;
 }
 
+#define SL_CORE_DATA_LLR_CONFIG_SETUP_TIMEOUT_MS     3000
+#define SL_CORE_DATA_LLR_CONFIG_SETUP_TIMEOUT_MAX_MS 180000
+#define SL_CORE_DATA_LLR_CONFIG_START_TIMEOUT_MS     3000
+#define SL_CORE_DATA_LLR_CONFIG_START_TIMEOUT_MAX_MS 180000
 int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_config *llr_config)
 {
 	core_llr->settings.size              = 1;
@@ -194,17 +198,21 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	core_llr->settings.replay_ct_max       = 0xFF;
 	core_llr->settings.replay_timer_max    = 15500;
 
-	if (llr_config->setup_timeout_ms == 0) {
+	if ((llr_config->setup_timeout_ms <= 0) ||
+		(llr_config->setup_timeout_ms > SL_CORE_DATA_LLR_CONFIG_SETUP_TIMEOUT_MAX_MS)) {
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"config set - setup timeout is 0, setting to default");
-		core_llr->timers[SL_CORE_TIMER_LLR_SETUP].data.timeout_ms = 3000;
+			"config set setting setup timeout to default (%ums)",
+			SL_CORE_DATA_LLR_CONFIG_SETUP_TIMEOUT_MS);
+		core_llr->timers[SL_CORE_TIMER_LLR_SETUP].data.timeout_ms = SL_CORE_DATA_LLR_CONFIG_SETUP_TIMEOUT_MS;
 	} else {
 		core_llr->timers[SL_CORE_TIMER_LLR_SETUP].data.timeout_ms = llr_config->setup_timeout_ms;
 	}
-	if (llr_config->start_timeout_ms == 0) {
+	if ((llr_config->start_timeout_ms <= 0) ||
+		(llr_config->start_timeout_ms > SL_CORE_DATA_LLR_CONFIG_START_TIMEOUT_MAX_MS)) {
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"config set - start timeout is 0, setting to default");
-		core_llr->timers[SL_CORE_TIMER_LLR_START].data.timeout_ms = 3000;
+			"config set setting start timeout to default (%ums)",
+			SL_CORE_DATA_LLR_CONFIG_START_TIMEOUT_MS);
+		core_llr->timers[SL_CORE_TIMER_LLR_START].data.timeout_ms = SL_CORE_DATA_LLR_CONFIG_START_TIMEOUT_MS;
 	} else {
 		core_llr->timers[SL_CORE_TIMER_LLR_START].data.timeout_ms = llr_config->start_timeout_ms;
 	}

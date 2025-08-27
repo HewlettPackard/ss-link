@@ -1105,7 +1105,6 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	sl_core_hw_link_off(core_link);
 
-
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
 	sl_core_hw_link_down_callback(core_link);
