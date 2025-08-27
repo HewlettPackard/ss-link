@@ -221,14 +221,15 @@ void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(serial_num_str, media_lgrp->cable_info->media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
+		strncpy(serial_num_str,
+			media_lgrp->cable_info->media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(serial_num_str, media_lgrp->cable_info->stashed_media_attr.serial_num_str,
-			SL_MEDIA_SERIAL_NUM_SIZE);
+		strncpy(serial_num_str,
+			media_lgrp->cable_info->stashed_media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	default:
-		memset(serial_num_str, '0', SL_MEDIA_SERIAL_NUM_SIZE - 2);
+		memset(serial_num_str, '0', (SL_MEDIA_SERIAL_NUM_SIZE - 1));
 		serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
