@@ -646,13 +646,11 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
-			sl_media_log_warn(media_jack, LOG_NAME, "cable validate failed [%d]", rtn);
 			sl_media_log_warn(media_jack, LOG_NAME,
-				"media attrs (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%X)",
-				media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
+				"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%X)",
+				rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
 				media_attr.type, sl_media_type_str(media_attr.type),
 				media_attr.length_cm, media_attr.speeds_map);
-
 			media_jack->is_cable_not_supported = true;
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
@@ -686,7 +684,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	if (media_jack->is_cable_not_supported)
 		flags |= SL_MEDIA_TYPE_NOT_SUPPORTED;
 
-	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, flags);
+	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);

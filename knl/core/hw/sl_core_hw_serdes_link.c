@@ -84,7 +84,7 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 	}
 
 	rtn = sl_core_hw_serdes_core_pll(core_link->core_lgrp,
-		core_link->serdes.core_serdes_settings.clocking);
+		core_link->serdes.core_serdes_settings.clocking, SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT);
 	if (rtn) {
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME, "serdes_core_pll failed [%d]", rtn);
@@ -125,26 +125,34 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		"link up settings (pcs_mode = %u)", core_link->pcs.settings.pcs_mode);
 	switch (core_link->pcs.settings.pcs_mode) {
 	case SL_CORE_HW_PCS_MODE_BJ_100G:
-		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_NRZ;
-		core_link->serdes.core_serdes_settings.clocking = SL_CORE_HW_SERDES_CLOCKING_82P5;
-		core_link->serdes.core_serdes_settings.width    = SL_CORE_HW_SERDES_WIDTH_40;
-		core_link->serdes.core_serdes_settings.osr      = SL_CORE_HW_SERDES_OSR_OSX2;
+		core_link->serdes.core_serdes_settings.encoding  = SL_CORE_HW_SERDES_ENCODING_NRZ;
+		core_link->serdes.core_serdes_settings.clocking  = SL_CORE_HW_SERDES_CLOCKING_82P5;
+		core_link->serdes.core_serdes_settings.width     = SL_CORE_HW_SERDES_WIDTH_40;
+		core_link->serdes.core_serdes_settings.osr       = SL_CORE_HW_SERDES_OSR_OSX2;
+		core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;
 		break;
 	case SL_CORE_HW_PCS_MODE_CD_50G:
 	case SL_CORE_HW_PCS_MODE_CD_100G:
 	case SL_CORE_HW_PCS_MODE_BS_200G:
-		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_NR;
-		core_link->serdes.core_serdes_settings.clocking = SL_CORE_HW_SERDES_CLOCKING_85;
-		core_link->serdes.core_serdes_settings.width    = SL_CORE_HW_SERDES_WIDTH_80;
-		core_link->serdes.core_serdes_settings.osr      = SL_CORE_HW_SERDES_OSR_OSX2;
+		core_link->serdes.core_serdes_settings.encoding  = SL_CORE_HW_SERDES_ENCODING_PAM4_NR;
+		core_link->serdes.core_serdes_settings.clocking  = SL_CORE_HW_SERDES_CLOCKING_85;
+		core_link->serdes.core_serdes_settings.width     = SL_CORE_HW_SERDES_WIDTH_80;
+		core_link->serdes.core_serdes_settings.osr       = SL_CORE_HW_SERDES_OSR_OSX2;
+		core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;
 		break;
 	case SL_CORE_HW_PCS_MODE_CK_100G:
 	case SL_CORE_HW_PCS_MODE_CK_200G:
 	case SL_CORE_HW_PCS_MODE_CK_400G:
-		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_NR;
-		core_link->serdes.core_serdes_settings.clocking = SL_CORE_HW_SERDES_CLOCKING_85;
-		core_link->serdes.core_serdes_settings.width    = SL_CORE_HW_SERDES_WIDTH_160;
-		core_link->serdes.core_serdes_settings.osr      = SL_CORE_HW_SERDES_OSR_OSX1;
+		core_link->serdes.core_serdes_settings.encoding  = SL_CORE_HW_SERDES_ENCODING_PAM4_NR;
+		core_link->serdes.core_serdes_settings.clocking  = SL_CORE_HW_SERDES_CLOCKING_85;
+		core_link->serdes.core_serdes_settings.width     = SL_CORE_HW_SERDES_WIDTH_160;
+		core_link->serdes.core_serdes_settings.osr       = SL_CORE_HW_SERDES_OSR_OSX1;
+		if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AEC)
+			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AEC;
+		else if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AOC)
+			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AOC;
+		else
+			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;
 		break;
 	}
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
@@ -245,7 +253,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	}
 
 	rtn = sl_core_hw_serdes_core_pll(core_link->core_lgrp,
-		core_link->serdes.core_serdes_settings.clocking);
+		core_link->serdes.core_serdes_settings.clocking, core_link->serdes.core_serdes_settings.tx_pll_bw);
 	if (rtn) {
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME, "serdes_core_pll failed [%d]", rtn);

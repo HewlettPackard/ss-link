@@ -306,7 +306,7 @@ out:
 	return rtn;
 }
 
-static int sl_core_hw_serdes_core_pll_set(struct sl_core_lgrp *core_lgrp, u32 clocking)
+static int sl_core_hw_serdes_core_pll_set(struct sl_core_lgrp *core_lgrp, u16 clocking, u16 tx_pll_bw)
 {
 	int  rtn;
 	u16 *addrs;
@@ -348,6 +348,9 @@ static int sl_core_hw_serdes_core_pll_set(struct sl_core_lgrp *core_lgrp, u32 cl
 		addrs[SERDES_AMS_PLL_COM_PLL_CONTROL_12], 0x0000, 0x0008); /* update PLL ratio */
 
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0,
+		addrs[SERDES_PLL_SELECT], tx_pll_bw, 0x003C); /* pll_i_en_ovrrad */
+
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0,
 		addrs[SERDES_PLL_RESET2], 0x0000, 0x0800); /* set PLL reset */
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0,
 		addrs[SERDES_PLL_RESET2], 0x0800, 0x0800); /* clear PLL reset */
@@ -382,7 +385,7 @@ out:
 	return rtn;
 }
 
-int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
+int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u16 clocking, u16 tx_pll_bw)
 {
 	int  rtn;
 	u16 *addrs;
@@ -402,7 +405,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking)
 	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, 0xFF, 0,
 		addrs[SERDES_CORE_PLL_COM_TOP_USER_CONTROL], 0x0000, 0x2000); /* set PLL reset */
 
-	rtn = sl_core_hw_serdes_core_pll_set(core_lgrp, clocking);
+	rtn = sl_core_hw_serdes_core_pll_set(core_lgrp, clocking, tx_pll_bw);
 	if (rtn) {
 		sl_core_log_err_trace(core_lgrp, LOG_NAME, "core_pll_set failed [%d]", rtn);
 		goto out;
