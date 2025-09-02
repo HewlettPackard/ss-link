@@ -241,6 +241,7 @@ struct sl_core_serdes_settings {
 	u16 width;
 	u16 dfe;
 	u16 scramble;
+	u16 tx_pll_bw;
 };
 
 #define SL_CORE_LINK_MAGIC 0x736c4C4E

@@ -121,7 +121,8 @@ int sl_core_ldev_serdes_init(u8 ldev_num)
 				"serdes_core_init (lgrp_num = %u) failed [%d]", lgrp_num, rtn);
 			goto out;
 		}
-		rtn = sl_core_hw_serdes_core_pll(core_lgrp, SL_CORE_HW_SERDES_CLOCKING_85);
+		rtn = sl_core_hw_serdes_core_pll(core_lgrp,
+			SL_CORE_HW_SERDES_CLOCKING_85, SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT);
 		if (rtn) {
 			sl_core_log_err(core_ldev, LOG_NAME,
 				"serdes_core_pll (lgrp_num = %u) failed [%d]", lgrp_num, rtn);

@@ -468,7 +468,7 @@ static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8
 	return -EIO;
 }
 
-#define LANE_UP_RX_CHECK_NUM_TRIES        20
+#define LANE_UP_RX_CHECK_NUM_TRIES        70
 #define LANE_UP_RX_CHECK_DATA_VALID_BIT   BIT(12)
 #define LANE_UP_RX_CHECK_CLOCK_VALID_BIT  BIT(8)
 #define LANE_UP_RX_CHECK_LOCK_BIT         BIT(4)

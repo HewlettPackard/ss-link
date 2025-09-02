@@ -7,6 +7,6 @@
 struct sl_core_lgrp;
 
 int  sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp);
-int  sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u32 clocking);
+int  sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u16 clocking, u16 tx_pll_bw);
 
 #endif /* _SL_CORE_HW_SERDES_CORE_H_ */

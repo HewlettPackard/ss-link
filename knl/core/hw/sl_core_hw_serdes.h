@@ -7,6 +7,10 @@
 struct sl_core_link;
 struct sl_core_lgrp;
 
+#define SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT      0x30
+#define SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AEC 0x24
+#define SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AOC 0x00
+
 #define LGRP_TO_SERDES(_lgrp_num) ((_lgrp_num) >> 1)
 
 int  sl_core_hw_serdes_init(struct sl_core_lgrp *core_lgrp);

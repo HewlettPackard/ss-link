@@ -70,17 +70,35 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	return -ENOENT;
 }
 
-int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, u32 flags)
+int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, u32 media_type, u32 flags)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "serdes settings get");
+	sl_media_log_dbg(media_jack, LOG_NAME,
+		"serdes settings get (media_type = 0x%X %s, flags = 0x%X)",
+		media_type, sl_media_type_str(media_type), flags);
 
 	if (flags & SL_MEDIA_TYPE_NOT_SUPPORTED) {
-		media_jack->serdes_settings.pre1   = -20;
-		media_jack->serdes_settings.pre2   = 0;
-		media_jack->serdes_settings.pre3   = 0;
-		media_jack->serdes_settings.cursor = 116;
-		media_jack->serdes_settings.post1  = 0;
-		media_jack->serdes_settings.post2  = 0;
+		if (media_type == SL_MEDIA_TYPE_AEC) {
+			media_jack->serdes_settings.pre1   = -4;
+			media_jack->serdes_settings.pre2   = 0;
+			media_jack->serdes_settings.pre3   = 0;
+			media_jack->serdes_settings.cursor = 98;
+			media_jack->serdes_settings.post1  = 0;
+			media_jack->serdes_settings.post2  = 0;
+		} else if (media_type == SL_MEDIA_TYPE_AOC) {
+			media_jack->serdes_settings.pre1   = -12;
+			media_jack->serdes_settings.pre2   = 0;
+			media_jack->serdes_settings.pre3   = 0;
+			media_jack->serdes_settings.cursor = 98;
+			media_jack->serdes_settings.post1  = -4;
+			media_jack->serdes_settings.post2  = 0;
+		} else {
+			media_jack->serdes_settings.pre1   = -20;
+			media_jack->serdes_settings.pre2   = 0;
+			media_jack->serdes_settings.pre3   = 0;
+			media_jack->serdes_settings.cursor = 116;
+			media_jack->serdes_settings.post1  = 0;
+			media_jack->serdes_settings.post2  = 0;
+		}
 	} else if (flags & SL_MEDIA_TYPE_BACKPLANE) {
 		media_jack->serdes_settings.pre1   = 0;
 		media_jack->serdes_settings.pre2   = 0;

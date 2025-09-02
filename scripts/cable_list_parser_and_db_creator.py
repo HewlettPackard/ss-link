@@ -188,6 +188,20 @@ for i in range(len(HP_PN)):
                 file1.write("\t\t.serdes_settings.cursor = " + "100" + ",\n")
                 file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
                 file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+            elif cell_value == "AEC":
+                file1.write("\t\t.serdes_settings.pre1   = " + "-4" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
+                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+            elif cell_value == "AOC":
+                file1.write("\t\t.serdes_settings.pre1   = " + "-12" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
+                file1.write("\t\t.serdes_settings.post1  = " + "-4" + ",\n")
+                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
             else:
                 file1.write("\t\t.serdes_settings.pre1   = " + "-20" + ",\n")
                 file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
