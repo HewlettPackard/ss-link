@@ -107,48 +107,48 @@ for i in range(len(HP_PN)):
         hp_pn_int = int(hp_pn_str)
         if HP_PN[i] == hp_pn_int:
             file1.write("\t{\n")
-            file1.write("\t\t.hpe_pn                 = " + str(HP_PN[i]) + ",\n")
+            file1.write("\t\t.hpe_pn                   = " + str(HP_PN[i]) + ",\n")
             
             cell_obj = dataframe1.cell(row = curr_row+1, column = 7) #read the vendor
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "TE":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_TE" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_TE" + ",\n")
             elif cell_value == "Bizlink" or cell_value == "BizLink":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_BIZLINK" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_BIZLINK" + ",\n")
             elif cell_value == "Hisense":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_HISENSE" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_HISENSE" + ",\n")
             elif cell_value == "Coherent (Finisar II-VI)":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_FINISAR" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_FINISAR" + ",\n")
             elif cell_value == "Cloud Light":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_CLOUD_LIGHT" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_CLOUD_LIGHT" + ",\n")
             elif cell_value == "Molex":
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_MOLEX" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_MOLEX" + ",\n")
             else:
-                file1.write("\t\t.vendor                 = " + "SL_MEDIA_VENDOR_INVALID" + ",\n")
+                file1.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_INVALID" + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "DAC" or cell_value == "PEC":
-                file1.write("\t\t.type                   = " + "SL_MEDIA_TYPE_PEC" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_PEC" + ",\n")
             elif cell_value == "AOC-A" or cell_value == "AOC-D" or cell_value == "AOC":
-                file1.write("\t\t.type                   = " + "SL_MEDIA_TYPE_AOC" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AOC" + ",\n")
             elif cell_value == "POF":
-                file1.write("\t\t.type                   = " + "SL_MEDIA_TYPE_POF" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POF" + ",\n")
             elif cell_value == "AEC":
-                file1.write("\t\t.type                   = " + "SL_MEDIA_TYPE_AEC" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AEC" + ",\n")
             else:
-                file1.write("\t\t.type                   = " + "SL_MEDIA_TYPE_INVALID" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_INVALID" + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 5) #read the shape
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "Straight":
-                file1.write("\t\t.shape                  = " + "SL_MEDIA_SHAPE_STRAIGHT" + ",\n")
+                file1.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_STRAIGHT" + ",\n")
             elif cell_value == "Splitter (Y)":
-                file1.write("\t\t.shape                  = " + "SL_MEDIA_SHAPE_SPLITTER" + ",\n")
+                file1.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_SPLITTER" + ",\n")
             elif cell_value == "Bifurcated (H)":
-                file1.write("\t\t.shape                  = " + "SL_MEDIA_SHAPE_BIFURCATED" + ",\n")
+                file1.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_BIFURCATED" + ",\n")
             else:
-                file1.write("\t\t.shape                  = " + "SL_MEDIA_SHAPE_INVALID" + ",\n")
+                file1.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_INVALID" + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 10) #read the length
             length = str(cell_obj.value)
@@ -159,56 +159,56 @@ for i in range(len(HP_PN)):
             num_length = num_length * 100 # multiply by 100 to convert meter to cm
             num_length = int(num_length)  #convert float to int
             num_length = str(num_length) #convert int to string
-            file1.write("\t\t.length_cm              = " + num_length + ",\n")
+            file1.write("\t\t.length_cm                = " + num_length + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 4) #check if SS200 cable
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "SS200":
-                file1.write("\t\t.is_ss200_cable         = " + "true" + ",\n")
+                file1.write("\t\t.is_supported_ss200_cable = " + "true" + ",\n")
             else:
-                file1.write("\t\t.is_ss200               = " + "false" + ",\n")
+                file1.write("\t\t.is_supported_ss200_cable = " + "false" + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 11) #read the speed
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "200G E":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_200G" + ",\n")
+                file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_200G" + ",\n")
             elif cell_value == "400G E":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
+                file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
             elif cell_value == "800Gb":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
+                file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
             else:
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_INVALID" + ",\n")
+                file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_INVALID" + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
             cell_value = str(cell_obj.value).strip() #remove whitespace
             if cell_value == "DAC" or cell_value == "PEC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "100" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre1     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor   = " + "100" + ",\n")
+                file1.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
             elif cell_value == "AEC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "-4" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre1     = " + "-4" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor   = " + "98" + ",\n")
+                file1.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
             elif cell_value == "AOC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "-12" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "-4" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre1     = " + "-12" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor   = " + "98" + ",\n")
+                file1.write("\t\t.serdes_settings.post1    = " + "-4" + ",\n")
+                file1.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
             else:
-                file1.write("\t\t.serdes_settings.pre1   = " + "-20" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "116" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre1     = " + "-20" + ",\n")
+                file1.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.cursor   = " + "116" + ",\n")
+                file1.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                file1.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
 
             file1.write("\t},\n")
 
@@ -220,5 +220,5 @@ for i in range(len(HP_PN)):
 
 
 file1.write("};\n\n")
-file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */\n")
+file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */")
 file1.close()

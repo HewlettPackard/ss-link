@@ -240,7 +240,7 @@ function print_jack {
         local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
         local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
         local supported=$(cat ${LGRP_PATH}/media/supported)
-        local ss200_cable=$(cat ${LGRP_PATH}/media/is_ss200_cable)
+        local ss200_cable=$(cat ${LGRP_PATH}/media/is_supported_ss200_cable)
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
@@ -269,7 +269,7 @@ function print_jack {
         printf "           | cable: ${vendor} ${type} ${length}${units}\n"
         printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
-        printf "           | supported: ${supported}, is_ss200_cable: ${ss200_cable}\n"
+        printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
 		printf "           | active_cable: fw_version: ${fw_ver}, (target = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
@@ -346,6 +346,7 @@ function print_link {
         local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
         local keep_serdes_up=$(cat ${LINK_PATH}/policies/keep_serdes_up)
         local use_unsupported_cable=$(cat ${LINK_PATH}/policies/use_unsupported_cable)
+        local use_supported_ss200_cable=$(cat ${LINK_PATH}/policies/use_supported_ss200_cable)
         local ignore_media_error=$(cat ${LINK_PATH}/policies/ignore_media_error)
         local hpe_map=$(cat ${LINK_PATH}/config/hpe_map)
         local pause_map=$(cat ${LINK_PATH}/config/pause_map)
@@ -370,9 +371,10 @@ function print_link {
         printf "    causes | last_up_fail     : [${up_fail_time}] ${up_fail_cause_map}\n"
         printf "           | last_autoneg_fail: [${an_fail_time}] ${an_fail_cause}\n"
         printf "           | last_down        : [${down_time}] ${down_cause_map}\n"
-        printf "  policies | keep_serdes_up       : ${keep_serdes_up}\n"
-        printf "           | use_unsupported_cable: ${use_unsupported_cable}\n"
-        printf "           | ignore_media_error   : ${ignore_media_error}\n"
+        printf "  policies | keep_serdes_up           : ${keep_serdes_up}\n"
+        printf "           | use_unsupported_cable    : ${use_unsupported_cable}\n"
+        printf "           | use_supported_ss200_cable: ${use_supported_ss200_cable}\n"
+        printf "           | ignore_media_error       : ${ignore_media_error}\n"
         printf "    config | hpe     : ${hpe_map}\n"
         printf "           | loopback: ${loopback}\n"
         printf "           | pause   : ${pause_map}\n"

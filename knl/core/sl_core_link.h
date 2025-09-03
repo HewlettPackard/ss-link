@@ -71,6 +71,10 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
 		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE_MAP (           \
+		SL_LINK_DOWN_CAUSE_SS200_CABLE       | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+		SL_LINK_DOWN_RETRYABLE)
 #define SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP (           \
 		SL_LINK_DOWN_CAUSE_MEDIA_ERROR       | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
@@ -444,6 +448,7 @@ void sl_core_link_ccw_warn_limit_crossed_set(u8 ldev_num, u8 lgrp_num, u8 link_n
 
 bool sl_core_link_policy_is_keep_serdes_up_set(struct sl_core_link *core_link);
 bool sl_core_link_policy_is_use_unsupported_cable_set(struct sl_core_link *core_link);
+bool sl_core_link_policy_is_use_supported_ss200_cable_set(struct sl_core_link *core_link);
 bool sl_core_link_policy_is_ignore_media_errors_set(struct sl_core_link *core_link);
 
 struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,

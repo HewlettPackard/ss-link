@@ -280,7 +280,7 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
-	if (media_lgrp->media_jack->is_ss200_cable) {
+	if (media_lgrp->media_jack->is_supported_ss200_cable) {
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "ss200 cable - shift not required");
 		return 0;
 	}
@@ -334,7 +334,7 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable upshift");
 
-	if (media_lgrp->media_jack->is_ss200_cable) {
+	if (media_lgrp->media_jack->is_supported_ss200_cable) {
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "ss200 cable - shift not required");
 		return 0;
 	}

@@ -92,7 +92,7 @@ struct sl_media_cable_attr {
 	u32                             hpe_pn;      /* HPE part number */
 	u32                             max_speed;
 	u32                             shape;
-	bool                            is_ss200_cable;
+	bool                            is_supported_ss200_cable;
 
 	struct sl_media_serdes_settings serdes_settings;
 };
@@ -131,7 +131,7 @@ struct sl_media_jack {
 
 	bool                            is_cable_not_supported;
 	bool                            is_cable_format_invalid;
-	bool                            is_ss200_cable;
+	bool                            is_supported_ss200_cable;
 	bool                            is_high_powered;
 	unsigned long                   cable_power_up_wait_time_end;
 	u32                             fault_cause;

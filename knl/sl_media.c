@@ -287,8 +287,8 @@ const char *sl_media_info_str(u32 info)
 		return "resettable";
 	case SL_MEDIA_INFO_LINKTRAIN:
 		return "linktrain";
-	case SL_MEDIA_INFO_SS200_CABLE:
-		return "SS200-cable";
+	case SL_MEDIA_INFO_SUPPORTED_SS200_CABLE:
+		return "supported-ss200-cable";
 	default:
 		return "unknown";
 	}

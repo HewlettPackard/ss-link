@@ -160,8 +160,20 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		return;
 	}
 
+	if (media_lgrp->media_jack->is_supported_ss200_cable &&
+		!sl_core_link_policy_is_use_supported_ss200_cable_set(core_link)) {
+
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SS200_CABLE_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+
+		return;
+	}
+
 	if (sl_media_lgrp_media_has_error(media_lgrp) &&
-		!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
+		!sl_core_link_policy_is_ignore_media_errors_set(core_link) &&
+		!media_lgrp->media_jack->is_supported_ss200_cable) {
 
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP);
 		rtn = sl_core_link_up_fail(core_link);
@@ -379,7 +391,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}
@@ -388,7 +400,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	sl_core_hw_pcs_config(core_link);
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-	if ((media_lgrp->media_jack->is_ss200_cable) &&
+	if ((media_lgrp->media_jack->is_supported_ss200_cable) &&
 		((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G) ||
 		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G)  ||
 		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G))) {
@@ -396,7 +408,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+			sl_core_log_warn_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -409,7 +421,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}
@@ -422,7 +434,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UPSHIFT_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
 
 			return;
 		}

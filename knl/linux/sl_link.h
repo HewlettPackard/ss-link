@@ -122,9 +122,10 @@ struct sl_link_degrade_info {
 	u8   rx_lane_map;
 };
 
-#define SL_LINK_POLICY_OPT_KEEP_SERDES_UP        BIT(0) /* Keep serdes running when link is down                   */
-#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE BIT(1) /* Try to bring the link up even if cable is not supported */
-#define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR    BIT(2) /* Try to bring the link up even if media has errors       */
+#define SL_LINK_POLICY_OPT_KEEP_SERDES_UP            BIT(0) /* Keep serdes running when link is down                   */
+#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE     BIT(1) /* Try to bring the link up even if cable is not supported */
+#define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR        BIT(2) /* Try to bring the link up even if media has errors       */
+#define SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE BIT(3) /* Bring the link up with supported SS200 cables           */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 
@@ -160,6 +161,7 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(29) /* media has errors                     */
 #define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(30) /* link up canceled, link down          */
 #define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(31) /* unsupported speed                    */
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(32) /* SS200 cable                          */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */

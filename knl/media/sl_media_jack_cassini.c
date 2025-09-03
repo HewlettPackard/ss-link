@@ -119,22 +119,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		sl_media_eeprom_parse(media_jack, &media_attr);
 
-		if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
-			if (!sl_media_is_fw_version_valid(media_jack, &media_attr)) {
-				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
-				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
-			}
-			/*
-			 * disallow BJ100 speed on active cables
-			 */
-			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
-		}
-
 		if (media_attr.type == SL_MEDIA_TYPE_PEC)
 			media_attr.info |= SL_MEDIA_INFO_AUTONEG;
-
-		if (media_jack->is_ss200_cable)
-			media_attr.info |= SL_MEDIA_INFO_SS200_CABLE;
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
@@ -147,6 +133,26 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			media_jack->is_cable_not_supported = true;
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
+		}
+
+		if ((media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC) &&
+			!media_jack->is_supported_ss200_cable) {
+			if (!sl_media_is_fw_version_valid(media_jack, &media_attr)) {
+				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
+				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
+			}
+			/*
+			 * disallow BJ100 speed on active cables
+			 */
+			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
+		}
+
+		if (media_jack->is_supported_ss200_cable) {
+			media_attr.speeds_map  = 0;
+			media_attr.speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
+			media_attr.speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_100G;
+			media_attr.speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
+			media_attr.info       |= SL_MEDIA_INFO_SUPPORTED_SS200_CABLE;
 		}
 
 		media_attr.jack_type = SL_MEDIA_JACK_TYPE_QSFP;

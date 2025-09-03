@@ -61,7 +61,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 		    sl_media_data_cable_length_round_up(cable_db[indexer].length_cm) == media_attr->length_cm) {
 			media_attr->shape = cable_db[indexer].shape;
 			media_attr->max_speed = cable_db[indexer].max_speed;
-			media_jack->is_ss200_cable = cable_db[indexer].is_ss200_cable;
+			media_jack->is_supported_ss200_cable = cable_db[indexer].is_supported_ss200_cable;
 			media_jack->cable_db_idx = indexer;
 			return 0;
 		}

@@ -385,6 +385,8 @@ const char *sl_link_policy_opt_str(u32 option)
 		return "keep-serdes-up";
 	case SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE:
 		return "use-unsupported-cable";
+	case SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE:
+		return "use-supported-ss200-cable";
 	case SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR:
 		return "ignore-media-error";
 	default:
@@ -457,6 +459,9 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 			break;
 		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SS200_CABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ss200-cable ");
 			break;
 		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-speed ");
