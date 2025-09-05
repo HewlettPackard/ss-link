@@ -221,7 +221,7 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 
 			if (is_pollout_req(interface)) {
 				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read POLLOUT");
-				wake_up_poll(&interface->wait, POLLOUT);
+				wake_up_poll(&interface->wait, EPOLLOUT);
 				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read waiting");
 			}
 
@@ -288,34 +288,34 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 	return bytes;
 }
 
-static unsigned int sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_struct *wait)
+static __poll_t sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_struct *wait)
 {
 	struct lgrp_notif_interface *interface;
-	bool                         empty;
+	bool                         is_empty;
 
 	interface = filep->private_data;
 
-	is_pollout_req_set(interface, poll_requested_events(wait) & POLLOUT);
+	is_pollout_req_set(interface, poll_requested_events(wait) & EPOLLOUT);
 
-	empty = kfifo_is_empty(&interface->lgrp_events);
+	is_empty = kfifo_is_empty(&interface->lgrp_events);
 
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll (empty = %s)", empty ? "true" : "false");
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll (empty = %s)", is_empty ? "true" : "false");
 
-	if (!empty) {
+	if (!is_empty) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll data ready");
-		return (POLLIN | POLLRDNORM);
+		return (EPOLLIN | EPOLLRDNORM);
 	}
 
 	if (is_pollout_req(interface)) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll POLLOUT requested");
-		return POLLOUT;
+		return EPOLLOUT;
 	}
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll waiting");
 	poll_wait(filep, &interface->wait, wait);
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll wait complete");
 
-	return empty ? 0 : (POLLIN | POLLRDNORM);
+	return 0;
 }
 
 static int sl_test_lgrp_notif_open(struct inode *inode, struct file *filep)
@@ -358,7 +358,7 @@ static int sl_test_lgrp_notif_push(struct sl_lgrp_notif_msg *msg, time64_t times
 	copied = kfifo_in_spinlocked(&interface->lgrp_events, &event, 1, &interface->data_lock);
 	if (copied != 0) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "waking poll (copied = %d)", copied);
-		wake_up_poll(&interface->wait, POLLIN);
+		wake_up_poll(&interface->wait, EPOLLIN);
 	} else {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
 			"kfifo_in_spinlocked failed (copied = %d)", copied);
