@@ -12,11 +12,11 @@
 #include "sl_asic.h"
 #include "sl_media_ldev.h"
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
-#ifndef BUILDSYS_FRAMEWORK_EMULATOR
+#ifdef BUILDSYS_FRAMEWORK_SW2
+#ifndef BUILDSYS_FRAMEWORK_EMU2
 #include <linux/hsnxcvr-api.h>
-#endif /* BUILDSYS_FRAMEWORK_EMULATOR */
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_EMU2 */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 
 /*
  * These states reflect whether a physical module is inserted in
@@ -144,14 +144,14 @@ struct sl_media_jack {
 	u8                              lane_count_400_gaui; /* used for upshifting */
 	u8                              host_interface_400_gaui; /* used for upshifting */
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
-#ifndef BUILDSYS_FRAMEWORK_EMULATOR
+#ifdef BUILDSYS_FRAMEWORK_SW2
+#ifndef BUILDSYS_FRAMEWORK_EMU2
 	void                           *hdl;
 	struct xcvr_jack_data           jack_data;
 	struct xcvr_status_data         status_data;
 	struct xcvr_i2c_data            i2c_data;
-#endif /* BUILDSYS_FRAMEWORK_EMULATOR */
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_EMU2 */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0

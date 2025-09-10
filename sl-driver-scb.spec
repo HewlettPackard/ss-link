@@ -1,6 +1,5 @@
-# Build for Cassini hardware by default; build for emulator or netsim by
-# defining the 'platform' macro.
-# e.g. rpmbuild --define 'platform PLATFORM_CASSINI_SIM' ...
+# Build for nic hardware by default
+# build for emulator or netsim by defining the 'platform' macro.
 # If 'platform' is not defined, default to PLATFORM_CASSINI_HW
 %define platform_arg %{!?platform:PLATFORM_CASSINI_HW}%{?platform:%platform}=1
 
@@ -181,7 +180,7 @@ rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_addr.c
 rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_addr.h
 rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool.h
 
-# QUIRK: copy Cassini make configuration into place
+# QUIRK: copy make configuration into place
 cp source/common/configs/config.mak.cassini.scb %{buildroot}/${dkms_source_dir}/config.mak
 
 sed \

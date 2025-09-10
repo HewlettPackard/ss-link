@@ -181,11 +181,11 @@ function sl_pci_device_discover {
 
 	case ${pci_device_id} in
 		0370)
-			echo "rosetta2"
+			echo "sw"
 			return 0
 			;;
 		0371)
-			echo "cassini2"
+			echo "nic"
 			return 0
 			;;
 		*)

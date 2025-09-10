@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_INTR_FLGS_LLR_H_
 #define _SL_CORE_HW_INTR_FLGS_LLR_H_
@@ -7,7 +7,7 @@
 #include "sl_kconfig.h"
 #include "sl_asic.h"
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
+#ifdef BUILDSYS_FRAMEWORK_SW2
 
 #define SL_CORE_HW_INTR_FLGS_LLR_SETUP_UNEXP_LOOP_TIME(_llr_num)                                                 \
 	static u64 sl_core_hw_intr_flgs_llr_setup_unexp_loop_time_##_llr_num[SL_CORE_HW_INTR_LLR_FLGS_COUNT] = { \
@@ -59,7 +59,7 @@ static u64 *sl_core_hw_intr_flgs_llr[SL_CORE_HW_INTR_LLR_COUNT][SL_ASIC_MAX_LINK
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE,   start_init_complete),
 };
 
-#else /* Cassini */
+#else /* NIC2 */
 
 #define SL_CORE_HW_INTR_FLGS_LLR_UNEXP_LOOP_TIME(_llr_num)                                              \
 	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_llr_setup_unexp_loop_time_##_llr_num = { \
@@ -89,6 +89,6 @@ static u64 *sl_core_hw_intr_flgs_llr[SL_CORE_HW_INTR_LLR_COUNT][SL_ASIC_MAX_LINK
 	SL_CORE_HW_INTR_FLGS_LLR_ITEM(SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE,   start_init_complete),
 };
 
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 
 #endif /* _SL_CORE_HW_INTR_FLGS_LLR_H_ */

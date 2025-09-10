@@ -48,7 +48,7 @@ function __sl_test_link_sysfs_parent_set {
 		return ${rtn}
 	fi
 
-	#TODO: Need to adjust for Cassini
+	#TODO: Need to adjust for NIC
 
 	parent_set_sysfs_dir="${lgrp_sysfs_dir}/${lgrp_num}/${SL_TEST_SYSFS_TOP_LINK_DIR}/"
 

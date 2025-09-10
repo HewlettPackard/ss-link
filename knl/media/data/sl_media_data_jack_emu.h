@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
-#ifndef _SL_MEDIA_DATA_JACK_EMULATOR_H_
-#define _SL_MEDIA_DATA_JACK_EMULATOR_H_
+#ifndef _SL_MEDIA_DATA_JACK_EMU_H_
+#define _SL_MEDIA_DATA_JACK_EMU_H_
 
 struct sl_media_jack;
 
@@ -17,4 +17,4 @@ int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *tem
 
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack);
 
-#endif /* _SL_MEDIA_DATA_JACK_EMULATOR_H_ */
+#endif /* _SL_MEDIA_DATA_JACK_EMU_H_ */

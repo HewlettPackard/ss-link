@@ -3,7 +3,7 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-function sl_test_rosetta2_kill_services {
+function sl_test_sw_kill_services {
 
         sl_test_debug_log "${FUNCNAME}"
 
@@ -62,7 +62,7 @@ function sl_test_rosetta2_kill_services {
         return 0
 }
 
-function sl_test_rosetta2_unload {
+function sl_test_sw_unload {
         local rtn
 
         rmmod sl-test > /dev/null 2>&1
@@ -75,7 +75,7 @@ function sl_test_rosetta2_unload {
         return 0
 }
 
-function sl_test_rosetta2_unload_modules {
+function sl_test_sw_unload_modules {
 
         sl_test_debug_log "${FUNCNAME}"
 
@@ -106,7 +106,7 @@ function sl_test_rosetta2_unload_modules {
         return 0
 }
 
-function sl_test_rosetta2_load_modules
+function sl_test_sw_load_modules
 {
         sl_test_debug_log "${FUNCNAME}"
 
@@ -134,7 +134,7 @@ function sl_test_rosetta2_load_modules
         return 0
 }
 
-function sl_test_rosetta2_init {
+function sl_test_sw_init {
 
         hsn_active_check=0
         max_hsn_active_checks=10
@@ -142,24 +142,24 @@ function sl_test_rosetta2_init {
 
         sl_test_debug_log "${FUNCNAME}"
 
-        sl_test_rosetta2_kill_services
+        sl_test_sw_kill_services
         rtn=$?
         if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${FUNCNAME}" "sl_test_rosetta2_kill_services failed [${rtn}]"
+                sl_test_error_log "${FUNCNAME}" "sl_test_sw_kill_services failed [${rtn}]"
                 return ${rtn}
         fi
 
-        sl_test_rosetta2_unload_modules
+        sl_test_sw_unload_modules
         rtn=$?
         if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${FUNCNAME}" "sl_test_rosetta2_unload_modules failed [${rtn}]"
+                sl_test_error_log "${FUNCNAME}" "sl_test_sw_unload_modules failed [${rtn}]"
                 return ${rtn}
         fi
 
-        sl_test_rosetta2_load_modules
+        sl_test_sw_load_modules
         rtn=$?
         if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${FUNCNAME}" "sl_test_rosetta2_load_modules failed [${rtn}]"
+                sl_test_error_log "${FUNCNAME}" "sl_test_sw_load_modules failed [${rtn}]"
                 return ${rtn}
         fi
 
@@ -183,21 +183,21 @@ function sl_test_rosetta2_init {
         return 0
 }
 
-function sl_test_rosetta2_exit {
+function sl_test_sw_exit {
 
         sl_test_debug_log "${FUNCNAME}"
 
-        sl_test_rosetta2_kill_services
+        sl_test_sw_kill_services
         rtn=$?
         if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${FUNCNAME}" "sl_test_rosetta2_kill_services failed [${rtn}]"
+                sl_test_error_log "${FUNCNAME}" "sl_test_sw_kill_services failed [${rtn}]"
                 return ${rtn}
         fi
 
-        sl_test_rosetta2_unload_modules
+        sl_test_sw_unload_modules
         rtn=$?
         if [[ "${rtn}" != 0 ]]; then
-                sl_test_error_log "${FUNCNAME}" "sl_test_rosetta2_unload_modules failed [${rtn}]"
+                sl_test_error_log "${FUNCNAME}" "sl_test_sw_unload_modules failed [${rtn}]"
                 return ${rtn}
         fi
 

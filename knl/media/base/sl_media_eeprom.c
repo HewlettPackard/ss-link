@@ -14,8 +14,8 @@
 #include "sl_media_jack.h"
 #include "base/sl_media_log.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_jack_rosetta.h"
-#include "data/sl_media_data_jack_cassini.h"
+#include "data/sl_media_data_jack_sw2.h"
+#include "data/sl_media_data_jack_nic2.h"
 
 #define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
 

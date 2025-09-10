@@ -7,10 +7,10 @@
 #include "sl_asic.h"
 #include "sl_sysfs.h"
 #include "sl_media_jack.h"
-#include "sl_media_jack_cassini.h"
+#include "sl_media_jack_nic2.h"
 #include "sl_media_lgrp.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_jack_cassini.h"
+#include "data/sl_media_data_jack_nic2.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "base/sl_media_log.h"
@@ -42,7 +42,7 @@ static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 lde
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr set");
 
 	/*
-	 * only first element is valid in cable_info since single lgrp on cassini
+	 * only first element is valid in cable_info since single lgrp on nic
 	 */
 	media_jack->cable_info[0].ldev_num = ldev_num;
 	media_jack->cable_info[0].lgrp_num = lgrp_num;
@@ -232,7 +232,7 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable remove");
 
 	/*
-	 * only first element is valid in cable_info since single lgrp on cassini
+	 * only first element is valid in cable_info since single lgrp on nic
 	 */
 	sl_media_data_jack_media_attr_clr(media_jack, &media_jack->cable_info[0]);
 	sl_media_data_cable_serdes_settings_clr(media_jack);

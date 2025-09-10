@@ -134,11 +134,11 @@ void sl_core_hw_an_config(struct sl_core_link *core_link)
 {
 	u64 data64;
 	u32 port;
-#ifdef BUILDSYS_FRAMEWORK_CASSINI
+#ifdef BUILDSYS_FRAMEWORK_NIC2
 	union ss2_port_pml_cfg_pcs_autoneg_timers autoneg_timers = {
 		.link_fail_inhibit_timer_max = 0x3FFFFFFFF,
 	};
-#endif /* BUILDSYS_FRAMEWORK_CASSINI */
+#endif /* BUILDSYS_FRAMEWORK_NIC2 */
 
 	port = core_link->core_lgrp->num;
 
@@ -161,7 +161,7 @@ void sl_core_hw_an_config(struct sl_core_link *core_link)
 	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 0);
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
+#ifdef BUILDSYS_FRAMEWORK_SW2
 	sl_core_read64(core_link, SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS + 8, &data64);
 	data64 = SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS_WORD1_LINK_FAIL_INHIBIT_TIMER_MAX_UPDATE(data64, 0x3FFFFFFFF);
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS + 8, data64);
@@ -170,9 +170,9 @@ void sl_core_hw_an_config(struct sl_core_link *core_link)
 		data64 = SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS_WORD0_BREAK_LINK_TIMER_MAX_UPDATE(data64, 50000);
 		sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS, data64);
 	}
-#else /* Cassini */
+#else /* NIC2 */
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS_AUTONEG_TIMERS + 8, autoneg_timers.qw[1]);
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 
 	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
 }

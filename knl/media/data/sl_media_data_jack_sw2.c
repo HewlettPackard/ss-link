@@ -14,7 +14,7 @@
 #include "sl_media_jack.h"
 #include "sl_media_io.h"
 #include "sl_media_data_jack.h"
-#include "sl_media_data_jack_rosetta.h"
+#include "sl_media_data_jack_sw2.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "sl_core_link.h"

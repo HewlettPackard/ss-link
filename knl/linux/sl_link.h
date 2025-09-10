@@ -43,11 +43,11 @@ struct sl_link_caps {
 #define SL_LINK_CONFIG_HPE_LINKTRAIN     BIT(18)
 #define SL_LINK_CONFIG_HPE_PRECODING     BIT(17)
 #define SL_LINK_CONFIG_HPE_PCAL          BIT(16)  /* progressive calibration */
-/* Rosetta versions */
+/* SWITCH versions */
 #define SL_LINK_CONFIG_HPE_R3            BIT(10)
 #define SL_LINK_CONFIG_HPE_R2            BIT(9)
 #define SL_LINK_CONFIG_HPE_R1            BIT(8)
-/* Cassini versions */
+/* NIC versions */
 #define SL_LINK_CONFIG_HPE_C3            BIT(6)
 #define SL_LINK_CONFIG_HPE_C2            BIT(5)
 #define SL_LINK_CONFIG_HPE_C1            BIT(4)

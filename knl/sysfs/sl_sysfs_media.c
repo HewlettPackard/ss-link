@@ -868,7 +868,7 @@ int sl_sysfs_media_create(struct sl_ctl_lgrp *ctl_lgrp)
 	}
 
 	/*
-	 * This if condition will be false for cassini here
+	 * This if condition will be false for nic here
 	 */
 	state = sl_media_jack_state_get(media_lgrp->media_jack);
 	if (state == SL_MEDIA_JACK_CABLE_ONLINE) {

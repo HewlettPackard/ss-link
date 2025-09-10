@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include "sl_asic.h"
 #include "sl_media_jack.h"
-#include "sl_media_jack_rosetta.h"
+#include "sl_media_jack_sw2.h"
 #include "sl_media_lgrp.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_jack_rosetta_emulator.h"
+#include "data/sl_media_data_jack_sw2_emu.h"
 #include "data/sl_media_data_lgrp.h"
 #include "base/sl_media_log.h"
 

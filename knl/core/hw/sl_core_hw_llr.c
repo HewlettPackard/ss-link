@@ -318,7 +318,7 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 		core_llr->settings.replay_timer_max);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SM(core_llr->num), data64);
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
+#ifdef BUILDSYS_FRAMEWORK_SW2
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS_0(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_TIMEOUTS_0_PCS_LINK_DN_TIMER_MAX_UPDATE(data64, 0x389ACA00);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS_0(core_llr->num), data64);
@@ -326,13 +326,13 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 	data64 = SS2_PORT_PML_CFG_LLR_TIMEOUTS_1_DATA_AGE_TIMER_MAX_UPDATE(data64, 0xEE6B2800);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS_1(core_llr->num), data64);
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS_1(core_llr->num));
-#else /* Cassini */
+#else /* NIC2 */
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_TIMEOUTS_DATA_AGE_TIMER_MAX_UPDATE(data64, 0xEE6B2800);
 	data64 = SS2_PORT_PML_CFG_LLR_TIMEOUTS_PCS_LINK_DN_TIMER_MAX_UPDATE(data64, 0x389ACA00);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS(core_llr->num), data64);
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_TIMEOUTS(core_llr->num));
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 }
 
 //---------------------------- SETUP

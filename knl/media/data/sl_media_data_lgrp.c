@@ -13,8 +13,8 @@
 #include "sl_media_data_jack.h"
 #include "sl_asic.h"
 #include "base/sl_media_log.h"
-#include "sl_media_data_jack_rosetta.h"
-#include "sl_media_data_jack_cassini_emulator.h"
+#include "sl_media_data_jack_sw2.h"
+#include "sl_media_data_jack_nic2_emu.h"
 
 static struct sl_media_lgrp *media_lgrps[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS];
 static DEFINE_SPINLOCK(media_lgrps_lock);

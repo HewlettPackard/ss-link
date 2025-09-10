@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/init.h>
@@ -50,15 +50,15 @@ EXPORT_SYMBOL(sl_git_hash_str_get);
 
 static char *sl_framework_str(void)
 {
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
-	return "rosetta";
+#ifdef BUILDSYS_FRAMEWORK_SW2
+	return "switch2";
 #else
-#ifdef BUILDSYS_FRAMEWORK_CASSINI
-	return "cassini";
+#ifdef BUILDSYS_FRAMEWORK_NIC2
+	return "nic2";
 #else
 	return "unknown";
-#endif /* BUILDSYS_FRAMEWORK_CASSINI */
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_NIC2 */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 }
 
 static dev_t          sl_dev;

@@ -1,26 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2025 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_TEST_KCONFIG_H_
 #define _SL_TEST_KCONFIG_H_
 
 #ifdef BUILDSYS_EXTERNAL_BUILD
 
-/*
- * Rosetta framework
- */
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
-#define CONFIG_SL_TEST_FRAMEWORK_ROSETTA y
+#ifdef BUILDSYS_FRAMEWORK_SW2
+#define CONFIG_SL_TEST_FRAMEWORK_SW2   y
 
-/*
- * Cassini framework
- */
-#elif defined(BUILDSYS_FRAMEWORK_CASSINI)
-#define CONFIG_SL_TEST_FRAMEWORK_CASSINI y
+#elif defined(BUILDSYS_FRAMEWORK_NIC2)
+#define CONFIG_SL_TEST_FRAMEWORK_NIC2  y
 
-/*
- * No framework defined
- */
 #else
 #error Framework undefined
 #endif

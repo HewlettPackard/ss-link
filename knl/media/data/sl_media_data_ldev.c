@@ -13,10 +13,10 @@
 #include "sl_media_data_ldev.h"
 #include "sl_media_data_lgrp.h"
 #include "sl_media_data_jack.h"
-#include "sl_media_data_jack_rosetta.h"
-#include "sl_media_data_jack_emulator.h"
-#include "sl_media_data_jack_cassini.h"
-#include "sl_media_data_jack_cassini_emulator.h"
+#include "sl_media_data_jack_sw2.h"
+#include "sl_media_data_jack_emu.h"
+#include "sl_media_data_jack_nic2.h"
+#include "sl_media_data_jack_nic2_emu.h"
 
 static struct sl_media_ldev *media_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(media_ldevs_lock);

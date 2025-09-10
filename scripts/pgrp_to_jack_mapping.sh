@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rosetta_sysfs_path="/sys/class/rossw"
-cassini_sysfs_path="/sys/class/cxi"
+switch_sysfs_path="/sys/class/rossw"
+nic_sysfs_path="/sys/class/cxi"
 jack_sysfs_path="media/jack_num"
 process_pgrp_dirs() {
         local base_dir="$1"
@@ -30,16 +30,16 @@ process_pgrp_dirs() {
         done
 }
 
-if [[ -d "$rosetta_sysfs_path" ]]; then
+if [[ -d "$switch_sysfs_path" ]]; then
         printf "%10s | %10s\n" "PGRP_NUM" "JACK_NUM"
         printf "%s\n" "--------------------------------------------"
 
-        process_pgrp_dirs "$rosetta_sysfs_path" "pgrp"
-elif [[ -d "$cassini_sysfs_path" ]]; then
+        process_pgrp_dirs "$switch_sysfs_path" "pgrp"
+elif [[ -d "$nic_sysfs_path" ]]; then
         printf "%10s | %10s\n" "PGRP_NUM" "JACK_NUM"
         printf "%s\n" "--------------------------------------------"
 
-        process_pgrp_dirs "$cassini_sysfs_path" "device/port"
+        process_pgrp_dirs "$nic_sysfs_path" "device/port"
 else
         echo "no sysfs nodes"
         exit 1

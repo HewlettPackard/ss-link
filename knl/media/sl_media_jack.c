@@ -6,9 +6,9 @@
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_jack_rosetta.h"
-#include "data/sl_media_data_jack_emulator.h"
-#include "data/sl_media_data_jack_cassini.h"
+#include "data/sl_media_data_jack_sw2.h"
+#include "data/sl_media_data_jack_emu.h"
+#include "data/sl_media_data_jack_nic2.h"
 #include "data/sl_media_data_lgrp.h"
 #include "base/sl_media_log.h"
 

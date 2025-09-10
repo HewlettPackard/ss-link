@@ -145,11 +145,11 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 			core_mac->settings.tx_priority_thresh = 0;
 			core_mac->settings.tx_cdt_thresh_2    = 0;
 			core_mac->settings.tx_cdt_thresh      = 15;
-#ifdef BUILDSYS_FRAMEWORK_CASSINI
+#ifdef BUILDSYS_FRAMEWORK_NIC2
 			core_mac->settings.tx_cdt_init_val    = 64;
-#else /* rosetta */
+#else /* SW2 */
 			core_mac->settings.tx_cdt_init_val    = 72;
-#endif /* BUILDSYS_FRAMEWORK_CASSINI */
+#endif /* BUILDSYS_FRAMEWORK_NIC2 */
 			core_mac->settings.tx_pcs_credits     = 8;
 			core_mac->settings.llr_if_credits     = 8;
 			break;

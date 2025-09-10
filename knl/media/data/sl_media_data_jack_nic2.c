@@ -10,8 +10,8 @@
 #include "sl_media_io.h"
 #include "sl_media_jack.h"
 #include "sl_media_data_jack.h"
-#include "sl_media_data_jack_cassini.h"
 #include "sl_core_link.h"
+#include "sl_media_data_jack_nic2.h"
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 

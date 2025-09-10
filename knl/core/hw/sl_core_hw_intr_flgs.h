@@ -7,7 +7,7 @@
 #include "sl_kconfig.h"
 #include "sl_asic.h"
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
+#ifdef BUILDSYS_FRAMEWORK_SW2
 
 #define SL_CORE_HW_INTR_FLGS_LINK_UP(_link_num)                                             \
 	static u64 sl_core_hw_intr_flgs_link_up_##_link_num[SL_CORE_HW_INTR_FLGS_COUNT] = { \
@@ -117,7 +117,7 @@ static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_ALD_ITEM(SL_CORE_HW_INTR_LANE_DEGRADE,        lane_degrade),
 };
 
-#else /* Cassini */
+#else /* NIC2 */
 
 #define SL_CORE_HW_INTR_FLGS_LINK_UP(_link_num)                                        \
 	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_link_up_##_link_num = { \
@@ -185,6 +185,6 @@ static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_ALD_ITEM(SL_CORE_HW_INTR_LANE_DEGRADE,        lane_degrade),
 };
 
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 
 #endif /* _SL_CORE_HW_INTR_FLGS_H_ */

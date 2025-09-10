@@ -42,11 +42,11 @@ For more details see [Further Reading](further-reading).
 
 ## Building
 
-### Cassini
+### NIC
 
 <!--- TODO: -->
 
-### Rosetta
+### SWITCH
 
 The `sl-driver-test` package is built as part of the step `43.1_build_sl_driver`
 in the [hms-scimage](https://github.hpe.com/hpe/hpc-hms_ec-hms-scimage/tree/release/slingshot-2.9) repo.
@@ -447,8 +447,8 @@ In order to use sl_test you must first run "sl_test_init"
 See sl_test_type_help for help with specific types of functions.
 
 Functions:
-1. sl_test_cassini2_exit
-2. sl_test_cassini2_init
+1. sl_test_nic_exit
+2. sl_test_nic_init
 3. sl_test_cmd_check
 4. sl_test_cmd_help
 ...

@@ -7,7 +7,7 @@
 
 #include "sl_media_jack.h"
 #include "sl_media_data_jack.h"
-#include "sl_media_data_jack_emulator.h"
+#include "sl_media_data_jack_emu.h"
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 

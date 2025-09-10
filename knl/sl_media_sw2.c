@@ -8,7 +8,7 @@
 #include "base/sl_media_log.h"
 #include "sl_lgrp.h"
 #include "sl_media_lgrp.h"
-#include "sl_media_jack_rosetta.h"
+#include "sl_media_jack_sw2.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_MEDIA_LOG_NAME

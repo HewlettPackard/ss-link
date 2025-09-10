@@ -33,14 +33,14 @@ KCPPFLAGS      += -I$(STAGING_DIR)/usr/include
 KCPPFLAGS      += -I/usr/include
 KCPPFLAGS      += -Werror -Wall
 
-ifdef PLATFORM_CASSINI
+ifdef PLATFORM_NIC2
 KCPPFLAGS      += -I$(MDIR)/../../../cassini-headers/install/include
-else
+else # SW2
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrdef
 KCPPFLAGS      += -I/usr/include/rosetta2/csrdef
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrcntr
 KCPPFLAGS      += -I/usr/include/rosetta2/csrcntr
-endif
+endif # PLATFORM_NIC2
 
 KNL_BUILD_ARGS += -C $(KDIR) M=$(MDIR)
 KNL_BUILD_ARGS += KCPPFLAGS="$(KCPPFLAGS)"

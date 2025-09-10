@@ -79,8 +79,8 @@ source "${SL_TEST_LIBS_DIR}/sl_test_common.sh"
 
 export SL_TEST_DEVICE_TYPE=$(sl_pci_device_discover)
 
-source "${SL_TEST_LIBS_DIR}/devices/sl_test_cassini2.sh"
-source "${SL_TEST_LIBS_DIR}/devices/sl_test_rosetta2.sh"
+source "${SL_TEST_LIBS_DIR}/devices/sl_test_nic.sh"
+source "${SL_TEST_LIBS_DIR}/devices/sl_test_sw.sh"
 
 # Common functions
 source "${SL_TEST_LIBS_DIR}/sl_test_errno.sh"
@@ -101,9 +101,9 @@ source "${SL_TEST_LIBS_DIR}/sl_test_media.sh"
 SL_TEST_SYSFS_CXI_TOP_DIR="/sys/class/cxi/"
 SL_TEST_SYSFS_ROSSW_TOP_DIR="/sys/class/rossw/"
 
-if [[ "${SL_TEST_DEVICE_TYPE}" == "cassini2" ]]; then
+if [[ "${SL_TEST_DEVICE_TYPE}" == "nic" ]]; then
         SL_TEST_SYSFS_TOP_DIR="${SL_TEST_SYSFS_CXI_TOP_DIR}"
-elif [[ "${SL_TEST_DEVICE_TYPE}" == "rosetta2" ]]; then
+elif [[ "${SL_TEST_DEVICE_TYPE}" == "sw" ]]; then
         SL_TEST_SYSFS_TOP_DIR="${SL_TEST_SYSFS_ROSSW_TOP_DIR}"
 else
         SL_TEST_SYSFS_TOP_DIR=""
@@ -116,9 +116,9 @@ export SL_TEST_SYSFS_TOP_DIR
 ##########################################################################################
 # SL Number of LGRPS
 ##########################################################################################
-if [[ "${SL_TEST_DEVICE_TYPE}" == "cassini2" ]]; then
+if [[ "${SL_TEST_DEVICE_TYPE}" == "nic" ]]; then
 	SL_TEST_LGRP_NUM_END=0
-elif [[ "${SL_TEST_DEVICE_TYPE}" == "rosetta2" ]]; then
+elif [[ "${SL_TEST_DEVICE_TYPE}" == "sw" ]]; then
 	SL_TEST_LGRP_NUM_END=63
 else
 	SL_TEST_LGRP_NUM_END=0

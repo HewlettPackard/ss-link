@@ -14,7 +14,7 @@
 
 #define SL_MAX_SERDES_LANES 8
 
-#ifdef BUILDSYS_FRAMEWORK_ROSETTA
+#ifdef BUILDSYS_FRAMEWORK_SW2
 
 #include "ss2_port_pml.h"
 #include "r2_csr_memorg.h"
@@ -47,7 +47,7 @@
 #define SL_SERDES_NUM_PLLS      1
 #define SL_SERDES_NUM_LANES     8
 
-#else /* Cassini */
+#else /* NIC2 */
 
 #include "sbl/sbl_pml.h"
 
@@ -75,6 +75,6 @@
 #define SL_SERDES_NUM_PLLS      1
 #define SL_SERDES_NUM_LANES     4
 
-#endif /* BUILDSYS_FRAMEWORK_ROSETTA */
+#endif /* BUILDSYS_FRAMEWORK_SW2 */
 
 #endif /* _SL_ASIC_H_ */
