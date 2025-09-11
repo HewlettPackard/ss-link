@@ -5,12 +5,10 @@
 #define _SL_ASIC_H_
 
 #include "sl_asic_common.h"
-
-#include "sbl/sbl_pml.h"
+#include "sl_asic_csrs.h"
 
 // FIXME: temporary addition in anticipation of CSR changes
 #define PORT_PML_CFG_PORT_GROUP	SS2_PORT_PML_CFG_PORT_GROUP
-#define SS2_PORT_PML_CFG_PORT_GROUP_PG_CFG_UPDATE(_a, _b) C_UPDATE(_a, _b, ss2_port_pml_cfg_port_group, pg_cfg)
 
 #define SL_MAX_SERDES_LANES 4
 
