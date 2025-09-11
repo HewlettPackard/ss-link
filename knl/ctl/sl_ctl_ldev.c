@@ -24,6 +24,7 @@
 static struct sl_ctl_ldev *ctl_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(ctl_ldevs_lock);
 
+#define CONFIG_SL_DEFAULT_WQ_MAX_ACTIVE  0 /* 0 is default (256 work items in queue). */
 int sl_ctl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		    struct sl_ldev_attr *ldev_attr)
 {

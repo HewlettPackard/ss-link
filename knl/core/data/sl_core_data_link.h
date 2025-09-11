@@ -4,9 +4,11 @@
 #ifndef _SL_CORE_DATA_LINK_H_
 #define _SL_CORE_DATA_LINK_H_
 
+#include <linux/types.h>
+#include <linux/time64.h>
+
 struct sl_core_link;
 struct sl_core_link_config;
-struct time64_t;
 
 int		     sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num);
 void		     sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num);
@@ -15,6 +17,7 @@ struct sl_core_link *sl_core_data_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num
 void sl_core_data_link_config_set(struct sl_core_link *core_link,
 				  struct sl_core_link_config *link_config);
 int  sl_core_data_link_settings(struct sl_core_link *core_link);
+u16  sl_core_data_link_clock_period_get(void);
 void sl_core_data_link_timeouts(struct sl_core_link *core_link);
 
 void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state);

@@ -4,8 +4,6 @@
 #ifndef _SL_TEST_H_
 #define _SL_TEST_H_
 
-#include "sl_test_kconfig.h"
-
 #define SL_TEST_VERSION_MAJOR 1
 #define SL_TEST_VERSION_MINOR 1
 #define SL_TEST_VERSION_INC   8

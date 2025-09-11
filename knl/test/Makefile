@@ -35,12 +35,14 @@ KCPPFLAGS      += -Werror -Wall
 
 ifdef PLATFORM_NIC2
 KCPPFLAGS      += -I$(MDIR)/../../../cassini-headers/install/include
-else # SW2
+endif # PLATFORM_NIC2
+
+ifdef PLATFORM_SW2
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrdef
 KCPPFLAGS      += -I/usr/include/rosetta2/csrdef
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrcntr
 KCPPFLAGS      += -I/usr/include/rosetta2/csrcntr
-endif # PLATFORM_NIC2
+endif # PLATFORM_SW2
 
 KNL_BUILD_ARGS += -C $(KDIR) M=$(MDIR)
 KNL_BUILD_ARGS += KCPPFLAGS="$(KCPPFLAGS)"

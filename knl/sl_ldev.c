@@ -163,23 +163,6 @@ static int sl_ldev_attr_check(struct sl_ldev_attr *ldev_attr)
 	return 0;
 }
 
-int sl_ldev_uc_ops_set(struct sl_ldev *ldev, struct sl_uc_ops *uc_ops,
-			struct sl_uc_accessor *uc_accessor)
-{
-	int rtn;
-
-	rtn = sl_ldev_check(ldev);
-	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "uc ops set fail");
-		return rtn;
-	}
-
-	return sl_media_ldev_uc_ops_set(ldev->num, uc_ops, uc_accessor);
-}
-#ifdef BUILDSYS_FRAMEWORK_NIC2
-EXPORT_SYMBOL(sl_ldev_uc_ops_set);
-#endif /* BUILDSYS_FRAMEWORK_NIC2 */
-
 struct sl_ldev *sl_ldev_new(u8 ldev_num,
 	struct workqueue_struct *workq, struct sl_ldev_attr *ldev_attr)
 {

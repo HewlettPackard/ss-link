@@ -5,6 +5,7 @@
 #include <linux/debugfs.h>
 
 #include "log/sl_log.h"
+#include "sl_asic.h"
 #include "sl_test_common.h"
 #include "test/sl_media_test.h"
 #include "test/sl_core_test_serdes.h"

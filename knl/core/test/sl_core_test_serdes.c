@@ -6,7 +6,7 @@
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "base/sl_core_log.h"
-#include "core/hw/sl_core_hw_serdes_lane.h"
+#include "hw/sl_core_hw_serdes_lane.h"
 #include "test/sl_core_test_serdes.h"
 
 #define LOG_NAME SL_CORE_TEST_SERDES_LOG_NAME

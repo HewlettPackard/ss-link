@@ -7,6 +7,7 @@
 #include <linux/cdev.h>
 #include <linux/fs.h>
 
+#include "sl_module.h"
 #include "sl_test.h"
 #include "sl_test_debugfs.h"
 #include "sl_test_debugfs_ldev.h"
@@ -35,25 +36,11 @@ char *sl_test_git_hash_str_get(void)
 }
 EXPORT_SYMBOL(sl_test_git_hash_str_get);
 
-static char *sl_test_framework_str(void)
-{
-#ifdef BUILDSYS_FRAMEWORK_SW2
-	return "switch2";
-#else
-#ifdef BUILDSYS_FRAMEWORK_NIC2
-	return "nic2";
-#else
-	return "unknown";
-#endif /* BUILDSYS_FRAMEWORK_NIC2 */
-#endif /* BUILDSYS_FRAMEWORK_SW2 */
-}
-
 static int __init sl_test_init(void)
 {
 	int rtn;
 
-	pr_info("%s: init v" SL_TEST_VERSION_STR " (%s)\n",
-		module_name(THIS_MODULE), sl_test_framework_str());
+	pr_info("%s: init v" SL_TEST_VERSION_STR " " SL_FRAMEWORK_STR "\n", module_name(THIS_MODULE));
 	pr_info("%s: git hash " SL_TEST_GIT_HASH_STR "\n", module_name(THIS_MODULE));
 
 	rtn = sl_test_debugfs_create();

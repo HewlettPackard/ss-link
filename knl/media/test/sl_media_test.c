@@ -12,10 +12,7 @@
 #include "sl_media_lgrp.h"
 #include "sl_media_ldev.h"
 #include "sl_media_jack.h"
-#include "sl_media_jack_sw2.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_jack_sw2.h"
-#include "data/sl_media_data_jack_sw2_emu.h"
 #include "data/sl_media_data_lgrp.h"
 
 #define SL_MEDIA_TEST_NAME "sl-test-media: "

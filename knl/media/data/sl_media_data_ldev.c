@@ -10,13 +10,9 @@
 #include "base/sl_media_log.h"
 #include "sl_media_ldev.h"
 #include "sl_media_jack.h"
-#include "sl_media_data_ldev.h"
-#include "sl_media_data_lgrp.h"
-#include "sl_media_data_jack.h"
-#include "sl_media_data_jack_sw2.h"
-#include "sl_media_data_jack_emu.h"
-#include "sl_media_data_jack_nic2.h"
-#include "sl_media_data_jack_nic2_emu.h"
+#include "data/sl_media_data_ldev.h"
+#include "data/sl_media_data_lgrp.h"
+#include "data/sl_media_data_jack.h"
 
 static struct sl_media_ldev *media_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(media_ldevs_lock);
@@ -109,24 +105,4 @@ struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num)
 	sl_media_log_dbg(media_ldev, LOG_NAME, "get (ldev = 0x%p)", media_ldev);
 
 	return media_ldev;
-}
-
-int sl_media_data_ldev_uc_ops_set(u8 ldev_num, struct sl_uc_ops *uc_ops,
-				  struct sl_uc_accessor *uc_accessor)
-{
-	struct sl_media_ldev *media_ldev;
-
-	media_ldev = sl_media_ldev_get(ldev_num);
-	if (!media_ldev) {
-		sl_media_log_err(NULL, LOG_NAME,
-			"uc_ops_set ldev not found (ldev_num = %u)", ldev_num);
-		return -EINVAL;
-	}
-
-	sl_media_log_dbg(media_ldev, LOG_NAME, "uc_ops_set");
-
-	media_ldev->uc_ops = uc_ops;
-	media_ldev->uc_accessor = uc_accessor;
-
-	return 0;
 }

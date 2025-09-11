@@ -103,6 +103,7 @@ void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link,
 void sl_core_hw_an_stop(struct sl_core_link *core_link);
 void sl_core_hw_an_init(struct sl_core_link *core_link);
 void sl_core_hw_an_config(struct sl_core_link *core_link);
+void sl_core_hw_an_config_timers(struct sl_core_link *core_link);
 int  sl_core_hw_an_base_page_send(struct sl_core_link *core_link);
 int  sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 				   struct sl_link_caps *my_caps,

@@ -12,12 +12,6 @@
 #include "sl_asic.h"
 #include "sl_media_ldev.h"
 
-#ifdef BUILDSYS_FRAMEWORK_SW2
-#ifndef BUILDSYS_FRAMEWORK_EMU2
-#include <linux/hsnxcvr-api.h>
-#endif /* BUILDSYS_FRAMEWORK_EMU2 */
-#endif /* BUILDSYS_FRAMEWORK_SW2 */
-
 /*
  * These states reflect whether a physical module is inserted in
  * a jack or not. And if it is inserted, can it be talked to or not.
@@ -144,14 +138,10 @@ struct sl_media_jack {
 	u8                              lane_count_400_gaui; /* used for upshifting */
 	u8                              host_interface_400_gaui; /* used for upshifting */
 
-#ifdef BUILDSYS_FRAMEWORK_SW2
-#ifndef BUILDSYS_FRAMEWORK_EMU2
 	void                           *hdl;
-	struct xcvr_jack_data           jack_data;
-	struct xcvr_status_data         status_data;
-	struct xcvr_i2c_data            i2c_data;
-#endif /* BUILDSYS_FRAMEWORK_EMU2 */
-#endif /* BUILDSYS_FRAMEWORK_SW2 */
+	u8                              port_count;
+	u16                             asic_port[4];
+	u32                             status;
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0
@@ -213,5 +203,12 @@ int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 
 void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size);
+
+int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
+			       u8 *eeprom_page0, u8 *eeprom_page1, u32 flags);
+int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num);
+
+int  sl_media_jack_fake_cable_insert(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
+void sl_media_jack_fake_cable_remove(u8 ldev_num, u8 lgrp_num);
 
 #endif /* _SL_MEDIA_JACK_H_ */

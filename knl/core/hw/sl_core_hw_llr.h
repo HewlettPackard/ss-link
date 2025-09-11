@@ -33,4 +33,6 @@ void sl_core_hw_llr_running_stop_cmd(struct sl_core_llr *core_llr);
 
 int  sl_core_hw_llr_stop_wait(struct sl_core_llr *core_llr);
 
+void sl_core_hw_llr_config_timeouts(struct sl_core_llr *core_llr);
+
 #endif /* _SL_CORE_HW_LLR_H_ */

@@ -16,7 +16,7 @@
 #include "sl_core_str.h"
 #include "hw/sl_core_hw_llr.h"
 #include "hw/sl_core_hw_intr_llr.h"
-#include "hw/sl_core_hw_intr_flgs_llr.h"
+#include "sl_core_hw_intr_flgs_llr.h"
 #include "data/sl_core_data_llr.h"
 
 static struct sl_core_llr *core_llrs[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];

@@ -11,12 +11,11 @@
 #include "sl_media_ldev.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
-#include "sl_media_data_jack.h"
-#include "sl_media_data_ldev.h"
+#include "data/sl_media_data_jack.h"
+#include "data/sl_media_data_ldev.h"
 #include "sl_asic.h"
 #include "sl_ctl_lgrp_notif.h"
-#include "sl_media_data_lgrp.h"
-#include "sl_media_data_jack_sw2.h"
+#include "data/sl_media_data_lgrp.h"
 #include "sl_ctl_lgrp.h"
 
 static struct sl_media_jack *media_jacks[SL_ASIC_MAX_LDEVS][SL_MEDIA_MAX_JACK_NUM];

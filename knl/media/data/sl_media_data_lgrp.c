@@ -8,13 +8,11 @@
 
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
-#include "sl_media_data_lgrp.h"
-#include "sl_media_data_ldev.h"
-#include "sl_media_data_jack.h"
+#include "data/sl_media_data_lgrp.h"
+#include "data/sl_media_data_ldev.h"
+#include "data/sl_media_data_jack.h"
 #include "sl_asic.h"
 #include "base/sl_media_log.h"
-#include "sl_media_data_jack_sw2.h"
-#include "sl_media_data_jack_nic2_emu.h"
 
 static struct sl_media_lgrp *media_lgrps[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS];
 static DEFINE_SPINLOCK(media_lgrps_lock);

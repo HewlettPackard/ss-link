@@ -20,9 +20,3 @@ struct sl_media_ldev *sl_media_ldev_get(u8 ldev_num)
 {
 	return sl_media_data_ldev_get(ldev_num);
 }
-
-int sl_media_ldev_uc_ops_set(u8 ldev_num, struct sl_uc_ops *uc_ops,
-				struct sl_uc_accessor *uc_accessor)
-{
-	return sl_media_data_ldev_uc_ops_set(ldev_num, uc_ops, uc_accessor);
-}

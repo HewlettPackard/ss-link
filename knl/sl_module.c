@@ -48,19 +48,6 @@ char *sl_git_hash_str_get(void)
 }
 EXPORT_SYMBOL(sl_git_hash_str_get);
 
-static char *sl_framework_str(void)
-{
-#ifdef BUILDSYS_FRAMEWORK_SW2
-	return "switch2";
-#else
-#ifdef BUILDSYS_FRAMEWORK_NIC2
-	return "nic2";
-#else
-	return "unknown";
-#endif /* BUILDSYS_FRAMEWORK_NIC2 */
-#endif /* BUILDSYS_FRAMEWORK_SW2 */
-}
-
 static dev_t          sl_dev;
 static struct class  *sl_class;
 static struct device *sl_device;
@@ -69,8 +56,7 @@ static int __init sl_init(void)
 {
 	int rtn;
 
-	pr_info("%s: init v" SL_VERSION_STR " (%s)\n",
-		module_name(THIS_MODULE), sl_framework_str());
+	pr_info("%s: init v" SL_VERSION_STR " " SL_FRAMEWORK_STR "\n", module_name(THIS_MODULE));
 	pr_info("%s: git hash " SL_GIT_HASH_STR "\n", module_name(THIS_MODULE));
 
 	rtn = alloc_chrdev_region(&sl_dev, 0, 1, SL_DEVICE_NAME);

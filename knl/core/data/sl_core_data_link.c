@@ -24,7 +24,7 @@
 #include "hw/sl_core_hw_an_lp.h"
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_reset.h"
-#include "hw/sl_core_hw_intr_flgs.h"
+#include "sl_core_hw_intr_flgs.h"
 #include "hw/sl_core_hw_settings.h"
 #include "hw/sl_core_hw_llr.h"
 
@@ -404,11 +404,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 	}
 
 	/* PCS */
-#ifdef BUILDSYS_FRAMEWORK_NIC2
-	core_link->pcs.settings.clock_period = 0x38D;
-#else /* SW2 */
-	core_link->pcs.settings.clock_period = 0x3E8;
-#endif /* BUILDSYS_FRAMEWORK_NIC2 */
+	core_link->pcs.settings.clock_period = sl_core_data_link_clock_period_get();
 	if (SL_LGRP_CONFIG_TECH_CK_400G & link_caps->tech_map) {
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_400G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CK_400G;
