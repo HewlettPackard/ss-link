@@ -38,7 +38,7 @@ $(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \
 	media/switch/sl_media_jack.o                \
 	media/data/emu/sl_media_data_jack.o         \
 	media/data/switch/sl_media_data_jack_emu.o  \
-	media/data/nic2/sl_media_data_jack_emu.o    \
+	media/data/nic/sl_media_data_jack_emu.o     \
 	core/hw/switch/sl_core_hw_fec.o             \
 	core/hw/switch/sl_core_hw_llr.o             \
 	core/hw/switch/sl_core_hw_an.o              \
@@ -46,21 +46,21 @@ $(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \
 	core/data/switch/sl_core_data_link.o        \
 	core/data/switch/sl_core_data_mac.o
 
-$(SL_NAME)-$(SL_BUILD_NIC2) += \
-	nic2/sl_ldev.o                              \
-	nic2/sl_media.o                             \
-	media/nic2/sl_media_io.o                    \
-	media/nic2/sl_media_jack.o                  \
-	media/nic2/sl_media_ldev.o                  \
-	media/data/nic2/sl_media_data_ldev.o        \
-	media/data/nic2/sl_media_data_jack.o        \
-	media/data/nic2/sl_media_data_jack_emu.o    \
-	core/hw/nic2/sl_core_hw_fec.o               \
-	core/hw/nic2/sl_core_hw_llr.o               \
-	core/hw/nic2/sl_core_hw_an.o                \
-	core/hw/nic2/sl_core_hw_mac.o               \
-	core/data/nic2/sl_core_data_link.o          \
-	core/data/nic2/sl_core_data_mac.o
+$(SL_NAME)-$(SL_BUILD_NIC) += \
+	nic/sl_ldev.o                              \
+	nic/sl_media.o                             \
+	media/nic/sl_media_io.o                    \
+	media/nic/sl_media_jack.o                  \
+	media/nic/sl_media_ldev.o                  \
+	media/data/nic/sl_media_data_ldev.o        \
+	media/data/nic/sl_media_data_jack.o        \
+	media/data/nic/sl_media_data_jack_emu.o    \
+	core/hw/nic/sl_core_hw_fec.o               \
+	core/hw/nic/sl_core_hw_llr.o               \
+	core/hw/nic/sl_core_hw_an.o                \
+	core/hw/nic/sl_core_hw_mac.o               \
+	core/data/nic/sl_core_data_link.o          \
+	core/data/nic/sl_core_data_mac.o
 
 $(SL_NAME)-y += \
 	sl_ldev.o  \
@@ -168,9 +168,9 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_link_counters.o
 
 ccflags-y := -I$(M)
-ccflags-$(SL_BUILD_NIC2) += \
-	-I$(M)/nic2         \
-	-I$(M)/core/hw/nic2
+ccflags-$(SL_BUILD_NIC) += \
+	-I$(M)/nic         \
+	-I$(M)/core/hw/nic
 ccflags-$(SL_BUILD_SWITCH) += \
 	-I$(M)/switch         \
 	-I$(M)/core/hw/switch

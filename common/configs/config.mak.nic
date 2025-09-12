@@ -11,11 +11,11 @@ STAGING_DIR ?= $(PWD)/staging_dir
 
 GIT_HASH := $(shell git rev-parse HEAD)
 
-PLATFORM_NIC2 = 1
+PLATFORM_NIC = 1
 
 ## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
-KNL_BUILD_ARGS += SL_BUILD_NIC2=y
+KNL_BUILD_ARGS += SL_BUILD_NIC=y
 
 KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
 KCPPFLAGS += -DSL_TEST=1

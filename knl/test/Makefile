@@ -33,9 +33,9 @@ KCPPFLAGS      += -I$(STAGING_DIR)/usr/include
 KCPPFLAGS      += -I/usr/include
 KCPPFLAGS      += -Werror -Wall
 
-ifdef PLATFORM_NIC2
+ifdef PLATFORM_NIC
 KCPPFLAGS      += -I$(MDIR)/../../../cassini-headers/install/include
-endif # PLATFORM_NIC2
+endif # PLATFORM_NIC
 
 ifdef PLATFORM_SWITCH
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrdef

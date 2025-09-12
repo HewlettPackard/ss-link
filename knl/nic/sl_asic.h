@@ -4,11 +4,18 @@
 #ifndef _SL_ASIC_H_
 #define _SL_ASIC_H_
 
-#include "sl_asic_common.h"
 #include "sl_asic_csrs.h"
 
 // FIXME: temporary addition in anticipation of CSR changes
 #define PORT_PML_CFG_PORT_GROUP	SS2_PORT_PML_CFG_PORT_GROUP
+
+// FIXME: the platform macros need to go in platform
+
+#define PLATFORM_ASIC   C_PLATFORM_ASIC
+#define PLATFORM_NETSIM C_PLATFORM_NETSIM
+#define PLATFORM_Z1     C_PLATFORM_Z1
+
+// FIXME: leave everything below in this file
 
 #define SL_MAX_SERDES_LANES 4
 
@@ -17,10 +24,6 @@
 #define SL_ASIC_MAX_LINKS  1
 #define SL_ASIC_MAX_LANES  4
 #define SL_ASIC_MAX_SERDES 1
-
-#define PLATFORM_ASIC   C_PLATFORM_ASIC
-#define PLATFORM_NETSIM C_PLATFORM_NETSIM
-#define PLATFORM_Z1     C_PLATFORM_Z1
 
 #define SL_MEDIA_MAX_JACK_NUM          1
 #define SL_MEDIA_MAX_LGRPS_PER_JACK    1

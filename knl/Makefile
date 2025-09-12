@@ -29,9 +29,9 @@ KCPPFLAGS      += -I$(MDIR)/ctl
 KCPPFLAGS      += -I$(MDIR)/log
 KCPPFLAGS      += -I$(MDIR)/sysfs
 KCPPFLAGS      += -I$(MDIR)/test
-ifdef PLATFORM_NIC2
+ifdef PLATFORM_NIC
 KCPPFLAGS      += -I$(MDIR)/../../cassini-headers/install/include
-endif # PLATFORM_NIC2
+endif # PLATFORM_NIC
 ifdef PLATFORM_SWITCH
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrdef
 KCPPFLAGS      += -I$(STAGING_DIR)/usr/include/rosetta2/csrcntr
