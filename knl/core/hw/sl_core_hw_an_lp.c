@@ -5,8 +5,8 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 
-#include "sl_kconfig.h"
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "base/sl_core_work_link.h"

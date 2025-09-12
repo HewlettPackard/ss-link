@@ -8,6 +8,7 @@
 #include <linux/sl_link.h>
 
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_ldev.h"

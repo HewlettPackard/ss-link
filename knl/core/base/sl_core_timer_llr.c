@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024-2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 
-#include "sl_kconfig.h"
 #include "sl_core_str.h"
 #include "sl_core_llr.h"
 #include "base/sl_core_timer_llr.h"

@@ -56,8 +56,8 @@ static int __init sl_init(void)
 {
 	int rtn;
 
-	pr_info("%s: init v" SL_VERSION_STR " " SL_FRAMEWORK_STR "\n", module_name(THIS_MODULE));
-	pr_info("%s: git hash " SL_GIT_HASH_STR "\n", module_name(THIS_MODULE));
+	pr_info("%s: init v" SL_VERSION_STR "\n", module_name(THIS_MODULE));
+	pr_info("%s: hash " SL_GIT_HASH_STR "\n", module_name(THIS_MODULE));
 
 	rtn = alloc_chrdev_region(&sl_dev, 0, 1, SL_DEVICE_NAME);
 	if (rtn) {

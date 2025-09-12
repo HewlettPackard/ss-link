@@ -19,32 +19,32 @@ $(SL_NAME)-$(SL_TEST) += \
 	core/test/sl_core_test_fec.o  \
 	media/test/sl_media_test.o
 
-$(SL_NAME)-$(SL_BUILD_SW2) += \
-	sw2/sl_media.o                              \
-	media/sw2/sl_media_io.o                     \
-	media/sw2/sl_media_jack.o                   \
-	media/data/sw2/sl_media_data_jack.o         \
-	media/data/sw2/sl_media_data_jack_emu.o     \
-	core/hw/sw2/sl_core_hw_fec.o                \
-	core/hw/sw2/sl_core_hw_llr.o                \
-	core/hw/sw2/sl_core_hw_an.o                 \
-	core/hw/sw2/sl_core_hw_mac.o                \
-	core/data/sw2/sl_core_data_link.o           \
-	core/data/sw2/sl_core_data_mac.o
+$(SL_NAME)-$(SL_BUILD_SWITCH) += \
+	switch/sl_media.o                           \
+	media/switch/sl_media_io.o                  \
+	media/switch/sl_media_jack.o                \
+	media/data/switch/sl_media_data_jack.o      \
+	media/data/switch/sl_media_data_jack_emu.o  \
+	core/hw/switch/sl_core_hw_fec.o             \
+	core/hw/switch/sl_core_hw_llr.o             \
+	core/hw/switch/sl_core_hw_an.o              \
+	core/hw/switch/sl_core_hw_mac.o             \
+	core/data/switch/sl_core_data_link.o        \
+	core/data/switch/sl_core_data_mac.o
 
-$(SL_NAME)-$(SL_BUILD_EMU2) += \
-	sw2/sl_media.o                              \
+$(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \
+	switch/sl_media.o                           \
 	media/emu/sl_media_io.o                     \
-	media/sw2/sl_media_jack.o                   \
+	media/switch/sl_media_jack.o                \
 	media/data/emu/sl_media_data_jack.o         \
-	media/data/sw2/sl_media_data_jack_emu.o     \
+	media/data/switch/sl_media_data_jack_emu.o  \
 	media/data/nic2/sl_media_data_jack_emu.o    \
-	core/hw/sw2/sl_core_hw_fec.o                \
-	core/hw/sw2/sl_core_hw_llr.o                \
-	core/hw/sw2/sl_core_hw_an.o                 \
-	core/hw/sw2/sl_core_hw_mac.o                \
-	core/data/sw2/sl_core_data_link.o           \
-	core/data/sw2/sl_core_data_mac.o
+	core/hw/switch/sl_core_hw_fec.o             \
+	core/hw/switch/sl_core_hw_llr.o             \
+	core/hw/switch/sl_core_hw_an.o              \
+	core/hw/switch/sl_core_hw_mac.o             \
+	core/data/switch/sl_core_data_link.o        \
+	core/data/switch/sl_core_data_mac.o
 
 $(SL_NAME)-$(SL_BUILD_NIC2) += \
 	nic2/sl_ldev.o                              \
@@ -171,9 +171,9 @@ ccflags-y := -I$(M)
 ccflags-$(SL_BUILD_NIC2) += \
 	-I$(M)/nic2         \
 	-I$(M)/core/hw/nic2
-ccflags-$(SL_BUILD_SW2) += \
-	-I$(M)/sw2         \
-	-I$(M)/core/hw/sw2
-ccflags-$(SL_BUILD_EMU2) += \
-	-I$(M)/sw2          \
-	-I$(M)/core/hw/sw2
+ccflags-$(SL_BUILD_SWITCH) += \
+	-I$(M)/switch         \
+	-I$(M)/core/hw/switch
+ccflags-$(SL_BUILD_SWITCH_EMU) += \
+	-I$(M)/switch             \
+	-I$(M)/core/hw/switch

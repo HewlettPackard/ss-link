@@ -15,6 +15,6 @@ $(SL_TEST_NAME)-y := ../log/sl_log.o           \
 		     sl_test_debugfs_serdes.o
 
 ccflags-y := -I$(M)
-ccflags-$(SL_BUILD_NIC2) += -I$(M)/../nic2
-ccflags-$(SL_BUILD_SW2)  += -I$(M)/../sw2
-ccflags-$(SL_BUILD_EMU2) += -I$(M)/../sw2
+ccflags-$(SL_BUILD_NIC2)       += -I$(M)/../nic2
+ccflags-$(SL_BUILD_SWITCH)     += -I$(M)/../switch
+ccflags-$(SL_BUILD_SWITCH_EMU) += -I$(M)/../switch

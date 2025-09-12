@@ -6,6 +6,7 @@
 #include <linux/bitops.h>
 
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "base/sl_core_log.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"

@@ -4,6 +4,7 @@
 #include <linux/types.h>
 
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "base/sl_core_log.h"
 #include "sl_core_link.h"
 #include "hw/sl_core_hw_io.h"

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
+#include <linux/types.h>
+
 #include "sl_asic.h"
 
 #include "base/sl_media_log.h"

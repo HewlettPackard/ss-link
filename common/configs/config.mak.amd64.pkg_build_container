@@ -18,10 +18,10 @@ GIT_HASH := $(shell git rev-parse HEAD)
 
 ## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
-KNL_BUILD_ARGS += SL_BUILD_EMU2=y
+KNL_BUILD_ARGS += SL_BUILD_SWITCH_EMU=y
 KNL_BUILD_ARGS += ARCH=$(ARCH)
 
-PLATFORM_SW2 = 1
+PLATFORM_SWITCH = 1
 
 KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
 ## NOTE: to compile tests in the driver

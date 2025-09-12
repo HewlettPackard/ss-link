@@ -40,8 +40,8 @@ static int __init sl_test_init(void)
 {
 	int rtn;
 
-	pr_info("%s: init v" SL_TEST_VERSION_STR " " SL_FRAMEWORK_STR "\n", module_name(THIS_MODULE));
-	pr_info("%s: git hash " SL_TEST_GIT_HASH_STR "\n", module_name(THIS_MODULE));
+	pr_info("%s: init v" SL_TEST_VERSION_STR "\n", module_name(THIS_MODULE));
+	pr_info("%s: hash " SL_TEST_GIT_HASH_STR "\n", module_name(THIS_MODULE));
 
 	rtn = sl_test_debugfs_create();
 	if (rtn != 0) {

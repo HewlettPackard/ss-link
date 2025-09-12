@@ -6,8 +6,8 @@
 #include <linux/delay.h>
 #include <linux/firmware.h>
 
-#include "sl_kconfig.h"
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "base/sl_core_log.h"
