@@ -205,3 +205,18 @@ void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lg
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
+
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+{
+	bool is_high_temp;
+
+	spin_lock(&media_jack->data_lock);
+	is_high_temp = media_jack->is_high_temp;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+		"data jack cable is high temp (%s)",
+		(media_jack->is_high_temp) ? "yes" : "no");
+
+	return is_high_temp;
+}

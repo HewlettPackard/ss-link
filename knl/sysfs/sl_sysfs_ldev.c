@@ -296,7 +296,8 @@ int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 	}
 
 	if (!sl_ctl_ldev_kref_get_unless_zero(ctl_ldev)) {
-		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME, "kref_get_unless_zero failed (ldev = 0x%p)", ctl_ldev);
+		sl_log_err(ctl_ldev, LOG_BLOCK, LOG_NAME,
+			"kref_get_unless_zero failed (ctl_ldev = 0x%p)", ctl_ldev);
 		return -EBADRQC;
 	}
 

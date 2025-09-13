@@ -124,7 +124,7 @@ int sl_ctl_ldev_serdes_init(u8 ldev_num)
 	sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "serdes init (ldev = 0x%p)", ctl_ldev);
 
 	if (!sl_ctl_ldev_kref_get_unless_zero(ctl_ldev)) {
-		sl_ctl_log_err(ctl_ldev, LOG_NAME, "kref_get_unless_zero failed (ldev = 0x%p)", ctl_ldev);
+		sl_ctl_log_err(ctl_ldev, LOG_NAME, "kref_get_unless_zero failed (ctl_ldev = 0x%p)", ctl_ldev);
 		return -EBADRQC;
 	}
 
@@ -140,7 +140,7 @@ int sl_ctl_ldev_serdes_init(u8 ldev_num)
 
 out:
 	if (sl_ctl_ldev_put(ctl_ldev))
-		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "serdes init - ldev removed (ldev = 0x%p)", ctl_ldev);
+		sl_ctl_log_dbg(ctl_ldev, LOG_NAME, "serdes init - ldev removed (ctl_ldev = 0x%p)", ctl_ldev);
 
 	return rtn;
 }

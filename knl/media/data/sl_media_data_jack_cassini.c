@@ -338,28 +338,6 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
-{
-	int rtn;
-	u8  data;
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable is high temp");
-
-	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-						media_jack->cable_info[0].lgrp_num))
-		return false;
-
-	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME,
-			"high temp page read failed [%d]", rtn);
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO);
-		return false;
-	}
-
-	return ((data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) != 0);
-}
-
 int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
 {
 	int rtn;
@@ -393,15 +371,17 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	if (!core_link)
 		return;
 
+	if (sl_media_data_jack_cable_is_high_temp(media_jack)) {
+		sl_media_io_led_set(media_jack, LED_ON_YEL);
+		return;
+	}
+
 	sl_core_link_state_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num,
 		0, &link_state); /* hardcoding 0 since only one link*/
 
 	switch (sl_media_jack_state_get(media_jack)) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
 		sl_media_io_led_set(media_jack, LED_OFF);
-		return;
-	case SL_MEDIA_JACK_CABLE_HIGH_TEMP:
-		sl_media_io_led_set(media_jack, LED_ON_YEL);
 		return;
 	case SL_MEDIA_JACK_CABLE_ERROR:
 		sl_media_io_led_set(media_jack, LED_FAST_YEL);
@@ -424,4 +404,49 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 		sl_media_io_led_set(media_jack, LED_ON_GRN);
 		break;
 	}
+}
+
+static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
+{
+	return physical_jack_num - 1;
+}
+
+/*
+ * Interrupts will only come from active cables
+ */
+// FIXME: make a function that will clear the bits separate from acting on them
+void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_service)
+{
+	int                   rtn;
+	struct sl_media_jack *media_jack;
+	u8                    offset;
+	u8                    data;
+
+	sl_media_log_dbg(NULL, LOG_NAME,
+		"interrupt event (physical_jack_num = %u)", physical_jack_num);
+
+	media_jack = sl_media_data_jack_get(0,
+				sl_media_data_jack_num_update(physical_jack_num));
+
+	for (offset = 8; offset < 12; ++offset) {
+		rtn = sl_media_io_read8(media_jack, 0, offset, &data);
+		if (rtn)
+			sl_media_log_dbg(media_jack, LOG_NAME,
+				"interrupt event io failed [%d]", rtn);
+		sl_media_log_dbg(media_jack, LOG_NAME, "interrupt event (offset %d = 0x%X)", offset, data);
+		if (offset == 9) {
+			spin_lock(&media_jack->data_lock);
+			media_jack->is_high_temp = (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK);
+			spin_unlock(&media_jack->data_lock);
+		}
+	}
+	for (offset = 134; offset < 154; ++offset) {
+		rtn = sl_media_io_read8(media_jack, 0x11, offset, &data);
+		if (rtn)
+			sl_media_log_dbg(media_jack, LOG_NAME,
+				"interrupt event io failed [%d]", rtn);
+		sl_media_log_dbg(media_jack, LOG_NAME, "interrupt event (offset %d = 0x%X)", offset, data);
+	}
+
+	/* don't care about service */
 }

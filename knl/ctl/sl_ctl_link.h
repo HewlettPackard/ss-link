@@ -109,7 +109,9 @@ struct sl_ctl_link {
 };
 
 int		    sl_ctl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent);
+int		    sl_ctl_link_put(struct sl_ctl_link *ctl_link);
 int		    sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num);
+bool                sl_ctl_link_kref_get_unless_zero(struct sl_ctl_link *ctl_link);
 struct sl_ctl_link *sl_ctl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,

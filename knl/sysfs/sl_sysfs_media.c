@@ -30,7 +30,8 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	state = sl_media_jack_state_get(media_lgrp->media_jack);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"state show (media_lgrp = 0x%p, state = %u %s)", media_lgrp, state, sl_media_state_str(state));
+		"state show (media_lgrp = 0x%p, state = %u %s)",
+		media_lgrp, state, sl_media_state_str(state));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_state_str(state));
 }
@@ -101,6 +102,9 @@ static ssize_t high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr
 			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
+
+	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
+		return scnprintf(buf, PAGE_SIZE, "not-active\n");
 
 	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
 

@@ -106,7 +106,7 @@ bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
 	state = media_jack->state;
 	spin_unlock(&media_jack->data_lock);
 
-	return state == SL_MEDIA_JACK_CABLE_ONLINE;
+	return (state == SL_MEDIA_JACK_CABLE_ONLINE);
 }
 
 bool sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack)
@@ -464,6 +464,11 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
 {
 	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
+}
+
+int sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack)
+{
+	return sl_media_data_jack_cable_low_power_set(media_jack);
 }
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num)

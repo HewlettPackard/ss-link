@@ -22,13 +22,12 @@
  * These states reflect whether a physical module is inserted in
  * a jack or not. And if it is inserted, can it be talked to or not.
  */
-#define SL_MEDIA_JACK_CABLE_INVALID      0
-#define SL_MEDIA_JACK_CABLE_REMOVED      1
-#define SL_MEDIA_JACK_CABLE_INSERTED     2
-#define SL_MEDIA_JACK_CABLE_GOING_ONLINE 3
-#define SL_MEDIA_JACK_CABLE_ONLINE       4
-#define SL_MEDIA_JACK_CABLE_ERROR        5
-#define SL_MEDIA_JACK_CABLE_HIGH_TEMP    6
+#define SL_MEDIA_JACK_CABLE_INVALID          0
+#define SL_MEDIA_JACK_CABLE_REMOVED          1
+#define SL_MEDIA_JACK_CABLE_INSERTED         2
+#define SL_MEDIA_JACK_CABLE_GOING_ONLINE     3
+#define SL_MEDIA_JACK_CABLE_ONLINE           4
+#define SL_MEDIA_JACK_CABLE_ERROR            5
 
 /*
  * GAUI interface is for AEC/AOC and GBASE interface is for PEC
@@ -133,6 +132,7 @@ struct sl_media_jack {
 	bool                            is_cable_format_invalid;
 	bool                            is_supported_ss200_cable;
 	bool                            is_high_powered;
+	bool                            is_high_temp;
 	unsigned long                   cable_power_up_wait_time_end;
 	u32                             fault_cause;
 	time64_t                        fault_time;
@@ -208,6 +208,7 @@ const char *sl_media_fault_cause_str(u32 fault_cause);
 
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
+int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 

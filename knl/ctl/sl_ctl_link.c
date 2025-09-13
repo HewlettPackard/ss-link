@@ -256,7 +256,7 @@ static void sl_ctl_link_release(struct kref *kref)
 	kfree(ctl_link);
 }
 
-static int sl_ctl_link_put(struct sl_ctl_link *ctl_link)
+int sl_ctl_link_put(struct sl_ctl_link *ctl_link)
 {
 	return kref_put(&ctl_link->ref_cnt, sl_ctl_link_release);
 }
@@ -294,7 +294,7 @@ int sl_ctl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-static bool sl_ctl_link_kref_get_unless_zero(struct sl_ctl_link *ctl_link)
+bool sl_ctl_link_kref_get_unless_zero(struct sl_ctl_link *ctl_link)
 {
 	bool incremented;
 

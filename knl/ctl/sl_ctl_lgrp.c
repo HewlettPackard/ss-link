@@ -302,7 +302,7 @@ int sl_ctl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp
 	}
 
 	if (!sl_ctl_lgrp_kref_get_unless_zero(ctl_lgrp)) {
-		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (lgrp = 0x%p)", ctl_lgrp);
+		sl_ctl_log_err(ctl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctl_lgrp = 0x%p)", ctl_lgrp);
 		return -EBADRQC;
 	}
 

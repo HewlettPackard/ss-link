@@ -30,4 +30,8 @@ void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp);
 void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lgrp);
 
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
+
+void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_service);
+
 #endif /* _SL_MEDIA_DATA_JACK_H_ */

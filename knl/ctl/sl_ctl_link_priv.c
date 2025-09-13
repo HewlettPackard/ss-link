@@ -27,6 +27,8 @@
 		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE | \
 		SL_LINK_DOWN_CAUSE_SS200_CABLE       | \
 		SL_LINK_DOWN_CAUSE_UCW               | \
+		SL_LINK_DOWN_CAUSE_HIGH_TEMP         | \
+		SL_LINK_DOWN_CAUSE_NO_MEDIA          | \
 		SL_LINK_DOWN_CAUSE_UPSHIFT)
 
 void sl_ctl_link_is_canceled_set(struct sl_ctl_link *ctl_link, bool canceled)
@@ -562,7 +564,14 @@ static int sl_ctl_link_async_down_callback(void *tag, u32 core_state, u64 core_c
 
 	ctl_link = tag;
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME,
+			"async_down kref_get_unless_zero failed (ctl_link = 0x%p)", ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_link_down_cause_map_with_info_str(core_cause_map, cause_str, sizeof(cause_str));
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME,
 		"async down callback (core_state = %u %s, core_cause = 0x%llX %s, core_info_map = %llu)",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, cause_str, core_info_map);
@@ -585,10 +594,14 @@ static int sl_ctl_link_async_down_callback(void *tag, u32 core_state, u64 core_c
 		if (rtn)
 			sl_ctl_log_warn_trace(ctl_link, LOG_NAME,
 				"async down callback ctl_async_link_down_notif_send failed [%d]", rtn);
+
+		sl_ctl_link_put(ctl_link);
 		return 0;
 	default:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async down callback invalid (core_state = %u %s)",
 			core_state, sl_core_link_state_str(core_state));
+
+		sl_ctl_link_put(ctl_link);
 		return -EBADRQC;
 	}
 }
@@ -599,7 +612,14 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 	u32                  link_state;
 	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
+	if (!sl_ctl_link_kref_get_unless_zero(ctl_link)) {
+		sl_ctl_log_err(ctl_link, LOG_NAME,
+			"async_down kref_get_unless_zero failed (ctl_link = 0x%p)", ctl_link);
+		return -EBADRQC;
+	}
+
 	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
+
 	sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
 
 	sl_ctl_link_up_clock_reset(ctl_link);
@@ -611,28 +631,31 @@ int sl_ctl_link_async_down(struct sl_ctl_link *ctl_link, u64 down_cause_map)
 		ctl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down - stopping");
 		spin_unlock(&ctl_link->data_lock);
-
 		rtn = sl_core_link_down(ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
 			sl_ctl_link_async_down_callback, ctl_link, down_cause_map);
 		if (rtn) {
 			sl_ctl_log_err_trace(ctl_link, LOG_NAME,
 				"core_link_down failed [%d]", rtn);
+			sl_ctl_link_put(ctl_link);
 			return rtn;
 		}
-
+		sl_ctl_link_put(ctl_link);
 		return 0;
 	case SL_LINK_STATE_DOWN:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down - already down");
 		spin_unlock(&ctl_link->data_lock);
+		sl_ctl_link_put(ctl_link);
 		return 0;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctl_log_dbg(ctl_link, LOG_NAME, "async_down - already stopping");
 		spin_unlock(&ctl_link->data_lock);
+		sl_ctl_link_put(ctl_link);
 		return 0;
 	default:
 		sl_ctl_log_err(ctl_link, LOG_NAME, "async_down - invalid state (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctl_link->data_lock);
+		sl_ctl_link_put(ctl_link);
 		return -EBADRQC;
 	}
 }

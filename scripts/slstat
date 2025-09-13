@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=1
+MINOR=2
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -11,13 +11,13 @@ cmd=$(basename $0)
 function usage {
         echo "$cmd ldev_num[:lgrp_num][:link_num] [option]"
         echo "  target:"
-        echo "    ldev_num = link device number (0)"
+        echo "    ldev_num = link device number (0-1)"
         echo "    lgrp_num = link group number (0-63)"
         echo "    link_num = link number (0-3)"
         echo "  option:"
         echo "    state    = print state for the target"
-        echo "    link     = print all link info for the target"
-        echo "    serdes   = print all serdes info for the target"
+        echo "    link     = print link info for the target"
+        echo "    serdes   = print serdes info for the target"
         echo "    cable    = print cable info for the target"
         echo "    counters = print counters for a link target (requires #:#:#)"
         echo "    use_test = use the \"test_port\" directory"
@@ -128,7 +128,7 @@ function print_jack_state {
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
 		else
-			printf "           | temperature: ${temp}c (high = ${high_temp})\n"
+			printf "           | temperature: ${temp}c (high_temp = ${high_temp})\n"
 		fi
 	fi
 }
@@ -547,11 +547,12 @@ function print_fec {
         local mon_ucw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_down_limit)
         local mon_ucw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_warn_limit)
 
-        printf "fec        | up_check_wait: ${up_check_wait}ms, up_settle_wait: ${up_settle_wait}ms\n"
-        printf "           | up_check_ccw_limit: ${up_check_ccw_limit}ms, up_check_ucw_limit: ${up_check_ucw_limit}ms\n"
-        printf "           | mon_period: ${mon_period}ms\n"
-        printf "           | mon_ccw_down_limit: ${mon_ccw_down_limit}, mon_ccw_warn_limit: ${mon_ccw_warn_limit}\n"
-        printf "           | mon_ucw_down_limit: ${mon_ucw_down_limit}, mon_ucw_warn_limit: ${mon_ucw_warn_limit}\n"
+        printf "fec        | up_settle: wait = ${up_settle_wait}ms\n"
+        printf "           | up_check:  wait = ${up_check_wait}ms\n"
+	printf "           |            ccw_limit = ${up_check_ccw_limit}ms, ucw_limit = ${up_check_ucw_limit}ms\n"
+        printf "           | monitor:   period = ${mon_period}ms\n"
+        printf "           |            ccw_warn_limit = ${mon_ccw_warn_limit}, ucw_warn_limit = ${mon_ucw_warn_limit}\n"
+        printf "           |            ccw_down_limit = ${mon_ccw_down_limit}, ucw_down_limit = ${mon_ucw_down_limit}\n"
 }
 
 function print_fec_bins {
@@ -687,6 +688,7 @@ case $option in
         link )
                 if [ ${num_args} -ge 3 ] ; then
                         print_ldev
+                        print_lgrp
                         print_link
                         print_link_counters
 		fi
