@@ -9,9 +9,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
-#include <poll.h>
+#include <sys/epoll.h>
 
-#define VERSION              "1.1.0"
+#define VERSION              "1.1.1"
 
 /* Notification */
 #define NOTIF_ENV            "SL_TEST_LGRP_DEBUGFS_NOTIFS"
@@ -32,6 +32,9 @@
 #define FILTER_SHORT_OPT     'f'
 #define REMOVE_SHORT_OPT     'r'
 #define EXPECT_SHORT_OPT     'e'
+
+/* Epoll Events. Corresponds with number of open fds. Logic is written to handle only 1 event. */
+#define MAX_EPOLL_EVENTS     1
 
 static const char getopt_short_opts[] = {
 	HELP_SHORT_OPT,
@@ -145,43 +148,73 @@ void sigint_handler(int sig) {
 
 int read_notifs(int fd, char *notif, size_t len, int *timeout, bool remove)
 {
-	int           rtn;
-	struct pollfd rfds;
-	ssize_t       bytes_read;
+	int                rtn;
+	struct epoll_event event_config;
+	struct epoll_event events_return[MAX_EPOLL_EVENTS];
+	ssize_t            bytes_read;
+	int                epfd;
+	int                nfds;
 
-
-	rfds.fd = fd;
-	rfds.events = POLLIN;
-
-	/* POLLOUT signifies the notification queue is empty */
-	if (remove)
-		rfds.events |= POLLOUT;
-
-	rtn = poll(&rfds, 1, *timeout);
-	if (rtn == -1) {
+	epfd = epoll_create1(0);
+	if (epfd == -1) {
 		rtn = errno;
-		perror("poll failed");
+		fprintf(stderr, "%s: epoll_create1 failed [%d]\n", strerror(rtn), rtn);
 		return rtn;
-	} else if (rtn == 0) {
-		fprintf(stderr, "timedout\n");
-		return ETIMEDOUT;
 	}
 
-	if (rfds.revents & POLLIN) {
-		bytes_read = read(fd, notif, len);
+	/* EPOLLOUT signifies the notification queue is empty */
+	event_config.data.fd = fd;
+	event_config.events  = remove ? (EPOLLIN | EPOLLOUT) : EPOLLIN;
+
+	if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event_config) == -1) {
+		rtn = errno;
+		fprintf(stderr, "%s: epoll_ctl failed [%d]\n", strerror(rtn), rtn);
+		goto out;
+	}
+
+	nfds = epoll_wait(epfd, events_return, MAX_EPOLL_EVENTS, *timeout);
+	if (nfds == -1) {
+		rtn = errno;
+		fprintf(stderr, "%s: epoll_wait failed [%d]\n", strerror(rtn), rtn);
+		goto out;
+	}
+	
+	if (nfds == 0) {
+		fprintf(stderr, "timedout\n");
+		rtn = ETIMEDOUT;
+		fprintf(stderr, "%s [%d]\n", strerror(rtn), rtn);
+		goto out;
+	}
+
+	/* Unexpected event */
+	if (events_return[0].events & ~(EPOLLOUT | EPOLLIN)) {
+		rtn = EINVAL; // Unexpected event
+		goto out;
+	}
+
+	/* Notification queue is empty */
+	if (events_return[0].events & EPOLLOUT) {
+		rtn = ENODATA;
+		goto out;
+	}
+
+	/* Read notification data */
+	if (events_return[0].events & EPOLLIN) {
+		bytes_read = read(events_return[0].data.fd, notif, len);
 		if (bytes_read == -1) {
 			rtn = errno;
-			perror("read failed");
-			return rtn;
+			fprintf(stderr, "%s: read failed [%d]\n", strerror(rtn), rtn);
+			goto out;
 		}
-	} else if (rfds.revents & POLLOUT) {
-		return ENODATA;
-	} else {
-		fprintf(stderr, "wrong event\n");
-		return EINVAL;
-	}
+	} 
 
-	return 0;
+	rtn = 0;
+
+out:
+
+	close(epfd);
+
+	return rtn;
 }
 
 int parse_notif(char *notif, char *filter, char *expect)
@@ -268,7 +301,7 @@ int main(int argc, char *argv[])
 
 	if (signal(SIGINT, sigint_handler) == SIG_ERR) {
 		rtn = errno;
-		perror("signal failed");
+		fprintf(stderr, "%s: signal failed [%d]\n", strerror(rtn), rtn);
 		exit(rtn);
 	}
 
@@ -309,7 +342,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (rtn != 0) {
-				fprintf(stderr, "strncmp failed [%d]\n", rtn);
+				fprintf(stderr, "%s: strncmp failed [%d]\n", strerror(rtn), rtn);
 				fprintf(stderr, "notif not available.\n");
 				print_help(argv[0]);
 				return EINVAL;
@@ -333,7 +366,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (rtn != 0) {
-				fprintf(stderr, "strncmp failed [%d]\n", rtn);
+				fprintf(stderr, "%s: strncmp failed [%d]\n", strerror(rtn), rtn);
 				fprintf(stderr, "notif not available.\n");
 				print_help(argv[0]);
 				return EINVAL;
@@ -369,7 +402,7 @@ int main(int argc, char *argv[])
 	lgrp_notifs_filename = getenv(NOTIF_ENV);
 
 	if (!lgrp_notifs_filename) {
-		fprintf(stderr, "%s undefined\n", NOTIF_ENV);
+		fprintf(stderr, "%s: %s undefined [%d]\n", strerror(EINVAL), NOTIF_ENV, EINVAL);
 		fprintf(stderr, "source /usr/bin/sl_test_scripts/sl_test_env.sh\n");
 		exit(EINVAL);
 	}
@@ -377,7 +410,7 @@ int main(int argc, char *argv[])
 	fd = open(lgrp_notifs_filename, O_RDONLY);
 	if (fd == -1) {
 		rtn = errno;
-		perror("open failed");
+		fprintf(stderr, "%s: open failed [%d]\n", strerror(rtn), rtn);
 		exit(rtn);
 	}
 
