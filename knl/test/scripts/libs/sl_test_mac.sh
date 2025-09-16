@@ -397,3 +397,87 @@ function sl_test_mac_start {
 
 	return 0
 }
+
+function sl_test_mac_stop {
+	local rtn
+	local options
+	local OPTIND
+	local ldev_num
+	local lgrp_nums
+	local mac_nums
+	local usage="Usage: ${FUNCNAME} [-h | --help] ldev_num lgrp_nums mac_nums"
+	local description=$(cat <<-EOF
+	Stop the MACs for the link groups.
+
+	Mandatory:
+	ldev_num   Link Device Number the lgrp_nums belongs to.
+	lgrp_nums  Link Group Numbers the mac_nums belongs to.
+	mac_nums   MAC Numbers to stop.
+
+	Options:
+	-h, --help This message.
+	EOF
+	)
+
+	options=$(getopt -o "h" --long "help" -- "$@")
+
+	if [ "$?" != 0 ]; then
+		echo "${usage}"
+		echo "${description}"
+	fi
+
+	eval set -- "${options}"
+
+	while true; do
+		case "$1" in
+			-h | --help)
+				echo "${usage}"
+				echo "${description}"
+				return 0
+				;;
+			-- )
+				shift
+				break
+				;;
+			* )
+				break
+				;;
+		esac
+	done
+
+	if [[ "$#" != 3 ]]; then
+		sl_test_error_log "${FUNCNAME}" "Incorrect number of arguments"
+		echo "${usage}"
+		echo "${description}"
+		return 0
+	fi
+
+	ldev_num=$1
+	lgrp_nums=($2)
+	mac_nums=($3)
+	__sl_test_mac_check ${ldev_num} lgrp_nums mac_nums
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "mac_check failed [${rtn}]"
+		echo "${usage}"
+		return ${rtn}
+	fi
+
+	sl_test_debug_log "${FUNCNAME}" "(ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), mac_nums = (${mac_nums[*]}))"
+
+	__sl_test_mac_cmd ${ldev_num} lgrp_nums mac_nums "mac_tx_stop"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "mac_tx_stop failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	__sl_test_mac_cmd ${ldev_num} lgrp_nums mac_nums "mac_rx_stop"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "mac_rx_stop failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	return 0
+}

@@ -13,6 +13,7 @@ settings="${SL_TEST_DIR}/systems/settings/bs200_x1_fec_off.sh"
 ldev_num=0
 lgrp_nums=({0..63})
 down_cmd_lgrp_nums=({0..31})
+partner_lgrp_nums=({32..63})
 num_cycles=100
 link_up_cycles=($(seq 0 ${num_cycles}))
 
@@ -49,11 +50,11 @@ function test_verify {
 		notif_link_num=${notif_fields[4]}
 		notif_type=${notif_fields[6]}
 
-		if [[ "${notif_type}" == "link-up" || "${notif_type}" == "link-async-down" ]]; then
+		if [[ "${notif_type}" == "link-up" || "${notif_type}" == "link-async-down" || "${notif_type}" == "link-down" ]]; then
 			continue
 		else
 			sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-			sl_test_error_log "${FUNCNAME}" "Expected: link-up, link-async-down, Found: ${notif_type}"
+			sl_test_error_log "${FUNCNAME}" "Expected: link-up, link-async-down, link-down, Found: ${notif_type}"
 			return 1
 		fi
 	done
@@ -159,15 +160,24 @@ function main {
 		fi
 
 		sl_test_info_log "${FUNCNAME}" \
-			"lgrp_links_notif_wait link-async-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+			"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${down_cmd_lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
-		sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
+		sl_test_lgrp_links_notif_wait ${ldev_num} "${down_cmd_lgrp_nums[*]}" \
+			"link-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_thrash_notifs
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
+			return ${rtn}
+		fi
+
+		sl_test_lgrp_links_notif_wait ${ldev_num} "${partner_lgrp_nums[*]}" \
 			"link-async-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_thrash_notifs
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
 			return ${rtn}
 		fi
+
 	done
 
 	sl_test_info_log "${FUNCNAME}" "test_verify"
@@ -229,6 +239,7 @@ while true; do
 			midpoint=$((list_length / 2))
 			sorted_lgrp_nums=($(printf "%s\n" "${lgrp_nums[@]}" | sort -n))
 			down_cmd_lgrp_nums=("${sorted_lgrp_nums[@]:0:$midpoint}")
+			partner_lgrp_nums=("${sorted_lgrp_nums[@]:$midpoint}")
 			shift 2
 			;;
 		-- )

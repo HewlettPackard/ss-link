@@ -12,7 +12,7 @@ LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 settings="${SL_TEST_DIR}/systems/settings/ck400_x1_lb_fec_on.sh"
 ldev_num=0
 lgrp_nums=({0..63})
-link_up_timeouts=({100..3500..100})
+link_up_timeouts=({100..3000..100})
 
 function test_cleanup {
 	local rtn

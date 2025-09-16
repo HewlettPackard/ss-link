@@ -4,16 +4,16 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-brief="Verify link will cycle up and down."
+brief="Verify link down can be issued at different intervals during link up sequence using wrap back cables."
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/ck400_x1_lb_fec_on.sh"
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1_fec_off_one_try.sh"
 ldev_num=0
 lgrp_nums=({0..63})
-num_cycles=100
-link_up_cycles=($(seq 0 ${num_cycles}))
+down_cmd_lgrp_nums=({0..31})
+link_down_interval_uss_us=({100000..3500000..100000})
 
 function test_cleanup {
 	local rtn
@@ -66,7 +66,7 @@ function main {
 	local link_nums
 	local lgrp_sysfs
 	local furcation
-	local sl_test_link_thrash_notifs
+	local sl_test_link_sweep_notifs
 
 	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
 	rtn=$?
@@ -123,9 +123,9 @@ function main {
 		return ${rtn}
 	fi
 
-	for link_up_cycle in "${link_up_cycles[@]}"; do
+	for link_down_interval_us in "${link_down_interval_uss_us[@]}"; do
 
-		sl_test_info_log "${FUNCNAME}" "Thrash cycle (link_up_cycle = ${link_up_cycle})"
+		sl_test_info_log "${FUNCNAME}" "Down Interval (link_down_interval_us = ${link_down_interval_us})"
 
 		sl_test_info_log "${FUNCNAME}" "link_up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
@@ -136,20 +136,11 @@ function main {
 			return ${rtn}
 		fi
 
-		sl_test_info_log "${FUNCNAME}" \
-			"lgrp_links_notif_wait link-up (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+		usleep ${link_down_interval_us}
 
-		sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-			"link-up" ${LINK_NOTIF_TIMEOUT} sl_test_link_thrash_notifs
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
-			return ${rtn}
-		fi
+		sl_test_info_log "${FUNCNAME}" "link_down (ldev_num = ${ldev_num}, lgrp_nums = (${down_cmd_lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
 
-		sl_test_info_log "${FUNCNAME}" "link_down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), link_nums = (${link_nums[*]}))"
-
-		sl_test_link_down ${ldev_num} "${lgrp_nums[*]}" "${link_nums[*]}"
+		sl_test_link_down ${ldev_num} "${down_cmd_lgrp_nums[*]}" "${link_nums[*]}"
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_error_log "${FUNCNAME}" "link_down failed [${rtn}]"
@@ -157,10 +148,21 @@ function main {
 		fi
 
 		sl_test_info_log "${FUNCNAME}" \
-			"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+			"lgrp_links_notif_wait link-up-fail (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
 
 		sl_test_lgrp_links_notif_wait ${ldev_num} "${lgrp_nums[*]}" \
-			"link-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_thrash_notifs
+			"link-up-fail" ${LINK_NOTIF_TIMEOUT} sl_test_link_sweep_notifs
+		rtn=$?
+		if [[ "${rtn}" != 0 ]]; then
+			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
+			return ${rtn}
+		fi
+
+		sl_test_info_log "${FUNCNAME}" \
+			"lgrp_links_notif_wait link-down (ldev_num = ${ldev_num}, lgrp_nums = (${down_cmd_lgrp_nums[*]}), LINK_NOTIF_TIMEOUT = ${LINK_NOTIF_TIMEOUT})"
+
+		sl_test_lgrp_links_notif_wait ${ldev_num} "${down_cmd_lgrp_nums[*]}" \
+			"link-down" ${LINK_NOTIF_TIMEOUT} sl_test_link_sweep_notifs
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_error_log "${FUNCNAME}" "lgrp_links_notif_wait failed [${rtn}]"
@@ -180,19 +182,19 @@ function main {
 
 SCRIPT_NAME=$(basename $0)
 
-usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief] [-g | --lgrp_nums] [-c | --count]"
+usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief] [-g | --lgrp_nums]"
 description=$(cat <<-EOF
 ${brief}
 
 Options:
--b, --brief     Brief test description.
--c, --count     Number of thrash cycles.
--g, --lgrp_nums Link group numbers to test.
--h, --help      This message.
+-b, --brief         Brief test description.
+-g, --lgrp_nums     Link group numbers to test.
+-m, --max_num_media Number of link group connections to automatically discover.
+-h, --help          This message.
 EOF
 )
 
-options=$(getopt -o "hg:bc:" --long "help,lgrp_nums:,brief,count:" -- "$@")
+options=$(getopt -o "hg:bm:" --long "help,lgrp_nums:,brief,max_num_media:" -- "$@")
 
 if [ "$?" != 0 ]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
@@ -214,14 +216,19 @@ while true; do
 			lgrp_nums=(${2})
 			shift 2
 			;;
-		-c | --count)
-			num_cycles=$2
-			link_up_cycles=($(seq 0 ${num_cycles}))
-			shift 2
-			;;
 		-b | --brief)
 			echo ${brief}
 			exit 0
+			;;
+		-m | --max_num_media)
+			__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "PEC" ${2}
+			#TODO:: Assumes lower numbers attach to higher numbers. Maybe there is a better way
+			lgrp_nums=(${tmp_lgrp_nums//;/ })
+			list_length=${#lgrp_nums[@]}
+			midpoint=$((list_length / 2))
+			sorted_lgrp_nums=($(printf "%s\n" "${lgrp_nums[@]}" | sort -n))
+			down_cmd_lgrp_nums=("${sorted_lgrp_nums[@]:0:$midpoint}")
+			shift 2
 			;;
 		-- )
 			shift

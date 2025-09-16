@@ -29,14 +29,18 @@ enum mac_cmd_index {
 	MAC_DEL_CMD,
 	MAC_TX_START_CMD,
 	MAC_RX_START_CMD,
+	MAC_TX_STOP_CMD,
+	MAC_RX_STOP_CMD,
 	NUM_CMDS,
 };
 
 static struct cmd_entry mac_cmd_list[]  = {
-	[MAC_NEW_CMD]      = { .cmd = "mac_new",      .desc = "create mac object"                  },
-	[MAC_DEL_CMD]      = { .cmd = "mac_del",      .desc = "delete mac object"                  },
-	[MAC_TX_START_CMD] = { .cmd = "mac_tx_start", .desc = "start MAC tx"                       },
-	[MAC_RX_START_CMD] = { .cmd = "mac_rx_start", .desc = "start MAC rx"                       },
+	[MAC_NEW_CMD]      = { .cmd = "mac_new",      .desc = "create mac object" },
+	[MAC_DEL_CMD]      = { .cmd = "mac_del",      .desc = "delete mac object" },
+	[MAC_TX_START_CMD] = { .cmd = "mac_tx_start", .desc = "start MAC tx"      },
+	[MAC_RX_START_CMD] = { .cmd = "mac_rx_start", .desc = "start MAC rx"      },
+	[MAC_TX_STOP_CMD]  = { .cmd = "mac_tx_stop",   .desc = "stop MAC tx"      },
+	[MAC_RX_STOP_CMD]  = { .cmd = "mac_rx_stop",   .desc = "stop MAC rx"      },
 };
 
 #define MAC_CMD_MATCH(_index, _str) (strncmp((_str), mac_cmd_list[_index].cmd, strlen(mac_cmd_list[_index].cmd)) == 0)
@@ -127,6 +131,28 @@ static ssize_t sl_test_mac_cmd_write(struct file *f, const char __user *buf, siz
 		if (rtn < 0) {
 			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 				"sl_test_mac_rx_start failed [%d]", rtn);
+			return rtn;
+		}
+		return size;
+	}
+
+	match_found = MAC_CMD_MATCH(MAC_TX_STOP_CMD, cmd_buf);
+	if (match_found) {
+		rtn = sl_test_mac_tx_stop();
+		if (rtn < 0) {
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+				"sl_test_mac_tx_stop failed [%d]", rtn);
+			return rtn;
+		}
+		return size;
+	}
+
+	match_found = MAC_CMD_MATCH(MAC_RX_STOP_CMD, cmd_buf);
+	if (match_found) {
+		rtn = sl_test_mac_rx_stop();
+		if (rtn < 0) {
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+				"sl_test_mac_rx_stop failed [%d]", rtn);
 			return rtn;
 		}
 		return size;
@@ -285,4 +311,14 @@ int sl_test_mac_tx_start(void)
 int sl_test_mac_rx_start(void)
 {
 	return sl_mac_rx_start(sl_test_mac_get());
+}
+
+int sl_test_mac_tx_stop(void)
+{
+	return sl_mac_tx_stop(sl_test_mac_get());
+}
+
+int sl_test_mac_rx_stop(void)
+{
+	return sl_mac_rx_stop(sl_test_mac_get());
 }

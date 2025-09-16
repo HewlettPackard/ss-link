@@ -14,4 +14,7 @@ int sl_test_mac_del(void);
 int sl_test_mac_tx_start(void);
 int sl_test_mac_rx_start(void);
 
+int sl_test_mac_tx_stop(void);
+int sl_test_mac_rx_stop(void);
+
 #endif /* _SL_TEST_DEBUGFS_MAC_H_ */

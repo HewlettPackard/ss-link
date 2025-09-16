@@ -3,5 +3,6 @@ knl/core/test/scripts/* opt/hpe/r2/usr/share/rosetta/tests/sl-tests
 
 usr/${DEB_HOST_MULTIARCH}/bin/sl_test_lgrp_notifs_read /usr/bin
 usr/${DEB_HOST_MULTIARCH}/bin/sl_test_file_write /usr/bin
+knl/test/scripts/sl_test_shell.sh /usr/bin
 knl/test/scripts/* /usr/bin/sl_test_scripts
 lib/modules/5.10.*/sshot/sl-test.ko
