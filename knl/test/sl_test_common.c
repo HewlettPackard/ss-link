@@ -9,8 +9,8 @@
 #include "sl_test_common.h"
 #include "test/sl_media_test.h"
 #include "test/sl_core_test_serdes.h"
-#include "test/sl_ctl_test_ldev.h"
-#include "test/sl_ctl_test_lgrp.h"
+#include "test/sl_ctrl_test_ldev.h"
+#include "test/sl_ctrl_test_lgrp.h"
 
 #include "sl_core_lgrp.h"
 #include "hw/sl_core_hw_io.h"
@@ -144,27 +144,27 @@ EXPORT_SYMBOL(sl_test_media_type_from_str);
 
 struct kobject *sl_test_ldev_kobj_get(u8 ldev_num)
 {
-	return sl_ctl_test_ldev_kobj_get(ldev_num);
+	return sl_ctrl_test_ldev_kobj_get(ldev_num);
 }
 EXPORT_SYMBOL(sl_test_ldev_kobj_get);
 
 struct kobject *sl_test_lgrp_kobj_get(u8 ldev_num, u8 lgrp_num)
 {
-	return sl_ctl_test_lgrp_kobj_get(ldev_num, lgrp_num);
+	return sl_ctrl_test_lgrp_kobj_get(ldev_num, lgrp_num);
 }
 EXPORT_SYMBOL(sl_test_lgrp_kobj_get);
 
-struct sl_ctl_ldev *sl_test_ctl_ldev_get(u8 ldev_num)
+struct sl_ctrl_ldev *sl_test_ctrl_ldev_get(u8 ldev_num)
 {
-	return sl_ctl_test_ldev_get(ldev_num);
+	return sl_ctrl_test_ldev_get(ldev_num);
 }
-EXPORT_SYMBOL(sl_test_ctl_ldev_get);
+EXPORT_SYMBOL(sl_test_ctrl_ldev_get);
 
-struct sl_ctl_lgrp *sl_test_ctl_lgrp_get(u8 ldev_num, u8 lgrp_num)
+struct sl_ctrl_lgrp *sl_test_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
-	return sl_ctl_test_lgrp_get(ldev_num, lgrp_num);
+	return sl_ctrl_test_lgrp_get(ldev_num, lgrp_num);
 }
-EXPORT_SYMBOL(sl_test_ctl_lgrp_get);
+EXPORT_SYMBOL(sl_test_ctrl_lgrp_get);
 
 static ssize_t sl_test_option_read(struct file *f, char __user *buf, size_t size, loff_t *pos)
 {

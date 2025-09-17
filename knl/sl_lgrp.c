@@ -13,8 +13,8 @@
 #include "sl_lgrp.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_LGRP_LOG_NAME
@@ -142,7 +142,7 @@ struct sl_lgrp *sl_lgrp_new(struct sl_ldev *ldev, u8 lgrp_num, struct kobject *s
 		return ERR_PTR(-EINVAL);
 	}
 
-	rtn = sl_ctl_lgrp_new(ldev->num, lgrp_num, sysfs_parent);
+	rtn = sl_ctrl_lgrp_new(ldev->num, lgrp_num, sysfs_parent);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
@@ -162,7 +162,7 @@ int sl_lgrp_del(struct sl_lgrp *lgrp)
 		return rtn;
 	}
 
-	return sl_ctl_lgrp_del(lgrp->ldev_num, lgrp->num);
+	return sl_ctrl_lgrp_del(lgrp->ldev_num, lgrp->num);
 }
 EXPORT_SYMBOL(sl_lgrp_del);
 
@@ -181,7 +181,7 @@ int sl_lgrp_config_set(struct sl_lgrp *lgrp, struct sl_lgrp_config *lgrp_config)
 		return rtn;
 	}
 
-	return sl_ctl_lgrp_config_set(lgrp->ldev_num, lgrp->num, lgrp_config);
+	return sl_ctrl_lgrp_config_set(lgrp->ldev_num, lgrp->num, lgrp_config);
 }
 EXPORT_SYMBOL(sl_lgrp_config_set);
 
@@ -200,7 +200,7 @@ int sl_lgrp_policy_set(struct sl_lgrp *lgrp, struct sl_lgrp_policy *lgrp_policy)
 		return rtn;
 	}
 
-	return sl_ctl_lgrp_policy_set(lgrp->ldev_num, lgrp->num, lgrp_policy);
+	return sl_ctrl_lgrp_policy_set(lgrp->ldev_num, lgrp->num, lgrp_policy);
 }
 EXPORT_SYMBOL(sl_lgrp_policy_set);
 
@@ -219,7 +219,7 @@ int sl_lgrp_notif_callback_reg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 		return -EINVAL;
 	}
 
-	return sl_ctl_lgrp_notif_callback_reg(lgrp->ldev_num, lgrp->num, callback, types, tag);
+	return sl_ctrl_lgrp_notif_callback_reg(lgrp->ldev_num, lgrp->num, callback, types, tag);
 }
 EXPORT_SYMBOL(sl_lgrp_notif_callback_reg);
 
@@ -238,7 +238,7 @@ int sl_lgrp_notif_callback_unreg(struct sl_lgrp *lgrp, sl_lgrp_notif_t callback,
 		return -EINVAL;
 	}
 
-	return sl_ctl_lgrp_notif_callback_unreg(lgrp->ldev_num, lgrp->num, callback, types);
+	return sl_ctrl_lgrp_notif_callback_unreg(lgrp->ldev_num, lgrp->num, callback, types);
 }
 EXPORT_SYMBOL(sl_lgrp_notif_callback_unreg);
 
@@ -256,7 +256,7 @@ int sl_lgrp_connect_id_set(struct sl_lgrp *lgrp, const char *connect_id)
 		return -EINVAL;
 	}
 
-	return sl_ctl_lgrp_connect_id_set(lgrp->ldev_num, lgrp->num, connect_id);
+	return sl_ctrl_lgrp_connect_id_set(lgrp->ldev_num, lgrp->num, connect_id);
 }
 EXPORT_SYMBOL(sl_lgrp_connect_id_set);
 

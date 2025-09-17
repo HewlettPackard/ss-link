@@ -7,7 +7,7 @@
 #include <linux/delay.h>
 
 #include "sl_platform.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "sl_media_jack.h"
@@ -30,7 +30,7 @@
 #include "hw/sl_core_hw_fec.h"
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_reset.h"
-#include "sl_ctl_lgrp.h"
+#include "sl_ctrl_lgrp.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
@@ -667,16 +667,16 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		return;
 	}
 
-	sl_ctl_link_fec_down_cache_clear(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+	sl_ctrl_link_fec_down_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 		core_link->core_lgrp->num, core_link->num));
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn) {
 		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
-		sl_ctl_link_fec_up_cache_clear(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+		sl_ctrl_link_fec_up_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num));
 	} else {
-		sl_ctl_link_fec_up_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+		sl_ctrl_link_fec_up_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	}
 
@@ -777,11 +777,11 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 	struct sl_core_link_fec_lane_cntrs   lane_cntrs;
 	struct sl_core_link_fec_tail_cntrs   tail_cntrs;
 	struct sl_core_link                 *core_link;
-	struct sl_ctl_link                  *ctl_link;
+	struct sl_ctrl_link                  *ctrl_link;
 	u32                                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_FEC_SETTLE]);
-	ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num);
+	ctrl_link = sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fec settle work");
 
@@ -796,7 +796,7 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "hw_fec_data_get failed [%d]", rtn);
 	else
-		sl_ctl_link_fec_data_store(ctl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
+		sl_ctrl_link_fec_data_store(ctrl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
 	sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
 }
@@ -809,11 +809,11 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 	struct sl_core_link_fec_tail_cntrs   tail_cntrs;
 	struct sl_fec_info                   fec_info;
 	struct sl_core_link                 *core_link;
-	struct sl_ctl_link                  *ctl_link;
+	struct sl_ctrl_link                  *ctrl_link;
 	u32                                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_FEC_CHECK]);
-	ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num);
+	ctrl_link = sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fec check work");
 
@@ -831,14 +831,14 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"up fec check work hw_fec_data_get failed [%d]", rtn);
 	else
-		sl_ctl_link_fec_data_store(ctl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
+		sl_ctrl_link_fec_data_store(ctrl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
-	sl_ctl_link_fec_data_calc(ctl_link);
-	fec_info = sl_ctl_link_fec_data_info_get(ctl_link);
+	sl_ctrl_link_fec_data_calc(ctrl_link);
+	fec_info = sl_ctrl_link_fec_data_info_get(ctrl_link);
 
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 
-	if (SL_CTL_LINK_FEC_UCW_LIMIT_CHECK(core_link->fec.settings.up_ucw_limit, &fec_info)) {
+	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(core_link->fec.settings.up_ucw_limit, &fec_info)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"UCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
@@ -852,7 +852,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		return;
 	}
 
-	if (SL_CTL_LINK_FEC_CCW_LIMIT_CHECK(core_link->fec.settings.up_ccw_limit, &fec_info)) {
+	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(core_link->fec.settings.up_ccw_limit, &fec_info)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 			"CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
@@ -1185,7 +1185,7 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "down work hw_fec_data_get failed [%d]", rtn);
 	else
-		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+		sl_ctrl_link_fec_down_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
 	sl_core_hw_link_off(core_link);
@@ -1434,7 +1434,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"fault intr work hw_fec_data_get failed [%d]", rtn);
 	else
-		sl_ctl_link_fec_down_cache_store(sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+		sl_ctrl_link_fec_down_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
 	sl_core_hw_link_off(core_link);
@@ -1526,11 +1526,12 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 	info.degrade_info       = ald_info;
 	spin_unlock(&core_link->data_lock);
 
-	rtn = sl_ctl_lgrp_notif_enqueue(sl_ctl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num),
-			core_link->num, SL_LGRP_NOTIF_LANE_DEGRADE, &info, 0);
+	rtn = sl_ctrl_lgrp_notif_enqueue(
+		sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num),
+		core_link->num, SL_LGRP_NOTIF_LANE_DEGRADE, &info, 0);
 	if (rtn)
 		sl_media_log_warn_trace(core_link, LOG_NAME,
-			"lane degrade ctl_lgrp_notif_enqueue failed [%d]", rtn);
+			"lane degrade ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);

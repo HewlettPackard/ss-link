@@ -10,18 +10,17 @@
 #include <linux/sl_media.h>
 #include <linux/sl_test.h>
 
-#include "sl_kconfig.h"
 #include "sl_asic.h"
 #include "base/sl_core_log.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_link.h"
-#include "sl_ctl_link_priv.h"
-#include "sl_ctl_llr.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_link.h"
+#include "sl_ctrl_link_priv.h"
+#include "sl_ctrl_llr.h"
 #include "test/sl_core_test.h"
 #include "test/sl_core_test_fec.h"
 
@@ -167,11 +166,11 @@ static const struct sl_core_test sl_core_tests[] = {
 	SL_CORE_TEST(33, "LLR START",                SL_CORE_TEST_FLAG_CAN_ASYNC),
 	SL_CORE_TEST(34, "LLR STOP",                 0),
 
-	SL_CORE_TEST(35, "CTL link new",             0),
-	SL_CORE_TEST(36, "CTL link del",             0),
-	SL_CORE_TEST(37, "CTL LLR config SET",       0),
-	SL_CORE_TEST(38, "CTL LLR start",            0),
-	SL_CORE_TEST(39, "CTL LLR stop",             0),
+	SL_CORE_TEST(35, "CTRL link new",            0),
+	SL_CORE_TEST(36, "CTRL link del",            0),
+	SL_CORE_TEST(37, "CTRL LLR config SET",      0),
+	SL_CORE_TEST(38, "CTRL LLR start",           0),
+	SL_CORE_TEST(39, "CTRL LLR stop",            0),
 
 	SL_CORE_TEST(40, "FEC cntr GET",             0),
 	SL_CORE_TEST(41, "FEC cntr set rate",        0),
@@ -687,12 +686,12 @@ static int sl_core_test34(struct sl_core_test_args test_args)
 
 static int sl_core_test35(struct sl_core_test_args test_args)
 {
-	return sl_ctl_link_new(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, NULL);
+	return sl_ctrl_link_new(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, NULL);
 }
 
 static int sl_core_test36(struct sl_core_test_args test_args)
 {
-	sl_ctl_link_del(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
+	sl_ctrl_link_del(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 
 	return 0;
 }
@@ -708,17 +707,17 @@ static int sl_core_test37(struct sl_core_test_args test_args)
 	llr_config.start_timeout_ms = 5000;
 	llr_config.link_dn_behavior = 0;
 
-	return sl_ctl_llr_config_set(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &llr_config);
+	return sl_ctrl_llr_config_set(test_args.ldev_num, test_args.lgrp_num, test_args.link_num, &llr_config);
 }
 
 static int sl_core_test38(struct sl_core_test_args test_args)
 {
-	return sl_ctl_llr_start(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
+	return sl_ctrl_llr_start(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 }
 
 static int sl_core_test39(struct sl_core_test_args test_args)
 {
-	return sl_ctl_llr_stop(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
+	return sl_ctrl_llr_stop(test_args.ldev_num, test_args.lgrp_num, test_args.link_num);
 }
 
 static int sl_core_test40(struct sl_core_test_args test_args)

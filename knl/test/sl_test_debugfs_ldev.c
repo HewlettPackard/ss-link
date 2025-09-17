@@ -164,13 +164,13 @@ u8 sl_test_debugfs_ldev_num_get(void)
 
 int sl_test_ldev_new(void)
 {
-	struct sl_ctl_ldev *ctl_ldev;
+	struct sl_ctrl_ldev *ctrl_ldev;
 
 	//TODO: Create ldev object
 	/* We rely on the ldev created by the client. Don't create new */
-	ctl_ldev = sl_test_ctl_ldev_get(sl_test_debugfs_ldev_num_get());
-	if (!ctl_ldev) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "ldev_new ctl_ldev_get failed");
+	ctrl_ldev = sl_test_ctrl_ldev_get(sl_test_debugfs_ldev_num_get());
+	if (!ctrl_ldev) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "ldev_new ctrl_ldev_get failed");
 		return -ENODEV;
 	}
 

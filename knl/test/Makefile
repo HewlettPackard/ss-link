@@ -25,7 +25,7 @@ MDIR = $(shell pwd)
 
 KCPPFLAGS      += -I$(MDIR)/../media
 KCPPFLAGS      += -I$(MDIR)/../core
-KCPPFLAGS      += -I$(MDIR)/../ctl
+KCPPFLAGS      += -I$(MDIR)/../ctrl
 KCPPFLAGS      += -I$(MDIR)/../log
 
 KCPPFLAGS      += -I$(MDIR)/..

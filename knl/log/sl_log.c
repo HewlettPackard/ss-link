@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/sched.h>
@@ -20,11 +20,11 @@
 #include "sl_core_mac.h"
 #include "sl_core_llr.h"
 
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_link.h"
-#include "sl_ctl_llr.h"
-#include "sl_ctl_mac.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_link.h"
+#include "sl_ctrl_llr.h"
+#include "sl_ctrl_mac.h"
 
 #include "hw/sl_core_hw_intr.h"
 #include "data/sl_core_data_link.h"
@@ -57,11 +57,11 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 	struct sl_link            *link;
 	struct sl_llr             *llr;
 	struct sl_mac             *mac;
-	struct sl_ctl_ldev        *ctl_ldev;
-	struct sl_ctl_lgrp        *ctl_lgrp;
-	struct sl_ctl_link        *ctl_link;
-	struct sl_ctl_llr         *ctl_llr;
-	struct sl_ctl_mac         *ctl_mac;
+	struct sl_ctrl_ldev       *ctrl_ldev;
+	struct sl_ctrl_lgrp       *ctrl_lgrp;
+	struct sl_ctrl_link       *ctrl_link;
+	struct sl_ctrl_llr        *ctrl_llr;
+	struct sl_ctrl_mac        *ctrl_mac;
 	struct sl_core_ldev       *core_ldev;
 	struct sl_core_lgrp       *core_lgrp;
 	struct sl_core_link       *core_link;
@@ -106,47 +106,47 @@ static void sl_log_msg_create(const char *level, void *ptr, char *msg,
 				SL_LOG_CONTEXT,
 				mac->ldev_num, mac->lgrp_num, mac->num, "mac");
 			break;
-		case SL_CTL_LDEV_MAGIC:
-			ctl_ldev = ptr;
+		case SL_CTRL_LDEV_MAGIC:
+			ctrl_ldev = ptr;
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LDEV_ID_FMT,
 				SL_LOG_CONTEXT,
-				ctl_ldev->num, ctl_ldev->num);
+				ctrl_ldev->num, ctrl_ldev->num);
 			break;
-		case SL_CTL_LGRP_MAGIC:
-			ctl_lgrp = ptr;
-			spin_lock_irqsave(&(ctl_lgrp->log_lock), irq_flags);
+		case SL_CTRL_LGRP_MAGIC:
+			ctrl_lgrp = ptr;
+			spin_lock_irqsave(&(ctrl_lgrp->log_lock), irq_flags);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LGRP_ID_FMT,
 				SL_LOG_CONTEXT,
-				ctl_lgrp->ctl_ldev->num, ctl_lgrp->num,
-				ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_lgrp->log_lock), irq_flags);
+				ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num,
+				ctrl_lgrp->log_connect_id);
+			spin_unlock_irqrestore(&(ctrl_lgrp->log_lock), irq_flags);
 			break;
-		case SL_CTL_LINK_MAGIC:
-			ctl_link = ptr;
-			spin_lock_irqsave(&(ctl_link->ctl_lgrp->log_lock), irq_flags);
+		case SL_CTRL_LINK_MAGIC:
+			ctrl_link = ptr;
+			spin_lock_irqsave(&(ctrl_link->ctrl_lgrp->log_lock), irq_flags);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
-				ctl_link->ctl_lgrp->ctl_ldev->num, ctl_link->ctl_lgrp->num, ctl_link->num,
-				ctl_link->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_link->ctl_lgrp->log_lock), irq_flags);
+				ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num,
+				ctrl_link->ctrl_lgrp->log_connect_id);
+			spin_unlock_irqrestore(&(ctrl_link->ctrl_lgrp->log_lock), irq_flags);
 			break;
-		case SL_CTL_LLR_MAGIC:
-			ctl_llr = ptr;
-			spin_lock_irqsave(&(ctl_llr->ctl_lgrp->log_lock), irq_flags);
+		case SL_CTRL_LLR_MAGIC:
+			ctrl_llr = ptr;
+			spin_lock_irqsave(&(ctrl_llr->ctrl_lgrp->log_lock), irq_flags);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
-				ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num,
-				ctl_llr->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_llr->ctl_lgrp->log_lock), irq_flags);
+				ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num,
+				ctrl_llr->ctrl_lgrp->log_connect_id);
+			spin_unlock_irqrestore(&(ctrl_llr->ctrl_lgrp->log_lock), irq_flags);
 			break;
-		case SL_CTL_MAC_MAGIC:
-			ctl_mac = ptr;
-			spin_lock_irqsave(&(ctl_mac->ctl_lgrp->log_lock), irq_flags);
+		case SL_CTRL_MAC_MAGIC:
+			ctrl_mac = ptr;
+			spin_lock_irqsave(&(ctrl_mac->ctrl_lgrp->log_lock), irq_flags);
 			idx += snprintf(msg + idx, remaining_chars(idx), SL_LOG_LINK_ID_FMT,
 				SL_LOG_CONTEXT,
-				ctl_mac->ctl_lgrp->ctl_ldev->num, ctl_mac->ctl_lgrp->num, ctl_mac->num,
-				ctl_mac->ctl_lgrp->log_connect_id);
-			spin_unlock_irqrestore(&(ctl_mac->ctl_lgrp->log_lock), irq_flags);
+				ctrl_mac->ctrl_lgrp->ctrl_ldev->num, ctrl_mac->ctrl_lgrp->num, ctrl_mac->num,
+				ctrl_mac->ctrl_lgrp->log_connect_id);
+			spin_unlock_irqrestore(&(ctrl_mac->ctrl_lgrp->log_lock), irq_flags);
 			break;
 		case SL_CORE_LDEV_MAGIC:
 			core_ldev = ptr;
@@ -262,10 +262,10 @@ void sl_log_err_trace(void *ptr, const char *block,
 {
 	char                 msg[SL_LOG_MSG_LEN + 1];
 	va_list              args;
-	struct sl_ctl_lgrp   *ctl_lgrp;
-	struct sl_ctl_link   *ctl_link;
-	struct sl_ctl_llr    *ctl_llr;
-	struct sl_ctl_mac    *ctl_mac;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	struct sl_ctrl_link  *ctrl_link;
+	struct sl_ctrl_llr   *ctrl_llr;
+	struct sl_ctrl_mac   *ctrl_mac;
 	struct sl_core_lgrp  *core_lgrp;
 	struct sl_core_link  *core_link;
 	struct sl_core_mac   *core_mac;
@@ -289,24 +289,24 @@ void sl_log_err_trace(void *ptr, const char *block,
 		return;
 
 	switch (*((u32 *)ptr)) {
-	case SL_CTL_LGRP_MAGIC:
-		ctl_lgrp = ptr;
-		if (!ctl_lgrp->err_trace_enable)
+	case SL_CTRL_LGRP_MAGIC:
+		ctrl_lgrp = ptr;
+		if (!ctrl_lgrp->err_trace_enable)
 			return;
 		break;
-	case SL_CTL_LINK_MAGIC:
-		ctl_link = ptr;
-		if (!ctl_link->ctl_lgrp->err_trace_enable)
+	case SL_CTRL_LINK_MAGIC:
+		ctrl_link = ptr;
+		if (!ctrl_link->ctrl_lgrp->err_trace_enable)
 			return;
 		break;
-	case SL_CTL_LLR_MAGIC:
-		ctl_llr = ptr;
-		if (!ctl_llr->ctl_lgrp->err_trace_enable)
+	case SL_CTRL_LLR_MAGIC:
+		ctrl_llr = ptr;
+		if (!ctrl_llr->ctrl_lgrp->err_trace_enable)
 			return;
 		break;
-	case SL_CTL_MAC_MAGIC:
-		ctl_mac = ptr;
-		if (!ctl_mac->ctl_lgrp->err_trace_enable)
+	case SL_CTRL_MAC_MAGIC:
+		ctrl_mac = ptr;
+		if (!ctrl_mac->ctrl_lgrp->err_trace_enable)
 			return;
 		break;
 	case SL_CORE_LGRP_MAGIC:
@@ -348,12 +348,12 @@ void sl_log_err_trace(void *ptr, const char *block,
 void sl_log_warn_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...)
 {
-	char                 msg[SL_LOG_MSG_LEN + 1];
-	va_list              args;
-	struct sl_ctl_lgrp   *ctl_lgrp;
-	struct sl_ctl_link   *ctl_link;
-	struct sl_ctl_llr    *ctl_llr;
-	struct sl_ctl_mac    *ctl_mac;
+	char                  msg[SL_LOG_MSG_LEN + 1];
+	va_list               args;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	struct sl_ctrl_link  *ctrl_link;
+	struct sl_ctrl_llr   *ctrl_llr;
+	struct sl_ctrl_mac   *ctrl_mac;
 	struct sl_core_lgrp  *core_lgrp;
 	struct sl_core_link  *core_link;
 	struct sl_core_mac   *core_mac;
@@ -377,24 +377,24 @@ void sl_log_warn_trace(void *ptr, const char *block,
 		return;
 
 	switch (*((u32 *)ptr)) {
-	case SL_CTL_LGRP_MAGIC:
-		ctl_lgrp = ptr;
-		if (!ctl_lgrp->warn_trace_enable)
+	case SL_CTRL_LGRP_MAGIC:
+		ctrl_lgrp = ptr;
+		if (!ctrl_lgrp->warn_trace_enable)
 			return;
 		break;
-	case SL_CTL_LINK_MAGIC:
-		ctl_link = ptr;
-		if (!ctl_link->ctl_lgrp->warn_trace_enable)
+	case SL_CTRL_LINK_MAGIC:
+		ctrl_link = ptr;
+		if (!ctrl_link->ctrl_lgrp->warn_trace_enable)
 			return;
 		break;
-	case SL_CTL_LLR_MAGIC:
-		ctl_llr = ptr;
-		if (!ctl_llr->ctl_lgrp->warn_trace_enable)
+	case SL_CTRL_LLR_MAGIC:
+		ctrl_llr = ptr;
+		if (!ctrl_llr->ctrl_lgrp->warn_trace_enable)
 			return;
 		break;
-	case SL_CTL_MAC_MAGIC:
-		ctl_mac = ptr;
-		if (!ctl_mac->ctl_lgrp->warn_trace_enable)
+	case SL_CTRL_MAC_MAGIC:
+		ctrl_mac = ptr;
+		if (!ctrl_mac->ctrl_lgrp->warn_trace_enable)
 			return;
 		break;
 	case SL_CORE_LGRP_MAGIC:

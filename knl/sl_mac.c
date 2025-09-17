@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/err.h>
@@ -10,8 +10,8 @@
 #include "sl_log.h"
 #include "sl_lgrp.h"
 #include "sl_mac.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_mac.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_mac.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_MAC_LOG_NAME
@@ -85,7 +85,7 @@ struct sl_mac *sl_mac_new(struct sl_lgrp *lgrp, u8 mac_num, struct kobject *sysf
 		return ERR_PTR(-EINVAL);
 	}
 
-	rtn = sl_ctl_mac_new(lgrp->ldev_num, lgrp->num, mac_num, sysfs_parent);
+	rtn = sl_ctrl_mac_new(lgrp->ldev_num, lgrp->num, mac_num, sysfs_parent);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
@@ -105,7 +105,7 @@ int sl_mac_del(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_del(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_del(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_del);
 
@@ -119,7 +119,7 @@ int sl_mac_tx_start(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_tx_start(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_tx_start(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_tx_start);
 
@@ -133,7 +133,7 @@ int sl_mac_tx_stop(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_tx_stop(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_tx_stop(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_tx_stop);
 
@@ -147,7 +147,7 @@ int sl_mac_tx_state_get(struct sl_mac *mac, u32 *state)
 		return rtn;
 	}
 
-	return sl_ctl_mac_tx_state_get(mac->ldev_num, mac->lgrp_num, mac->num, state);
+	return sl_ctrl_mac_tx_state_get(mac->ldev_num, mac->lgrp_num, mac->num, state);
 }
 EXPORT_SYMBOL(sl_mac_tx_state_get);
 
@@ -161,7 +161,7 @@ int sl_mac_rx_start(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_rx_start(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_rx_start(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_rx_start);
 
@@ -175,7 +175,7 @@ int sl_mac_rx_stop(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_rx_stop(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_rx_stop(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_rx_stop);
 
@@ -189,7 +189,7 @@ int sl_mac_rx_state_get(struct sl_mac *mac, u32 *state)
 		return rtn;
 	}
 
-	return sl_ctl_mac_rx_state_get(mac->ldev_num, mac->lgrp_num, mac->num, state);
+	return sl_ctrl_mac_rx_state_get(mac->ldev_num, mac->lgrp_num, mac->num, state);
 }
 EXPORT_SYMBOL(sl_mac_rx_state_get);
 
@@ -203,7 +203,7 @@ int sl_mac_reset(struct sl_mac *mac)
 		return rtn;
 	}
 
-	return sl_ctl_mac_reset(mac->ldev_num, mac->lgrp_num, mac->num);
+	return sl_ctrl_mac_reset(mac->ldev_num, mac->lgrp_num, mac->num);
 }
 EXPORT_SYMBOL(sl_mac_reset);
 

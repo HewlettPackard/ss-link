@@ -11,7 +11,7 @@
 #include "sl_log.h"
 #include "sl_ldev.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_ldev.h"
+#include "sl_ctrl_ldev.h"
 #include "sl_media_ldev.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -178,7 +178,7 @@ struct sl_ldev *sl_ldev_new(u8 ldev_num,
 		return ERR_PTR(rtn);
 	}
 
-	rtn = sl_ctl_ldev_new(ldev_num, workq, ldev_attr);
+	rtn = sl_ctrl_ldev_new(ldev_num, workq, ldev_attr);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(rtn);
@@ -216,7 +216,7 @@ int sl_ldev_serdes_init(struct sl_ldev *ldev)
 		return rtn;
 	}
 
-	return sl_ctl_ldev_serdes_init(ldev->num);
+	return sl_ctrl_ldev_serdes_init(ldev->num);
 }
 EXPORT_SYMBOL(sl_ldev_serdes_init);
 
@@ -230,11 +230,11 @@ int sl_ldev_del(struct sl_ldev *ldev)
 		return rtn;
 	}
 
-	return sl_ctl_ldev_del(ldev->num);
+	return sl_ctrl_ldev_del(ldev->num);
 }
 EXPORT_SYMBOL(sl_ldev_del);
 
 void sl_ldev_exit(void)
 {
-	sl_ctl_ldev_exit();
+	sl_ctrl_ldev_exit();
 }

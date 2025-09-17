@@ -11,8 +11,8 @@
 #include "sl_lgrp.h"
 #include "sl_link.h"
 #include "sl_core_str.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_link.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_LINK_LOG_NAME
@@ -130,7 +130,7 @@ struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *s
 		return ERR_PTR(-EINVAL);
 	}
 
-	rtn = sl_ctl_link_new(lgrp->ldev_num, lgrp->num, link_num, sysfs_parent);
+	rtn = sl_ctrl_link_new(lgrp->ldev_num, lgrp->num, link_num, sysfs_parent);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
@@ -150,7 +150,7 @@ int sl_link_del(struct sl_link *link)
 		return rtn;
 	}
 
-	return sl_ctl_link_del(link->ldev_num, link->lgrp_num, link->num);
+	return sl_ctrl_link_del(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_del);
 
@@ -169,7 +169,7 @@ int sl_link_config_set(struct sl_link *link, struct sl_link_config *link_config)
 		return rtn;
 	}
 
-	return sl_ctl_link_config_set(link->ldev_num, link->lgrp_num, link->num, link_config);
+	return sl_ctrl_link_config_set(link->ldev_num, link->lgrp_num, link->num, link_config);
 }
 EXPORT_SYMBOL(sl_link_config_set);
 
@@ -189,7 +189,7 @@ int sl_link_policy_set(struct sl_link *link, struct sl_link_policy *link_policy)
 		return rtn;
 	}
 
-	return sl_ctl_link_policy_set(link->ldev_num, link->lgrp_num, link->num, link_policy);
+	return sl_ctrl_link_policy_set(link->ldev_num, link->lgrp_num, link->num, link_policy);
 }
 EXPORT_SYMBOL(sl_link_policy_set);
 
@@ -211,7 +211,7 @@ int sl_link_an_lp_caps_get(struct sl_link *link, struct sl_link_caps *caps, u32 
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_an_lp_caps_get(link->ldev_num, link->lgrp_num, link->num, caps, timeout_ms, flags);
+	return sl_ctrl_link_an_lp_caps_get(link->ldev_num, link->lgrp_num, link->num, caps, timeout_ms, flags);
 }
 EXPORT_SYMBOL(sl_link_an_lp_caps_get);
 
@@ -225,7 +225,7 @@ int sl_link_an_lp_caps_stop(struct sl_link *link)
 		return rtn;
 	}
 
-	return sl_ctl_link_an_lp_caps_stop(link->ldev_num, link->lgrp_num, link->num);
+	return sl_ctrl_link_an_lp_caps_stop(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_an_lp_caps_stop);
 
@@ -239,7 +239,7 @@ int sl_link_up(struct sl_link *link)
 		return rtn;
 	}
 
-	return sl_ctl_link_up(link->ldev_num, link->lgrp_num, link->num);
+	return sl_ctrl_link_up(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_up);
 
@@ -253,7 +253,7 @@ int sl_link_down(struct sl_link *link)
 		return rtn;
 	}
 
-	return sl_ctl_link_down(link->ldev_num, link->lgrp_num, link->num);
+	return sl_ctrl_link_down(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_down);
 
@@ -267,7 +267,7 @@ int sl_link_reset(struct sl_link *link)
 		return rtn;
 	}
 
-	return sl_ctl_link_reset(link->ldev_num, link->lgrp_num, link->num);
+	return sl_ctrl_link_reset(link->ldev_num, link->lgrp_num, link->num);
 }
 EXPORT_SYMBOL(sl_link_reset);
 
@@ -281,8 +281,8 @@ int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *t
 		return rtn;
 	}
 
-	sl_ctl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time);
-	sl_ctl_link_up_count_get(link->ldev_num, link->lgrp_num, link->num, up_count);
+	sl_ctrl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time);
+	sl_ctrl_link_up_count_get(link->ldev_num, link->lgrp_num, link->num, up_count);
 
 	return 0;
 }
@@ -302,7 +302,7 @@ int sl_link_state_get(struct sl_link *link, u32 *state)
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_state_get_cmd(link->ldev_num, link->lgrp_num, link->num, state);
+	return sl_ctrl_link_state_get_cmd(link->ldev_num, link->lgrp_num, link->num, state);
 }
 EXPORT_SYMBOL(sl_link_state_get);
 

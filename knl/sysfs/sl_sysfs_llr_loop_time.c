@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
 #include "sl_llr.h"
-#include "sl_ctl_llr.h"
+#include "sl_ctrl_llr.h"
 #include "sl_core_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -16,11 +16,11 @@
 
 static ssize_t llr_loop_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
-	struct sl_ctl_llr  *ctl_llr;
+	struct sl_ctrl_llr *ctrl_llr;
 	struct sl_core_llr *core_llr;
 
-	ctl_llr = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	core_llr = sl_core_llr_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
+	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, loop_time_kobj);
+	core_llr = sl_core_llr_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num);
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		"loop time show (llr = 0x%p, loop time %u = %lluns)",
@@ -49,9 +49,9 @@ llr_loop_time(9);
 
 #define sl_sysfs_llr_loop_time_file(_num)                                                      \
 	do {                                                                                   \
-		rtn = sysfs_create_file(&ctl_llr->loop_time_kobj, &llr_loop_time_##_num.attr); \
+		rtn = sysfs_create_file(&ctrl_llr->loop_time_kobj, &llr_loop_time_##_num.attr); \
 		if (rtn) {                                                                     \
-			sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,                               \
+			sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,                               \
 				"llr loop time create file failed [%d]", rtn);                 \
 			goto out;                                                              \
 		}                                                                              \
@@ -59,56 +59,56 @@ llr_loop_time(9);
 
 static ssize_t calc_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_llr  *ctl_llr;
+	struct sl_ctrl_llr *ctrl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
+	ctrl_llr  = container_of(kobj, struct sl_ctrl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num);
 
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
-		"calc show (llr = 0x%p, calc = %lluns)", ctl_llr, llr_data.loop.calculated);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		"calc show (llr = 0x%p, calc = %lluns)", ctrl_llr, llr_data.loop.calculated);
 
 	return scnprintf(buf, PAGE_SIZE, "%llu\n", llr_data.loop.calculated);
 }
 
 static ssize_t min_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_llr  *ctl_llr;
+	struct sl_ctrl_llr *ctrl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
+	ctrl_llr  = container_of(kobj, struct sl_ctrl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num);
 
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
-		"min show (llr = 0x%p, min = %lluns)", ctl_llr, llr_data.loop.min);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		"min show (llr = 0x%p, min = %lluns)", ctrl_llr, llr_data.loop.min);
 
 	return scnprintf(buf, PAGE_SIZE, "%llu\n", llr_data.loop.min);
 }
 
 static ssize_t max_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_llr  *ctl_llr;
+	struct sl_ctrl_llr *ctrl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
+	ctrl_llr  = container_of(kobj, struct sl_ctrl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num);
 
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
-		"max show (llr = 0x%p, max = %lluns)", ctl_llr, llr_data.loop.max);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		"max show (llr = 0x%p, max = %lluns)", ctrl_llr, llr_data.loop.max);
 
 	return scnprintf(buf, PAGE_SIZE, "%llu\n", llr_data.loop.max);
 }
 
 static ssize_t average_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_llr  *ctl_llr;
+	struct sl_ctrl_llr *ctrl_llr;
 	struct sl_llr_data  llr_data;
 
-	ctl_llr  = container_of(kobj, struct sl_ctl_llr, loop_time_kobj);
-	llr_data = sl_core_llr_data_get(ctl_llr->ctl_lgrp->ctl_ldev->num, ctl_llr->ctl_lgrp->num, ctl_llr->num);
+	ctrl_llr  = container_of(kobj, struct sl_ctrl_llr, loop_time_kobj);
+	llr_data = sl_core_llr_data_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num, ctrl_llr->ctrl_lgrp->num, ctrl_llr->num);
 
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME,
-		"average show (llr = 0x%p, average = %lluns)", ctl_llr, llr_data.loop.average);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		"average show (llr = 0x%p, average = %lluns)", ctrl_llr, llr_data.loop.average);
 
 	return scnprintf(buf, PAGE_SIZE, "%llu\n", llr_data.loop.average);
 }
@@ -128,15 +128,15 @@ static struct kobj_type llr_loop_time = {
 	.default_groups = llr_loop_time_groups,
 };
 
-int sl_sysfs_llr_loop_time_create(struct sl_ctl_llr *ctl_llr)
+int sl_sysfs_llr_loop_time_create(struct sl_ctrl_llr *ctrl_llr)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME, "llr loop time create (num = %u)", ctl_llr->num);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr loop time create (num = %u)", ctrl_llr->num);
 
-	rtn = kobject_init_and_add(&ctl_llr->loop_time_kobj, &llr_loop_time, &ctl_llr->kobj, "loop");
+	rtn = kobject_init_and_add(&ctrl_llr->loop_time_kobj, &llr_loop_time, &ctrl_llr->kobj, "loop");
 	if (rtn) {
-		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr loop time create kobject_init_and_add failed [%d]", rtn);
 		goto out;
 	}
@@ -154,43 +154,43 @@ int sl_sysfs_llr_loop_time_create(struct sl_ctl_llr *ctl_llr)
 	sl_sysfs_llr_loop_time_file(8);
 	sl_sysfs_llr_loop_time_file(9);
 
-	rtn = sysfs_create_file(&ctl_llr->loop_time_kobj, &llr_loop_calc.attr);
+	rtn = sysfs_create_file(&ctrl_llr->loop_time_kobj, &llr_loop_calc.attr);
 	if (rtn) {
-		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr loop time create file failed [%d]", rtn);
 		goto out;
 	}
 
-	rtn = sysfs_create_file(&ctl_llr->loop_time_kobj, &llr_loop_min.attr);
+	rtn = sysfs_create_file(&ctrl_llr->loop_time_kobj, &llr_loop_min.attr);
 	if (rtn) {
-		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr loop time create file failed [%d]", rtn);
 		goto out;
 	}
 
-	rtn = sysfs_create_file(&ctl_llr->loop_time_kobj, &llr_loop_max.attr);
+	rtn = sysfs_create_file(&ctrl_llr->loop_time_kobj, &llr_loop_max.attr);
 	if (rtn) {
-		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr loop time create file failed [%d]", rtn);
 		goto out;
 	}
 
-	rtn = sysfs_create_file(&ctl_llr->loop_time_kobj, &llr_loop_average.attr);
+	rtn = sysfs_create_file(&ctrl_llr->loop_time_kobj, &llr_loop_average.attr);
 	if (rtn) {
-		sl_log_err(ctl_llr, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr loop time create file failed [%d]", rtn);
 		goto out;
 	}
 
 	return 0;
 out:
-	kobject_put(&ctl_llr->loop_time_kobj);
+	kobject_put(&ctrl_llr->loop_time_kobj);
 	return rtn;
 }
 
-void sl_sysfs_llr_loop_time_delete(struct sl_ctl_llr *ctl_llr)
+void sl_sysfs_llr_loop_time_delete(struct sl_ctrl_llr *ctrl_llr)
 {
-	sl_log_dbg(ctl_llr, LOG_BLOCK, LOG_NAME, "llr loop time delete (num = %u)", ctl_llr->num);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr loop time delete (num = %u)", ctrl_llr->num);
 
-	kobject_put(&ctl_llr->loop_time_kobj);
+	kobject_put(&ctrl_llr->loop_time_kobj);
 }

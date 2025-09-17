@@ -6,8 +6,8 @@
 
 #include <linux/sl_fec.h>
 
-#define SL_CORE_LINK_FEC_NUM_LANES    SL_CTL_NUM_FEC_LANES
-#define SL_CORE_LINK_FEC_NUM_CCW_BINS SL_CTL_NUM_CCW_BINS
+#define SL_CORE_LINK_FEC_NUM_LANES    SL_CTRL_NUM_FEC_LANES
+#define SL_CORE_LINK_FEC_NUM_CCW_BINS SL_CTRL_NUM_CCW_BINS
 
 struct sl_core_link_fec_cw_cntrs {
 	u64 ccw;

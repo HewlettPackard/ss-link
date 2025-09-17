@@ -6,7 +6,6 @@
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 
-#include "sl_kconfig.h"
 #include "sl_media_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
@@ -19,8 +18,8 @@
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_link.h"
-#include "sl_ctl_link_counters.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link_counters.h"
+#include "sl_ctrl_link.h"
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 
@@ -109,15 +108,15 @@ void sl_core_hw_an_up_start_work(struct work_struct *work)
 
 static void sl_core_hw_an_up(struct sl_core_link *core_link)
 {
-	int                 rtn;
-	struct sl_link_caps my_caps;
-	struct sl_ctl_link *ctl_link;
+	int                  rtn;
+	struct sl_link_caps  my_caps;
+	struct sl_ctrl_link *ctrl_link;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up");
 
-	ctl_link = sl_ctl_link_get(core_link->core_lgrp->core_ldev->num,
+	ctrl_link = sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 	core_link->core_lgrp->num, core_link->num);
-	SL_CTL_LINK_COUNTER_INC(ctl_link, LINK_HW_AN_ATTEMPT);
+	SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_HW_AN_ATTEMPT);
 
 	sl_core_hw_an_init(core_link);
 

@@ -9,10 +9,10 @@ $(SL_NAME)-y := sl_module.o
 ## FIXME: remove this when "test" is removed
 $(SL_NAME)-$(SL_TEST) += \
 	sl_test.o                     \
-	ctl/test/sl_ctl_test.o        \
-	ctl/test/sl_ctl_test_fec.o    \
-	ctl/test/sl_ctl_test_ldev.o   \
-	ctl/test/sl_ctl_test_lgrp.o   \
+	ctrl/test/sl_ctrl_test.o      \
+	ctrl/test/sl_ctrl_test_fec.o  \
+	ctrl/test/sl_ctrl_test_ldev.o \
+	ctrl/test/sl_ctrl_test_lgrp.o \
 	core/test/sl_core_test.o      \
 	core/test/sl_core_test_an.o   \
 	core/hw/sl_core_hw_fec_test.o \
@@ -121,16 +121,16 @@ $(SL_NAME)-y += \
 	core/test/sl_core_test_serdes.o
 
 $(SL_NAME)-y += \
-	ctl/sl_ctl_ldev.o          \
-	ctl/sl_ctl_lgrp.o          \
-	ctl/sl_ctl_lgrp_notif.o    \
-	ctl/sl_ctl_link.o          \
-	ctl/sl_ctl_link_priv.o     \
-	ctl/sl_ctl_link_fec.o      \
-	ctl/sl_ctl_link_fec_priv.o \
-	ctl/sl_ctl_link_counters.o \
-	ctl/sl_ctl_mac.o           \
-	ctl/sl_ctl_llr.o
+	ctrl/sl_ctrl_ldev.o          \
+	ctrl/sl_ctrl_lgrp.o          \
+	ctrl/sl_ctrl_lgrp_notif.o    \
+	ctrl/sl_ctrl_link.o          \
+	ctrl/sl_ctrl_link_priv.o     \
+	ctrl/sl_ctrl_link_fec.o      \
+	ctrl/sl_ctrl_link_fec_priv.o \
+	ctrl/sl_ctrl_link_counters.o \
+	ctrl/sl_ctrl_mac.o           \
+	ctrl/sl_ctrl_llr.o
 
 $(SL_NAME)-y += \
 	log/sl_log.o

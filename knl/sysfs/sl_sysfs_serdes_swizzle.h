@@ -6,9 +6,9 @@
 
 #include <linux/types.h>
 
-struct sl_ctl_lgrp;
+struct sl_ctrl_lgrp;
 
-int  sl_sysfs_serdes_lane_swizzle_create(struct sl_ctl_lgrp *ctl_lgrp, u8 lane_num);
-void sl_sysfs_serdes_lane_swizzle_delete(struct sl_ctl_lgrp *ctl_lgrp, u8 lane_num);
+int  sl_sysfs_serdes_lane_swizzle_create(struct sl_ctrl_lgrp *ctrl_lgrp, u8 lane_num);
+void sl_sysfs_serdes_lane_swizzle_delete(struct sl_ctrl_lgrp *ctrl_lgrp, u8 lane_num);
 
 #endif /* _SL_SYSFS_SERDES_SWIZZLE_H_ */

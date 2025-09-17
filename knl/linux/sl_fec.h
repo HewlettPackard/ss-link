@@ -6,12 +6,12 @@
 
 struct sl_link;
 
-#define SL_CTL_NUM_FEC_LANES 16
+#define SL_CTRL_NUM_FEC_LANES 16
 struct sl_fec_info {
 	u64 ucw;                          /* uncorrected code word count */
 	u64 ccw;                          /* corrected code word count   */
 	u64 gcw;                          /* good code word count        */
-	u64 lanes[SL_CTL_NUM_FEC_LANES];  /* error count per lane        */
+	u64 lanes[SL_CTRL_NUM_FEC_LANES]; /* error count per lane        */
 	u32 period_ms;                    /* actual collection period    */
 	struct {
 		s32 ccw_down_limit;       /* ccw down limit used in the monitor    */
@@ -23,9 +23,9 @@ struct sl_fec_info {
 };
 int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info);
 
-#define SL_CTL_NUM_CCW_BINS 15
+#define SL_CTRL_NUM_CCW_BINS 15
 struct sl_fec_tail {
-	u64 ccw_bins[SL_CTL_NUM_CCW_BINS];
+	u64 ccw_bins[SL_CTRL_NUM_CCW_BINS];
 	u32 period_ms;                    /* collection period */ 
 };
 int sl_fec_tail_get(struct sl_link *link, struct sl_fec_tail *fec_tail);

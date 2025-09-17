@@ -3,209 +3,210 @@
 
 #include <linux/kobject.h>
 
+#include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link.h"
 #include "sl_core_link.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_link_counters.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_link_counters.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
 static ssize_t link_up_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_CMD);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_CMD);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up cmd show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_up_retry_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_RETRY);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_RETRY);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up retry show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up retry show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_up_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_up_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_FAIL);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_FAIL);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up fail show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_down_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_DOWN_CMD);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN_CMD);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link down cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down cmd show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_down_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_DOWN);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link down show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_up_canceled_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link *ctl_link;
-	u32                 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_CANCELED);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_CANCELED);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up canceled show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up canceled show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_up_cancel_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link *ctl_link;
-	u32                 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UP_CANCEL_CMD);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_CANCEL_CMD);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link up cancel cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up cancel cmd show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_reset_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_RESET_CMD);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_RESET_CMD);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link reset cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link reset cmd show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_fault_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_FAULT);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_FAULT);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link fault show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link fault show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_ccw_warn_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_CCW_WARN_CROSSED);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_CCW_WARN_CROSSED);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link ccw warn crossed show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link ccw warn crossed show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_ucw_warn_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_UCW_WARN_CROSSED);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UCW_WARN_CROSSED);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link ucw warn crossed show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link ucw warn crossed show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_autoneg_np_retry_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_an_retry_count_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+	counter = sl_ctrl_link_an_retry_count_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link autoneg np retry show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link autoneg np retry show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
 static ssize_t link_autoneg_attempt_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
-	u32 counter;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, counters_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	counter = sl_ctl_link_counters_get(ctl_link, LINK_HW_AN_ATTEMPT);
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_HW_AN_ATTEMPT);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link autoneg attempt show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link autoneg attempt show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -249,25 +250,25 @@ static struct kobj_type link_counters = {
 	.default_groups = link_counters_groups,
 };
 
-int sl_sysfs_link_counters_create(struct sl_ctl_link *ctl_link)
+int sl_sysfs_link_counters_create(struct sl_ctrl_link *ctrl_link)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link counters create");
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link counters create");
 
-	rtn = kobject_init_and_add(&ctl_link->counters_kobj, &link_counters, &ctl_link->kobj, "counters");
+	rtn = kobject_init_and_add(&ctrl_link->counters_kobj, &link_counters, &ctrl_link->kobj, "counters");
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"link counters create kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&ctl_link->counters_kobj);
+		kobject_put(&ctrl_link->counters_kobj);
 		return rtn;
 	}
 
 	return 0;
 }
 
-void sl_sysfs_link_counters_delete(struct sl_ctl_link *ctl_link)
+void sl_sysfs_link_counters_delete(struct sl_ctrl_link *ctrl_link)
 {
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link counters delete");
-	kobject_put(&ctl_link->counters_kobj);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link counters delete");
+	kobject_put(&ctrl_link->counters_kobj);
 }

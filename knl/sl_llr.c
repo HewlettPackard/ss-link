@@ -10,8 +10,8 @@
 #include "sl_log.h"
 #include "sl_lgrp.h"
 #include "sl_llr.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_llr.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_llr.h"
 #include "sl_sysfs.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -130,7 +130,7 @@ struct sl_llr *sl_llr_new(struct sl_lgrp *lgrp, u8 llr_num, struct kobject *sysf
 		return ERR_PTR(-EINVAL);
 	}
 
-	rtn = sl_ctl_llr_new(lgrp->ldev_num, lgrp->num, llr_num, sysfs_parent);
+	rtn = sl_ctrl_llr_new(lgrp->ldev_num, lgrp->num, llr_num, sysfs_parent);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "new fail");
 		return ERR_PTR(-EINVAL);
@@ -150,7 +150,7 @@ int sl_llr_del(struct sl_llr *llr)
 		return rtn;
 	}
 
-	return sl_ctl_llr_del(llr->ldev_num, llr->lgrp_num, llr->num);
+	return sl_ctrl_llr_del(llr->ldev_num, llr->lgrp_num, llr->num);
 }
 EXPORT_SYMBOL(sl_llr_del);
 
@@ -169,7 +169,7 @@ int sl_llr_config_set(struct sl_llr *llr, struct sl_llr_config *llr_config)
 		return rtn;
 	}
 
-	return sl_ctl_llr_config_set(llr->ldev_num, llr->lgrp_num, llr->num, llr_config);
+	return sl_ctrl_llr_config_set(llr->ldev_num, llr->lgrp_num, llr->num, llr_config);
 }
 EXPORT_SYMBOL(sl_llr_config_set);
 
@@ -188,7 +188,7 @@ int sl_llr_policy_set(struct sl_llr *llr, struct sl_llr_policy *llr_policy)
 		return rtn;
 	}
 
-	return sl_ctl_llr_policy_set(llr->ldev_num, llr->lgrp_num, llr->num, llr_policy);
+	return sl_ctrl_llr_policy_set(llr->ldev_num, llr->lgrp_num, llr->num, llr_policy);
 }
 EXPORT_SYMBOL(sl_llr_policy_set);
 
@@ -202,7 +202,7 @@ int sl_llr_setup(struct sl_llr *llr)
 		return rtn;
 	}
 
-	return sl_ctl_llr_setup(llr->ldev_num, llr->lgrp_num, llr->num);
+	return sl_ctrl_llr_setup(llr->ldev_num, llr->lgrp_num, llr->num);
 }
 EXPORT_SYMBOL(sl_llr_setup);
 
@@ -216,7 +216,7 @@ int sl_llr_start(struct sl_llr *llr)
 		return rtn;
 	}
 
-	return sl_ctl_llr_start(llr->ldev_num, llr->lgrp_num, llr->num);
+	return sl_ctrl_llr_start(llr->ldev_num, llr->lgrp_num, llr->num);
 }
 EXPORT_SYMBOL(sl_llr_start);
 
@@ -230,7 +230,7 @@ int sl_llr_stop(struct sl_llr *llr)
 		return rtn;
 	}
 
-	return sl_ctl_llr_stop(llr->ldev_num, llr->lgrp_num, llr->num);
+	return sl_ctrl_llr_stop(llr->ldev_num, llr->lgrp_num, llr->num);
 }
 EXPORT_SYMBOL(sl_llr_stop);
 
@@ -244,7 +244,7 @@ int sl_llr_state_get(struct sl_llr *llr, u32 *state)
 		return rtn;
 	}
 
-	return sl_ctl_llr_state_get(llr->ldev_num, llr->lgrp_num, llr->num, state);
+	return sl_ctrl_llr_state_get(llr->ldev_num, llr->lgrp_num, llr->num, state);
 }
 EXPORT_SYMBOL(sl_llr_state_get);
 

@@ -379,7 +379,7 @@ sl_test_log_level_set debug
 Turn dynamic debug on for a function or list of functions. See help for further details.
 
 ```sh
-sl_test_dynamic_debug func on sl_ctl_link_up sl_ctl_link_down
+sl_test_dynamic_debug func on sl_ctrl_link_up sl_ctrl_link_down
 ```
 
 To see all functions that have been turned on

@@ -18,8 +18,8 @@
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "sl_core_link.h"
-#include "sl_ctl_link_priv.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link_priv.h"
+#include "sl_ctrl_link.h"
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
@@ -146,27 +146,27 @@ static void sl_media_data_jack_event_offline(u8 physical_jack_num)
 
 static int sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack)
 {
-	int                 rtn;
-	int                 i;
-	struct sl_ctl_link *ctl_link;
-	u8                  ldev_num;
-	u8                  lgrp_num;
-	u8                  link_num;
+	int                  rtn;
+	int                  i;
+	struct sl_ctrl_link *ctrl_link;
+	u8                   ldev_num;
+	u8                   lgrp_num;
+	u8                   link_num;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "high temp link down");
 
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO);
 
-	for (i = 0; i < media_jack->jack_data.port_count; ++i) {
+	for (i = 0; i < media_jack->port_count; ++i) {
 		ldev_num = media_jack->cable_info[i].ldev_num;
 		lgrp_num = media_jack->cable_info[i].lgrp_num;
 
 		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
-			ctl_link = sl_ctl_link_get(ldev_num, lgrp_num, link_num);
-			if (!ctl_link)
+			ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+			if (!ctrl_link)
 				continue;
 
-			rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
+			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
 			if (rtn) {
 				sl_media_log_err_trace(media_jack, LOG_NAME,
 					"high temp link down async_down failed [%d]", rtn);
@@ -217,7 +217,7 @@ void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_servi
 	sl_media_log_dbg(media_jack, LOG_NAME, "CustomMon:                          0x%X", i2c_data.data[3]);
 
 	spin_lock(&media_jack->data_lock);
-	media_jack->is_high_temp = (media_jack->i2c_data.data[1] & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK);
+	media_jack->is_high_temp = (i2c_data.data[1] & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK);
 	is_high_temp = media_jack->is_high_temp;
 	spin_unlock(&media_jack->data_lock);
 

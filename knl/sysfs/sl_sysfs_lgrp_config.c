@@ -5,8 +5,8 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
@@ -18,58 +18,58 @@
 
 static ssize_t mfs_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"mfs show (lgrp = 0x%p, mfs = %u)",
-		ctl_lgrp, ctl_lgrp->config.mfs);
+		ctrl_lgrp, ctrl_lgrp->config.mfs);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", ctl_lgrp->config.mfs);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", ctrl_lgrp->config.mfs);
 }
 
 static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"furcation show (lgrp = 0x%p, furcation = %u %s)",
-		ctl_lgrp, ctl_lgrp->config.furcation, sl_lgrp_furcation_str(ctl_lgrp->config.furcation));
+		ctrl_lgrp, ctrl_lgrp->config.furcation, sl_lgrp_furcation_str(ctrl_lgrp->config.furcation));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_lgrp_furcation_str(ctl_lgrp->config.furcation));
+		sl_lgrp_furcation_str(ctrl_lgrp->config.furcation));
 }
 
 static ssize_t fec_mode_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"fec mode show (lgrp = 0x%p, mode = %u %s)",
-		ctl_lgrp, ctl_lgrp->config.fec_mode, sl_lgrp_fec_mode_str(ctl_lgrp->config.fec_mode));
+		ctrl_lgrp, ctrl_lgrp->config.fec_mode, sl_lgrp_fec_mode_str(ctrl_lgrp->config.fec_mode));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_lgrp_fec_mode_str(ctl_lgrp->config.fec_mode));
+		sl_lgrp_fec_mode_str(ctrl_lgrp->config.fec_mode));
 }
 
 static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 	int                 idx;
 	char                output[50];
 	u32                 tech_map;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	tech_map = ctl_lgrp->config.tech_map;
+	tech_map = ctrl_lgrp->config.tech_map;
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"tech map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, tech_map);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		"tech map show (lgrp = 0x%p, map = 0x%X)", ctrl_lgrp, tech_map);
 
 	if (tech_map == 0)
 		return scnprintf(buf, PAGE_SIZE, "none\n");
@@ -103,17 +103,17 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 	int                 idx;
 	char                output[20];
 	u32                 fec_map;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	fec_map = ctl_lgrp->config.fec_map;
+	fec_map = ctrl_lgrp->config.fec_map;
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"fec map show (lgrp = 0x%p, map = 0x%X)", ctl_lgrp, fec_map);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		"fec map show (lgrp = 0x%p, map = 0x%X)", ctrl_lgrp, fec_map);
 
 	if (fec_map == 0)
 		return scnprintf(buf, PAGE_SIZE, "none\n");
@@ -140,21 +140,21 @@ static struct kobj_attribute lgrp_fec_map   = __ATTR_RO(fec_map);
 
 static ssize_t err_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"err trace enable show (lgrp = 0x%p, err trace enable = %u)",
-		ctl_lgrp, ctl_lgrp->err_trace_enable ? 1 : 0);
+		ctrl_lgrp, ctrl_lgrp->err_trace_enable ? 1 : 0);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", ctl_lgrp->err_trace_enable ? 1 : 0);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", ctrl_lgrp->err_trace_enable ? 1 : 0);
 }
 
 static ssize_t err_trace_enable_store(struct kobject *kobj, struct kobj_attribute *kattr, const char *buf, size_t count)
 {
 	int                   rtn;
-	struct sl_ctl_lgrp   *ctl_lgrp;
+	struct sl_ctrl_lgrp   *ctrl_lgrp;
 	struct sl_core_lgrp  *core_lgrp;
 	struct sl_media_lgrp *media_lgrp;
 	u8                    val;
@@ -163,22 +163,22 @@ static ssize_t err_trace_enable_store(struct kobject *kobj, struct kobj_attribut
 	if (rtn)
 		return rtn;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"err trace enable store (lgrp = 0x%p, val = %u)",
-		ctl_lgrp, val);
+		ctrl_lgrp, val);
 
-	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
+	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
-	media_lgrp = sl_media_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
+	media_lgrp = sl_media_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	if (val == 0) {
-		ctl_lgrp->err_trace_enable   = false;
+		ctrl_lgrp->err_trace_enable   = false;
 		core_lgrp->err_trace_enable  = false;
 		media_lgrp->err_trace_enable = false;
 	} else {
-		ctl_lgrp->err_trace_enable   = true;
+		ctrl_lgrp->err_trace_enable   = true;
 		core_lgrp->err_trace_enable  = true;
 		media_lgrp->err_trace_enable = true;
 	}
@@ -190,22 +190,22 @@ static struct kobj_attribute lgrp_err_trace_enable = __ATTR_RW(err_trace_enable)
 
 static ssize_t warn_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"warn trace enable show (lgrp = 0x%p, warn trace enable = %u)",
-		ctl_lgrp, ctl_lgrp->warn_trace_enable ? 1 : 0);
+		ctrl_lgrp, ctrl_lgrp->warn_trace_enable ? 1 : 0);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", ctl_lgrp->warn_trace_enable ? 1 : 0);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", ctrl_lgrp->warn_trace_enable ? 1 : 0);
 }
 
 static ssize_t warn_trace_enable_store(struct kobject *kobj, struct kobj_attribute *kattr,
 	const char *buf, size_t count)
 {
 	int                   rtn;
-	struct sl_ctl_lgrp   *ctl_lgrp;
+	struct sl_ctrl_lgrp   *ctrl_lgrp;
 	struct sl_core_lgrp  *core_lgrp;
 	struct sl_media_lgrp *media_lgrp;
 	u8                    val;
@@ -214,22 +214,22 @@ static ssize_t warn_trace_enable_store(struct kobject *kobj, struct kobj_attribu
 	if (rtn)
 		return rtn;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, config_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"warn trace enable store (lgrp = 0x%p, val = %u)",
-		ctl_lgrp, val);
+		ctrl_lgrp, val);
 
-	core_lgrp = sl_core_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
+	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
-	media_lgrp = sl_media_lgrp_get(ctl_lgrp->ctl_ldev->num, ctl_lgrp->num);
+	media_lgrp = sl_media_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	if (val == 0) {
-		ctl_lgrp->warn_trace_enable   = false;
+		ctrl_lgrp->warn_trace_enable   = false;
 		core_lgrp->warn_trace_enable  = false;
 		media_lgrp->warn_trace_enable = false;
 	} else {
-		ctl_lgrp->warn_trace_enable   = true;
+		ctrl_lgrp->warn_trace_enable   = true;
 		core_lgrp->warn_trace_enable  = true;
 		media_lgrp->warn_trace_enable = true;
 	}
@@ -240,31 +240,31 @@ static struct kobj_attribute lgrp_warn_trace_enable = __ATTR_RW(warn_trace_enabl
 
 static ssize_t fabric_link_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, policy_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, policy_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"fabric link show (lgrp = 0x%p, fabric link = %s)",
-		ctl_lgrp, (ctl_lgrp->config.options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
+		ctrl_lgrp, (ctrl_lgrp->config.options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(ctl_lgrp->config.options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
+		(ctrl_lgrp->config.options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
 }
 static struct kobj_attribute lgrp_fabric_link = __ATTR_RO(fabric_link);
 
 static ssize_t r1_partner_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_lgrp *ctl_lgrp;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctl_lgrp = container_of(kobj, struct sl_ctl_lgrp, policy_kobj);
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, policy_kobj);
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"r1 partner show (lgrp = 0x%p, r1 partner = %s)",
-		ctl_lgrp, (ctl_lgrp->config.options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
+		ctrl_lgrp, (ctrl_lgrp->config.options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(ctl_lgrp->config.options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
+		(ctrl_lgrp->config.options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
 }
 static struct kobj_attribute lgrp_r1_partner  = __ATTR_RO(r1_partner);
 
@@ -287,25 +287,25 @@ static struct kobj_type config_info = {
 	.default_groups = lgrp_config_groups,
 };
 
-int sl_sysfs_lgrp_config_create(struct sl_ctl_lgrp *ctl_lgrp)
+int sl_sysfs_lgrp_config_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config create (lgrp = 0x%p)", ctl_lgrp);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config create (lgrp = 0x%p)", ctrl_lgrp);
 
-	rtn = kobject_init_and_add(&(ctl_lgrp->config_kobj), &config_info, ctl_lgrp->parent_kobj, "config");
+	rtn = kobject_init_and_add(&(ctrl_lgrp->config_kobj), &config_info, ctrl_lgrp->parent_kobj, "config");
 	if (rtn) {
-		sl_log_err(ctl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config create failed [%d]", rtn);
-		kobject_put(&(ctl_lgrp->config_kobj));
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config create failed [%d]", rtn);
+		kobject_put(&(ctrl_lgrp->config_kobj));
 		return -ENOMEM;
 	}
 
 	return 0;
 }
 
-void sl_sysfs_lgrp_config_delete(struct sl_ctl_lgrp *ctl_lgrp)
+void sl_sysfs_lgrp_config_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
-	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config delete (lgrp = 0x%p)", ctl_lgrp);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp config delete (lgrp = 0x%p)", ctrl_lgrp);
 
-	kobject_put(&(ctl_lgrp->config_kobj));
+	kobject_put(&(ctrl_lgrp->config_kobj));
 }

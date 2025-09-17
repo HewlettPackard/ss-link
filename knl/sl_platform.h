@@ -13,4 +13,4 @@
 #define SL_PLATFORM_IS_EMULATOR(_ldev) \
 	((_ldev)->platform == PLATFORM_Z1)
 
-#endif /* _SL_ASIC_COMMON_H_ */
+#endif /* _SL_PLATFORM_H_ */

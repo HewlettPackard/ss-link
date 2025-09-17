@@ -5,10 +5,10 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_link.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_link_priv.h"
+#include "sl_ctrl_link.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_link_priv.h"
 #include "sl_test_common.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -16,14 +16,14 @@
 
 static ssize_t fec_mon_period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_period_ms show (fec_mon_period_ms = %d)", policy.fec_mon_period_ms);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_period_ms);
@@ -31,14 +31,14 @@ static ssize_t fec_mon_period_ms_show(struct kobject *kobj, struct kobj_attribut
 
 static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %d)", policy.fec_mon_ucw_down_limit);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_down_limit);
@@ -46,14 +46,14 @@ static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_att
 
 static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %d)", policy.fec_mon_ucw_warn_limit);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_warn_limit);
@@ -61,14 +61,14 @@ static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_att
 
 static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", policy.fec_mon_ccw_down_limit);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_down_limit);
@@ -76,14 +76,14 @@ static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_att
 
 static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %d)", policy.fec_mon_ccw_warn_limit);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_warn_limit);
@@ -91,14 +91,14 @@ static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_att
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "link_policy_option_locked show (options = 0x%X)", policy.options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", (policy.options & SL_LINK_POLICY_OPT_LOCK) ? "enabled" : "disabled");
@@ -106,14 +106,14 @@ static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "link_policy_option_keep_serdes_up show (options = 0x%X)", policy.options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
@@ -122,14 +122,14 @@ static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t use_unsupported_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "link_policy_option_use_unsupported_cable show (options = 0x%X)", policy.options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
@@ -138,14 +138,14 @@ static ssize_t use_unsupported_cable_show(struct kobject *kobj, struct kobj_attr
 
 static ssize_t use_supported_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		  "link_policy_option_use_supported_ss200_cable show (options = 0x%X)", policy.options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
@@ -154,14 +154,14 @@ static ssize_t use_supported_ss200_cable_show(struct kobject *kobj, struct kobj_
 
 static ssize_t ignore_media_error_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
-	struct sl_link_policy policy;
+	struct sl_ctrl_link   *ctrl_link;
+	struct sl_link_policy  policy;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, policy_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctl_link_policy_get(ctl_link, &policy);
+	sl_ctrl_link_policy_get(ctrl_link, &policy);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "link_policy_option_ignore_media_error show (options = %u)", policy.options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
@@ -199,26 +199,26 @@ static struct kobj_type link_policy = {
 	.default_groups = link_policy_groups,
 };
 
-int sl_sysfs_link_policy_create(struct sl_ctl_link *ctl_link)
+int sl_sysfs_link_policy_create(struct sl_ctrl_link *ctrl_link)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link policy create (num = %u)", ctl_link->num);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link policy create (num = %u)", ctrl_link->num);
 
-	rtn = kobject_init_and_add(&ctl_link->policy_kobj, &link_policy, &ctl_link->kobj, "policies");
+	rtn = kobject_init_and_add(&ctrl_link->policy_kobj, &link_policy, &ctrl_link->kobj, "policies");
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"link policy create kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&ctl_link->policy_kobj);
+		kobject_put(&ctrl_link->policy_kobj);
 		return rtn;
 	}
 
 	return 0;
 }
 
-void sl_sysfs_link_policy_delete(struct sl_ctl_link *ctl_link)
+void sl_sysfs_link_policy_delete(struct sl_ctrl_link *ctrl_link)
 {
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link config delete (num = %u)", ctl_link->num);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link config delete (num = %u)", ctrl_link->num);
 
-	kobject_put(&ctl_link->policy_kobj);
+	kobject_put(&ctrl_link->policy_kobj);
 }

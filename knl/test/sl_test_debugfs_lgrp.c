@@ -763,16 +763,16 @@ struct kobject *sl_test_port_sysfs_kobj_get(u8 lgrp_num)
 
 int sl_test_lgrp_new(void)
 {
-	int                 rtn;
-	u8                  lgrp_num;
-	struct sl_ctl_lgrp *ctl_lgrp;
+	int                  rtn;
+	u8                   lgrp_num;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
 	lgrp_num = sl_test_debugfs_lgrp_num_get();
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new (lgrp_num = %u)", lgrp_num);
 
-	ctl_lgrp = sl_test_ctl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
-	if (!ctl_lgrp) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new ctl_lgrp_get failed");
+	ctrl_lgrp = sl_test_ctrl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
+	if (!ctrl_lgrp) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new ctrl_lgrp_get failed");
 		return -ENODEV;
 	}
 
@@ -787,8 +787,8 @@ int sl_test_lgrp_new(void)
 
 int sl_test_lgrp_del(void)
 {
-	u8                  lgrp_num;
-	struct sl_ctl_lgrp *ctl_lgrp;
+	u8                   lgrp_num;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
 	lgrp_num = sl_test_debugfs_lgrp_num_get();
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_del (lgrp_num = %u)", lgrp_num);
@@ -796,10 +796,10 @@ int sl_test_lgrp_del(void)
 	sl_test_port_sysfs_remove(lgrp_num);
 
 	/* Currently we don't want to delete the link group as the client driver created it */
-	ctl_lgrp = sl_test_ctl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
-	if (ctl_lgrp) {
-		sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp_del device found (ctl_lgrp = %p)",
-			ctl_lgrp);
+	ctrl_lgrp = sl_test_ctrl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
+	if (ctrl_lgrp) {
+		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp_del device found (ctrl_lgrp = %p)",
+			ctrl_lgrp);
 	}
 
 	return 0;

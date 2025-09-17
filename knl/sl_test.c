@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 
@@ -14,15 +14,15 @@
 #include "sl_link.h"
 #include "sl_log.h"
 
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_link.h"
 
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 
-#include "test/sl_ctl_test.h"
+#include "test/sl_ctrl_test.h"
 #include "test/sl_core_test.h"
 #include "test/sl_core_test_an.h"
 #include "test/sl_core_test_fec.h"
@@ -36,7 +36,7 @@ int sl_test_ctl(struct sl_ldev *ldev, u64 lgrp_map, u64 link_map, u32 test_num, 
 	if (rtn)
 		return rtn;
 
-	return sl_ctl_test_exec(ldev->num, lgrp_map, link_map, test_num, flags);
+	return sl_ctrl_test_exec(ldev->num, lgrp_map, link_map, test_num, flags);
 }
 EXPORT_SYMBOL(sl_test_ctl);
 

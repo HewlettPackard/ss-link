@@ -5,11 +5,11 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link.h"
 #include "sl_core_link.h"
-#include "sl_ctl_lgrp.h"
-#include "sl_ctl_ldev.h"
-#include "sl_ctl_link_priv.h"
+#include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_ldev.h"
+#include "sl_ctrl_link_priv.h"
 #include "sl_test_common.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -17,7 +17,7 @@
 
 static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
+	struct sl_ctrl_link *ctrl_link;
 	struct sl_core_link *core_link;
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
@@ -25,10 +25,10 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	u32                  tech_map;
 	u32                  link_state;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
-	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -39,8 +39,8 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		"tech map show (link = 0x%p, map = 0x%X)", core_link, tech_map);
 
-	sl_core_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &link_state);
+	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 
 	if ((tech_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -78,7 +78,7 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
+	struct sl_ctrl_link *ctrl_link;
 	struct sl_core_link *core_link;
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
@@ -86,10 +86,10 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	u32                  pause_map;
 	u32                  link_state;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
-	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -100,8 +100,8 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		"pause map show (link = 0x%p, map = 0x%X)", core_link, pause_map);
 
-	sl_core_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &link_state);
+	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 
 	if ((pause_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -124,7 +124,7 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
+	struct sl_ctrl_link *ctrl_link;
 	struct sl_core_link *core_link;
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
@@ -132,10 +132,10 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	u32                  fec_map;
 	u32                  link_state;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
-	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -146,8 +146,8 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		"fec map show (link = 0x%p, map = 0x%X)", core_link, fec_map);
 
-	sl_core_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &link_state);
+	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 
 	if ((fec_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -170,7 +170,7 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link  *ctl_link;
+	struct sl_ctrl_link *ctrl_link;
 	struct sl_core_link *core_link;
 	struct sl_core_lgrp *core_lgrp;
 	int                  idx;
@@ -178,10 +178,10 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	u32                  hpe_map;
 	u32                  link_state;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, caps_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
-	core_link = sl_core_link_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -192,8 +192,8 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		"hpe map show (link = 0x%p, map = 0x%X)", core_link, hpe_map);
 
-	sl_core_link_state_get(ctl_link->ctl_lgrp->ctl_ldev->num,
-		ctl_link->ctl_lgrp->num, ctl_link->num, &link_state);
+	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 
 	if ((hpe_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -251,26 +251,26 @@ static struct kobj_type link_caps = {
 	.default_groups = link_caps_groups,
 };
 
-int sl_sysfs_link_caps_create(struct sl_ctl_link *ctl_link)
+int sl_sysfs_link_caps_create(struct sl_ctrl_link *ctrl_link)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link caps create (num = %u)", ctl_link->num);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link caps create (num = %u)", ctrl_link->num);
 
-	rtn = kobject_init_and_add(&ctl_link->caps_kobj, &link_caps, &ctl_link->kobj, "caps");
+	rtn = kobject_init_and_add(&ctrl_link->caps_kobj, &link_caps, &ctrl_link->kobj, "caps");
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"link caps create kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&ctl_link->caps_kobj);
+		kobject_put(&ctrl_link->caps_kobj);
 		return rtn;
 	}
 
 	return 0;
 }
 
-void sl_sysfs_link_caps_delete(struct sl_ctl_link *ctl_link)
+void sl_sysfs_link_caps_delete(struct sl_ctrl_link *ctrl_link)
 {
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link caps delete (num = %u)", ctl_link->num);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link caps delete (num = %u)", ctrl_link->num);
 
-	kobject_put(&ctl_link->caps_kobj);
+	kobject_put(&ctrl_link->caps_kobj);
 }

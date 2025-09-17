@@ -7,7 +7,7 @@
 
 #include "sl_log.h"
 #include "sl_link.h"
-#include "sl_ctl_link_fec.h"
+#include "sl_ctrl_link_fec.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_FEC_LOG_NAME
@@ -26,7 +26,7 @@ int sl_fec_info_get(struct sl_link *link, struct sl_fec_info *fec_info)
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_fec_info_get(link->ldev_num, link->lgrp_num, link->num, fec_info);
+	return sl_ctrl_link_fec_info_get(link->ldev_num, link->lgrp_num, link->num, fec_info);
 }
 EXPORT_SYMBOL(sl_fec_info_get);
 
@@ -44,7 +44,7 @@ int sl_fec_tail_get(struct sl_link *link, struct sl_fec_tail *fec_tail)
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_fec_tail_get(link->ldev_num, link->lgrp_num, link->num, fec_tail);
+	return sl_ctrl_link_fec_tail_get(link->ldev_num, link->lgrp_num, link->num, fec_tail);
 }
 EXPORT_SYMBOL(sl_fec_tail_get);
 
@@ -63,6 +63,6 @@ int sl_fec_ber_calc(struct sl_fec_info *fec_info, struct sl_ber *ucw_ber, struct
 		return -EINVAL;
 	}
 
-	return sl_ctl_link_fec_ber_calc(fec_info, ucw_ber, ccw_ber);
+	return sl_ctrl_link_fec_ber_calc(fec_info, ucw_ber, ccw_ber);
 }
 EXPORT_SYMBOL(sl_fec_ber_calc);

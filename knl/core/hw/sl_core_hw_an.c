@@ -5,7 +5,6 @@
 #include <linux/random.h>
 #include <linux/workqueue.h>
 
-#include "sl_kconfig.h"
 #include "sl_asic.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
@@ -19,8 +18,8 @@
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_pcs.h"
-#include "sl_ctl_link_counters.h"
-#include "sl_ctl_link.h"
+#include "sl_ctrl_link_counters.h"
+#include "sl_ctrl_link.h"
 
 #define LOG_NAME SL_CORE_HW_AN_LOG_NAME
 

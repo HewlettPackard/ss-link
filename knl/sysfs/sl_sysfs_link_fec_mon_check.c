@@ -5,9 +5,8 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
-#include "sl_ctl_link.h"
-#include "sl_ctl_link_priv.h"
-
+#include "sl_ctrl_link.h"
+#include "sl_ctrl_link_priv.h"
 #include "sl_sysfs_link_fec_mon_check.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -15,18 +14,18 @@
 
 static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
+	struct sl_ctrl_link  *ctrl_link;
 	s32                   ucw_down_limit;
 	u32                   period_ms;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctl_link->fec_data.lock);
-	ucw_down_limit = ctl_link->fec_data.info.monitor.ucw_down_limit;
-	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctl_link->fec_data.lock);
+	spin_lock(&ctrl_link->fec_data.lock);
+	ucw_down_limit = ctrl_link->fec_data.info.monitor.ucw_down_limit;
+	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ucw_down_limit show (ucw_down_limit = %d, period = %ums)",
 		ucw_down_limit, period_ms);
 
@@ -38,18 +37,18 @@ static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
+	struct sl_ctrl_link  *ctrl_link;
 	s32                   ucw_warn_limit;
 	u32                   period_ms;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctl_link->fec_data.lock);
-	ucw_warn_limit = ctl_link->fec_data.info.monitor.ucw_warn_limit;
-	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctl_link->fec_data.lock);
+	spin_lock(&ctrl_link->fec_data.lock);
+	ucw_warn_limit = ctrl_link->fec_data.info.monitor.ucw_warn_limit;
+	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ucw_warn_limit show (ucw_warn_limit = %d, period = %ums)",
 		ucw_warn_limit, period_ms);
 
@@ -61,18 +60,18 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
+	struct sl_ctrl_link  *ctrl_link;
 	s32                   ccw_down_limit;
 	u32                   period_ms;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctl_link->fec_data.lock);
-	ccw_down_limit = ctl_link->fec_data.info.monitor.ccw_down_limit;
-	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctl_link->fec_data.lock);
+	spin_lock(&ctrl_link->fec_data.lock);
+	ccw_down_limit = ctrl_link->fec_data.info.monitor.ccw_down_limit;
+	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ccw_down_limit show (ccw_down_limit = %d, period = %ums)",
 		ccw_down_limit, period_ms);
 
@@ -84,18 +83,18 @@ static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
+	struct sl_ctrl_link  *ctrl_link;
 	s32                   ccw_warn_limit;
 	u32                   period_ms;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctl_link->fec_data.lock);
-	ccw_warn_limit = ctl_link->fec_data.info.monitor.ccw_warn_limit;
-	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctl_link->fec_data.lock);
+	spin_lock(&ctrl_link->fec_data.lock);
+	ccw_warn_limit = ctrl_link->fec_data.info.monitor.ccw_warn_limit;
+	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_ccw_warn_limit show (ccw_warn_limit = %d, period = %ums)",
 		ccw_warn_limit, period_ms);
 
@@ -107,16 +106,16 @@ static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctl_link   *ctl_link;
+	struct sl_ctrl_link  *ctrl_link;
 	u32                   period_ms;
 
-	ctl_link = container_of(kobj, struct sl_ctl_link, fec.mon_check_kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctl_link->fec_data.lock);
-	period_ms = ctl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctl_link->fec_data.lock);
+	spin_lock(&ctrl_link->fec_data.lock);
+	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME,
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"fec_mon_period_ms_show show (period_ms = %u)", period_ms);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", period_ms);
@@ -143,18 +142,18 @@ static struct kobj_type link_fec_mon_check = {
 	.default_groups = link_fec_mon_check_groups,
 };
 
-int sl_sysfs_link_fec_mon_check_create(struct sl_ctl_link *ctl_link)
+int sl_sysfs_link_fec_mon_check_create(struct sl_ctrl_link *ctrl_link)
 {
 	int rtn;
 
-	sl_log_dbg(ctl_link, LOG_BLOCK, LOG_NAME, "link fec mon check create (num = %u)", ctl_link->num);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link fec mon check create (num = %u)", ctrl_link->num);
 
-	rtn = kobject_init_and_add(&ctl_link->fec.mon_check_kobj, &link_fec_mon_check,
-		&ctl_link->fec.kobj, "monitor_check");
+	rtn = kobject_init_and_add(&ctrl_link->fec.mon_check_kobj, &link_fec_mon_check,
+		&ctrl_link->fec.kobj, "monitor_check");
 	if (rtn) {
-		sl_log_err(ctl_link, LOG_BLOCK, LOG_NAME,
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"link monitor check create kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&ctl_link->fec.mon_check_kobj);
+		kobject_put(&ctrl_link->fec.mon_check_kobj);
 		return rtn;
 	}
 
