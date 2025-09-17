@@ -149,7 +149,7 @@ static int sl_media_eeprom_furcation_get(struct sl_media_jack *media_jack, u32 *
 #define CMIS_MEDIA_PEC      0x0A
 #define CMIS_MEDIA_AEC      0x0C
 #define CMIS_MEDIA_ACC      0x0F
-static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format, u32 *type)
+static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format, u32 vendor, u32 *type)
 {
 	u8 media;
 
@@ -164,8 +164,13 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 		*type = SL_MEDIA_TYPE_PEC;
 	else if (media == CMIS_MEDIA_AEC)
 		*type = SL_MEDIA_TYPE_AEC;
-	else if (media == CMIS_MEDIA_ACC)
-		*type = SL_MEDIA_TYPE_ACC;
+	else if (media == CMIS_MEDIA_ACC) {
+		/* compensate for Molex type programming issue */
+		if (vendor == SL_MEDIA_VENDOR_MOLEX)
+			*type = SL_MEDIA_TYPE_AEC;
+		else
+			*type = SL_MEDIA_TYPE_ACC;
+	}
 
 	return 0;
 }
@@ -417,8 +422,9 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "parse");
 
-	sl_media_eeprom_type_get(media_jack, media_attr->format, &(media_attr->type));
+	/* vendor get MUST be first */
 	sl_media_eeprom_vendor_get(media_jack, media_attr->format, &(media_attr->vendor));
+	sl_media_eeprom_type_get(media_jack, media_attr->format, media_attr->vendor, &(media_attr->type));
 	sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
 	sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str);
 	sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str);
