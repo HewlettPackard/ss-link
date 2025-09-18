@@ -679,8 +679,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 		}
 
-		if ((media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC) &&
-			!media_jack->is_supported_ss200_cable) {
+		if ((media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
+			media_attr.type == SL_MEDIA_TYPE_POC) && !media_jack->is_supported_ss200_cable) {
 			if (!sl_media_is_fw_version_valid(media_jack, &media_attr)) {
 				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
@@ -737,7 +737,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		return rtn;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC) {
+	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
+		media_attr.type == SL_MEDIA_TYPE_POC) {
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
@@ -756,7 +757,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		return rtn;
 	}
 
-	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC)) {
+	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC) ||
+		media_attr.type == SL_MEDIA_TYPE_POC) {
 		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)

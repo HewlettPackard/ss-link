@@ -110,6 +110,8 @@ const char *sl_media_type_str(u32 type)
 	default:
 		if (type == SL_MEDIA_TYPE_AOC)
 			return "AOC";
+		if (type == SL_MEDIA_TYPE_POC)
+			return "POC";
 		if (type == SL_MEDIA_TYPE_PEC)
 			return "PEC";
 		if (type == SL_MEDIA_TYPE_AEC)

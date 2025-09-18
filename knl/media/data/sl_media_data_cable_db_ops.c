@@ -77,7 +77,7 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_type, sl_media_type_str(media_type), flags);
 
 	if (flags & SL_MEDIA_TYPE_NOT_SUPPORTED) {
-		if (media_type == SL_MEDIA_TYPE_AEC) {
+		if (media_type == SL_MEDIA_TYPE_AEC || media_type == SL_MEDIA_TYPE_POC) {
 			media_jack->serdes_settings.pre1   = -4;
 			media_jack->serdes_settings.pre2   = 0;
 			media_jack->serdes_settings.pre3   = 0;

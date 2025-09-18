@@ -122,7 +122,7 @@ function print_jack_state {
 
        	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
 
-	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
 		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
@@ -270,7 +270,7 @@ function print_jack {
         printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
         printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
-	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ]; then
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		printf "           | active_cable: fw_version: ${fw_ver}, (target = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
 		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"

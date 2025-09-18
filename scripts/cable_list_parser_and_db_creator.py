@@ -22,9 +22,9 @@ dataframe = openpyxl.load_workbook("SlingshotCableCompatibilityMatrix.xlsm")
  
 # Define variable to read sheet
 #dataframe1 = dataframe.active
-dataframe1 = dataframe['S1 S2 Cable List (7.16.25)']
+dataframe1 = dataframe['S1 S2 Cable List (8.29.25)']
 
-#find the numbe of rows in excel sheet
+#find the number of rows in excel sheet
 curr_row = 1
 counter = 1
 while (1):
@@ -48,10 +48,6 @@ for row in range(1, counter):
     cell_value = str(cell_obj.value).strip() #remove whitespace
     if cell_value == "?":
         continue #ignore cables with unknown vendors
-    cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
-    cell_value = str(cell_obj.value).strip() #remove whitespace
-    if cell_value == "XCVR":
-        continue #ignore cables with unknown type
     cell_obj = dataframe1.cell(row = curr_row+1, column = 1)
     #read the alphanumeric PNs
     alpha_num_pn = str(cell_obj.value)
@@ -90,12 +86,7 @@ for i in range(len(HP_PN)):
         cell_value = str(cell_obj.value).strip() #remove whitespace
         if cell_value == "?":
             curr_row = curr_row + 1
-            continue
-        cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
-        cell_value = str(cell_obj.value).strip() #remove whitespace
-        if cell_value == "XCVR":
-            curr_row = curr_row + 1
-            continue
+            continue #ignore invalid vendor
         cell_obj = dataframe1.cell(row = curr_row+1, column = 1)
         alpha_num_pn = str(cell_obj.value) #read the alpha numeric PN
         alpha_num_pn_strip = alpha_num_pn.strip()
@@ -128,14 +119,17 @@ for i in range(len(HP_PN)):
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
             cell_value = str(cell_obj.value).strip() #remove whitespace
+            curr_type = cell_value
             if cell_value == "DAC" or cell_value == "PEC":
                 file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_PEC" + ",\n")
             elif cell_value == "AOC-A" or cell_value == "AOC-D" or cell_value == "AOC":
                 file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AOC" + ",\n")
             elif cell_value == "POF":
-                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POF" + ",\n")
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POC" + ",\n")
             elif cell_value == "AEC":
                 file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AEC" + ",\n")
+            elif cell_value == "XCVR":
+                file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POC" + ",\n")
             else:
                 file1.write("\t\t.type                     = " + "SL_MEDIA_TYPE_INVALID" + ",\n")
 
@@ -152,14 +146,17 @@ for i in range(len(HP_PN)):
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 10) #read the length
             length = str(cell_obj.value)
-            #num_length = length.rstrip(length[-1]) #remove whitespaces
-            whitelist = set('0123456789.')
-            num_length = ''.join(filter(whitelist.__contains__, length)) #remove whitespaces and letters
-            num_length = float(num_length) #convert string to float
-            num_length = num_length * 100 # multiply by 100 to convert meter to cm
-            num_length = int(num_length)  #convert float to int
-            num_length = str(num_length) #convert int to string
-            file1.write("\t\t.length_cm                = " + num_length + ",\n")
+            if curr_type == "XCVR":
+                 file1.write("\t\t.length_cm                = " + "0" + ",\n")
+            else:
+                #num_length = length.rstrip(length[-1]) #remove whitespaces
+                whitelist = set('0123456789.')
+                num_length = ''.join(filter(whitelist.__contains__, length)) #remove whitespaces and letters
+                num_length = float(num_length) #convert string to float
+                num_length = num_length * 100 # multiply by 100 to convert meter to cm
+                num_length = int(num_length)  #convert float to int
+                num_length = str(num_length) #convert int to string
+                file1.write("\t\t.length_cm                = " + num_length + ",\n")
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 4) #check if SS200 cable
             cell_value = str(cell_obj.value).strip() #remove whitespace
@@ -170,9 +167,9 @@ for i in range(len(HP_PN)):
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 11) #read the speed
             cell_value = str(cell_obj.value).strip() #remove whitespace
-            if cell_value == "200G E":
+            if cell_value == "200G E" or cell_value == "200Gb":
                 file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_200G" + ",\n")
-            elif cell_value == "400G E":
+            elif cell_value == "400G E" or cell_value == "400Gb":
                 file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
             elif cell_value == "800Gb":
                 file1.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
@@ -188,7 +185,7 @@ for i in range(len(HP_PN)):
                 file1.write("\t\t.serdes_settings.cursor   = " + "100" + ",\n")
                 file1.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
                 file1.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
-            elif cell_value == "AEC":
+            elif cell_value == "AEC" or cell_value == "XCVR":
                 file1.write("\t\t.serdes_settings.pre1     = " + "-4" + ",\n")
                 file1.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
                 file1.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
@@ -212,7 +209,7 @@ for i in range(len(HP_PN)):
 
             file1.write("\t},\n")
 
-            sheet = dataframe['S1 S2 Cable List (7.16.25)']
+            sheet = dataframe['S1 S2 Cable List (8.29.25)']
             sheet.delete_rows(curr_row+1, 1)
             break
             

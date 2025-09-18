@@ -149,7 +149,8 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		core_link->serdes.core_serdes_settings.osr       = SL_CORE_HW_SERDES_OSR_OSX1;
 		if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AEC)
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AEC;
-		else if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AOC)
+		else if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AOC ||
+			media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_POC)
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AOC;
 		else
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;

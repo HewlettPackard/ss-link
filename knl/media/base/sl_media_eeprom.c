@@ -143,6 +143,21 @@ static int sl_media_eeprom_furcation_get(struct sl_media_jack *media_jack, u32 *
 	// FIXME: get correct answer from eeporm apsel table
 }
 
+#define CONNECTOR_TYPE_OFFSET 203
+#define POC_TYPE_SR8          0x28
+#define POC_TYPE_SR4          0x0C
+static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack)
+{
+	u8 connector_type;
+
+	connector_type = media_jack->eeprom_page0[CONNECTOR_TYPE_OFFSET];
+
+	if (connector_type == POC_TYPE_SR8 || connector_type == POC_TYPE_SR4)
+		return true;
+
+	return false;
+}
+
 #define CMIS_TYPE_OFFSET    212
 #define SFF8436_TYPE_OFFSET 147
 #define CMIS_MEDIA_AOC      0x00
@@ -158,18 +173,28 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 	else
 		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
 
-	if (media == CMIS_MEDIA_AOC)
-		*type = SL_MEDIA_TYPE_AOC;
-	else if (media == CMIS_MEDIA_PEC)
+	switch (media) {
+	case CMIS_MEDIA_AOC:
+		if (sl_media_eeprom_is_type_poc(media_jack))
+			*type = SL_MEDIA_TYPE_POC;
+		else
+			*type = SL_MEDIA_TYPE_AOC;
+		break;
+	case CMIS_MEDIA_PEC:
 		*type = SL_MEDIA_TYPE_PEC;
-	else if (media == CMIS_MEDIA_AEC)
+		break;
+	case CMIS_MEDIA_AEC:
 		*type = SL_MEDIA_TYPE_AEC;
-	else if (media == CMIS_MEDIA_ACC) {
+		break;
+	case CMIS_MEDIA_ACC:
 		/* compensate for Molex type programming issue */
 		if (vendor == SL_MEDIA_VENDOR_MOLEX)
 			*type = SL_MEDIA_TYPE_AEC;
 		else
 			*type = SL_MEDIA_TYPE_ACC;
+		break;
+	default:
+		*type = SL_MEDIA_TYPE_INVALID;
 	}
 
 	return 0;

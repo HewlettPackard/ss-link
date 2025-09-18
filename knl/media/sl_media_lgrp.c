@@ -86,6 +86,7 @@ bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num)
 	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
 
 	return (media_attr.type == SL_MEDIA_TYPE_AOC ||
+		media_attr.type == SL_MEDIA_TYPE_POC ||
 		media_attr.type == SL_MEDIA_TYPE_AEC);
 }
 

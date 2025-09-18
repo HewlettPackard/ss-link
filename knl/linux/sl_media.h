@@ -30,6 +30,10 @@ struct sl_lgrp;
 #define SL_MEDIA_TYPE_AOC		(SL_MEDIA_TYPE_HEADSHELL  | \
 					 SL_MEDIA_TYPE_OPTICAL    | \
 					 SL_MEDIA_TYPE_ACTIVE)
+/* POC is same type as POF and XCVR */
+#define SL_MEDIA_TYPE_POC		(SL_MEDIA_TYPE_HEADSHELL  | \
+					 SL_MEDIA_TYPE_OPTICAL    | \
+					 SL_MEDIA_TYPE_PASSIVE)
 /* PEC is same type as DAC */
 #define SL_MEDIA_TYPE_PEC		(SL_MEDIA_TYPE_HEADSHELL  | \
 					 SL_MEDIA_TYPE_ELECTRICAL | \

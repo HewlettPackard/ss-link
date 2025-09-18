@@ -21,6 +21,8 @@ static const char *sl_cable_type_str(u32 type)
 		return "PEC";
 	case SL_CABLE_TYPE_AOC:
 		return "AOC";
+	case SL_CABLE_TYPE_POC:
+		return "POC";
 	case SL_CABLE_TYPE_AEC:
 		return "AEC";
 	default:
@@ -220,6 +222,9 @@ static int sl_sysfs_cable_db_create(struct sl_ctl_ldev *ctl_ldev)
 			break;
 		case SL_MEDIA_TYPE_AOC:
 			type_kobj_num = SL_CABLE_TYPE_AOC;
+			break;
+		case SL_MEDIA_TYPE_POC:
+			type_kobj_num = SL_CABLE_TYPE_POC;
 			break;
 		case SL_MEDIA_TYPE_AEC:
 			type_kobj_num = SL_CABLE_TYPE_AEC;
