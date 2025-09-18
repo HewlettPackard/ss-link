@@ -12,14 +12,13 @@ SL_MOD_DIR = sshot
 INSTALL_DIR := $(DESTDIR)
 STAGING_DIR := $(WORKSPACE)/staging_dir
 
-KDIR     := $(WORKSPACE)/hpc-hms_ec-linux-lsdk
-KNL_REL  := 5.10.35-amd64-slingshot
+KDIR        := $(WORKSPACE)/hpc-hms_ec-linux-lsdk
+KNL_REL     := 5.10.35-amd64-slingshot
 KNL_MOD_DIR := $(STAGING_DIR)/lib/modules/$(KNL_REL)
 KNL_SYM_DIR := $(KNL_MOD_DIR)
 
 GIT_HASH := $(shell git rev-parse HEAD)
 
-## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
 KNL_BUILD_ARGS += SL_BUILD_SWITCH_EMU=y
 KNL_BUILD_ARGS += CROSS_COMPILE=$(CROSS_COMPILE)

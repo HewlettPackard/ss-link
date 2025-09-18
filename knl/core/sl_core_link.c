@@ -2,7 +2,6 @@
 /* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
-#include "sl_kconfig.h"
 
 #include "sl_core_link.h"
 #include "sl_core_str.h"

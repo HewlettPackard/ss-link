@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 
-#include "sl_kconfig.h"
-#include "sl_module.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_link_fec.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_fec.h"
-#include "hw/sl_core_hw_fec_test.h"
+#include "test/sl_core_test_fec.h"
 
 #define LOG_NAME SL_CORE_HW_FEC_LOG_NAME
 
@@ -46,10 +44,14 @@ int sl_core_hw_fec_cw_cntrs_get(struct sl_core_link *core_link, struct sl_core_l
 
 	sl_core_log_dbg(core_link, LOG_NAME, "cw_cntrs_get");
 
+// FIXME: investigate doing this differently
+#if defined(SL_TEST)
 	if (core_link->fec.use_test_cntrs) {
 		sl_core_log_warn(core_link, LOG_NAME, "cw_cntrs_get using test fec cntrs");
-		return sl_core_hw_test_fec_cw_cntrs_get(core_link, cw_cntrs);
+		return sl_core_test_fec_cw_cntrs_get(core_link->core_lgrp->core_ldev->num,
+						     core_link->core_lgrp->num, core_link->num, cw_cntrs);
 	}
+#endif
 
 	rtn = sl_core_hw_fec_dmac_xfer(core_link, &data_cntrs);
 	if (rtn) {

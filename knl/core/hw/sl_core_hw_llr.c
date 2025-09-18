@@ -6,7 +6,6 @@
 #include <linux/delay.h>
 #include <linux/workqueue.h>
 
-#include "sl_kconfig.h"
 #include "sl_core_str.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"

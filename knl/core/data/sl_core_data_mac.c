@@ -8,7 +8,6 @@
 #include <linux/sl_lgrp.h>
 #include <linux/sl_media.h>
 
-#include "sl_kconfig.h"
 #include "base/sl_core_log.h"
 #include "sl_core_mac.h"
 #include "sl_core_str.h"

@@ -229,7 +229,6 @@ ${postinst} %{name} %{version}-%{release}
 %endif
 
 %files devel
-%{_includedir}/linux/sl_kconfig.h
 %{_includedir}/linux/sl.h
 %{_includedir}/linux/sl_ldev.h
 %{_includedir}/linux/sl_lgrp.h

@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 
-#include "sl_kconfig.h"
 #include "sl_core_lgrp.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_sbus_pmi.h"

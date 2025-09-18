@@ -8,7 +8,6 @@
 #include <linux/fs.h>
 #include <linux/version.h>
 
-#include "sl_kconfig.h"
 #include "sl_module.h"
 
 #include "sl.h"

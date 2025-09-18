@@ -16,7 +16,6 @@ KDIR     := /lib/modules/$(KNL_REL)/build
 
 GIT_HASH := $(shell git rev-parse HEAD)
 
-## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
 KNL_BUILD_ARGS += SL_BUILD_SWITCH_EMU=y
 KNL_BUILD_ARGS += ARCH=$(ARCH)
@@ -24,7 +23,6 @@ KNL_BUILD_ARGS += ARCH=$(ARCH)
 PLATFORM_SWITCH = 1
 
 KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
-## NOTE: to compile tests in the driver
 KCPPFLAGS += -DSL_TEST=1
 SL_BUILD_USR=1
 

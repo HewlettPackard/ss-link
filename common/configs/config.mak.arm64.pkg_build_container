@@ -16,18 +16,16 @@ KDIR     := /lib/modules/$(KNL_REL)/build
 
 GIT_HASH := $(shell git rev-parse HEAD)
 
-CROSS_COMPILE := aarch64-linux-gnu-
+CROSS_COMPILE  := aarch64-linux-gnu-
 KNL_BUILD_ARGS += V=1
 KNL_BUILD_ARGS += CROSS_COMPILE=$(CROSS_COMPILE)
 KNL_BUILD_ARGS += ARCH=$(ARCH)
-## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
 KNL_BUILD_ARGS += SL_BUILD_SWITCH=y
 
 PLATFORM_SWITCH = 1
 
 KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
-## NOTE: to compile tests in the driver
 KCPPFLAGS += -DSL_TEST=1
 SL_BUILD_USR=1
 

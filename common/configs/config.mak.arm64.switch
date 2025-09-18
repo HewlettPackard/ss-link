@@ -11,25 +11,23 @@ SL_MOD_DIR = sshot
 INSTALL_DIR := $(DESTDIR)
 STAGING_DIR := $(WORKSPACE)/staging_dir
 
-KDIR     := $(WORKSPACE)/hpc-hms_ec-linux-lsdk
-KNL_REL  := 5.10.35-ls64-slingshot
+KDIR        := $(WORKSPACE)/hpc-hms_ec-linux-lsdk
+KNL_REL     := 5.10.35-ls64-slingshot
 KNL_MOD_DIR := $(STAGING_DIR)/lib/modules/$(KNL_REL)
 KNL_SYM_DIR := $(KNL_MOD_DIR)
 
 GIT_HASH := $(shell git rev-parse HEAD)
 
-CROSS_COMPILE := aarch64-linux-gnu-
+CROSS_COMPILE  := aarch64-linux-gnu-
 KNL_BUILD_ARGS += V=1
 KNL_BUILD_ARGS += CROSS_COMPILE=$(CROSS_COMPILE)
 KNL_BUILD_ARGS += ARCH=$(ARCH)
-## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
 KNL_BUILD_ARGS += SL_BUILD_SWITCH=y
 
 PLATFORM_SWITCH = 1
 
 KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
-## NOTE: to compile tests in the driver
 KCPPFLAGS += -DSL_TEST=1
 
 USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)

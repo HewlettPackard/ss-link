@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/umh.h>
 
-#include "sl_kconfig.h"
 #include "sl_core_lgrp.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_io.h"

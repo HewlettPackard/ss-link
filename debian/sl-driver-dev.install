@@ -1,7 +1,6 @@
 lib/modules/5.10.*/module.symvers.sl
 lib/modules/5.10.*/modules.builtin
 lib/modules/5.10.*/modules.order
-usr/include/linux/sl_kconfig.h
 usr/include/linux/sl.h
 usr/include/linux/sl_ldev.h
 usr/include/linux/sl_lgrp.h

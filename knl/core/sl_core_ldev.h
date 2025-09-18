@@ -9,7 +9,6 @@
 
 #include <linux/sl_ldev.h>
 
-#include "sl_kconfig.h"
 #include "sl_asic.h"
 
 struct sl_accessors;

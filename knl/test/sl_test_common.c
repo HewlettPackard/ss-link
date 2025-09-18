@@ -7,11 +7,10 @@
 #include "log/sl_log.h"
 #include "sl_asic.h"
 #include "sl_test_common.h"
-#include "test/sl_media_test.h"
+#include "test/sl_media_test_str.h"
 #include "test/sl_core_test_serdes.h"
 #include "test/sl_ctrl_test_ldev.h"
 #include "test/sl_ctrl_test_lgrp.h"
-
 #include "sl_core_lgrp.h"
 #include "hw/sl_core_hw_io.h"
 
@@ -93,12 +92,6 @@ const char *sl_test_serdes_lane_width_str(u16 width)
 	return sl_core_test_serdes_lane_width_str(width);
 }
 EXPORT_SYMBOL(sl_test_serdes_lane_width_str);
-
-const char *sl_test_media_type_str(u32 type)
-{
-	return sl_media_test_type_str(type);
-}
-EXPORT_SYMBOL(sl_test_media_type_str);
 
 int sl_test_serdes_lane_encoding_from_str(const char *str, u16 *encoding)
 {

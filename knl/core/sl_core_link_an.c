@@ -5,8 +5,6 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 
-#include "sl_kconfig.h"
-
 #include "data/sl_core_data_link.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"

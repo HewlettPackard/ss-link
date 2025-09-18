@@ -13,7 +13,6 @@ GIT_HASH := $(shell git rev-parse HEAD)
 
 PLATFORM_NIC = 1
 
-## FIXME: remove this when "test" is removed
 KNL_BUILD_ARGS += SL_TEST=y
 KNL_BUILD_ARGS += SL_BUILD_NIC=y
 

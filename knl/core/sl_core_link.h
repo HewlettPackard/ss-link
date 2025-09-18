@@ -369,7 +369,10 @@ struct sl_core_link {
 		struct sl_core_link_fec_cw_cntrs test_cntrs;
 		struct sl_core_link_fec_cw_cntrs mock_cntr;
 		spinlock_t                       test_lock;
+// FIXME: investigate doing this differently
+#if defined(SL_TEST)
 		bool                             use_test_cntrs;
+#endif
 		struct {
 			u32     mode;
 			u32     type;

@@ -49,8 +49,7 @@ KNL_BUILD_ARGS += INSTALL_MOD_PATH=$(STAGING_DIR)
 KNL_BUILD_ARGS += INSTALL_MOD_DIR=$(SL_MOD_DIR)
 KNL_BUILD_ARGS += KBUILD_EXTRA_SYMBOLS="$(patsubst %,$(KNL_MOD_DIR)/module.symvers.%,$(KNL_EXT_SYMBOLS))"
 
-INSTALL_LINUX_HDRS     := sl_kconfig.h
-INSTALL_LINUX_HDRS     += sl.h
+INSTALL_LINUX_HDRS     := sl.h
 INSTALL_LINUX_HDRS     += linux/sl_ldev.h
 INSTALL_LINUX_HDRS     += linux/sl_lgrp.h
 INSTALL_LINUX_HDRS     += linux/sl_link.h
@@ -60,8 +59,7 @@ INSTALL_LINUX_HDRS     += linux/sl_mac.h
 INSTALL_LINUX_HDRS     += linux/sl_media.h
 INSTALL_LINUX_HDRS     += linux/sl_test.h
 
-UNINSTALL_LINUX_HDRS     := sl_kconfig.h
-UNINSTALL_LINUX_HDRS     += sl.h
+UNINSTALL_LINUX_HDRS     := sl.h
 UNINSTALL_LINUX_HDRS     += sl_ldev.h
 UNINSTALL_LINUX_HDRS     += sl_lgrp.h
 UNINSTALL_LINUX_HDRS     += sl_link.h

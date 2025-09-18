@@ -5,10 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 
-#include "sl_kconfig.h"
-
 #include "base/sl_core_log.h"
-
 #include "sl_core_lgrp.h"
 #include "sl_core_llr.h"
 #include "sl_core_str.h"

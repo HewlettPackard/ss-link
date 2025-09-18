@@ -4,15 +4,16 @@
 
 obj-m := $(SL_TEST_NAME).o
 
-$(SL_TEST_NAME)-y := ../log/sl_log.o           \
-		     sl_test_module.o          \
-		     sl_test_debugfs.o         \
-		     sl_test_debugfs_ldev.o    \
-		     sl_test_debugfs_lgrp.o    \
-		     sl_test_debugfs_link.o    \
-		     sl_test_debugfs_llr.o     \
-		     sl_test_debugfs_mac.o     \
-		     sl_test_debugfs_serdes.o
+$(SL_TEST_NAME)-y := \
+	../log/sl_log.o           \
+	sl_test_module.o          \
+	sl_test_debugfs.o         \
+	sl_test_debugfs_ldev.o    \
+	sl_test_debugfs_lgrp.o    \
+	sl_test_debugfs_link.o    \
+	sl_test_debugfs_llr.o     \
+	sl_test_debugfs_mac.o     \
+	sl_test_debugfs_serdes.o
 
 ccflags-y := -I$(M)
 ccflags-$(SL_BUILD_NIC)        += -I$(M)/../nic

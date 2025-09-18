@@ -6,18 +6,16 @@ obj-m := $(SL_NAME).o
 
 $(SL_NAME)-y := sl_module.o
 
-## FIXME: remove this when "test" is removed
 $(SL_NAME)-$(SL_TEST) += \
-	sl_test.o                     \
-	ctrl/test/sl_ctrl_test.o      \
-	ctrl/test/sl_ctrl_test_fec.o  \
-	ctrl/test/sl_ctrl_test_ldev.o \
-	ctrl/test/sl_ctrl_test_lgrp.o \
-	core/test/sl_core_test.o      \
-	core/test/sl_core_test_an.o   \
-	core/hw/sl_core_hw_fec_test.o \
-	core/test/sl_core_test_fec.o  \
-	media/test/sl_media_test.o
+	sl_test.o                       \
+	ctrl/test/sl_ctrl_test_fec.o    \
+	ctrl/test/sl_ctrl_test_ldev.o   \
+	ctrl/test/sl_ctrl_test_lgrp.o   \
+	core/test/sl_core_test_an.o     \
+	core/test/sl_core_test_fec.o    \
+	core/test/sl_core_test_serdes.o \
+	media/test/sl_media_test_str.o  \
+	test/sl_test_common.o
 
 $(SL_NAME)-$(SL_BUILD_SWITCH) += \
 	switch/sl_media.o                           \
@@ -117,8 +115,7 @@ $(SL_NAME)-y += \
 	core/hw/sl_core_hw_pcs.o            \
 	core/hw/sl_core_hw_mac.o            \
 	core/hw/sl_core_hw_llr.o            \
-	core/hw/sl_core_hw_reset.o          \
-	core/test/sl_core_test_serdes.o
+	core/hw/sl_core_hw_reset.o
 
 $(SL_NAME)-y += \
 	ctrl/sl_ctrl_ldev.o          \
@@ -134,9 +131,6 @@ $(SL_NAME)-y += \
 
 $(SL_NAME)-y += \
 	log/sl_log.o
-
-$(SL_NAME)-y += \
-	test/sl_test_common.o
 
 $(SL_NAME)-y += \
 	sysfs/sl_sysfs_ldev.o               \

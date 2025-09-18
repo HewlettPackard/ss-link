@@ -3,10 +3,7 @@
 
 #include <linux/types.h>
 
-#include "sl_kconfig.h"
-
 #include "base/sl_core_log.h"
-
 #include "sl_core_lgrp.h"
 #include "sl_core_mac.h"
 #include "sl_core_str.h"

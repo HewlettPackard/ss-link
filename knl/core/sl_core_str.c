@@ -4,7 +4,6 @@
 #include <linux/module.h>
 #include <linux/bitops.h>
 
-#include "sl_kconfig.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "hw/sl_core_hw_serdes_lane.h"
