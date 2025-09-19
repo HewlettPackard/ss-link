@@ -108,7 +108,7 @@ for flavor in %flavors_to_build; do
     pushd obj/$flavor
     make INSTALL_DIR=$RPM_BUILD_ROOT STAGING_DIR=$PWD/staging-dir KDIR=%{kernel_source $flavor} %platform_arg %{?_smp_mflags} install
     popd
-    install -D $PWD/obj/$flavor/knl/Module.symvers  $RPM_BUILD_ROOT/%{prefix}/src/sl/$flavor/Module.symvers
+    install -D $PWD/obj/$flavor/drivers/net/ethernet/hpe/sl/Module.symvers  $RPM_BUILD_ROOT/%{prefix}/src/sl/$flavor/Module.symvers
 done
 
 %if 0%{?rhel}
@@ -144,15 +144,30 @@ rm -rf %{buildroot}/${dkms_source_dir}/Jenkinsfile.debian
 rm -rf %{buildroot}/${dkms_source_dir}/Jenkinsfile.rpmbuild
 rm -rf %{buildroot}/${dkms_source_dir}/Jenkinsfile.rpmbuild.rhel
 # TODO: Evaluate whether these files should be shipped with DKMS
-#rm -rf %{buildroot}/${dkms_source_dir}/knl/sl_asic.h
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/Kbuild
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/Makefile
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/sl_test_debugfs.c
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/sl_test_debugfs.h
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/sl_test.h
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/sl_test_kconfig.h
-rm -rf %{buildroot}/${dkms_source_dir}/knl/test/sl_test_module.c
-rm -rf %{buildroot}/${dkms_source_dir}/knl/udev/98-sl.rules
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/README.md
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/Kbuild
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/Makefile
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl/sl_test.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl/sl_test_common.c
+## FIXME: remove this header when LOCK is removed
+##rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl/sl_test_common.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_module.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_ldev.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_ldev.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_lgrp.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_lgrp.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_link.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_link.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_llr.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_llr.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_mac.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_mac.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_serdes.c
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl_test/sl_test_debugfs_serdes.h
+rm -rf %{buildroot}/${dkms_source_dir}/drivers/net/ethernet/hpe/sl/udev/98-sl.rules
 rm -rf %{buildroot}/${dkms_source_dir}/pkgconfig
 rm -rf %{buildroot}/${dkms_source_dir}/pkgconfig/sl-driver-dev.pc
 rm -rf %{buildroot}/${dkms_source_dir}/rpm_build_multikernel.sh
@@ -160,20 +175,6 @@ rm -rf %{buildroot}/${dkms_source_dir}/runBuildPrep.rhel.sh
 rm -rf %{buildroot}/${dkms_source_dir}/set_slingshot_version.sh
 rm -rf %{buildroot}/${dkms_source_dir}/sl-driver.spec
 rm -rf %{buildroot}/${dkms_source_dir}/usr/Makefile
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_cmds.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_sbus.h
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_sbus.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/Makefile
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_iface.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_pmi.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_cmds.h
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_iface.h
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_pmi.h
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_addr.c
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool_addr.h
-rm -rf %{buildroot}/${dkms_source_dir}/usr/linktool/linktool.h
 
 # QUIRK: copy make configuration into place
 cp source/common/configs/config.mak.cassini %{buildroot}/${dkms_source_dir}/config.mak
@@ -218,15 +219,15 @@ ${postinst} %{name} %{version}-%{release}
 /usr/bin/slstat
 
 %files devel
-%{_includedir}/linux/sl.h
-%{_includedir}/linux/sl_ldev.h
-%{_includedir}/linux/sl_lgrp.h
-%{_includedir}/linux/sl_link.h
-%{_includedir}/linux/sl_llr.h
-%{_includedir}/linux/sl_mac.h
-%{_includedir}/linux/sl_media.h
-%{_includedir}/linux/sl_test.h
-%{_includedir}/linux/sl_fec.h
+%{_includedir}/linux/hpe/sl/sl.h
+%{_includedir}/linux/hpe/sl/sl_ldev.h
+%{_includedir}/linux/hpe/sl/sl_lgrp.h
+%{_includedir}/linux/hpe/sl/sl_link.h
+%{_includedir}/linux/hpe/sl/sl_llr.h
+%{_includedir}/linux/hpe/sl/sl_mac.h
+%{_includedir}/linux/hpe/sl/sl_media.h
+%{_includedir}/linux/hpe/sl/sl_test.h
+%{_includedir}/linux/hpe/sl/sl_fec.h
 %{prefix}/src/sl/*/Module.symvers
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin

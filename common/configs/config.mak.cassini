@@ -3,6 +3,7 @@
 #
 
 ARCH := $(shell uname -m)
+DISCRIMINATOR := $(ARCH)-linux-gnu
 
 SL_MOD_DIR = extra/sshot
 
@@ -10,28 +11,16 @@ KDIR        ?= /lib/modules/$(shell uname -r)/build
 STAGING_DIR ?= $(PWD)/staging_dir
 
 GIT_HASH := $(shell git rev-parse HEAD)
-
-PLATFORM_NIC = 1
-
-KNL_BUILD_ARGS += SL_TEST=y
-KNL_BUILD_ARGS += SL_BUILD_NIC=y
-
-KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
-KCPPFLAGS += -DSL_TEST=1
-
+KCPPFLAGS      += -DGIT_HASH=$(GIT_HASH)
 USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)
-DISCRIMINATOR  := $(ARCH)-linux-gnu
 
+## build link module
 SL_NAME = cxi-sl
-SL_TEST_NAME = cxi-sl-test
+PLATFORM_NIC = 1
+KNL_BUILD_ARGS += SL_BUILD_NIC=y
 KNL_BUILD_ARGS += SL_NAME=$(SL_NAME)
-KNL_BUILD_ARGS += SL_TEST_NAME=$(SL_TEST_NAME)
-
-## NOTE: to compile user space
-##SL_BUILD_USR=1
 
 export SL_MOD_DIR
 export STAGING_DIR
 export DISCRIMINATOR
 export SL_NAME
-export SL_TEST_NAME

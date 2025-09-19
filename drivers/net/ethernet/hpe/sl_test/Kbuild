@@ -1,0 +1,21 @@
+#
+# Slingshot link test driver
+#
+
+obj-m := $(SL_TEST_NAME).o
+
+$(SL_TEST_NAME)-y := \
+	../sl/log/sl_log.o        \
+	sl_test_module.o          \
+	sl_test_debugfs.o         \
+	sl_test_debugfs_ldev.o    \
+	sl_test_debugfs_lgrp.o    \
+	sl_test_debugfs_link.o    \
+	sl_test_debugfs_llr.o     \
+	sl_test_debugfs_mac.o     \
+	sl_test_debugfs_serdes.o
+
+ccflags-y := -I$(M)/../sl
+ccflags-$(SL_BUILD_NIC)        += -I$(M)/../sl/nic
+ccflags-$(SL_BUILD_SWITCH)     += -I$(M)/../sl/switch
+ccflags-$(SL_BUILD_SWITCH_EMU) += -I$(M)/../sl/switch

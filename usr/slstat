@@ -1,0 +1,742 @@
+#!/usr/bin/bash
+
+MAJOR=1
+MINOR=2
+
+SW_SYSFS=/sys/class/rossw
+NIC_SYSFS=/sys/class/cxi
+PORT_DIR_SYSFS=port
+
+cmd=$(basename $0)
+function usage {
+        echo "$cmd ldev_num[:lgrp_num][:link_num] [option]"
+        echo "  target:"
+        echo "    ldev_num = link device number (0-1)"
+        echo "    lgrp_num = link group number (0-63)"
+        echo "    link_num = link number (0-3)"
+        echo "  option: (omitted option will print all available info for target)"
+        echo "    state    = print state for the target"
+        echo "    link     = print link info for the target"
+        echo "    serdes   = print serdes info for the target"
+        echo "    cable    = print cable info for the target"
+        echo "    counters = print counters for a link target (requires #:#:#)"
+        echo "    use_test = use the \"test_port\" directory"
+        exit;
+}
+
+if [ "$#" -eq 1 ] ; then
+        if [ $1 = "-h" ] ; then
+                usage
+        elif [ $1 = "--help" ] ; then
+                usage
+        fi
+elif [ "$#" -eq 2 ] ; then
+        case $2 in
+                state )
+                        option=state
+                        ;;
+                link )
+                        option=link
+                        ;;
+                serdes )
+                        option=serdes
+                        ;;
+                cable )
+                        option=cable
+                        ;;
+                counters )
+                        option=counters
+                        ;;
+                use_test )
+                        option=use_test
+                        PORT_DIR_SYSFS=test_port
+                        ;;
+                * )
+                        usage
+                        ;;
+        esac
+else
+        usage
+fi
+
+target=(${1//:/ })
+
+num_args=${#target[@]}
+
+if [ "$num_args" -eq 1 ] ; then
+        LDEV=${target[0]}
+        LGRP=no
+        LINK=no
+elif [ "$num_args" -eq 2 ] ; then
+        LDEV=${target[0]}
+        LGRP=${target[1]}
+        LINK=no
+elif [ "$num_args" -eq 3 ] ; then
+        LDEV=${target[0]}
+        LGRP=${target[1]}
+        LINK=${target[2]}
+else
+        usage
+fi
+
+if [ -e ${SW_SYSFS} ] ; then
+        LDEV_PATH="${SW_SYSFS}/rossw${LDEV}"
+        LGRP_PATH="${LDEV_PATH}/pgrp/${LGRP}"
+        LINK_PATH="${LGRP_PATH}/${PORT_DIR_SYSFS}/${LINK}/link"
+        MAC_PATH="${LGRP_PATH}/${PORT_DIR_SYSFS}/${LINK}/mac"
+        LLR_PATH="${LGRP_PATH}/${PORT_DIR_SYSFS}/${LINK}/llr"
+elif [ -e ${NIC_SYSFS} ] ; then
+        LDEV_PATH="${NIC_SYSFS}/cxi${LDEV}/device/${PORT_DIR_SYSFS}/${LGRP}"
+        LGRP_PATH="${LDEV_PATH}"
+        LINK_PATH="${LGRP_PATH}/link"
+        MAC_PATH="${LGRP_PATH}/mac"
+        LLR_PATH="${LGRP_PATH}/llr"
+else
+        echo "nothing initialized"
+        exit
+fi
+
+function print_ldev {
+        if [ ! -e ${LDEV_PATH} ] ; then
+                return
+        fi
+
+        local ver=$(cat ${LDEV_PATH}/sl_info/mod_ver)
+        local hash=$(cat ${LDEV_PATH}/sl_info/mod_hash)
+
+        echo "-------------------------------------------------------------------------------------------"
+        printf " %-19s SL %-19s %45s\n" "${cmd} v${MAJOR}.${MINOR}" "${ver}" "hash: ${hash}"
+        echo "-----------+-------------------------------------------------------------------------------"
+}
+
+function print_jack_state {
+        if [ ! -e ${LGRP_PATH}/media ] ; then
+                return;
+        fi
+
+        local state=$(cat ${LGRP_PATH}/media/state)
+        local jack_num=$(cat ${LGRP_PATH}/media/jack_num)
+        local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
+	local power=$(cat ${LGRP_PATH}/media/jack_power_state)
+        local type=$(cat ${LGRP_PATH}/media/type)
+
+       	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
+
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
+		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
+		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
+		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
+			printf "           | temperature: ${temp}\n"
+		else
+			printf "           | temperature: ${temp}c (high_temp = ${high_temp})\n"
+		fi
+	fi
+}
+
+function print_link_state {
+        if [ ! -e ${LINK_PATH} ] ; then
+                return
+        fi
+
+        local state=$(cat ${LINK_PATH}/state)
+        local speed=$(cat ${LINK_PATH}/speed)
+        local time_to_link_up=$(cat ${LINK_PATH}/time_to_link_up_ms)
+        local info_map=$(cat ${LINK_PATH}/info_map)
+
+        printf "link%d      | state: ${state}, speed: ${speed}, time_to_link_up: ${time_to_link_up}ms\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
+}
+
+function print_mac_state {
+        if [ ! -e ${MAC_PATH} ] ; then
+                return
+        fi
+
+        local state_tx=$(cat ${MAC_PATH}/tx_state)
+        local state_rx=$(cat ${MAC_PATH}/rx_state)
+        local info_map=$(cat ${MAC_PATH}/info_map)
+
+        printf "mac%d       | state: tx ${state_tx}, rx ${state_rx}\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
+}
+
+function print_llr_state {
+        if [ ! -e ${LLR_PATH} ] ; then
+                return
+        fi
+
+        local state=$(cat ${LLR_PATH}/state)
+        local info_map=$(cat ${LLR_PATH}/info_map)
+
+        printf "llr%d       | state: ${state}\n" ${LINK}
+        printf "           | info_map: ${info_map}\n"
+}
+
+function print_link_counters {
+        if [ ! -e ${LINK_PATH}/counters ] ; then
+		return
+	fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${LINK_PATH}/counters/* ; do
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_mac_counters {
+        if [ ! -e ${MAC_PATH}/counters ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${MAC_PATH}/counters/* ; do
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_llr_counters {
+        if [ ! -e ${LLR_PATH}/counters ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${LLR_PATH}/counters/* ; do
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_jack {
+        if [ ! -e ${LGRP_PATH}/media ] ; then
+                return
+        fi
+
+        local jack_type=$(cat ${LGRP_PATH}/media/jack_type)
+        local type=$(cat ${LGRP_PATH}/media/type)
+        local vendor=$(cat ${LGRP_PATH}/media/vendor)
+        local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
+        local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
+        local supported=$(cat ${LGRP_PATH}/media/supported)
+        local ss200_cable=$(cat ${LGRP_PATH}/media/is_supported_ss200_cable)
+        local furcation=$(cat ${LGRP_PATH}/media/furcation)
+        local length=$(cat ${LGRP_PATH}/media/length_cm)
+        local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
+	local fw_ver=$(cat ${LGRP_PATH}/media/firmware_version)
+	local host_iface_200=$(cat ${LGRP_PATH}/media/active_cable_200g_host_iface)
+	local lane_cnt_200=$(cat ${LGRP_PATH}/media/active_cable_200g_lane_cnt)
+	local appsel_no_200=$(cat ${LGRP_PATH}/media/active_cable_200g_appsel_no)
+	local host_iface_400=$(cat ${LGRP_PATH}/media/active_cable_400g_host_iface)
+	local lane_cnt_400=$(cat ${LGRP_PATH}/media/active_cable_400g_lane_cnt)
+	local appsel_no_400=$(cat ${LGRP_PATH}/media/active_cable_400g_appsel_no)
+	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
+	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
+	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version)
+	local shape=$(cat ${LGRP_PATH}/media/shape)
+	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
+
+
+	if [ "${length}" == "invalid-format" ] || [ "${length}" == "no-cable" ] ; then
+		local units="";
+	else
+		local units="cm";
+	fi
+
+        print_jack_state
+
+        printf "           | cable: ${vendor} ${type} ${length}${units}\n"
+        printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
+        printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
+        printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
+	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
+		printf "           | active_cable: fw_version: ${fw_ver}, (target = ${target_fw_ver})\n"
+		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
+		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
+	fi
+	printf "           | speeds: "
+	local have_speed=no
+        if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
+                printf "cd50G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/bj100G ] ; then
+                printf "bj100G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/cd100G ] ; then
+                printf "cd100G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/bs200G ] ; then
+                printf "bs200G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck100G ] ; then
+                printf "ck100G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck200G ] ; then
+                printf "ck200G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck400G ] ; then
+                printf "ck400G "
+		have_speed=yes
+        fi
+        if [ -e ${LGRP_PATH}/media/speeds/ck800G ] ; then
+                printf "ck800G "
+		have_speed=yes
+        fi
+	if [ "${have_speed}" != "yes" ] ; then
+		printf "none "
+	fi
+        printf "\n"
+        printf "           |   max_speed: ${max_speed}\n"
+        printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
+}
+
+function print_lgrp {
+        if [ ! -e ${LGRP_PATH}/config ] ; then
+                return
+        fi
+
+        local furcation=$(cat ${LGRP_PATH}/config/furcation)
+        local tech_map=$(cat ${LGRP_PATH}/config/tech_map)
+        local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
+
+        printf "lgrp%02d     | furcation  : ${furcation}\n" ${LGRP}
+        printf "           | tech_config: ${tech_map}\n"
+        printf "           | fec_config : ${fec_map}\n"
+}
+
+function print_link {
+        if [ ! -e ${LINK_PATH} ] ; then
+                return
+        fi
+
+        local link_up_timeout=$(cat ${LINK_PATH}/config/link_up_timeout_ms)
+        local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
+        local an_fail_cause=$(cat ${LINK_PATH}/last_autoneg_fail_cause)
+        local an_fail_time=$(cat ${LINK_PATH}/last_autoneg_fail_time)
+        local down_cause_map=$(cat ${LINK_PATH}/last_down_cause_map)
+        local down_time=$(cat ${LINK_PATH}/last_down_time)
+        local up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail_cause_map)
+        local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
+        local keep_serdes_up=$(cat ${LINK_PATH}/policies/keep_serdes_up)
+        local use_unsupported_cable=$(cat ${LINK_PATH}/policies/use_unsupported_cable)
+        local use_supported_ss200_cable=$(cat ${LINK_PATH}/policies/use_supported_ss200_cable)
+        local ignore_media_error=$(cat ${LINK_PATH}/policies/ignore_media_error)
+        local hpe_map=$(cat ${LINK_PATH}/config/hpe_map)
+        local pause_map=$(cat ${LINK_PATH}/config/pause_map)
+        local autoneg=$(cat ${LINK_PATH}/config/autoneg)
+        local caps_pause=$(cat ${LINK_PATH}/caps/pause_map)
+        local caps_tech=$(cat ${LINK_PATH}/caps/tech_map)
+        local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
+        local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
+        local loopback=$(cat ${LINK_PATH}/config/loopback)
+	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
+	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
+        local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
+        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_lane_map)
+        local rx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/rx_link_speed_gbps)
+        local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
+        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_lane_map)
+        local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
+
+        print_link_state
+
+        printf "           | link_up_timeout: ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
+        printf "    causes | last_up_fail     : [${up_fail_time}] ${up_fail_cause_map}\n"
+        printf "           | last_autoneg_fail: [${an_fail_time}] ${an_fail_cause}\n"
+        printf "           | last_down        : [${down_time}] ${down_cause_map}\n"
+        printf "  policies | keep_serdes_up           : ${keep_serdes_up}\n"
+        printf "           | use_unsupported_cable    : ${use_unsupported_cable}\n"
+        printf "           | use_supported_ss200_cable: ${use_supported_ss200_cable}\n"
+        printf "           | ignore_media_error       : ${ignore_media_error}\n"
+        printf "    config | hpe     : ${hpe_map}\n"
+        printf "           | loopback: ${loopback}\n"
+        printf "           | pause   : ${pause_map}\n"
+        printf "           | autoneg : ${autoneg}\n"
+        printf "           |   pause_caps: ${caps_pause}\n"
+        printf "           |   tech_caps : ${caps_tech}\n"
+        printf "           |   fec_caps  : ${caps_fec}\n"
+        printf "           |   hpe_caps  : ${caps_hpe}\n"
+        printf "           | auto_lane_degrade: ${degrade_config}\n"
+	printf "       ALD | state: ${degrade_state}\n"
+	if [ "${degrade_state}" == "active" ] ; then
+		local rx_units="Gbps"
+	else
+		local rx_units=""
+	fi
+        printf "           |   is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
+	if [ "${degrade_state}" == "active" ] ; then
+		local tx_units="Gbps"
+	else
+		local tx_units=""
+	fi
+        printf "           |   is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
+}
+
+function print_mac {
+        if [ ! -e ${MAC_PATH} ] ; then
+                return
+        fi
+
+        print_mac_state
+}
+
+function print_llr {
+        if [ ! -e ${LLR_PATH} ] ; then
+                return
+        fi
+
+        local calc=$(cat ${LLR_PATH}/loop/calc_ns)
+        local min=$(cat ${LLR_PATH}/loop/min_ns)
+        local max=$(cat ${LLR_PATH}/loop/max_ns)
+        local avg=$(cat ${LLR_PATH}/loop/average_ns)
+        local mode=$(cat ${LLR_PATH}/config/mode)
+        local down_bahavior=$(cat ${LLR_PATH}/config/link_down_behavior)
+        local setup_timeout=$(cat ${LLR_PATH}/config/setup_timeout_ms)
+        local start_timeout=$(cat ${LLR_PATH}/config/start_timeout_ms)
+        local tries=$(cat ${LLR_PATH}/policies/continuous_tries)
+        local last_fail_cause=$(cat ${LLR_PATH}/last_fail_cause)
+        local last_fail_time=$(cat ${LLR_PATH}/last_fail_time)
+
+        print_llr_state
+
+        printf "           | loop_calc: ${calc}ns, loop_min: ${min}ns, loop_max: ${max}ns, loop_avg: ${avg}ns\n"
+        printf "           | mode: ${mode}, link_down_behavior: ${down_bahavior}\n"
+        printf "           | setup_timeout: ${setup_timeout}ms, start_timeout: ${start_timeout}ms\n"
+        printf "           | continuous_tries: ${tries}\n"
+        printf "           | last_fail_cause: [${last_fail_time}] ${last_fail_cause}\n"
+}
+
+function print_serdes {
+        if [ ! -e ${LGRP_PATH}/serdes ] ; then
+                return
+        fi
+
+        local hw_ver=$(cat ${LGRP_PATH}/serdes/hw_version)
+        local fw_ver=$(cat ${LGRP_PATH}/serdes/fw_version)
+
+        printf "serdes     | hw: ${hw_ver}, fw: ${fw_ver}\n"
+}
+
+function print_col_serdes_state {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        printf "  state    |        tx,rx | "
+        for lane in {0..3} ; do
+                state_tx=$(cat ${LGRP_PATH}/serdes/lane/${lane}/state/tx)
+                state_rx=$(cat ${LGRP_PATH}/serdes/lane/${lane}/state/rx)
+                printf "%15s " "${state_tx},${state_rx}"
+        done
+        printf "\n"
+}
+
+function print_col_serdes_swizzle {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        printf "  swizzle  |        tx,rx | "
+        for lane in {0..3} ; do
+                tx_source=$(cat ${LGRP_PATH}/serdes/lane/${lane}/swizzle/tx_source)
+                rx_source=$(cat ${LGRP_PATH}/serdes/lane/${lane}/swizzle/rx_source)
+                printf "%15s " "${tx_source},${rx_source}"
+        done
+        printf "\n"
+}
+
+function print_col_serdes_eye_high {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        printf "  eye high |    val,limit | "
+        for lane in {0..3} ; do
+                limit_high=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/limit_high)
+                value_up=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/value_upper)
+                printf "%15s " "${value_up},${limit_high}"
+        done
+        printf "\n"
+}
+
+function print_col_serdes_eye_low {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        printf "  eye low  |    val,limit | "
+        for lane in {0..3} ; do
+                limit_low=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/limit_low)
+                value_low=$(cat ${LGRP_PATH}/serdes/lane/${lane}/eye/value_lower)
+                printf "%15s " "${value_low},${limit_low}"
+        done
+        printf "\n"
+}
+
+function print_col1_serdes {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        local which=$1
+        local str=$2
+
+        printf " %12s | " ${str}
+        for lane in {0..3} ; do
+                state=$(cat ${LGRP_PATH}/serdes/lane/${lane}/${which})
+                printf "%15s " $state
+        done
+        printf "\n"
+}
+
+function print_col_serdes {
+        if [ ! -e ${LGRP_PATH}/serdes/lane ] ; then
+                return
+        fi
+
+        local which=$1
+        local str=$2
+
+        printf "           | %12s | " ${str}
+        for lane in {0..3} ; do
+                state=$(cat ${LGRP_PATH}/serdes/lane/${lane}/${which})
+                printf " %14s " $state
+        done
+        printf "\n"
+}
+
+function print_fec {
+        if [ ! -e ${LINK_PATH}/fec ] ; then
+                return
+        fi
+
+        local up_check_wait=$(cat ${LINK_PATH}/fec/up_check/check_wait_ms)
+        local up_settle_wait=$(cat ${LINK_PATH}/fec/up_check/settle_wait_ms)
+        local up_check_ccw_limit=$(cat ${LINK_PATH}/fec/up_check/ccw_limit)
+        local up_check_ucw_limit=$(cat ${LINK_PATH}/fec/up_check/ucw_limit)
+        local mon_period=$(cat ${LINK_PATH}/fec/monitor_check/period_ms)
+        local mon_ccw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_down_limit)
+        local mon_ccw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_warn_limit)
+        local mon_ucw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_down_limit)
+        local mon_ucw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_warn_limit)
+
+        printf "fec        | up_settle: wait = ${up_settle_wait}ms\n"
+        printf "           | up_check:  wait = ${up_check_wait}ms\n"
+	printf "           |            ccw_limit = ${up_check_ccw_limit}ms, ucw_limit = ${up_check_ucw_limit}ms\n"
+        printf "           | monitor:   period = ${mon_period}ms\n"
+        printf "           |            ccw_warn_limit = ${mon_ccw_warn_limit}, ucw_warn_limit = ${mon_ucw_warn_limit}\n"
+        printf "           |            ccw_down_limit = ${mon_ccw_down_limit}, ucw_down_limit = ${mon_ucw_down_limit}\n"
+}
+
+function print_fec_bins {
+        if [ ! -e ${LINK_PATH}/fec/up ] ; then
+                return
+        fi
+        if [ ! -e ${LINK_PATH}/fec/current ] ; then
+                return
+        fi
+
+        local up_ccw=$(cat ${LINK_PATH}/fec/up/ccw)
+        local current_ccw=$(cat ${LINK_PATH}/fec/current/ccw)
+        local up_ucw=$(cat ${LINK_PATH}/fec/up/ucw)
+        local current_ucw=$(cat ${LINK_PATH}/fec/current/ucw)
+
+	if [ "${current_ccw}" == "no-link" ] || [ "${current_ucw}" == "no-link" ] ; then
+        	printf "           | ccw: no-link, ucw: no-link\n"
+	else
+        	printf "           | ccw: $((current_ccw-up_ccw)), ucw: $((current_ucw-up_ucw))\n"
+	fi
+
+        up_count=$(cat ${LINK_PATH}/fec/up/tail/bin00)
+        current_count=$(cat ${LINK_PATH}/fec/current/tail/bin00)
+	if [ "${current_count}" == "no-link" ] ; then
+        	printf "           | bins: [00] no-link\n"
+	else
+        	printf "           | bins: [00] $((current_count-up_count))\n"
+	fi
+        for bin in {1..9} ; do
+                up_count=$(cat ${LINK_PATH}/fec/up/tail/bin0${bin})
+                current_count=$(cat ${LINK_PATH}/fec/current/tail/bin0${bin})
+		if [ "${current_count}" == "no-link" ] ; then
+                	printf "           |       [0${bin}] no-link\n"
+		else
+                	printf "           |       [0${bin}] $((current_count-up_count))\n"
+		fi
+        done
+        for bin in {10..14} ; do
+                up_count=$(cat ${LINK_PATH}/fec/up/tail/bin${bin})
+                current_count=$(cat ${LINK_PATH}/fec/current/tail/bin${bin})
+		if [ "${current_count}" == "no-link" ] ; then
+                	printf "           |       [${bin}] no-link\n"
+		else
+                	printf "           |       [${bin}] $((current_count-up_count))\n"
+		fi
+        done
+
+        printf "           | fecls:                 fecl0           fecl1           fecl2           fecl3\n"
+        printf "           |            +----------------------------------------------------------------\n"
+        for lane in {0..3} ; do
+                printf "           | %10s | " "lane${lane}"
+                for fecl in {0..3} ; do
+                        up_fecl=$(cat ${LINK_PATH}/fec/up/lane/${lane}/fecl${fecl})
+                        current_fecl=$(cat ${LINK_PATH}/fec/current/lane/${lane}/fecl${fecl})
+			if [ "${current_count}" == "no-link" ] ; then
+                        	printf "%15s " "no-link"
+			else
+                        	printf "%15s " $((current_fecl-up_fecl))
+			fi
+                done
+                printf "\n"
+        done
+        printf "           |            +----------------------------------------------------------------\n"
+}
+function print_serdes_header {
+        print_serdes
+        printf "           | lanes:                   lane0           lane1           lane2           lane3\n"
+        printf "           |              +----------------------------------------------------------------\n"
+}
+
+function print_serdes_footer {
+        printf "           |              +----------------------------------------------------------------\n"
+}
+
+function print_lane_state {
+        if [ ! -e ${LGRP_PATH} ] ; then
+                return
+        fi
+
+        print_serdes_header
+        print_col_serdes_state
+        print_serdes_footer
+}
+
+function print_serdes_settings {
+        if [ ! -e ${LGRP_PATH} ] ; then
+                return
+        fi
+
+        print_serdes_header
+        print_col_serdes_state
+        print_col_serdes_swizzle
+        print_col_serdes_eye_high
+        print_col_serdes_eye_low
+        printf "  settings |"
+        print_col1_serdes "settings/pre1" "pre1"
+        print_col_serdes "settings/pre2" "pre2"
+        print_col_serdes "settings/pre3" "pre3"
+        print_col_serdes "settings/cursor" "cursor"
+        print_col_serdes "settings/post1" "post1"
+        print_col_serdes "settings/post2" "post2"
+        print_col_serdes "settings/width" "width"
+        print_col_serdes "settings/dfe" "dfe"
+        print_col_serdes "settings/encoding" "encoding"
+        print_col_serdes "settings/link_training" "link_train"
+        print_col_serdes "settings/media" "media"
+        print_col_serdes "settings/osr" "osr"
+        print_col_serdes "settings/scramble" "scramble"
+        print_col_serdes "settings/clocking" "clocking"
+        print_serdes_footer
+}
+
+## ==================== MAIN ====================
+
+case $option in
+        state )
+                if [ ${num_args} -ge 1 ] ; then
+                        print_ldev
+                fi
+                if [ ${num_args} -ge 2 ] ; then
+                        print_jack_state
+                fi
+                if [ ${num_args} -ge 3 ] ; then
+                        print_link_state
+                        print_mac_state
+                        print_llr_state
+                fi
+                if [ ${num_args} -ge 2 ] ; then
+                        print_lane_state
+                fi
+                exit
+                ;;
+        link )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_lgrp
+                        print_link
+                        print_link_counters
+		fi
+		;;
+        serdes )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_serdes_settings
+		fi
+		;;
+        cable )
+                if [ ${num_args} -ge 2 ] ; then
+                        print_ldev
+                        print_jack
+		fi
+		;;
+        counters )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_jack_state
+                        print_link_state
+                        print_link_counters
+                        print_mac_state
+                        print_mac_counters
+                        print_llr_state
+                        print_llr_counters
+                fi
+                exit
+                ;;
+        * )
+                if [ ${num_args} -ge 1 ] ; then
+                        print_ldev
+                fi
+                if [ ${num_args} -ge 2 ] ; then
+                        print_jack
+                        print_lgrp
+                fi
+                if [ ${num_args} -ge 3 ] ; then
+                        print_link
+                        print_link_counters
+                        print_mac
+                        print_mac_counters
+                        print_llr 
+                        print_llr_counters
+                        print_serdes_settings
+                        print_fec
+                        print_fec_bins
+                fi
+                exit
+                ;;
+esac

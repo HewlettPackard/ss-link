@@ -3,6 +3,8 @@
 #
 
 ARCH := arm64
+DISCRIMINATOR := aarch64-linux-gnu
+CROSS_COMPILE := aarch64-linux-gnu-
 
 WORKSPACE ?= /tmp
 
@@ -10,32 +12,32 @@ SL_MOD_DIR = sshot
 
 INSTALL_DIR := $(DESTDIR)
 STAGING_DIR := $(WORKSPACE)/staging_dir
-
-KNL_REL  := 5.10.35-ls64-slingshot
-KDIR     := /lib/modules/$(KNL_REL)/build
+KNL_REL     := 5.10.35-ls64-slingshot
+KDIR        := /lib/modules/$(KNL_REL)/build
 
 GIT_HASH := $(shell git rev-parse HEAD)
+KCPPFLAGS      += -DGIT_HASH=$(GIT_HASH)
+USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)
 
-CROSS_COMPILE  := aarch64-linux-gnu-
 KNL_BUILD_ARGS += V=1
 KNL_BUILD_ARGS += CROSS_COMPILE=$(CROSS_COMPILE)
 KNL_BUILD_ARGS += ARCH=$(ARCH)
-KNL_BUILD_ARGS += SL_TEST=y
-KNL_BUILD_ARGS += SL_BUILD_SWITCH=y
 
-PLATFORM_SWITCH = 1
-
-KCPPFLAGS += -DGIT_HASH=$(GIT_HASH)
-KCPPFLAGS += -DSL_TEST=1
-SL_BUILD_USR=1
-
-USR_BUILD_ARGS += -DGIT_HASH=$(GIT_HASH)
-DISCRIMINATOR  := aarch64-linux-gnu
-
+## build link module
 SL_NAME = sl
-SL_TEST_NAME = sl-test
+PLATFORM_SWITCH = 1
+KNL_BUILD_ARGS += SL_BUILD_SWITCH=y
 KNL_BUILD_ARGS += SL_NAME=$(SL_NAME)
+
+## build test module
+SL_TEST_NAME = sl-test
+SL_BUILD_TEST = 1
+KNL_BUILD_ARGS += SL_TEST=y
+KCPPFLAGS      += -DSL_TEST=1
 KNL_BUILD_ARGS += SL_TEST_NAME=$(SL_TEST_NAME)
+
+## build user bins
+SL_BUILD_USR = 1
 
 export SL_MOD_DIR
 export STAGING_DIR

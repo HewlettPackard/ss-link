@@ -24,10 +24,7 @@ staging_dir
 .vscode/
 *.bin
 
-usr/linktool/linktool
-usr/linktool/linktool.Td
-
-usr/sl_test/sl_test_lgrp_notifs_read
+usr/sl_test_lgrp_notifs_read/sl_test_lgrp_notifs_read
 usr/sl_test_file_write/sl_test_file_write
 
 # nvim lsp generated files

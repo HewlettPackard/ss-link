@@ -20,12 +20,12 @@ CLEAN="'make' --jobs=${parallel_jobs} ${SHS_MAKE_ARGS} clean"
 AUTOINSTALL='yes'
 
 # Post-build hook to copy our Module.symvers into the DKMS tree so that other modules can build against it
-POST_BUILD="dkms.post_build.sh ${SHS_DKMS_BUILDROOT}/knl/ ${SHS_DKMS_PACKAGEROOT}"
+POST_BUILD="dkms.post_build.sh ${SHS_DKMS_BUILDROOT}/drivers/net/ethernet/hpe/sl/ ${SHS_DKMS_PACKAGEROOT}"
 
 #
 # cxi-sl.ko
 #
-BUILT_MODULE_LOCATION[0]=knl
+BUILT_MODULE_LOCATION[0]=drivers/net/ethernet/hpe/sl
 DEST_MODULE_LOCATION[0]=/extra/
 BUILT_MODULE_NAME[0]=cxi-sl
 DEST_MODULE_NAME[0]=cxi-sl

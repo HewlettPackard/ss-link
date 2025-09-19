@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Copyright 2022 Hewlett Packard Enterprise Development LP
+# Copyright 2022,2025 Hewlett Packard Enterprise Development LP
 #
 # run automatic style checkers and formatters
 
 exec < /dev/tty
 
-DIR="./knl"
+DIR="./drivers/net/ethernet/hpe"
 
 GIT_DIFF_CMD="git diff --no-ext-diff --cached HEAD"
 GIT_DIFF_UNI_CMD="git diff --no-ext-diff -U0 --no-color --cached HEAD"

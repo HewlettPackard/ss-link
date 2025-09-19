@@ -3,9 +3,9 @@ The SlingShot 2 Link Driver
 
 Architecture:
 
-                      +--------+  +-----+    +---------+
-                      | swtest |  | SDK |    | ethtool |
-                      +--------+  +-----+    +---------+
+        +--------+    +--------+  +-----+    +---------+
+        | slstat |    | swtest |  | SDK |    | ethtool |
+        +--------+    +--------+  +-----+    +---------+
                           |          |            |
                           +----+-----+            |
                                |                  |
@@ -62,20 +62,37 @@ Link Media Functional Block:
 
 Internal Objects:
      ldev  - "Link Device":  Is a switch or a nic
-     lgrp  - "Link Group":   Is a group of links
+     lgrp  - "Link Group":   Is a group of links (depends on the furcation level)
      link  - "Link":         Is a high speed link
-     cable - "Cable":        Is a cable
+     cable - "Cable":        Is a cable that is plugged in to a jack
+     jack  - "Jack":         Is a jack that a cable plugs in to
 
 Build:
      cp ./common/configs/<config make file> ./config.mak
      make clean
      make
 
-Module:
-     ./knl/[cxi-]sl.ko
+Modules:
+     ./drivers/net/ethernet/hpe/sl/[cxi-]sl.ko
+     ./drivers/net/ethernet/hpe/sl_test/sl_test.ko
 
 Debug:
      debug level:   echo <level> > /proc/sys/kernel/printk
      enable file:   echo -n 'file <filename> +p' >> /proc/dynamic_debug/control
      enable func:   echo -n 'func <function> +p' >> /proc/dynamic_debug/control
      enable module: echo -n 'module [cxi_]sl +p' >> /proc/dynamic_debug/control
+
+Tools:
+     slstat ldev_num[:lgrp_num][:link_num] [option]
+       target:
+         ldev_num = link device number (0-1)
+         lgrp_num = link group number (0-63)
+         link_num = link number (0-3)
+       option: (omitted option will print all available info for target)
+         state    = print state for the target
+         link     = print all link info for the target
+         serdes   = print all serdes info for the target
+         cable    = print cable info for the target
+         counters = print counters for a link target (requires #:#:#)
+         use_test = use the "test_port" directory
+     

@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-#
 # Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
-#
-# Slingshot Link Driver
-#
 
 .PHONY: default setup all stage_install stage_uninstall clean install
 
@@ -20,9 +16,12 @@ default: all
 
 $(filter-out $(DIRECT_TARGETS),$(MAKECMDGOALS)) :
 	@echo "Running: $@"
-	$(MAKE) -C knl    $(MAKECMDGOALS)
+	$(MAKE) -C drivers/net/ethernet/hpe/sl $(MAKECMDGOALS)
+ifdef SL_BUILD_TEST
+	$(MAKE) -C drivers/net/ethernet/hpe/sl_test $(MAKECMDGOALS)
+endif
 ifdef SL_BUILD_USR
-	$(MAKE) -C usr    $(MAKECMDGOALS)
+	$(MAKE) -C usr $(MAKECMDGOALS)
 endif
 
 setup:
