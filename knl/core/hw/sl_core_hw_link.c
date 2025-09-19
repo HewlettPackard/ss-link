@@ -154,7 +154,7 @@ static bool sl_core_hw_link_media_check_is_high_temp(struct sl_core_link *core_l
 					"media check high temp detected (jack_num = %u)",
 					media_lgrp->media_jack->physical_num);
 				sl_core_data_link_last_up_fail_cause_map_set(core_link,
-									     SL_LINK_DOWN_CAUSE_HIGH_TEMP_MAP);
+									     SL_LINK_DOWN_CAUSE_HIGH_TEMP_LINK_UP_MAP);
 				rtn = sl_core_link_up_fail(core_link);
 				if (rtn)
 					sl_core_log_err_trace(core_link, LOG_NAME,
@@ -1450,7 +1450,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 			if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack)) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 					"fault intr work high cable temp detected");
-				sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_MAP);
+				sl_core_data_link_last_down_cause_map_set(core_link,
+									  SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
 				sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
 			}
 		}

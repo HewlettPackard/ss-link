@@ -165,7 +165,7 @@ static int sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_ja
 			if (!ctl_link)
 				continue;
 
-			rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_MAP);
+			rtn = sl_ctl_link_async_down(ctl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
 			if (rtn) {
 				sl_media_log_err_trace(media_jack, LOG_NAME,
 					"high temp link down async_down failed [%d]", rtn);
