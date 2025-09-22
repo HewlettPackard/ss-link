@@ -265,6 +265,7 @@ STATIC_CONFIG_OPT_ENTRY(extended_reach_force, EXTENDED_REACH_FORCE);
 STATIC_POLICY_OPT_ENTRY(lock,                  LOCK);
 STATIC_POLICY_OPT_ENTRY(keep_serdes_up,        KEEP_SERDES_UP);
 STATIC_POLICY_OPT_ENTRY(use_unsupported_cable, USE_UNSUPPORTED_CABLE);
+STATIC_POLICY_OPT_ENTRY(ignore_media_error,    IGNORE_MEDIA_ERROR);
 
 STATIC_HPE_MAP_ENTRY(linktrain, LINKTRAIN);
 STATIC_HPE_MAP_ENTRY(precode, PRECODING);
@@ -486,6 +487,14 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"link policy use_unsupported_cable debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("ignore_media_error", 0644, policy_dir,
+					 &policy_option_ignore_media_error);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+				 "link policy ignore_media_error debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

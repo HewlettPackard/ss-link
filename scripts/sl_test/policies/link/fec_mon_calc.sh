@@ -11,3 +11,4 @@ fec_mon_ucw_warn_limit=-1
 keep_serdes_up=0
 lock=0
 use_unsupported_cable=0
+ignore_media_error=0
