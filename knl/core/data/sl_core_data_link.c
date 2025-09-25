@@ -359,6 +359,8 @@ void sl_core_data_link_config_set(struct sl_core_link *core_link,
 
 	spin_lock(&core_link->data_lock);
 	core_link->config = *link_config;
+	if (!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
+		memset(core_link->core_lgrp->link_caps, 0, sizeof(core_link->core_lgrp->link_caps));
 	spin_unlock(&core_link->data_lock);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_CONFIGURED);

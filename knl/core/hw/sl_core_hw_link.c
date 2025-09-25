@@ -254,6 +254,9 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	sl_core_link_ucw_warn_limit_crossed_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
 		core_link->num, false);
 
+	/* clear link caps */
+	memset(core_link->core_lgrp->link_caps, 0, sizeof(core_link->core_lgrp->link_caps));
+
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
 		queue_work(core_link->core_lgrp->core_ldev->workqueue,
 			&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
