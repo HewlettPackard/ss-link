@@ -129,7 +129,9 @@ $(SL_NAME)-y += \
 	ctrl/sl_ctrl_link_fec_priv.o \
 	ctrl/sl_ctrl_link_counters.o \
 	ctrl/sl_ctrl_mac.o           \
-	ctrl/sl_ctrl_llr.o
+	ctrl/sl_ctrl_mac_counters.o  \
+	ctrl/sl_ctrl_llr.o           \
+	ctrl/sl_ctrl_llr_counters.o
 
 $(SL_NAME)-y += \
 	log/sl_log.o
@@ -157,9 +159,11 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_serdes_swizzle.o     \
 	sysfs/sl_sysfs_llr.o                \
 	sysfs/sl_sysfs_llr_config.o         \
+	sysfs/sl_sysfs_llr_counters.o       \
 	sysfs/sl_sysfs_llr_policy.o         \
 	sysfs/sl_sysfs_llr_loop_time.o      \
 	sysfs/sl_sysfs_mac.o                \
+	sysfs/sl_sysfs_mac_counters.o       \
 	sysfs/sl_sysfs_media.o              \
 	sysfs/sl_sysfs_link_counters.o
 

@@ -23,6 +23,8 @@ struct sl_ctrl_llr {
 
 	spinlock_t                  data_lock;
 
+	struct sl_ctrl_llr_counter *counters;
+
 	struct sl_llr_config        config;
 	struct sl_llr_policy        policy;
 	struct {
@@ -42,6 +44,7 @@ struct sl_ctrl_llr {
 	struct kobject              config_kobj;
 	struct kobject              policy_kobj;
 	struct kobject              loop_time_kobj;
+	struct kobject              counters_kobj;
 
 	struct kref                 ref_cnt;
 	struct completion           del_complete;

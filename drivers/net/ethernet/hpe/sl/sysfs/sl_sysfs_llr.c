@@ -163,6 +163,16 @@ int sl_sysfs_llr_create(struct sl_ctrl_llr *ctrl_llr)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_llr_counters_create(ctrl_llr);
+	if (rtn) {
+		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME, "sl_sysfs_llr_counters_create failed [%d]", rtn);
+		kobject_put(&ctrl_llr->kobj);
+		kobject_put(&ctrl_llr->config_kobj);
+		kobject_put(&ctrl_llr->policy_kobj);
+		kobject_put(&ctrl_llr->loop_time_kobj);
+		return rtn;
+	}
+
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
 		"llr create (llr_kobj = 0x%p)", &ctrl_llr->kobj);
 
@@ -176,6 +186,7 @@ void sl_sysfs_llr_delete(struct sl_ctrl_llr *ctrl_llr)
 	if (!ctrl_llr->parent_kobj)
 		return;
 
+	sl_sysfs_llr_counters_delete(ctrl_llr);
 	sl_sysfs_llr_loop_time_delete(ctrl_llr);
 	sl_sysfs_llr_policy_delete(ctrl_llr);
 	sl_sysfs_llr_config_delete(ctrl_llr);

@@ -108,6 +108,13 @@ int sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_mac_counters_create(ctrl_mac);
+	if (rtn) {
+		sl_log_err(ctrl_mac, LOG_BLOCK, LOG_NAME, "sl_sysfs_mac_counters_create failed [%d]", rtn);
+		kobject_put(&ctrl_mac->kobj);
+		return rtn;
+	}
+
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		"mac create (mac_kobj = 0x%p)", &ctrl_mac->kobj);
 
@@ -121,5 +128,6 @@ void sl_sysfs_mac_delete(struct sl_ctrl_mac *ctrl_mac)
 	if (!ctrl_mac->parent_kobj)
 		return;
 
+	sl_sysfs_mac_counters_delete(ctrl_mac);
 	kobject_put(&ctrl_mac->kobj);
 }

@@ -57,6 +57,9 @@ void sl_sysfs_link_counters_delete(struct sl_ctrl_link *ctrl_link);
 int  sl_sysfs_llr_create(struct sl_ctrl_llr *ctrl_llr);
 void sl_sysfs_llr_delete(struct sl_ctrl_llr *ctrl_llr);
 
+int  sl_sysfs_llr_counters_create(struct sl_ctrl_llr *ctrl_llr);
+void sl_sysfs_llr_counters_delete(struct sl_ctrl_llr *ctrl_llr);
+
 int  sl_sysfs_llr_config_create(struct sl_ctrl_llr *ctrl_llr);
 void sl_sysfs_llr_config_delete(struct sl_ctrl_llr *ctrl_llr);
 
@@ -68,5 +71,8 @@ void sl_sysfs_llr_loop_time_delete(struct sl_ctrl_llr *ctrl_llr);
 
 int  sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac);
 void sl_sysfs_mac_delete(struct sl_ctrl_mac *ctrl_mac);
+
+int  sl_sysfs_mac_counters_create(struct sl_ctrl_mac *ctrl_mac);
+void sl_sysfs_mac_counters_delete(struct sl_ctrl_mac *ctrl_mac);
 
 #endif /* _SL_SYSFS_H_ */

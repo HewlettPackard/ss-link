@@ -13,20 +13,22 @@ struct sl_ctrl_lgrp;
 #define SL_CTRL_MAC_MAGIC 0x646c6c79
 #define SL_CTRL_MAC_VER   1
 struct sl_ctrl_mac {
-	u32                  magic;
-	u32                  ver;
+	u32                         magic;
+	u32                         ver;
 
-	u8                   num;
+	u8                          num;
 
-	spinlock_t           data_lock;
+	spinlock_t                  data_lock; /* data lock for mac object  */
 
-	struct sl_ctrl_lgrp *ctrl_lgrp;
+	struct sl_ctrl_mac_counter *counters;
+	struct sl_ctrl_lgrp        *ctrl_lgrp;
 
-	struct kobject      *parent_kobj;
-	struct kobject       kobj;
+	struct kobject             *parent_kobj;
+	struct kobject              kobj;
+	struct kobject              counters_kobj;
 
-	struct kref          ref_cnt;
-	struct completion    del_complete;
+	struct kref                 ref_cnt;
+	struct completion           del_complete;
 };
 
 int		    sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_parent);

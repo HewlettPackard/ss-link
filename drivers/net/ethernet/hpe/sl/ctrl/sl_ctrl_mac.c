@@ -16,6 +16,7 @@
 #include "sl_ctrl_mac.h"
 #include "sl_core_mac.h"
 #include "sl_core_str.h"
+#include "sl_ctrl_mac_counters.h"
 
 #define SL_CTRL_MAC_DEL_WAIT_TIMEOUT_MS 2000
 
@@ -35,7 +36,7 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 		return -EBADRQC;
 	}
 
-	ctrl_mac = kzalloc(sizeof(struct sl_ctrl_mac), GFP_KERNEL);
+	ctrl_mac = kzalloc(sizeof(*ctrl_mac), GFP_KERNEL);
 	if (!ctrl_mac)
 		return -ENOMEM;
 
@@ -47,12 +48,17 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 	kref_init(&ctrl_mac->ref_cnt);
 	init_completion(&ctrl_mac->del_complete);
 
-	spin_lock_init(&(ctrl_mac->data_lock));
+	spin_lock_init(&ctrl_mac->data_lock);
+
+	rtn = sl_ctrl_mac_counters_init(ctrl_mac);
+	if (rtn) {
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "ctrl_mac_counters_init failed [%d]", rtn);
+		goto out;
+	}
 
 	rtn = sl_core_mac_new(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-			"core_mac_new failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "core_mac_new failed [%d]", rtn);
 		goto out;
 	}
 
@@ -61,8 +67,7 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 
 		rtn = sl_sysfs_mac_create(ctrl_mac);
 		if (rtn) {
-			sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-				"sysfs_mac_create failed [%d]", rtn);
+			sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "sysfs_mac_create failed [%d]", rtn);
 			goto out;
 		}
 	}
@@ -99,6 +104,8 @@ static void sl_ctrl_mac_release(struct kref *kref)
 
 	sl_core_mac_del(ldev_num, lgrp_num, mac_num);
 
+	sl_ctrl_mac_counters_del(ctrl_mac);
+
 	spin_lock(&ctrl_macs_lock);
 	ctrl_macs[ldev_num][lgrp_num][mac_num] = NULL;
 	spin_unlock(&ctrl_macs_lock);
@@ -117,26 +124,24 @@ int sl_ctrl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	unsigned long       timeleft;
 
 	sl_ctrl_log_dbg(NULL, LOG_NAME, "del (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
-		ldev_num, lgrp_num, mac_num);
+			ldev_num, lgrp_num, mac_num);
 
 	ctrl_mac = sl_ctrl_mac_get(ldev_num, lgrp_num, mac_num);
 	if (!ctrl_mac) {
-		sl_ctrl_log_err_trace(NULL, LOG_NAME,
-			"mac not found (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
-			ldev_num, lgrp_num, mac_num);
+		sl_ctrl_log_err_trace(NULL, LOG_NAME, "mac not found (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
+				      ldev_num, lgrp_num, mac_num);
 		return -EBADRQC;
 	}
 
 	/* Release occurs on the last caller. Block until complete. */
 	if (!sl_ctrl_mac_put(ctrl_mac)) {
 		timeleft = wait_for_completion_timeout(&ctrl_mac->del_complete,
-			msecs_to_jiffies(SL_CTRL_MAC_DEL_WAIT_TIMEOUT_MS));
+						       msecs_to_jiffies(SL_CTRL_MAC_DEL_WAIT_TIMEOUT_MS));
 
 		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "del completion_timeout (timeleft = %lums)", timeleft);
 
 		if (timeleft == 0) {
-			sl_ctrl_log_err(ctrl_mac, LOG_NAME,
-				"del completion_timeout (ctrl_mac = 0x%p)", ctrl_mac);
+			sl_ctrl_log_err(ctrl_mac, LOG_NAME, "del completion_timeout (ctrl_mac = 0x%p)", ctrl_mac);
 			return -ETIMEDOUT;
 		}
 	}
@@ -151,8 +156,8 @@ static bool sl_ctrl_mac_kref_get_unless_zero(struct sl_ctrl_mac *ctrl_mac)
 	incremented = (kref_get_unless_zero(&ctrl_mac->ref_cnt) != 0);
 
 	if (!incremented)
-		sl_ctrl_log_warn(ctrl_mac, LOG_NAME,
-			"kref_get_unless_zero ref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_warn(ctrl_mac, LOG_NAME, "kref_get_unless_zero ref unavailable (ctrl_mac = 0x%p)",
+				 ctrl_mac);
 
 	return incremented;
 }
@@ -182,19 +187,22 @@ int sl_ctrl_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "tx start - kref unavailable (ctrl_mac = 0x%p)",
-			ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "tx start - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx start");
 
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_START_CMD);
+
 	rtn = sl_core_mac_tx_start(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-			"tx start - core_mac_tx_start failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "tx start - core_mac_tx_start failed [%d]", rtn);
+		SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_START_FAIL);
 		goto out;
 	}
+
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_STARTED);
 
 	rtn = 0;
 
@@ -217,19 +225,22 @@ int sl_ctrl_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx stop - kref unavailable (ctrl_mac = 0x%p)",
-			ctrl_mac);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx stop");
 
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_STOP_CMD);
+
 	rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-				"tx stop - core_mac_tx_stop failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "tx stop - core_mac_tx_stop failed [%d]", rtn);
+		SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_STOP_FAIL);
 		goto out;
 	}
+
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_TX_STOPPED);
 
 	rtn = 0;
 
@@ -254,16 +265,14 @@ int sl_ctrl_mac_tx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"tx state get - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx state get - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		*state = SL_MAC_STATE_OFF;
 		return 0;
 	}
 
 	rtn = sl_core_mac_tx_state_get(ldev_num, lgrp_num, mac_num, &core_mac_state);
 	if (rtn) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"tx state get - core_mac_tx_state_get failed [%d]", rtn);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx state get - core_mac_tx_state_get failed [%d]", rtn);
 		*state = SL_MAC_STATE_OFF;
 		goto out;
 	}
@@ -278,7 +287,7 @@ int sl_ctrl_mac_tx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx state get (state = %u %s, core_state = %u)",
-		*state, sl_mac_state_str(*state), core_mac_state);
+			*state, sl_mac_state_str(*state), core_mac_state);
 
 out:
 	if (sl_ctrl_mac_put(ctrl_mac))
@@ -299,19 +308,22 @@ int sl_ctrl_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "rx start - kref unavailable (ctrl_mac = 0x%p)",
-			ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "rx start - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx start");
 
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_START_CMD);
+
 	rtn = sl_core_mac_rx_start(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-				"rx start - core_mac_rx_start failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "rx start - core_mac_rx_start failed [%d]", rtn);
+		SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_START_FAIL);
 		goto out;
 	}
+
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_STARTED);
 
 	rtn = 0;
 
@@ -335,19 +347,22 @@ int sl_ctrl_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"rx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx stop");
 
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_STOP_CMD);
+
 	rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-			"rx stop - core_mac_rx_stop failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "rx stop - core_mac_rx_stop failed [%d]", rtn);
+		SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_STOP_FAIL);
 		goto out;
 	}
+
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RX_STOPPED);
 
 	rtn = 0;
 
@@ -373,16 +388,14 @@ int sl_ctrl_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"rx state get - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx state get - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		*state = SL_MAC_STATE_OFF;
 		return 0;
 	}
 
 	rtn = sl_core_mac_rx_state_get(ldev_num, lgrp_num, mac_num, &core_mac_state);
 	if (rtn) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"rx state get - core_mac_rx_state_get failed [%d]", rtn);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx state get - core_mac_rx_state_get failed [%d]", rtn);
 		*state = SL_MAC_STATE_OFF;
 		goto out;
 	}
@@ -397,7 +410,7 @@ int sl_ctrl_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state)
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx state get (state = %u %s, core_state = %u)",
-		*state, sl_mac_state_str(*state), core_mac_state);
+			*state, sl_mac_state_str(*state), core_mac_state);
 
 out:
 
@@ -420,32 +433,35 @@ int sl_ctrl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME,
-			"reset - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "reset - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
 	sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "reset");
 
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RESET_CMD);
+
 	tx_rtn = sl_core_mac_tx_stop(ldev_num, lgrp_num, mac_num);
 	if (tx_rtn) {
 		/* Log error, but allow the function to continue to mac rx stop */
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-			"reset - core_mac_tx_stop failed [%d]", tx_rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "reset - core_mac_tx_stop failed [%d]", tx_rtn);
 	}
 
 	rx_rtn = sl_core_mac_rx_stop(ldev_num, lgrp_num, mac_num);
 	if (rx_rtn) {
 		/* Log error, but allow the function to continue execution */
-		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME,
-			"core_mac_rx_stop failed [%d]", rx_rtn);
+		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "core_mac_rx_stop failed [%d]", rx_rtn);
 	}
 
 	if (sl_ctrl_mac_put(ctrl_mac))
 		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "reset - mac removed (ctrl_mac = 0x%p)", ctrl_mac);
 
-	if (tx_rtn && rx_rtn)
+	if (tx_rtn && rx_rtn) {
+		SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RESET_FAIL);
 		return -EIO;
+	}
+
+	SL_CTRL_MAC_COUNTER_INC(ctrl_mac, MAC_RESET);
 
 	return 0;
 }
@@ -456,15 +472,14 @@ int sl_ctrl_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u64 *info_map
 
 	ctrl_mac = sl_ctrl_mac_get(ldev_num, lgrp_num, mac_num);
 	if (!ctrl_mac) {
-		sl_ctrl_log_err(NULL, LOG_NAME,
-			"info map get NULL mac (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
-			ldev_num, lgrp_num, mac_num);
+		sl_ctrl_log_err(NULL, LOG_NAME, "info map get NULL mac (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
+				ldev_num, lgrp_num, mac_num);
 		return -EBADRQC;
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_err(ctrl_mac, LOG_NAME,
-			"info map get kref_get_unless_zero failed (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "info map get kref_get_unless_zero failed (ctrl_mac = 0x%p)",
+				ctrl_mac);
 		return -EBADRQC;
 	}
 
