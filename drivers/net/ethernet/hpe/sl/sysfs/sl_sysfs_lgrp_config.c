@@ -130,13 +130,27 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
 }
 
-// FIXME: if/when options get added, they go here
+static ssize_t link_type_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_lgrp   *ctrl_lgrp;
+	struct sl_lgrp_config  lgrp_config;
+
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
+
+	sl_ctrl_lgrp_config_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num, &lgrp_config);
+
+	if (lgrp_config.options & SL_LGRP_CONFIG_OPT_FABRIC)
+		return scnprintf(buf, PAGE_SIZE, "fabric\n");
+
+	return scnprintf(buf, PAGE_SIZE, "edge\n");
+}
 
 static struct kobj_attribute lgrp_mfs       = __ATTR_RO(mfs);
 static struct kobj_attribute lgrp_furcation = __ATTR_RO(furcation);
 static struct kobj_attribute lgrp_fec_mode  = __ATTR_RO(fec_mode);
 static struct kobj_attribute lgrp_tech_map  = __ATTR_RO(tech_map);
 static struct kobj_attribute lgrp_fec_map   = __ATTR_RO(fec_map);
+static struct kobj_attribute lgrp_link_type = __ATTR_RO(link_type);
 
 static ssize_t err_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -274,6 +288,7 @@ static struct attribute *lgrp_config_attrs[] = {
 	&lgrp_fec_mode.attr,
 	&lgrp_tech_map.attr,
 	&lgrp_fec_map.attr,
+	&lgrp_link_type.attr,
 	&lgrp_err_trace_enable.attr,
 	&lgrp_warn_trace_enable.attr,
 	&lgrp_fabric_link.attr,

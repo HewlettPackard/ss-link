@@ -60,7 +60,7 @@ static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
 	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no_group\n");
+		return scnprintf(buf, PAGE_SIZE, "no-group\n");
 
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 

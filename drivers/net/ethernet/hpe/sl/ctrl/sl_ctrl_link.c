@@ -890,7 +890,7 @@ out:
 }
 
 void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			       s64 *attempt_time, s64 *total_time)
+				s64 *attempt_time, s64 *total_time, s64 *up_time)
 {
 	struct sl_ctrl_link *ctrl_link;
 
@@ -919,6 +919,11 @@ void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		*total_time = ktime_to_ms(ctrl_link->up_clock.elapsed);
 	else
 		*total_time = ktime_to_ms(ktime_sub(ktime_get(), ctrl_link->up_clock.start));
+
+	if (!ktime_compare(ctrl_link->up_clock.up, ktime_set(0, 0)))
+		*up_time = 0;
+	else
+		*up_time = ktime_to_ms(ktime_sub(ktime_get(), ctrl_link->up_clock.up));
 
 	spin_unlock(&ctrl_link->up_clock.lock);
 

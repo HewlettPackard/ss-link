@@ -74,6 +74,7 @@ struct sl_ctrl_lgrp *sl_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num);
 int sl_ctrl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id);
 
 int sl_ctrl_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp_config);
+int sl_ctrl_lgrp_config_get(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp_config);
 int sl_ctrl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp_policy);
 
 #endif /* _SL_CTRL_LGRP_H_ */

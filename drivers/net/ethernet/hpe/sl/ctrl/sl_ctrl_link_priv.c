@@ -151,6 +151,7 @@ static void sl_ctrl_link_up_clock_stop(struct sl_ctrl_link *ctrl_link)
 	spin_lock(&ctrl_link->up_clock.lock);
 	ctrl_link->up_clock.elapsed = ktime_sub(ktime_get(), ctrl_link->up_clock.start);
 	ctrl_link->up_clock.start   = ktime_set(0, 0);
+	ctrl_link->up_clock.up      = ktime_get();
 	spin_unlock(&ctrl_link->up_clock.lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
@@ -167,6 +168,7 @@ void sl_ctrl_link_up_clock_reset(struct sl_ctrl_link *ctrl_link)
 	ctrl_link->up_clock.attempt_count   = 0;
 	ctrl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
 	ctrl_link->up_clock.attempt_start   = ktime_set(0, 0);
+	ctrl_link->up_clock.up              = ktime_set(0, 0);
 	spin_unlock(&ctrl_link->up_clock.lock);
 }
 
@@ -225,8 +227,9 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 	int                          max_up_tries;
 	u32                          up_count;
 	int                          rtn;
-	s64                          up_time;
+	s64                          attempt_time;
 	s64                          total_time;
+	s64                          up_time;
 	union sl_lgrp_notif_info     info;
 	struct sl_core_link_up_info  core_link_up_info;
 
@@ -250,13 +253,13 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 		sl_ctrl_link_up_clock_stop(ctrl_link);
 
 		sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-			ctrl_link->num, &up_time, &total_time);
+			ctrl_link->num, &attempt_time, &total_time, &up_time);
 		sl_ctrl_link_up_count_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 			ctrl_link->num, &up_count);
 
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"up callback (count = %d, up_time = %lldms, total_time = %lldms)",
-			up_count, up_time, total_time);
+			"up callback (count = %d, attempt_time = %lldms, total_time = %lldms)",
+			up_count, attempt_time, total_time);
 
 		sl_ctrl_link_fec_mon_start(ctrl_link);
 

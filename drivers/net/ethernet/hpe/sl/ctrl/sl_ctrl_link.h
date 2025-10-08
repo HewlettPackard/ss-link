@@ -60,6 +60,7 @@ struct sl_ctrl_link {
 		u32                  attempt_count;
 		ktime_t              attempt_start;
 		ktime_t              attempt_elapsed;
+		ktime_t              up;
 		spinlock_t           lock;
 	} up_clock;
 
@@ -116,12 +117,12 @@ bool                 sl_ctrl_link_kref_get_unless_zero(struct sl_ctrl_link *ctrl
 struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			   struct sl_link_config *link_config);
+			    struct sl_link_config *link_config);
 int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			   struct sl_link_policy *link_policy);
+			    struct sl_link_policy *link_policy);
 
 int sl_ctrl_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			       struct sl_link_caps *caps, u32 timeout_ms, u32 flags);
+				struct sl_link_caps *caps, u32 timeout_ms, u32 flags);
 int sl_ctrl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num);
@@ -129,7 +130,7 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			       s64 *up_time, s64 *total_time);
+				s64 *attempt_time, s64 *total_time, s64 *up_time);
 void sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
 
 int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);

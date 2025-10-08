@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=2
+MINOR=3
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -140,10 +140,19 @@ function print_link_state {
 
         local state=$(cat ${LINK_PATH}/state)
         local speed=$(cat ${LINK_PATH}/speed)
+        local up_time=$(cat ${LINK_PATH}/up_time_ms)
         local time_to_link_up=$(cat ${LINK_PATH}/time_to_link_up_ms)
+        local total_time_to_link_up=$(cat ${LINK_PATH}/total_time_to_link_up_ms)
         local info_map=$(cat ${LINK_PATH}/info_map)
 
-        printf "link%d      | state: ${state}, speed: ${speed}, time_to_link_up: ${time_to_link_up}ms\n" ${LINK}
+	local D=$((up_time/1000/60/60/24))
+	local H=$((up_time/1000/60/60%24))
+	local M=$((up_time/1000/60%60))
+	local S=$((up_time/1000%60))
+	local MS=$((up_time%1000))
+
+        printf "link%d      | state: ${state}, speed: ${speed}, up_time: ${D}d ${H}h ${M}m ${S}s ${MS}ms\n" ${LINK}
+        printf "           | time_to_link_up: ${time_to_link_up}ms, total_time_to_link_up: ${total_time_to_link_up}ms\n"
         printf "           | info_map: ${info_map}\n"
 }
 
@@ -325,10 +334,12 @@ function print_lgrp {
         local furcation=$(cat ${LGRP_PATH}/config/furcation)
         local tech_map=$(cat ${LGRP_PATH}/config/tech_map)
         local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
+        local link_type=$(cat ${LGRP_PATH}/config/link_type)
 
         printf "lgrp%02d     | furcation  : ${furcation}\n" ${LGRP}
         printf "           | tech_config: ${tech_map}\n"
         printf "           | fec_config : ${fec_map}\n"
+        printf "           | link_type  : ${link_type}\n"
 }
 
 function print_link {

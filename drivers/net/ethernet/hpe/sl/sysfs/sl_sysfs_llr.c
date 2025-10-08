@@ -87,7 +87,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (rtn) {
 		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"info map show sl_ctrl_llr_info_map_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no_llr\n");
+		return scnprintf(buf, PAGE_SIZE, "no-llr\n");
 	}
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));

@@ -274,6 +274,7 @@ EXPORT_SYMBOL(sl_link_reset);
 int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *total_time)
 {
 	int rtn;
+	s64 up;
 
 	rtn = sl_link_check(link);
 	if (rtn) {
@@ -281,7 +282,7 @@ int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *t
 		return rtn;
 	}
 
-	sl_ctrl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time);
+	sl_ctrl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time, &up);
 	sl_ctrl_link_up_count_get(link->ldev_num, link->lgrp_num, link->num, up_count);
 
 	return 0;

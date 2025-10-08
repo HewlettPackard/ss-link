@@ -250,11 +250,15 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 	struct sl_ctrl_link *ctrl_link;
 	s64                  attempt_time_ms;
 	s64                  total_time_ms;
+	s64                  up_time_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
+	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-		ctrl_link->num, &attempt_time_ms, &total_time_ms);
+		ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"time to link up show (attempt_time = %lldms, total_time = %lldms)",
@@ -268,17 +272,41 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 	struct sl_ctrl_link *ctrl_link;
 	s64                  attempt_time_ms;
 	s64                  total_time_ms;
+	s64                  up_time_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
+	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-		ctrl_link->num, &attempt_time_ms, &total_time_ms);
+		ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"total time to link up show (attempt_time = %lldms, total_time = %lldms)",
 		attempt_time_ms, total_time_ms);
 
 	return scnprintf(buf, PAGE_SIZE, "%lld\n", total_time_ms);
+}
+
+static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	s64                  attempt_time_ms;
+	s64                  total_time_ms;
+	s64                  up_time_ms;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
+
+	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+
+	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+				   ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "up time show (up_time = %lldms)", up_time_ms);
+
+	return scnprintf(buf, PAGE_SIZE, "%lld\n", up_time_ms);
 }
 
 static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -351,7 +379,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"info map show sl_ctrl_link_info_map_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no_link\n");
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 	}
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
@@ -373,6 +401,7 @@ static struct kobj_attribute link_ccw_warn_limit_last_crossed_time = __ATTR_RO(c
 static struct kobj_attribute link_ucw_warn_limit_crossed           = __ATTR_RO(ucw_warn_limit_crossed);
 static struct kobj_attribute link_ucw_warn_limit_last_crossed_time = __ATTR_RO(ucw_warn_limit_last_crossed_time);
 static struct kobj_attribute link_up_count                         = __ATTR_RO(up_count);
+static struct kobj_attribute link_up_time_ms                       = __ATTR_RO(up_time_ms);
 static struct kobj_attribute link_time_to_link_up_ms               = __ATTR_RO(time_to_link_up_ms);
 static struct kobj_attribute link_total_time_to_link_up_ms         = __ATTR_RO(total_time_to_link_up_ms);
 static struct kobj_attribute link_lp_caps_state                    = __ATTR_RO(lp_caps_state);
@@ -392,6 +421,7 @@ static struct attribute *link_attrs[] = {
 	&link_ucw_warn_limit_crossed.attr,
 	&link_ucw_warn_limit_last_crossed_time.attr,
 	&link_up_count.attr,
+	&link_up_time_ms.attr,
 	&link_time_to_link_up_ms.attr,
 	&link_total_time_to_link_up_ms.attr,
 	&link_lp_caps_state.attr,
