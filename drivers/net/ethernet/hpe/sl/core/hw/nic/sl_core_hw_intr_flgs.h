@@ -45,6 +45,13 @@ SL_CORE_HW_INTR_FLGS_LINK_FAULT(0);
 	}
 SL_CORE_HW_INTR_FLGS_AN_PAGE_RECV(0);
 
+#define SL_CORE_HW_INTR_FLGS_LANE_DEGRADE(_link_num)                                        \
+	static union ss2_port_pml_err_flg sl_core_hw_intr_flgs_lane_degrade_##_link_num = { \
+		.pcs_tx_degrade = 1,                                                        \
+		.pcs_rx_degrade = 1,                                                        \
+	}
+SL_CORE_HW_INTR_FLGS_LANE_DEGRADE(0);
+
 #define SL_CORE_HW_INTR_FLGS_ITEM(_num, _which)       \
 	[_num] = {                                    \
 		sl_core_hw_intr_flgs_##_which##_0.qw, \
@@ -57,6 +64,7 @@ static u64 *sl_core_hw_intr_flgs[SL_CORE_HW_INTR_COUNT][SL_ASIC_MAX_LINKS] = {
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_LLR_STARVED,        link_llr_starved),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LINK_FAULT,              link_fault),
 	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_AN_PAGE_RECV,            an_page_recv),
+	SL_CORE_HW_INTR_FLGS_ITEM(SL_CORE_HW_INTR_LANE_DEGRADE,            lane_degrade),
 };
 
 #endif /* _SL_CORE_HW_INTR_FLGS_H_ */
