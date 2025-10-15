@@ -14,27 +14,12 @@
 
 #define LOG_NAME SL_CTRL_LGRP_NOTIF_LOG_NAME
 
-#define SL_CTRL_LGRP_NOTIF_LIST_STATE_IDLE    0
-#define SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING 1
-
-static int sl_ctrl_lgrp_notif_list_state_get(struct sl_ctrl_lgrp *ctrl_lgrp)
-{
-	int notif_list_state;
-
-	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
-	notif_list_state = ctrl_lgrp->ctrl_notif.list_state;
-	spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
-
-	return notif_list_state;
-}
-
 int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t callback,
 				   u32 types, void *tag)
 {
 	int                   rtn;
 	struct sl_ctrl_lgrp   *ctrl_lgrp;
 	u8                    reg_idx;
-	u8                    counter;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
@@ -47,28 +32,9 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 		return -EBADRQC;
 	}
 
-	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
-		"notif callback reg (types = 0x%X, tag = 0x%p)",
-		types, tag);
-
-	counter = 0;
-	while (sl_ctrl_lgrp_notif_list_state_get(ctrl_lgrp) == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
-		msleep(20);
-		counter++;
-		if (counter >= 10) {
-			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "registration timed out");
-			rtn = -ETIMEDOUT;
-			goto out;
-		}
-	}
+	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "notif callback reg (types = 0x%X, tag = 0x%p)", types, tag);
 
 	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
-	if (ctrl_lgrp->ctrl_notif.list_state == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
-		spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif list is currently being used");
-		rtn = -EBUSY;
-		goto out;
-	}
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(ctrl_lgrp->ctrl_notif.reg_entry); ++reg_idx) {
 		if (ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types == 0) {
 			ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback = callback;
@@ -102,10 +68,8 @@ out:
 int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t callback,
 				     u32 types)
 {
-	int                 rtn;
 	struct sl_ctrl_lgrp *ctrl_lgrp;
 	u8                  reg_idx;
-	u8                  counter;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
@@ -118,27 +82,10 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 		return -EBADRQC;
 	}
 
-	counter = 0;
-	while (sl_ctrl_lgrp_notif_list_state_get(ctrl_lgrp) == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
-		msleep(20);
-		counter++;
-		if (counter >= 10) {
-			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "unregistration timed out");
-			rtn = -ETIMEDOUT;
-			goto out;
-		}
-	}
-
 	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
-	if (ctrl_lgrp->ctrl_notif.list_state == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
-		spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif list is currently being used");
-		rtn = -EBUSY;
-		goto out;
-	}
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(ctrl_lgrp->ctrl_notif.reg_entry); ++reg_idx) {
 		if ((ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types == types) &&
-				(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback == callback)) {
+			(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback == callback)) {
 			ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback = NULL;
 			ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].tag = NULL;
 			ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types = 0;
@@ -149,14 +96,11 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "notif callback unreg (types = 0x%X)", types);
 
-	rtn = 0;
-
-out:
 	if (sl_ctrl_lgrp_put(ctrl_lgrp))
 		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
 			"notif callback unreg - lgrp removed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
 
-	return rtn;
+	return 0;
 }
 
 int sl_ctrl_lgrp_notif_enqueue(struct sl_ctrl_lgrp *ctrl_lgrp, u8 link_num,
@@ -191,7 +135,7 @@ int sl_ctrl_lgrp_notif_enqueue(struct sl_ctrl_lgrp *ctrl_lgrp, u8 link_num,
 	notif_msg.info_map = info_map;
 
 	rtn = kfifo_in_spinlocked(&ctrl_lgrp->ctrl_notif.fifo, &notif_msg, sizeof(notif_msg),
-			&ctrl_lgrp->ctrl_notif.lock);
+				  &ctrl_lgrp->ctrl_notif.lock);
 	if (rtn != sizeof(notif_msg)) {
 		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "write to kfifo failed");
 		return -EFAULT;
@@ -205,41 +149,35 @@ int sl_ctrl_lgrp_notif_enqueue(struct sl_ctrl_lgrp *ctrl_lgrp, u8 link_num,
 
 void sl_ctrl_lgrp_notif_work(struct work_struct *notif_work)
 {
-	struct sl_ctrl_lgrp       *ctrl_lgrp;
-	struct sl_lgrp_notif_msg  notif_msg;
-	u8                        reg_idx;
-	int                       rtn;
-	bool                      is_empty;
+	struct sl_ctrl_lgrp                *ctrl_lgrp;
+	struct sl_lgrp_notif_msg            notif_msg;
+	u8                                  reg_idx;
+	int                                 rtn;
+	bool                                is_empty;
+	struct sl_ctrl_lgrp_notif_reg_entry reg_entry_snapshot[SL_CTRL_LGRP_NOTIF_COUNT];
 
 	ctrl_lgrp = container_of(notif_work, struct sl_ctrl_lgrp, notif_work);
 
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "notif work");
 
-	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
-	ctrl_lgrp->ctrl_notif.list_state = SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING;
-	spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
-
 	do {
-		// FIXME: add cancel here
-		rtn = kfifo_out_spinlocked(&ctrl_lgrp->ctrl_notif.fifo,
-					   &notif_msg, sizeof(notif_msg),
+		rtn = kfifo_out_spinlocked(&ctrl_lgrp->ctrl_notif.fifo, &notif_msg, sizeof(notif_msg),
 					   &ctrl_lgrp->ctrl_notif.lock);
 		if (rtn != sizeof(notif_msg)) {
 			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "read from kfifo failed");
-			goto out;
+			return;
 		}
+
+		spin_lock(&ctrl_lgrp->ctrl_notif.lock);
+		memcpy(reg_entry_snapshot, ctrl_lgrp->ctrl_notif.reg_entry, sizeof(reg_entry_snapshot));
+		spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
+
 		for (reg_idx = 0; reg_idx < SL_CTRL_LGRP_NOTIF_COUNT; ++reg_idx) {
-			if (notif_msg.type & ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types)
-				(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback)
-				(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].tag, &notif_msg);
+			if (notif_msg.type & reg_entry_snapshot[reg_idx].types)
+				(reg_entry_snapshot[reg_idx].callback) (reg_entry_snapshot[reg_idx].tag, &notif_msg);
 		}
 		spin_lock(&ctrl_lgrp->ctrl_notif.lock);
 		is_empty = kfifo_is_empty(&ctrl_lgrp->ctrl_notif.fifo);
 		spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
 	} while (!is_empty);
-
-out:
-	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
-	ctrl_lgrp->ctrl_notif.list_state = SL_CTRL_LGRP_NOTIF_LIST_STATE_IDLE;
-	spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
 }

@@ -12,16 +12,15 @@
 struct sl_ctrl_lgrp;
 
 struct sl_ctrl_lgrp_notif_reg_entry {
-	sl_lgrp_notif_t           callback;
-	void                     *tag;
-	u32                       types;
+	sl_lgrp_notif_t  callback;
+	void            *tag;
+	u32              types;
 };
 
-#define SL_CTRL_LGRP_NOTIF_FIFO_SIZE (8 * sizeof(struct sl_ctrl_lgrp_notif_reg_entry))
+#define SL_CTRL_LGRP_NOTIF_FIFO_SIZE (8 * sizeof(struct sl_lgrp_notif_msg))
 #define SL_CTRL_LGRP_NOTIF_COUNT     16
 
 struct sl_ctrl_lgrp_notif {
-	u8                                  list_state;
 	struct sl_ctrl_lgrp_notif_reg_entry reg_entry[SL_CTRL_LGRP_NOTIF_COUNT];
 	struct kfifo                        fifo;
 	spinlock_t                          lock;
