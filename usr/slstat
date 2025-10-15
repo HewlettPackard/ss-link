@@ -253,7 +253,7 @@ function print_jack {
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
-	local fw_ver=$(cat ${LGRP_PATH}/media/firmware_version)
+	local fw_ver=$(cat ${LGRP_PATH}/media/firmware_version_hex)
 	local host_iface_200=$(cat ${LGRP_PATH}/media/active_cable_200g_host_iface)
 	local lane_cnt_200=$(cat ${LGRP_PATH}/media/active_cable_200g_lane_cnt)
 	local appsel_no_200=$(cat ${LGRP_PATH}/media/active_cable_200g_appsel_no)
@@ -262,7 +262,7 @@ function print_jack {
 	local appsel_no_400=$(cat ${LGRP_PATH}/media/active_cable_400g_appsel_no)
 	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
 	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
-	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version)
+	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version_hex)
 	local shape=$(cat ${LGRP_PATH}/media/shape)
 	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
 
@@ -280,7 +280,7 @@ function print_jack {
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
         printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
-		printf "           | active_cable: fw_version: ${fw_ver}, (target = ${target_fw_ver})\n"
+		printf "           | active_cable: fw_ver_hex: ${fw_ver}, (target_fw_ver_hex = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
 		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
 	fi

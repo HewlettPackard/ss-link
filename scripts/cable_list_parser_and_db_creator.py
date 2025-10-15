@@ -159,6 +159,7 @@ def cable_info_write(f, df, part_nums, sheet_name):
 
                 cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
                 cell_value = str(cell_obj.value).strip() #remove whitespace
+                ##print("cable_type = ", cell_value)
                 if cell_value == "DAC" or cell_value == "PEC":
                     f.write("\t\t.serdes_settings.pre1     = " + "0" + ",\n")
                     f.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
@@ -188,6 +189,42 @@ def cable_info_write(f, df, part_nums, sheet_name):
                     f.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
                     f.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
 
+                # major ver
+                cell_obj = df.cell(row = curr_row+1, column = 17)
+                cell_value = str(cell_obj.value).strip()
+                ##print("straight_major = ", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.major             = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.major             = " + str(int(cell_value, 16)) + ",\n")
+
+                # major ver
+                cell_obj = df.cell(row = curr_row+1, column = 18)
+                cell_value = str(cell_obj.value).strip()
+                ##print("straight_minor =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.minor             = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.minor             = " + str(int(cell_value, 16)) + ",\n")
+
+                # split major ver
+                cell_obj = df.cell(row = curr_row+1, column = 19)
+                cell_value = str(cell_obj.value).strip()
+                ##print("split_major =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.split_major       = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.split_major       = " + str(int(cell_value, 16)) + ",\n")
+
+                # split minor ver
+                cell_obj = df.cell(row = curr_row+1, column = 20)
+                cell_value = str(cell_obj.value).strip()
+                ##print("split_minor =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.split_minor       = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.split_minor       = " + str(int(cell_value, 16)) + ",\n")
+
                 f.write("\t},\n")
 
                 sheet = wb[sheet_name]
@@ -198,12 +235,14 @@ def cable_info_write(f, df, part_nums, sheet_name):
 
 wb = load_workbook(infile)
 
+print("Convert:", source1)
 df1 = wb[source1]
 HP_PN = []
 part_nums_get(df1, rows_count(df1), HP_PN)
 HP_PN.sort()
 print("Total number of valid cables =", str(len(HP_PN)))
 
+print("Convert:", source2)
 df2 = wb[source2]
 OSFP_HP_PN = []
 part_nums_get(df2, rows_count(df2), OSFP_HP_PN)

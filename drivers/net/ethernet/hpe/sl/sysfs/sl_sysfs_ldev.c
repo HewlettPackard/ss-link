@@ -211,7 +211,7 @@ static void sl_sysfs_cable_db_delete(struct sl_ctrl_ldev *ctrl_ldev, int db_idx)
 
 static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 {
-	char hpe_pn[12];
+	char hpe_pn[SL_MEDIA_HPE_PN_SIZE];
 	int  i;
 	int  type_kobj_num;
 	int  rtn;
@@ -239,9 +239,14 @@ static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 		ctrl_ldev->cable_hpe_pns_kobj[i].cable_idx = i;
 		snprintf(hpe_pn, sizeof(hpe_pn), "%u", cable_db[i].hpe_pn);
 		rtn = kobject_init_and_add(&ctrl_ldev->cable_hpe_pns_kobj[i].kobj, &cable_hpe_pns_info,
-				&ctrl_ldev->cable_vendors_kobj[type_kobj_num][cable_db[i].vendor - 1], hpe_pn);
+					   &ctrl_ldev->cable_vendors_kobj[type_kobj_num][cable_db[i].vendor - 1],
+					   hpe_pn);
 		if (rtn) {
-			sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME, "hpe_pn create failed [%d]", rtn);
+			sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
+				   "hpe_pn create failed (idx = %d, type = 0x%X %s, vendor = %u %s, len = %ucm, hpe_pn = %u) [%d]",
+				   i, cable_db[i].type, sl_media_type_str(cable_db[i].type),
+				   cable_db[i].vendor, sl_media_vendor_str(cable_db[i].vendor),
+				   cable_db[i].length_cm, cable_db[i].hpe_pn, rtn);
 			sl_sysfs_cable_db_delete(ctrl_ldev, i);
 			sl_sysfs_cable_vendors_delete(ctrl_ldev, SL_CABLE_TYPES_NUM - 1, SL_CABLE_VENDORS_NUM - 1);
 			sl_sysfs_cable_types_delete(ctrl_ldev, SL_CABLE_TYPES_NUM - 1);

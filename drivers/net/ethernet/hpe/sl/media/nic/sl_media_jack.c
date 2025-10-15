@@ -136,7 +136,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		if ((media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
 			media_attr.type == SL_MEDIA_TYPE_POC) && !media_jack->is_supported_ss200_cable) {
-			if (!sl_media_is_fw_version_valid(media_jack, &media_attr)) {
+			if (!sl_media_eeprom_is_fw_version_valid(media_jack, &media_attr)) {
 				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
