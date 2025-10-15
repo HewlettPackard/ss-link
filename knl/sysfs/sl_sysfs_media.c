@@ -405,7 +405,7 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%s\n", date_code_str);
 }
 
-static ssize_t firmware_version_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t firmware_version_hex_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
@@ -423,17 +423,17 @@ static ssize_t firmware_version_show(struct kobject *kobj, struct kobj_attribute
 	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"firmware version show (media_lgrp = 0x%p, firmware_version = 0x%x%x)",
+		"firmware version hex show (media_lgrp = 0x%p, firmware_version_hex = %02X.%02X)",
 		media_lgrp, fw_ver[0], fw_ver[1]);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x%x\n", fw_ver[0], fw_ver[1]);
+	return scnprintf(buf, PAGE_SIZE, "%02X.%02X\n", fw_ver[0], fw_ver[1]);
 }
 
-static ssize_t target_firmware_version_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctl_lgrp   *ctl_lgrp;
-	u8                    target_fw_ver_str[5];
+	u8                    target_fw_ver_str[10];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctl_lgrp = sl_ctl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -447,7 +447,7 @@ static ssize_t target_firmware_version_show(struct kobject *kobj, struct kobj_at
 	sl_media_eeprom_target_fw_ver_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
 
 	sl_log_dbg(ctl_lgrp, LOG_BLOCK, LOG_NAME,
-		"target firmware version show (media_lgrp = 0x%p, target_firmware_version = %s)",
+		"target firmware version hex show (media_lgrp = 0x%p, target_firmware_version_hex = %s)",
 		media_lgrp, target_fw_ver_str);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", target_fw_ver_str);
@@ -693,8 +693,8 @@ static struct kobj_attribute media_jack_type                    = __ATTR_RO(jack
 static struct kobj_attribute media_furcation                    = __ATTR_RO(furcation);
 static struct kobj_attribute media_supported                    = __ATTR_RO(supported);
 static struct kobj_attribute media_date_code                    = __ATTR_RO(date_code);
-static struct kobj_attribute media_firmware_version             = __ATTR_RO(firmware_version);
-static struct kobj_attribute media_target_firmware_version      = __ATTR_RO(target_firmware_version);
+static struct kobj_attribute media_firmware_version_hex         = __ATTR_RO(firmware_version_hex);
+static struct kobj_attribute media_target_firmware_version_hex  = __ATTR_RO(target_firmware_version_hex);
 static struct kobj_attribute media_cable_shift_state            = __ATTR_RO(cable_shift_state);
 static struct kobj_attribute media_active_cable_200g_host_iface = __ATTR_RO(active_cable_200g_host_iface);
 static struct kobj_attribute media_active_cable_200g_lane_cnt   = __ATTR_RO(active_cable_200g_lane_cnt);
@@ -724,8 +724,8 @@ static struct attribute *media_attrs[] = {
 	&media_furcation.attr,
 	&media_supported.attr,
 	&media_date_code.attr,
-	&media_firmware_version.attr,
-	&media_target_firmware_version.attr,
+	&media_firmware_version_hex.attr,
+	&media_target_firmware_version_hex.attr,
 	&media_cable_shift_state.attr,
 	&media_active_cable_200g_host_iface.attr,
 	&media_active_cable_200g_lane_cnt.attr,

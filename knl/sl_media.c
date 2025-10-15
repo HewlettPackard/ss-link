@@ -140,11 +140,11 @@ EXPORT_SYMBOL(sl_media_shape_str);
 const char *sl_media_cable_end_str(u8 cable_end)
 {
 	switch (cable_end) {
-	case 0x41:
+	case SL_MEDIA_CABLE_END_DD:
 		return "qsfp_dd";
-	case 0x42:
+	case SL_MEDIA_CABLE_END_END1:
 		return "qsfp_end1";
-	case 0x43:
+	case SL_MEDIA_CABLE_END_END2:
 		return "qsfp_end2";
 	default:
 		return "invalid";

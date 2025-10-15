@@ -95,6 +95,13 @@ struct sl_media_cable_attr {
 	bool                            is_ss200_cable;
 
 	struct sl_media_serdes_settings serdes_settings;
+
+	struct {
+		s8 major;
+		s8 minor;
+		s8 split_major;
+		s8 split_minor;
+	} fw_ver;
 };
 
 struct sl_media_lgrp_cable_info {

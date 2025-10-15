@@ -163,61 +163,189 @@ for i in range(len(HP_PN)):
 
             cell_obj = dataframe1.cell(row = curr_row+1, column = 4) #check if SS200 cable
             cell_value = str(cell_obj.value).strip() #remove whitespace
-            if cell_value == "SS200":
-                file1.write("\t\t.is_ss200_cable         = " + "true" + ",\n")
-            else:
-                file1.write("\t\t.is_ss200               = " + "false" + ",\n")
-
-            cell_obj = dataframe1.cell(row = curr_row+1, column = 11) #read the speed
-            cell_value = str(cell_obj.value).strip() #remove whitespace
-            if cell_value == "200G E":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_200G" + ",\n")
-            elif cell_value == "400G E":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
-            elif cell_value == "800Gb":
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
-            else:
-                file1.write("\t\t.max_speed              = " + "SL_MEDIA_SPEEDS_SUPPORT_INVALID" + ",\n")
-
-            cell_obj = dataframe1.cell(row = curr_row+1, column = 6) #read the type
-            cell_value = str(cell_obj.value).strip() #remove whitespace
-            if cell_value == "DAC" or cell_value == "PEC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "100" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
-            elif cell_value == "AEC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "-4" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
-            elif cell_value == "AOC":
-                file1.write("\t\t.serdes_settings.pre1   = " + "-12" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "98" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "-4" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
-            else:
-                file1.write("\t\t.serdes_settings.pre1   = " + "-20" + ",\n")
-                file1.write("\t\t.serdes_settings.pre2   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.pre3   = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.cursor = " + "116" + ",\n")
-                file1.write("\t\t.serdes_settings.post1  = " + "0" + ",\n")
-                file1.write("\t\t.serdes_settings.post2  = " + "0" + ",\n")
-
-            file1.write("\t},\n")
-
-            sheet = dataframe['S1 S2 Cable List (7.16.25)']
-            sheet.delete_rows(curr_row+1, 1)
-            break
+            if cell_value == "?":
+                curr_row = curr_row + 1
+                continue #ignore invalid vendor
+            cell_obj = df.cell(row = curr_row+1, column = 1)
+            alpha_num_pn = str(cell_obj.value) #read the alpha numeric PN
+            alpha_num_pn_strip = alpha_num_pn.strip()
+            if alpha_num_pn_strip == "?":
+                curr_row = curr_row + 1
+                continue #ignore invalid part numbers
+            #convert alpha numeric PNs to numeric PNs
+            hp_pn_str = re.sub(r'[^0-9]', '', alpha_num_pn)
+            hp_pn_int = int(hp_pn_str)
+            if part_nums[i] == hp_pn_int:
+                f.write("\t{\n")
+                f.write("\t\t.hpe_pn                   = " + str(part_nums[i]) + ",\n")
             
-        curr_row = curr_row + 1
+                cell_obj = df.cell(row = curr_row+1, column = 7) #read the vendor
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                if cell_value == "TE":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_TE" + ",\n")
+                elif cell_value == "Bizlink" or cell_value == "BizLink":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_BIZLINK" + ",\n")
+                elif cell_value == "Hisense":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_HISENSE" + ",\n")
+                elif cell_value == "Coherent (Finisar II-VI)":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_FINISAR" + ",\n")
+                elif cell_value == "Cloud Light":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_CLOUD_LIGHT" + ",\n")
+                elif cell_value == "Molex":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_MOLEX" + ",\n")
+                else:
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_INVALID" + ",\n")
 
+                cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                curr_type = cell_value
+                if cell_value == "DAC" or cell_value == "PEC":
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_PEC" + ",\n")
+                elif cell_value == "AOC-A" or cell_value == "AOC-D" or cell_value == "AOC":
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AOC" + ",\n")
+                elif cell_value == "POF":
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POC" + ",\n")
+                elif cell_value == "AEC":
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_AEC" + ",\n")
+                elif cell_value == "XCVR":
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POC" + ",\n")
+                else:
+                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_INVALID" + ",\n")
+
+                cell_obj = df.cell(row = curr_row+1, column = 5) #read the shape
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                if cell_value == "Straight":
+                    f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_STRAIGHT" + ",\n")
+                elif cell_value == "Splitter (Y)":
+                    f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_SPLITTER" + ",\n")
+                elif cell_value == "Bifurcated (H)":
+                    f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_BIFURCATED" + ",\n")
+                else:
+                    f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_INVALID" + ",\n")
+
+                cell_obj = df.cell(row = curr_row+1, column = 10) #read the length
+                length = str(cell_obj.value)
+                if curr_type == "XCVR":
+                     f.write("\t\t.length_cm                = " + "0" + ",\n")
+                else:
+                    #num_length = length.rstrip(length[-1]) #remove whitespaces
+                    whitelist = set('0123456789.')
+                    num_length = ''.join(filter(whitelist.__contains__, length)) #remove whitespaces and letters
+                    num_length = float(num_length) #convert string to float
+                    num_length = num_length * 100 # multiply by 100 to convert meter to cm
+                    num_length = int(num_length)  #convert float to int
+                    num_length = str(num_length) #convert int to string
+                    f.write("\t\t.length_cm                = " + num_length + ",\n")
+
+                cell_obj = df.cell(row = curr_row+1, column = 4) #check if SS200 cable
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                if cell_value == "SS200":
+                    f.write("\t\t.is_supported_ss200_cable = " + "true" + ",\n")
+                else:
+                    f.write("\t\t.is_supported_ss200_cable = " + "false" + ",\n")
+
+                cell_obj = df.cell(row = curr_row+1, column = 11) #read the speed
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                if cell_value == "200G E" or cell_value == "200Gb":
+                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_200G" + ",\n")
+                elif cell_value == "400G E" or cell_value == "400Gb":
+                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
+                elif cell_value == "800Gb":
+                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
+                else:
+                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_INVALID" + ",\n")
+
+                cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
+                cell_value = str(cell_obj.value).strip() #remove whitespace
+                ##print("cable_type = ", cell_value)
+                if cell_value == "DAC" or cell_value == "PEC":
+                    f.write("\t\t.serdes_settings.pre1     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.cursor   = " + "100" + ",\n")
+                    f.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
+                elif cell_value == "AEC" or cell_value == "XCVR":
+                    f.write("\t\t.serdes_settings.pre1     = " + "-4" + ",\n")
+                    f.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.cursor   = " + "98" + ",\n")
+                    f.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
+                elif cell_value == "AOC":
+                    f.write("\t\t.serdes_settings.pre1     = " + "-12" + ",\n")
+                    f.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.cursor   = " + "98" + ",\n")
+                    f.write("\t\t.serdes_settings.post1    = " + "-4" + ",\n")
+                    f.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
+                else:
+                    f.write("\t\t.serdes_settings.pre1     = " + "-20" + ",\n")
+                    f.write("\t\t.serdes_settings.pre2     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.pre3     = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.cursor   = " + "116" + ",\n")
+                    f.write("\t\t.serdes_settings.post1    = " + "0" + ",\n")
+                    f.write("\t\t.serdes_settings.post2    = " + "0" + ",\n")
+
+                # major ver
+                cell_obj = df.cell(row = curr_row+1, column = 17)
+                cell_value = str(cell_obj.value).strip()
+                ##print("straight_major = ", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.major             = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.major             = " + str(int(cell_value, 16)) + ",\n")
+
+                # major ver
+                cell_obj = df.cell(row = curr_row+1, column = 18)
+                cell_value = str(cell_obj.value).strip()
+                ##print("straight_minor =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.minor             = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.minor             = " + str(int(cell_value, 16)) + ",\n")
+
+                # split major ver
+                cell_obj = df.cell(row = curr_row+1, column = 19)
+                cell_value = str(cell_obj.value).strip()
+                ##print("split_major =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.split_major       = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.split_major       = " + str(int(cell_value, 16)) + ",\n")
+
+                # split minor ver
+                cell_obj = df.cell(row = curr_row+1, column = 20)
+                cell_value = str(cell_obj.value).strip()
+                ##print("split_minor =", cell_value)
+                if cell_value is None or cell_value == "None" or cell_value == "N/A":
+                    f.write("\t\t.fw_ver.split_minor       = -1,\n")
+                else:
+                    f.write("\t\t.fw_ver.split_minor       = " + str(int(cell_value, 16)) + ",\n")
+
+                f.write("\t},\n")
+
+                sheet = wb[sheet_name]
+                sheet.delete_rows(curr_row+1, 1)
+                break
+            
+            curr_row = curr_row + 1
+
+wb = load_workbook(infile)
+
+print("Convert:", source1)
+df1 = wb[source1]
+HP_PN = []
+part_nums_get(df1, rows_count(df1), HP_PN)
+HP_PN.sort()
+print("Total number of valid cables =", str(len(HP_PN)))
+
+print("Convert:", source2)
+df2 = wb[source2]
+OSFP_HP_PN = []
+part_nums_get(df2, rows_count(df2), OSFP_HP_PN)
+OSFP_HP_PN.sort()
+print("Total number of valid OSFP cables =", str(len(OSFP_HP_PN)))
 
 file1.write("};\n\n")
 file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */\n")
