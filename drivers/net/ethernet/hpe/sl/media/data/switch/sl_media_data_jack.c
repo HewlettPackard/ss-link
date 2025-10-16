@@ -15,6 +15,7 @@
 #include "sl_media_jack.h"
 #include "sl_media_io.h"
 #include "data/sl_media_data_jack.h"
+#include "data/sl_media_data_ldev.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "sl_core_link.h"
@@ -144,50 +145,14 @@ static void sl_media_data_jack_event_offline(u8 physical_jack_num)
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_OFFLINE);
 }
 
-static int sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack)
-{
-	int                  rtn;
-	int                  i;
-	struct sl_ctrl_link *ctrl_link;
-	u8                   ldev_num;
-	u8                   lgrp_num;
-	u8                   link_num;
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "high temp link down");
-
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO);
-
-	for (i = 0; i < media_jack->port_count; ++i) {
-		ldev_num = media_jack->cable_info[i].ldev_num;
-		lgrp_num = media_jack->cable_info[i].lgrp_num;
-
-		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
-			ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
-			if (!ctrl_link)
-				continue;
-
-			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
-			if (rtn) {
-				sl_media_log_err_trace(media_jack, LOG_NAME,
-					"high temp link down async_down failed [%d]", rtn);
-				continue;
-			}
-		}
-	}
-
-	return 0;
-}
-
 /*
  * Interrupts will only come from active cables
  */
-// FIXME: make a function that will clear the bits separate from acting on them
-void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_service)
+static void sl_media_data_jack_event_interrupt(u8 physical_jack_num)
 {
 	int                   rtn;
 	struct sl_media_jack *media_jack;
 	u8                    jack_num;
-	u8                    is_high_temp;
 	struct xcvr_i2c_data  i2c_data;
 
 	jack_num = sl_media_data_jack_num_update(physical_jack_num);
@@ -215,11 +180,6 @@ void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_servi
 	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon:                     0x%X", i2c_data.data[1]);
 	sl_media_log_dbg(media_jack, LOG_NAME, "AuxMon:                             0x%X", i2c_data.data[2]);
 	sl_media_log_dbg(media_jack, LOG_NAME, "CustomMon:                          0x%X", i2c_data.data[3]);
-
-	spin_lock(&media_jack->data_lock);
-	media_jack->is_high_temp = (i2c_data.data[1] & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK);
-	is_high_temp = media_jack->is_high_temp;
-	spin_unlock(&media_jack->data_lock);
 
 	/*
 	 * Reading Flags from CMIS v5
@@ -256,13 +216,6 @@ void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_servi
 	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerHighWarningRx:    0x%X", i2c_data.data[17]);
 	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerLowWarningRx:     0x%X", i2c_data.data[18]);
 	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalStatusChangedRx:       0x%X", i2c_data.data[19]);
-
-	if (do_flag_service && is_high_temp) {
-		rtn = sl_media_data_jack_high_temp_link_down(media_jack);
-		if (rtn)
-			sl_media_log_err_trace(media_jack, LOG_NAME,
-				"interrupt event high_temp_link_down failed [%d]", rtn);
-	}
 }
 
 static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
@@ -347,7 +300,7 @@ static int sl_media_data_jack_cable_event(struct notifier_block *event_notifier,
 		sl_media_data_jack_event_offline(physical_jack_num);
 
 	if (events & HSNXCVR_EVENT_INTERRUPT)
-		sl_media_data_jack_event_interrupt(physical_jack_num, true);
+		sl_media_data_jack_event_interrupt(physical_jack_num);
 
 	return NOTIFY_OK;
 }
@@ -767,7 +720,6 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	spin_lock(&media_jack->data_lock);
 	media_jack->is_high_temp = false;
 	spin_unlock(&media_jack->data_lock);
-	sl_media_data_jack_event_interrupt(media_jack->physical_num, false);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
 
@@ -1256,6 +1208,29 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	return 0;
 }
 
+int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold)
+{
+	int rtn;
+	u8  data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp threshold get");
+
+	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
+		return -EBADRQC;
+	}
+
+	rtn = sl_media_io_read8(media_jack, 2, 128, &data);
+	if (rtn != sizeof(data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable high temp threshold read failed [%d]", rtn);
+		return -EIO;
+	}
+
+	*temp_threshold = data;
+	return 0;
+}
+
 #define LED_OFF        XCVR_LED_OFF
 #define LED_ON_GRN     XCVR_LED_A_STEADY
 #define LED_FAST_GRN   XCVR_LED_A_FAST
@@ -1341,4 +1316,29 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 		sl_media_io_led_set(media_jack, LED_ON_GRN);
 	else
 		sl_media_io_led_set(media_jack, LED_OFF);
+}
+
+bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
+{
+	int rtn;
+	u8  data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
+
+	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
+	if (rtn != sizeof(data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "TempMon/VccMon get read failed [%d]", rtn);
+		return false;
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon: 0x%X", data);
+
+	if (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) {
+		spin_lock(&media_jack->data_lock);
+		media_jack->is_high_temp = true;
+		spin_unlock(&media_jack->data_lock);
+		return true;
+	}
+
+	return false;
 }

@@ -6,9 +6,9 @@
 #include "sl_media_ldev.h"
 #include "data/sl_media_data_ldev.h"
 
-int sl_media_ldev_new(u8 ldev_num)
+int sl_media_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 {
-	return sl_media_data_ldev_new(ldev_num);
+	return sl_media_data_ldev_new(ldev_num, workqueue);
 }
 
 void sl_media_ldev_del(u8 ldev_num)

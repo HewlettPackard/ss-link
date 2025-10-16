@@ -12,8 +12,6 @@
 #include "sl_core_str.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
-// FIXME: remove this when we do event_interrupt better
-#include "data/sl_media_data_jack.h"
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_intr.h"
@@ -717,7 +715,6 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 	u64                   data64;
 	struct sl_core_link  *core_link;
 	u32                   link_state;
-	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CHECK]);
 
@@ -734,9 +731,6 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 
 	if (sl_core_hw_link_media_check_is_high_temp(core_link))
 		return;
-
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-	sl_media_data_jack_event_interrupt(media_lgrp->media_jack->physical_num, false);
 
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {

@@ -80,7 +80,7 @@ int sl_ctrl_ldev_new(u8 ldev_num, struct workqueue_struct *workq,
 		goto out_del_notif_wq;
 	}
 
-	rtn = sl_media_ldev_new(ldev_num);
+	rtn = sl_media_ldev_new(ldev_num, ctrl_ldev->workq);
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_ldev, LOG_NAME, "media_ldev_new failed [%d]", rtn);
 		goto out_del_notif_wq;

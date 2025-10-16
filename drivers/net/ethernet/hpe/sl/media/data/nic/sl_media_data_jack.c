@@ -349,13 +349,35 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 		return -EBADRQC;
 
 	rtn = sl_media_io_read8(media_jack, 0, 14, &data);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME,
-			"temp get read failed [%d]", rtn);
+	if (rtn != sizeof(data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "temp get read failed [%d]", rtn);
 		return -EIO;
 	}
 
 	*temp = data;
+	return 0;
+}
+
+int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold)
+{
+	int rtn;
+	u8  data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp threshold get");
+
+	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
+		return -EBADRQC;
+	}
+
+	rtn = sl_media_io_read8(media_jack, 2, 128, &data);
+	if (rtn != sizeof(data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable high temp threshold read failed [%d]", rtn);
+		return -EIO;
+	}
+
+	*temp_threshold = data;
 	return 0;
 }
 
@@ -376,7 +398,7 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	}
 
 	sl_core_link_state_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num,
-		0, &link_state); /* hardcoding 0 since only one link*/
+			       0, &link_state); /* hardcoding 0 since only one link*/
 
 	switch (sl_media_jack_state_get(media_jack)) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
@@ -410,42 +432,27 @@ static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
 	return physical_jack_num - 1;
 }
 
-/*
- * Interrupts will only come from active cables
- */
-// FIXME: make a function that will clear the bits separate from acting on them
-void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_service)
+bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
 {
 	int                   rtn;
-	struct sl_media_jack *media_jack;
-	u8                    offset;
 	u8                    data;
 
-	sl_media_log_dbg(NULL, LOG_NAME,
-		"interrupt event (physical_jack_num = %u)", physical_jack_num);
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
 
-	media_jack = sl_media_data_jack_get(0,
-				sl_media_data_jack_num_update(physical_jack_num));
-
-	for (offset = 8; offset < 12; ++offset) {
-		rtn = sl_media_io_read8(media_jack, 0, offset, &data);
-		if (rtn)
-			sl_media_log_dbg(media_jack, LOG_NAME,
-				"interrupt event io failed [%d]", rtn);
-		sl_media_log_dbg(media_jack, LOG_NAME, "interrupt event (offset %d = 0x%X)", offset, data);
-		if (offset == 9) {
-			spin_lock(&media_jack->data_lock);
-			media_jack->is_high_temp = (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK);
-			spin_unlock(&media_jack->data_lock);
-		}
-	}
-	for (offset = 134; offset < 154; ++offset) {
-		rtn = sl_media_io_read8(media_jack, 0x11, offset, &data);
-		if (rtn)
-			sl_media_log_dbg(media_jack, LOG_NAME,
-				"interrupt event io failed [%d]", rtn);
-		sl_media_log_dbg(media_jack, LOG_NAME, "interrupt event (offset %d = 0x%X)", offset, data);
+	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
+	if (rtn != sizeof(data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "TempMon/VccMon get read failed [%d]", rtn);
+		return false;
 	}
 
-	/* don't care about service */
+	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon: 0x%X", data);
+
+	if (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) {
+		spin_lock(&media_jack->data_lock);
+		media_jack->is_high_temp = true;
+		spin_unlock(&media_jack->data_lock);
+		return true;
+	}
+
+	return false;
 }

@@ -88,7 +88,38 @@ static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attrib
 	return scnprintf(buf, PAGE_SIZE, "%u\n", temp);
 }
 
-static ssize_t high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t high_temperature_threshold_celsius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                   rtn;
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u8                    temp_threshold;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
+	}
+
+	rtn = sl_media_jack_cable_high_temp_threshold_get(media_lgrp->media_ldev->num,
+							  media_lgrp->num, &temp_threshold);
+
+	if (rtn == -EBADRQC)
+		return scnprintf(buf, PAGE_SIZE, "not-active\n");
+	if (rtn == -EIO)
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "high_temperature_threshold_celsius show (media_lgrp = 0x%p, temp = %uc)",
+		   media_lgrp, temp_threshold);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", temp_threshold);
+}
+
+static ssize_t high_temperature_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp   *ctrl_lgrp;
@@ -109,7 +140,7 @@ static ssize_t high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr
 	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"high_temp show (media_lgrp = 0x%p, is_high_temp = %s)",
+		"high_temperature show (media_lgrp = 0x%p, is_high_temp = %s)",
 		media_lgrp, is_high_temp ? "yes" : "no");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_temp ? "yes" : "no");
@@ -680,41 +711,43 @@ static ssize_t is_supported_ss200_cable_show(struct kobject *kobj, struct kobj_a
 	return scnprintf(buf, PAGE_SIZE, "no\n");
 }
 
-static struct kobj_attribute media_state                        = __ATTR_RO(state);
-static struct kobj_attribute media_jack_power_state             = __ATTR_RO(jack_power_state);
-static struct kobj_attribute media_temperature                  = __ATTR_RO(temperature_celsius);
-static struct kobj_attribute media_high_temp                    = __ATTR_RO(high_temp);
-static struct kobj_attribute media_vendor                       = __ATTR_RO(vendor);
-static struct kobj_attribute media_type                         = __ATTR_RO(type);
-static struct kobj_attribute media_shape                        = __ATTR_RO(shape);
-static struct kobj_attribute media_cable_end                    = __ATTR_RO(cable_end);
-static struct kobj_attribute media_length_cm                    = __ATTR_RO(length_cm);
-static struct kobj_attribute media_max_speed                    = __ATTR_RO(max_speed);
-static struct kobj_attribute media_serial_num                   = __ATTR_RO(serial_num);
-static struct kobj_attribute media_hpe_part_num                 = __ATTR_RO(hpe_part_num);
-static struct kobj_attribute media_jack_num                     = __ATTR_RO(jack_num);
-static struct kobj_attribute media_jack_type                    = __ATTR_RO(jack_type);
-static struct kobj_attribute media_furcation                    = __ATTR_RO(furcation);
-static struct kobj_attribute media_supported                    = __ATTR_RO(supported);
-static struct kobj_attribute media_date_code                    = __ATTR_RO(date_code);
-static struct kobj_attribute media_firmware_version_hex         = __ATTR_RO(firmware_version_hex);
-static struct kobj_attribute media_target_firmware_version_hex  = __ATTR_RO(target_firmware_version_hex);
-static struct kobj_attribute media_cable_shift_state            = __ATTR_RO(cable_shift_state);
-static struct kobj_attribute media_active_cable_200g_host_iface = __ATTR_RO(active_cable_200g_host_iface);
-static struct kobj_attribute media_active_cable_200g_lane_cnt   = __ATTR_RO(active_cable_200g_lane_cnt);
-static struct kobj_attribute media_active_cable_200g_appsel_no  = __ATTR_RO(active_cable_200g_appsel_no);
-static struct kobj_attribute media_active_cable_400g_host_iface = __ATTR_RO(active_cable_400g_host_iface);
-static struct kobj_attribute media_active_cable_400g_lane_cnt   = __ATTR_RO(active_cable_400g_lane_cnt);
-static struct kobj_attribute media_active_cable_400g_appsel_no  = __ATTR_RO(active_cable_400g_appsel_no);
-static struct kobj_attribute media_last_fault_cause             = __ATTR_RO(last_fault_cause);
-static struct kobj_attribute media_last_fault_time              = __ATTR_RO(last_fault_time);
-static struct kobj_attribute media_is_supported_ss200_cable     = __ATTR_RO(is_supported_ss200_cable);
+static struct kobj_attribute media_state                              = __ATTR_RO(state);
+static struct kobj_attribute media_jack_power_state                   = __ATTR_RO(jack_power_state);
+static struct kobj_attribute media_temperature_celsius                = __ATTR_RO(temperature_celsius);
+static struct kobj_attribute media_high_temperature_threshold_celsius = __ATTR_RO(high_temperature_threshold_celsius);
+static struct kobj_attribute media_high_temperature                   = __ATTR_RO(high_temperature);
+static struct kobj_attribute media_vendor                             = __ATTR_RO(vendor);
+static struct kobj_attribute media_type                               = __ATTR_RO(type);
+static struct kobj_attribute media_shape                              = __ATTR_RO(shape);
+static struct kobj_attribute media_cable_end                          = __ATTR_RO(cable_end);
+static struct kobj_attribute media_length_cm                          = __ATTR_RO(length_cm);
+static struct kobj_attribute media_max_speed                          = __ATTR_RO(max_speed);
+static struct kobj_attribute media_serial_num                         = __ATTR_RO(serial_num);
+static struct kobj_attribute media_hpe_part_num                       = __ATTR_RO(hpe_part_num);
+static struct kobj_attribute media_jack_num                           = __ATTR_RO(jack_num);
+static struct kobj_attribute media_jack_type                          = __ATTR_RO(jack_type);
+static struct kobj_attribute media_furcation                          = __ATTR_RO(furcation);
+static struct kobj_attribute media_supported                          = __ATTR_RO(supported);
+static struct kobj_attribute media_date_code                          = __ATTR_RO(date_code);
+static struct kobj_attribute media_firmware_version_hex               = __ATTR_RO(firmware_version_hex);
+static struct kobj_attribute media_target_firmware_version_hex        = __ATTR_RO(target_firmware_version_hex);
+static struct kobj_attribute media_cable_shift_state                  = __ATTR_RO(cable_shift_state);
+static struct kobj_attribute media_active_cable_200g_host_iface       = __ATTR_RO(active_cable_200g_host_iface);
+static struct kobj_attribute media_active_cable_200g_lane_cnt         = __ATTR_RO(active_cable_200g_lane_cnt);
+static struct kobj_attribute media_active_cable_200g_appsel_no        = __ATTR_RO(active_cable_200g_appsel_no);
+static struct kobj_attribute media_active_cable_400g_host_iface       = __ATTR_RO(active_cable_400g_host_iface);
+static struct kobj_attribute media_active_cable_400g_lane_cnt         = __ATTR_RO(active_cable_400g_lane_cnt);
+static struct kobj_attribute media_active_cable_400g_appsel_no        = __ATTR_RO(active_cable_400g_appsel_no);
+static struct kobj_attribute media_last_fault_cause                   = __ATTR_RO(last_fault_cause);
+static struct kobj_attribute media_last_fault_time                    = __ATTR_RO(last_fault_time);
+static struct kobj_attribute media_is_supported_ss200_cable           = __ATTR_RO(is_supported_ss200_cable);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
 	&media_jack_power_state.attr,
-	&media_temperature.attr,
-	&media_high_temp.attr,
+	&media_temperature_celsius.attr,
+	&media_high_temperature_threshold_celsius.attr,
+	&media_high_temperature.attr,
 	&media_vendor.attr,
 	&media_type.attr,
 	&media_shape.attr,

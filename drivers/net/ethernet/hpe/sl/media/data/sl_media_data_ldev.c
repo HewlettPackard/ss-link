@@ -13,13 +13,14 @@
 #include "data/sl_media_data_ldev.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_jack.h"
+#include "sl_ctrl_ldev.h"
 
 static struct sl_media_ldev *media_ldevs[SL_ASIC_MAX_LDEVS];
 static DEFINE_SPINLOCK(media_ldevs_lock);
 
 #define LOG_NAME SL_MEDIA_DATA_LDEV_LOG_NAME
 
-int sl_media_data_ldev_new(u8 ldev_num)
+int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 {
 	struct sl_media_ldev *media_ldev;
 	int                   rtn;
@@ -35,8 +36,9 @@ int sl_media_data_ldev_new(u8 ldev_num)
 	if (!media_ldev)
 		return -ENOMEM;
 
-	media_ldev->magic = SL_MEDIA_LDEV_MAGIC;
-	media_ldev->num   = ldev_num;
+	media_ldev->magic     = SL_MEDIA_LDEV_MAGIC;
+	media_ldev->num       = ldev_num;
+	media_ldev->workqueue = workqueue;
 
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		rtn = sl_media_data_jack_new(media_ldev, jack_num);
@@ -62,6 +64,12 @@ int sl_media_data_ldev_new(u8 ldev_num)
 	media_ldevs[ldev_num] = media_ldev;
 	spin_unlock(&media_ldevs_lock);
 
+	INIT_DELAYED_WORK(&media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
+			  sl_media_jack_cable_monitor_high_temp_delayed_work);
+
+	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
+			   msecs_to_jiffies(SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS));
+
 	return 0;
 }
 
@@ -76,6 +84,8 @@ void sl_media_data_ldev_del(u8 ldev_num)
 		sl_media_log_dbg(NULL, LOG_NAME, "not found (ldev_num = %u)", ldev_num);
 		return;
 	}
+
+	cancel_delayed_work_sync(&media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP]);
 
 	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = NULL;

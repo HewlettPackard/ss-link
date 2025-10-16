@@ -45,7 +45,7 @@ int sl_media_io_read8(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 *
 	i2c_data.page   = page;
 	i2c_data.bank   = 0;
 	i2c_data.offset = offset;
-	i2c_data.len    = sizeof(*data);
+	i2c_data.len    = 1;
 
 	rtn = hsnxcvr_i2c_read(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -53,11 +53,11 @@ int sl_media_io_read8(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 *
 		return -EIO;
 	}
 
-	data = i2c_data.data;
+	*data = i2c_data.data[0];
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "media_io_read8 0x%x = 0x%x", offset, *data);
 
-	return sizeof(*data);
+	return 1;
 }
 
 void sl_media_io_led_set(struct sl_media_jack *media_jack, u8 led_pattern)

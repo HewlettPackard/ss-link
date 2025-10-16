@@ -124,11 +124,12 @@ function print_jack_state {
 
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
-		local high_temp=$(cat ${LGRP_PATH}/media/high_temp)
+		local high_temp=$(cat ${LGRP_PATH}/media/high_temperature)
+		local high_temp_threshold=$(cat ${LGRP_PATH}/media/high_temperature_threshold_celsius)
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
 		else
-			printf "           | temperature: ${temp}c (high_temp = ${high_temp})\n"
+			printf "           | temperature: ${temp}c, (high_temperature = ${high_temp}, high_temperature_threshold: ${high_temp_threshold}c)\n"
 		fi
 	fi
 }

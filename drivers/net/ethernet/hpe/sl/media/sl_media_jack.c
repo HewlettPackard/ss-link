@@ -7,8 +7,10 @@
 #include "sl_core_link.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
+#include "sl_ctrl_ldev.h"
 #include "data/sl_media_data_jack.h"
 #include "data/sl_media_data_lgrp.h"
+#include "data/sl_media_data_ldev.h"
 #include "base/sl_media_log.h"
 
 #define LOG_NAME SL_MEDIA_JACK_LOG_NAME
@@ -382,7 +384,7 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 	media_jack->fault_time  = ktime_get_real_seconds();
 	spin_unlock(&media_jack->data_lock);
 
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO)
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HIGH_TEMP)
 		sl_media_data_jack_led_set(media_jack);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "fault cause set (cause = %u %s)", fault_cause,
@@ -448,8 +450,8 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "shift-state-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
 		return "offline";
-	case SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO:
-		return "high-temp-jack-io";
+	case SL_MEDIA_FAULT_CAUSE_HIGH_TEMP:
+		return "high-temp";
 	default:
 		return "unknown";
 	}
@@ -463,6 +465,12 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
 {
 	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
+}
+
+int sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold)
+{
+	return sl_media_data_jack_cable_high_temp_threshold_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack,
+								temp_threshold);
 }
 
 int sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack)
@@ -479,4 +487,45 @@ void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num)
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "led set");
 
 	sl_media_data_jack_led_set(media_lgrp->media_jack);
+}
+
+void sl_media_jack_cable_monitor_high_temp_delayed_work(struct work_struct *work)
+{
+	int                   rtn;
+	u8                    jack_num;
+	struct sl_media_jack *media_jack;
+	struct sl_media_ldev *media_ldev;
+	struct delayed_work  *delayed_work_ptr;
+
+	delayed_work_ptr  = container_of(work, struct delayed_work, work);
+	media_ldev = container_of(delayed_work_ptr, struct sl_media_ldev,
+				  delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP]);
+
+	sl_media_log_dbg(media_ldev, LOG_NAME, "cable monitor high temp work (ldev = 0x%p)", media_ldev);
+
+	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
+		media_jack = sl_media_data_jack_get(media_ldev->num, jack_num);
+		if (!media_jack)
+			continue;
+
+		if (!sl_media_lgrp_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num))
+			continue;
+
+		if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+							media_jack->cable_info[0].lgrp_num)) {
+			sl_media_log_dbg(media_ldev, LOG_NAME, "not active cable (jack_num = %u)", jack_num);
+			continue;
+		}
+
+		if (!sl_media_data_jack_cable_is_high_temp_set(media_jack))
+			continue;
+
+		rtn = sl_media_data_jack_high_temp_link_down(media_jack);
+		if (rtn)
+			sl_media_log_err_trace(media_ldev, LOG_NAME,
+					       "cable monitor high temp link_down is failed [%d]", rtn);
+	}
+
+	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
+			   msecs_to_jiffies(SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS));
 }

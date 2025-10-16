@@ -37,9 +37,12 @@ int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack);
 
 bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
-int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
+bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
 
-void sl_media_data_jack_event_interrupt(u8 physical_jack_num, bool do_flag_service);
+int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
+int  sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold);
+int  sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack);
+
 int  sl_media_data_jack_scan(u8 ldev_num);
 int  sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp);
 

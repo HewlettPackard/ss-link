@@ -6,11 +6,13 @@
 
 #include <linux/types.h>
 
+#define SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS 15000
+
 struct sl_media_ldev;
 struct sl_uc_ops;
 struct sl_uc_accessor;
 
-int                   sl_media_data_ldev_new(u8 ldev_num);
+int                   sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue);
 void                  sl_media_data_ldev_del(u8 ldev_num);
 struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num);
 

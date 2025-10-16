@@ -174,7 +174,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET   BIT(19)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(21)
-#define SL_MEDIA_FAULT_CAUSE_HIGH_TEMP_JACK_IO                 BIT(22)
+#define SL_MEDIA_FAULT_CAUSE_HIGH_TEMP                         BIT(22)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -205,7 +205,9 @@ const char *sl_media_fault_cause_str(u32 fault_cause);
 
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
+int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
 int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_monitor_high_temp_delayed_work(struct work_struct *work);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 
