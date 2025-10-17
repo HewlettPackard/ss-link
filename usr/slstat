@@ -196,7 +196,7 @@ function print_link_counters {
                         printf " %25s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                        printf "           | %30s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }

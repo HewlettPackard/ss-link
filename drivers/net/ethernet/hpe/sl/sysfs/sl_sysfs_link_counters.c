@@ -182,6 +182,90 @@ static ssize_t link_ucw_warn_crossed_show(struct kobject *kobj, struct kobj_attr
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t link_down_ccw_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN_CCW_LIMIT_CROSSED);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down ccw limit crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_down_ucw_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN_UCW_LIMIT_CROSSED);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down ucw limit crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_down_ccw_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN_CCW_CAUSE);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down ccw cause show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_down_ucw_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_DOWN_UCW_CAUSE);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down ucw cause show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_up_fail_ccw_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_FAIL_CCW_LIMIT_CROSSED);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up fail ccw limit crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t link_up_fail_ucw_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	counter = sl_ctrl_link_counters_get(ctrl_link, LINK_UP_FAIL_UCW_LIMIT_CROSSED);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link up fail ucw limit crossed show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static ssize_t link_autoneg_np_retry_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -211,20 +295,26 @@ static ssize_t link_autoneg_attempt_show(struct kobject *kobj, struct kobj_attri
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static struct kobj_attribute link_up_cmd               = __ATTR_RO(link_up_cmd);
-static struct kobj_attribute link_up_retry             = __ATTR_RO(link_up_retry);
-static struct kobj_attribute link_up                   = __ATTR_RO(link_up);
-static struct kobj_attribute link_up_fail              = __ATTR_RO(link_up_fail);
-static struct kobj_attribute link_down_cmd             = __ATTR_RO(link_down_cmd);
-static struct kobj_attribute link_down                 = __ATTR_RO(link_down);
-static struct kobj_attribute link_up_cancel_cmd        = __ATTR_RO(link_up_cancel_cmd);
-static struct kobj_attribute link_up_canceled          = __ATTR_RO(link_up_canceled);
-static struct kobj_attribute link_reset_cmd            = __ATTR_RO(link_reset_cmd);
-static struct kobj_attribute link_fault                = __ATTR_RO(link_fault);
-static struct kobj_attribute link_ccw_warn_crossed     = __ATTR_RO(link_ccw_warn_crossed);
-static struct kobj_attribute link_ucw_warn_crossed     = __ATTR_RO(link_ucw_warn_crossed);
-static struct kobj_attribute link_autoneg_np_retry     = __ATTR_RO(link_autoneg_np_retry);
-static struct kobj_attribute link_autoneg_attempt      = __ATTR_RO(link_autoneg_attempt);
+static struct kobj_attribute link_up_cmd                    = __ATTR_RO(link_up_cmd);
+static struct kobj_attribute link_up_retry                  = __ATTR_RO(link_up_retry);
+static struct kobj_attribute link_up                        = __ATTR_RO(link_up);
+static struct kobj_attribute link_up_fail                   = __ATTR_RO(link_up_fail);
+static struct kobj_attribute link_down_cmd                  = __ATTR_RO(link_down_cmd);
+static struct kobj_attribute link_down                      = __ATTR_RO(link_down);
+static struct kobj_attribute link_up_cancel_cmd             = __ATTR_RO(link_up_cancel_cmd);
+static struct kobj_attribute link_up_canceled               = __ATTR_RO(link_up_canceled);
+static struct kobj_attribute link_reset_cmd                 = __ATTR_RO(link_reset_cmd);
+static struct kobj_attribute link_fault                     = __ATTR_RO(link_fault);
+static struct kobj_attribute link_ccw_warn_crossed          = __ATTR_RO(link_ccw_warn_crossed);
+static struct kobj_attribute link_ucw_warn_crossed          = __ATTR_RO(link_ucw_warn_crossed);
+static struct kobj_attribute link_down_ccw_limit_crossed    = __ATTR_RO(link_down_ccw_limit_crossed);
+static struct kobj_attribute link_down_ucw_limit_crossed    = __ATTR_RO(link_down_ucw_limit_crossed);
+static struct kobj_attribute link_down_ccw_cause            = __ATTR_RO(link_down_ccw_cause);
+static struct kobj_attribute link_down_ucw_cause            = __ATTR_RO(link_down_ucw_cause);
+static struct kobj_attribute link_up_fail_ccw_limit_crossed = __ATTR_RO(link_up_fail_ccw_limit_crossed);
+static struct kobj_attribute link_up_fail_ucw_limit_crossed = __ATTR_RO(link_up_fail_ucw_limit_crossed);
+static struct kobj_attribute link_autoneg_np_retry          = __ATTR_RO(link_autoneg_np_retry);
+static struct kobj_attribute link_autoneg_attempt           = __ATTR_RO(link_autoneg_attempt);
 
 static struct attribute *link_counters_attrs[] = {
 	&link_up_cmd.attr,
@@ -239,6 +329,12 @@ static struct attribute *link_counters_attrs[] = {
 	&link_fault.attr,
 	&link_ccw_warn_crossed.attr,
 	&link_ucw_warn_crossed.attr,
+	&link_down_ccw_limit_crossed.attr,
+	&link_down_ucw_limit_crossed.attr,
+	&link_down_ccw_cause.attr,
+	&link_down_ucw_cause.attr,
+	&link_up_fail_ccw_limit_crossed.attr,
+	&link_up_fail_ucw_limit_crossed.attr,
 	&link_autoneg_np_retry.attr,
 	&link_autoneg_attempt.attr,
 	NULL

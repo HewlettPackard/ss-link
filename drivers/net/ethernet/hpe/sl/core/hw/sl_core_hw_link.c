@@ -29,6 +29,7 @@
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_reset.h"
 #include "sl_ctrl_lgrp.h"
+#include "sl_ctrl_link_counters.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
@@ -837,6 +838,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 			"UCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 
+		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_UCW_LIMIT_CROSSED);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
@@ -851,6 +853,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 			"CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 			fec_info.ucw, fec_info.ccw);
 
+		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_CCW_LIMIT_CROSSED);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)

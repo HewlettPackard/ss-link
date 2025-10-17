@@ -307,7 +307,12 @@ int sl_ctrl_link_fec_down_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
 
 static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_link, s32 limit, struct sl_fec_info *info)
 {
-	ctrl_link->fec_ucw_chance = SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(limit, info) ? ctrl_link->fec_ucw_chance + 1 : 0;
+	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(limit, info)) {
+		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_UCW_LIMIT_CROSSED);
+		ctrl_link->fec_ucw_chance = ctrl_link->fec_ucw_chance + 1;
+	} else {
+		ctrl_link->fec_ucw_chance = 0;
+	}
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fec_ucw_chance_limit_check (limit = %d, UCW = %llu, ucw_chance = %u)",
 		limit, info->ucw, ctrl_link->fec_ucw_chance);
@@ -317,7 +322,12 @@ static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_li
 
 static bool sl_ctrl_link_fec_ccw_chance_limit_check(struct sl_ctrl_link *ctrl_link, s32 limit, struct sl_fec_info *info)
 {
-	ctrl_link->fec_ccw_chance = SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(limit, info) ? ctrl_link->fec_ccw_chance + 1 : 0;
+	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(limit, info)) {
+		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_CCW_LIMIT_CROSSED);
+		ctrl_link->fec_ccw_chance = ctrl_link->fec_ccw_chance + 1;
+	} else {
+		ctrl_link->fec_ccw_chance = 0;
+	}
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fec_ccw_chance_limit_check (limit = %d, CCW = %llu, ccw_chance = %u)",
 		limit, info->ccw, ctrl_link->fec_ccw_chance);
