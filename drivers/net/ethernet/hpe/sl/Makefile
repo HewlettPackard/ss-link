@@ -28,7 +28,6 @@ KCPPFLAGS      += -I$(MDIR)/core
 KCPPFLAGS      += -I$(MDIR)/ctrl
 KCPPFLAGS      += -I$(MDIR)/log
 KCPPFLAGS      += -I$(MDIR)/sysfs
-KCPPFLAGS      += -I$(MDIR)/test
 KCPPFLAGS      += -I$(MDIR)/../../../../../include
 
 ifdef PLATFORM_NIC
