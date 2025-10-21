@@ -468,7 +468,7 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp   *ctrl_lgrp;
-	u8                    target_fw_ver_str[10];
+	u8                    target_fw_ver_str[25];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);

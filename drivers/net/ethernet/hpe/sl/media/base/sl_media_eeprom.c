@@ -364,7 +364,16 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 
 bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
-	if (media_attr->type != SL_MEDIA_TYPE_AOC && media_attr->type != SL_MEDIA_TYPE_AEC)
+	sl_media_log_dbg(media_jack, LOG_NAME, "is fw version valid");
+
+	if (sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+					       media_jack->cable_info[0].lgrp_num))
+		return false;
+
+	if (media_jack->is_cable_not_supported)
+		return false;
+
+	if (!media_jack->is_supported_ss200_cable)
 		return false;
 
 	if (media_attr->shape == SL_MEDIA_SHAPE_SPLITTER && media_jack->cable_end != SL_MEDIA_CABLE_END_DD)
@@ -377,9 +386,30 @@ bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struc
 
 void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
 {
-	if (media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AOC &&
-	    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AEC) {
-		snprintf(target_fw_str, target_fw_size, "none\n");
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "target fw ver get (idx = %u, type = 0x%X %s, shape = %u %s, end = %u %s, supported = %s)",
+			 media_jack->cable_db_idx,
+			 media_jack->cable_info[0].media_attr.type,
+			 sl_media_type_str(media_jack->cable_info[0].media_attr.type),
+			 media_jack->cable_info[0].media_attr.shape,
+			 sl_media_shape_str(media_jack->cable_info[0].media_attr.shape),
+			 media_jack->cable_end,
+			 sl_media_cable_end_str(media_jack->cable_end),
+			 media_jack->is_cable_not_supported ? "no" : "yes");
+
+	if (sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+					       media_jack->cable_info[0].lgrp_num)) {
+		snprintf(target_fw_str, target_fw_size, "invalid-type\n");
+		return;
+	}
+
+	if (media_jack->is_cable_not_supported) {
+		snprintf(target_fw_str, target_fw_size, "not-supported\n");
+		return;
+	}
+
+	if (!media_jack->is_supported_ss200_cable) {
+		snprintf(target_fw_str, target_fw_size, "ss200-cable\n");
 		return;
 	}
 
