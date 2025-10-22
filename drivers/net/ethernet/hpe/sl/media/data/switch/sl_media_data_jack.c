@@ -145,79 +145,6 @@ static void sl_media_data_jack_event_offline(u8 physical_jack_num)
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_OFFLINE);
 }
 
-/*
- * Interrupts will only come from active cables
- */
-static void sl_media_data_jack_event_interrupt(u8 physical_jack_num)
-{
-	int                   rtn;
-	struct sl_media_jack *media_jack;
-	u8                    jack_num;
-	struct xcvr_i2c_data  i2c_data;
-
-	jack_num = sl_media_data_jack_num_update(physical_jack_num);
-	media_jack = sl_media_data_jack_get(0, jack_num);
-
-	sl_media_log_dbg(media_jack, LOG_NAME,
-		"interrupt event (physical_jack_num = %u)", physical_jack_num);
-
-	/*
-	 * Reading Flags from CMIS v5
-	 */
-	i2c_data.addr   = 0;
-	i2c_data.page   = 0;
-	i2c_data.bank   = 0;
-	i2c_data.offset = 8;
-	i2c_data.len    = 4;
-	rtn = hsnxcvr_i2c_read(media_jack->hdl, &i2c_data);
-	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
-		return;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "ModState/ModFW/DPFW/CdbCmdComplete: 0x%X", i2c_data.data[0]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon:                     0x%X", i2c_data.data[1]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "AuxMon:                             0x%X", i2c_data.data[2]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "CustomMon:                          0x%X", i2c_data.data[3]);
-
-	/*
-	 * Reading Flags from CMIS v5
-	 */
-	i2c_data.addr   = 0;
-	i2c_data.page   = 17;
-	i2c_data.bank   = 0;
-	i2c_data.offset = 134;
-	i2c_data.len    = 20;
-	rtn = hsnxcvr_i2c_read(media_jack->hdl, &i2c_data);
-	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
-		return;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "DPState:                      0x%X", i2c_data.data[0]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "FailureFlagTx:                0x%X", i2c_data.data[1]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LosFlagTx:                    0x%X", i2c_data.data[2]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "CDRLOLFlagTx:                 0x%X", i2c_data.data[3]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "AdaptiveIpEqFailTX:           0x%X", i2c_data.data[4]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerHighAlarmTX:      0x%X", i2c_data.data[5]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerLowAlarmTX:       0x%X", i2c_data.data[6]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerHighWarningTx:    0x%X", i2c_data.data[7]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerLowWarningTx:     0x%X", i2c_data.data[8]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LaserBiasHighAlarmTx:         0x%X", i2c_data.data[9]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LaserBiasLowAlarmTx:          0x%X", i2c_data.data[10]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LaserBiasHighWarningTx:       0x%X", i2c_data.data[11]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LaserBiasLowWarningTx:        0x%X", i2c_data.data[12]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "LosFlagRx:                    0x%X", i2c_data.data[13]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "CDRLOLFlagRx:                 0x%X", i2c_data.data[14]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerHighAlarmRX:      0x%X", i2c_data.data[15]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerLowAlarmRX:       0x%X", i2c_data.data[16]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerHighWarningRx:    0x%X", i2c_data.data[17]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalPowerLowWarningRx:     0x%X", i2c_data.data[18]);
-	sl_media_log_dbg(media_jack, LOG_NAME, "OpticalStatusChangedRx:       0x%X", i2c_data.data[19]);
-}
-
 static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 {
 	u8            i;
@@ -298,9 +225,6 @@ static int sl_media_data_jack_cable_event(struct notifier_block *event_notifier,
 		sl_media_data_jack_event_remove(physical_jack_num);
 	else if (events & HSNXCVR_EVENT_OFFLINE)
 		sl_media_data_jack_event_offline(physical_jack_num);
-
-	if (events & HSNXCVR_EVENT_INTERRUPT)
-		sl_media_data_jack_event_interrupt(physical_jack_num);
 
 	return NOTIFY_OK;
 }
