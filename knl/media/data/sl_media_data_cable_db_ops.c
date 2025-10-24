@@ -57,6 +57,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	for (indexer = 0; indexer < ARRAY_SIZE(cable_db); ++indexer) {
 		if (cable_db[indexer].hpe_pn == media_attr->hpe_pn &&
 		    cable_db[indexer].vendor == media_attr->vendor &&
+		    strcmp(cable_db[indexer].vendor_pn, media_attr->vendor_pn) == 0 &&
 		    cable_db[indexer].type == media_attr->type &&
 		    sl_media_data_cable_length_round_up(cable_db[indexer].length_cm) == media_attr->length_cm) {
 			media_attr->shape = cable_db[indexer].shape;

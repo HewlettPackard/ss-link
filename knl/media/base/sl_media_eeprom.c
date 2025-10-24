@@ -226,6 +226,24 @@ static bool is_valid_char(char c)
 	return c >= 33 && c <= 126;
 }
 
+#define VENDOR_PN_OFFSET 148
+static int sl_media_eeprom_vendor_pn_get(struct sl_media_jack *media_jack, char *vendor_pn)
+{
+	int x;
+	int pos;
+
+	pos = 0;
+	memset(vendor_pn, 0, SL_MEDIA_VENDOR_PN_SIZE);
+	for (x = 0; x < SL_MEDIA_VENDOR_PN_SIZE - 1; ++x) {
+		if (is_valid_char(media_jack->eeprom_page0[VENDOR_PN_OFFSET + x])) {
+			vendor_pn[pos] = media_jack->eeprom_page0[VENDOR_PN_OFFSET + x];
+			pos++;
+		}
+	}
+
+	return 0;
+}
+
 #define HPE_PN_OFFSET 228
 static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe_pn, char *hpe_pn_str)
 {
@@ -378,6 +396,7 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 
 	sl_media_eeprom_type_get(media_jack, media_attr->format, &(media_attr->type));
 	sl_media_eeprom_vendor_get(media_jack, media_attr->format, &(media_attr->vendor));
+	sl_media_eeprom_vendor_pn_get(media_jack, media_attr->vendor_pn);
 	sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
 	sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str);
 	sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str);
