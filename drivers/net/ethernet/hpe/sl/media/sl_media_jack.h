@@ -81,6 +81,7 @@ struct sl_media_serdes_settings {
 struct sl_media_cable_attr {
 	u32                             type;
 	u32                             vendor;
+	char                            vendor_pn[SL_MEDIA_VENDOR_PN_SIZE];
 	u32                             length_cm;
 	u32                             hpe_pn;      /* HPE part number */
 	u32                             max_speed;

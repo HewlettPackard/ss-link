@@ -98,6 +98,15 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 else:
                     f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_INVALID" + ",\n")
 
+		# vendor part num
+                cell_obj = df.cell(row = curr_row+1, column = 8)
+                vendor_str = str(cell_obj.value)
+                vendor_pn = vendor_str.replace(" ","")
+                if (len(vendor_pn) > 16):
+                    f.write("\t\t.vendor_pn                = \"?\",\n")
+                else:
+                    f.write("\t\t.vendor_pn                = \"" + vendor_pn + "\",\n")
+
                 cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
                 cell_value = str(cell_obj.value).strip() #remove whitespace
                 curr_type = cell_value
