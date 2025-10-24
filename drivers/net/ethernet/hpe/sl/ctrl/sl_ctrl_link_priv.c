@@ -287,6 +287,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 			sl_ctrl_link_state_stopping_set(ctrl_link);
 
+			flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 			sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 			complete_all(&ctrl_link->down_complete);
 
@@ -311,6 +312,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 			sl_ctrl_link_last_up_fail_cause_map_set(ctrl_link, SL_LINK_DOWN_CAUSE_UP_TRIES_MAP);
 
+			flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 			sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 
 			complete_all(&ctrl_link->down_complete);
@@ -330,6 +332,8 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback work fatal down cause");
 
 			sl_ctrl_link_state_stopping_set(ctrl_link);
+
+			flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 
 			sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 			complete_all(&ctrl_link->down_complete);
@@ -359,6 +363,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 				"up callback work core_link_up failed [%d]", rtn);
 
+			flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 			sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 
 			complete_all(&ctrl_link->down_complete);
@@ -383,6 +388,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			"up callback work invalid (core_state = %u, core_imap = %s)",
 			core_link_up_info.state, core_imap_str);
 
+		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 
 		complete_all(&ctrl_link->down_complete);
@@ -440,6 +446,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
+		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
 
@@ -454,6 +461,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
 			"fault callback invalid (core_state = %u)", core_state);
 
+		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 
 		complete_all(&ctrl_link->down_complete);
@@ -531,6 +539,7 @@ int sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
+		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
 
@@ -582,6 +591,7 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
+		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
 
