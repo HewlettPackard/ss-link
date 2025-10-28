@@ -395,11 +395,13 @@ bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struc
 		return false;
 
 	if (media_attr->shape == SL_MEDIA_SHAPE_SPLITTER && media_jack->cable_end != SL_MEDIA_CABLE_END_DD)
-		return ((media_attr->fw_ver[0] >= cable_db[media_jack->cable_db_idx].fw_ver.split_major) &&
-			(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.split_minor));
+		return ((media_attr->fw_ver[0] > cable_db[media_jack->cable_db_idx].fw_ver.split_major) ||
+			((media_attr->fw_ver[0] == cable_db[media_jack->cable_db_idx].fw_ver.split_major) &&
+			(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.split_minor)));
 
-	return ((media_attr->fw_ver[0] >= cable_db[media_jack->cable_db_idx].fw_ver.major) &&
-		(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.minor));
+	return ((media_attr->fw_ver[0] > cable_db[media_jack->cable_db_idx].fw_ver.major) ||
+		((media_attr->fw_ver[0] == cable_db[media_jack->cable_db_idx].fw_ver.major) &&
+		(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.minor)));
 }
 
 void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
