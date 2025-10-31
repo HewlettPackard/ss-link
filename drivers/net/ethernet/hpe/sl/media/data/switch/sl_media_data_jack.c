@@ -412,7 +412,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	media_jack = sl_media_data_jack_get(ldev_num, jack_num);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "media data jack online");
+	sl_media_log_dbg(media_jack, LOG_NAME, "jack online");
 
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 
@@ -453,7 +453,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		return rtn;
 	}
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "jack online (jack_type = %u, port_count = %u, asic_port1 = %u, asic_port2 = %u",
+			 "jack online (jack_type = %u, port_count = %u, asic_port1 = %u, asic_port2 = %u)",
 			 jack_data.jack_type, jack_data.port_count, jack_data.asic_port[0], jack_data.asic_port[1]);
 	media_jack->port_count = jack_data.port_count;
 	memcpy(&(media_jack->asic_port), &(jack_data.asic_port), sizeof(jack_data.asic_port));
@@ -729,10 +729,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 145;
-	i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -750,10 +750,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 149;
-	i2c_data.data[0] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -829,11 +829,11 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable hw shift state get");
 
-	downshift_lower_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	downshift_upper_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	downshift_lower_lane_config = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	downshift_upper_lane_config = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
 
-	upshift_lower_lane_config = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	upshift_upper_lane_config = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	upshift_lower_lane_config = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	upshift_upper_lane_config = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
 
 	i2c_data.addr   = 0;
 	i2c_data.page   = 0x10;
@@ -932,10 +932,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 145;
-	i2c_data.data[0] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -953,10 +953,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 149;
-	i2c_data.data[0] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {

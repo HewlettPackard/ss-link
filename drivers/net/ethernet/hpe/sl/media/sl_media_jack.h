@@ -139,10 +139,10 @@ struct sl_media_jack {
 	u32                             fault_cause;
 	time64_t                        fault_time;
 	u8                              cable_shift_state;
-	u8                              appsel_no_200_gaui; /* used for downshifting */
+	u8                              appsel_num_200_gaui; /* used for downshifting */
 	u8                              lane_count_200_gaui; /* used for downshifting */
 	u8                              host_interface_200_gaui; /* used for downshifting */
-	u8                              appsel_no_400_gaui; /* used for upshifting */
+	u8                              appsel_num_400_gaui; /* used for upshifting */
 	u8                              lane_count_400_gaui; /* used for upshifting */
 	u8                              host_interface_400_gaui; /* used for upshifting */
 
@@ -189,11 +189,11 @@ u8                    sl_media_jack_cable_shift_state_get(struct sl_media_jack *
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
 
-u8 sl_media_jack_active_cable_200g_host_iface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_200g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack);
 u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_400g_host_iface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_400g_appsel_no_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack);
+u8 sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack);
 u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);

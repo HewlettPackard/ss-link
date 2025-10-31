@@ -92,7 +92,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 */
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
-				        (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
+				        (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
 		if (rtn) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME,
@@ -152,8 +152,8 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable hw shift state get");
 
-	downshift_lower_lane_config = (media_jack->appsel_no_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	upshift_lower_lane_config = (media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	downshift_lower_lane_config = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	upshift_lower_lane_config = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
 
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_read8(media_jack, 0x10, 145 + i, &read_data[i]);
@@ -217,7 +217,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 */
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
-					(media_jack->appsel_no_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
+					(media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
 		if (rtn) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME,

@@ -19,7 +19,7 @@
 #define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
 
 static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, u8 host_interface,
-					      u32 *speeds_map, u8 appsel_no, u8 lane_count)
+					      u32 *speeds_map, u8 appsel_num, u8 lane_count)
 {
 	switch (host_interface) {
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GAUI_1_C2M:
@@ -42,7 +42,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BS_200G;
-		media_jack->appsel_no_200_gaui = appsel_no;
+		media_jack->appsel_num_200_gaui = appsel_num;
 		media_jack->lane_count_200_gaui = lane_count;
 		media_jack->host_interface_200_gaui = host_interface;
 		break;
@@ -58,15 +58,15 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
-		if (media_jack->appsel_no_400_gaui) /* we prefer 4_l_c2m over 4_s_c2m for default ck400G speed */
+		if (media_jack->appsel_num_400_gaui) /* we prefer 4_l_c2m over 4_s_c2m for default ck400G speed */
 			break;
-		media_jack->appsel_no_400_gaui = appsel_no;
+		media_jack->appsel_num_400_gaui = appsel_num;
 		media_jack->lane_count_400_gaui = lane_count;
 		media_jack->host_interface_400_gaui = host_interface;
 		break;
 	case SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
-		media_jack->appsel_no_400_gaui = appsel_no;
+		media_jack->appsel_num_400_gaui = appsel_num;
 		media_jack->lane_count_400_gaui = lane_count;
 		media_jack->host_interface_400_gaui = host_interface;
 		fallthrough;
@@ -85,7 +85,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_800G;
 		if (!media_jack->host_interface_400_gaui) {
-			media_jack->appsel_no_400_gaui = appsel_no;
+			media_jack->appsel_num_400_gaui = appsel_num;
 			media_jack->host_interface_400_gaui = host_interface;
 		}
 		break;
@@ -106,18 +106,18 @@ static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, u32
 {
 	u8  host_interface;
 	u8  appsel_curr;
-	u8  appsel_no;
+	u8  appsel_num;
 
 	appsel_curr = APPSEL_PAGE0_START_OFFSET;
-	appsel_no = 1;
+	appsel_num = 1;
 	while (appsel_curr <= APPSEL_LAST_PAGE0) {
 		host_interface = media_jack->eeprom_page0[appsel_curr];
 		if (host_interface == APPSEL_END)
 			return 0;
-		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_no,
+		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_num,
 						  media_jack->eeprom_page0[appsel_curr + APPSEL_LANE_COUNT_OFFSET]);
 		appsel_curr += APPSEL_STRIDE;
-		appsel_no++;
+		appsel_num++;
 	}
 
 	appsel_curr = APPSEL_PAGE1_START_OFFSET;
@@ -125,10 +125,10 @@ static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, u32
 		host_interface = media_jack->eeprom_page1[appsel_curr];
 		if (host_interface == APPSEL_END)
 			return 0;
-		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_no,
+		sl_media_eeprom_appsel_info_store(media_jack, host_interface, speeds_map, appsel_num,
 						  media_jack->eeprom_page1[appsel_curr + APPSEL_LANE_COUNT_OFFSET]);
 		appsel_curr += APPSEL_STRIDE;
-		appsel_no++;
+		appsel_num++;
 	}
 
 	return 0;

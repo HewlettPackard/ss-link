@@ -121,7 +121,7 @@ bool sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack)
 	return is_format_invalid;
 }
 
-u8 sl_media_jack_active_cable_200g_host_iface_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack)
 {
 	u8 host_interface_200_gaui;
 
@@ -132,15 +132,15 @@ u8 sl_media_jack_active_cable_200g_host_iface_get(struct sl_media_jack *media_ja
 	return host_interface_200_gaui;
 }
 
-u8 sl_media_jack_active_cable_200g_appsel_no_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack)
 {
-	u8 appsel_no_200_gaui;
+	u8 appsel_num_200_gaui;
 
 	spin_lock(&media_jack->data_lock);
-	appsel_no_200_gaui = media_jack->appsel_no_200_gaui;
+	appsel_num_200_gaui = media_jack->appsel_num_200_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return appsel_no_200_gaui;
+	return appsel_num_200_gaui;
 }
 
 u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack)
@@ -154,7 +154,7 @@ u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_ja
 	return lane_count_200_gaui;
 }
 
-u8 sl_media_jack_active_cable_400g_host_iface_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack)
 {
 	u8 host_interface_400_gaui;
 
@@ -165,15 +165,15 @@ u8 sl_media_jack_active_cable_400g_host_iface_get(struct sl_media_jack *media_ja
 	return host_interface_400_gaui;
 }
 
-u8 sl_media_jack_active_cable_400g_appsel_no_get(struct sl_media_jack *media_jack)
+u8 sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack)
 {
-	u8 appsel_no_400_gaui;
+	u8 appsel_num_400_gaui;
 
 	spin_lock(&media_jack->data_lock);
-	appsel_no_400_gaui = media_jack->appsel_no_400_gaui;
+	appsel_num_400_gaui = media_jack->appsel_num_400_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return appsel_no_400_gaui;
+	return appsel_num_400_gaui;
 }
 
 u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack)

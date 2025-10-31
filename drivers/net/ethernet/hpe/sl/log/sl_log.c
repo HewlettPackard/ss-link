@@ -41,7 +41,7 @@
 #define SL_LOG_LDEV_ID_FMT          "%c[%1u:--:-] ldev%1u       "
 #define SL_LOG_LGRP_ID_FMT          "%c[%1u:%02u:-] %-12s"
 #define SL_LOG_LINK_ID_FMT          "%c[%1u:%02u:%1u] %-12s"
-#define SL_LOG_JACK_ID_FMT          "%c[-:--:-] jack%02u      "
+#define SL_LOG_JACK_ID_FMT          "%c[-:--:-] jack%03u     "
 #define SL_LOG_CONTEXT              (in_interrupt() ? '^' : ' ')
 
 static int remaining_chars(int idx)

@@ -117,17 +117,18 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	hpe_pn_kobj = container_of(kobj, struct sl_ctrl_ldev_cable_hpe_pn_kobj, kobj);
 
-	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME, "max_speed show (ctrl_ldev = 0x%p, max_speed = %s)",
-		hpe_pn_kobj->ctrl_ldev, sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
+	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME,
+		   "max_speed show (ctrl_ldev = 0x%p, max_speed = %s)",
+		   hpe_pn_kobj->ctrl_ldev, sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
 }
 
-static struct kobj_attribute cable_hpe_pn_length    = __ATTR_RO(length_cm);
+static struct kobj_attribute cable_hpe_pn_length_cm = __ATTR_RO(length_cm);
 static struct kobj_attribute cable_hpe_pn_max_speed = __ATTR_RO(max_speed);
 
 static struct attribute *cable_hpe_pn_attrs[] = {
-	&cable_hpe_pn_length.attr,
+	&cable_hpe_pn_length_cm.attr,
 	&cable_hpe_pn_max_speed.attr,
 	NULL,
 };

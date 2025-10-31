@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=3
+MINOR=4
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -15,9 +15,12 @@ function usage {
         echo "    lgrp_num = link group number (0-63)"
         echo "    link_num = link number (0-3)"
         echo "  option: (omitted option will print all available info for target)"
-        echo "    state    = print state for the target"
+        echo "    state    = print state info for the target"
         echo "    link     = print link info for the target"
+        echo "    mac      = print mac info for the target"
+        echo "    llr      = print llr info for the target"
         echo "    serdes   = print serdes info for the target"
+        echo "    fec      = print fec info for the target"
         echo "    cable    = print cable info for the target"
         echo "    counters = print counters for a link target (requires #:#:#)"
         echo "    use_test = use the \"test_port\" directory"
@@ -38,8 +41,17 @@ elif [ "$#" -eq 2 ] ; then
                 link )
                         option=link
                         ;;
+                mac )
+                        option=mac
+                        ;;
+                llr )
+                        option=llr
+                        ;;
                 serdes )
                         option=serdes
+                        ;;
+                fec )
+                        option=fec
                         ;;
                 cable )
                         option=cable
@@ -124,12 +136,12 @@ function print_jack_state {
 
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
-		local high_temp=$(cat ${LGRP_PATH}/media/high_temperature)
+		local is_high_temp=$(cat ${LGRP_PATH}/media/is_high_temperature)
 		local high_temp_threshold=$(cat ${LGRP_PATH}/media/high_temperature_threshold_celsius)
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
 		else
-			printf "           | temperature: ${temp}c, (high_temperature = ${high_temp}, high_temperature_threshold: ${high_temp_threshold}c)\n"
+			printf "           | temperature: ${temp}c, (is_high_temperature = ${is_high_temp}, high_temperature_threshold: ${high_temp_threshold}c)\n"
 		fi
 	fi
 }
@@ -152,8 +164,18 @@ function print_link_state {
 	local S=$((up_time/1000%60))
 	local MS=$((up_time%1000))
 
-        printf "link%d      | state: ${state}, speed: ${speed}, up_time: ${D}d ${H}h ${M}m ${S}s ${MS}ms\n" ${LINK}
-        printf "           | time_to_link_up: ${time_to_link_up}ms, total_time_to_link_up: ${total_time_to_link_up}ms\n"
+	if [ "${time_to_link_up}" == "no-link" ] ; then
+		local units="";
+	else
+		local units="ms";
+	fi
+
+	if [ "${up_time}" == "no-link" ] ; then
+        	printf "link%d      | state: ${state}, speed: ${speed}, up_time: no-link\n" ${LINK}
+	else
+        	printf "link%d      | state: ${state}, speed: ${speed}, up_time: ${D}d ${H}h ${M}m ${S}s ${MS}ms\n" ${LINK}
+	fi
+        printf "           | time_to_link_up: ${time_to_link_up}${units}, total_time_to_link_up: ${total_time_to_link_up}${units}\n"
         printf "           | info_map: ${info_map}\n"
 }
 
@@ -193,7 +215,7 @@ function print_link_counters {
         for counter in ${LINK_PATH}/counters/* ; do
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        printf " %30s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
                         printf "           | %30s = ${val}\n" $(basename "${counter}")
@@ -249,18 +271,19 @@ function print_jack {
         local vendor=$(cat ${LGRP_PATH}/media/vendor)
         local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
         local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
+        local date_code=$(cat ${LGRP_PATH}/media/date_code)
         local supported=$(cat ${LGRP_PATH}/media/supported)
         local ss200_cable=$(cat ${LGRP_PATH}/media/is_supported_ss200_cable)
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
 	local fw_ver=$(cat ${LGRP_PATH}/media/firmware_version_hex)
-	local host_iface_200=$(cat ${LGRP_PATH}/media/active_cable_200g_host_iface)
-	local lane_cnt_200=$(cat ${LGRP_PATH}/media/active_cable_200g_lane_cnt)
-	local appsel_no_200=$(cat ${LGRP_PATH}/media/active_cable_200g_appsel_no)
-	local host_iface_400=$(cat ${LGRP_PATH}/media/active_cable_400g_host_iface)
-	local lane_cnt_400=$(cat ${LGRP_PATH}/media/active_cable_400g_lane_cnt)
-	local appsel_no_400=$(cat ${LGRP_PATH}/media/active_cable_400g_appsel_no)
+	local host_interface_200=$(cat ${LGRP_PATH}/media/active_cable_200g_host_interface)
+	local lane_count_200=$(cat ${LGRP_PATH}/media/active_cable_200g_lane_count)
+	local appsel_num_200=$(cat ${LGRP_PATH}/media/active_cable_200g_appsel_num)
+	local host_interface_400=$(cat ${LGRP_PATH}/media/active_cable_400g_host_interface)
+	local lane_count_400=$(cat ${LGRP_PATH}/media/active_cable_400g_lane_count)
+	local appsel_num_400=$(cat ${LGRP_PATH}/media/active_cable_400g_appsel_num)
 	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
 	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
 	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version_hex)
@@ -277,13 +300,13 @@ function print_jack {
         print_jack_state
 
         printf "           | cable: ${vendor} ${type} ${length}${units}\n"
-        printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}\n"
+        printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}, data_code: ${date_code}\n"
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
         printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		printf "           | active_cable: fw_ver_hex: ${fw_ver}, (target_fw_ver_hex = ${target_fw_ver})\n"
-		printf "           | active_cable_200g: host_interface: ${host_iface_200}, lane_count: ${lane_cnt_200}, appselect#: ${appsel_no_200}\n"
-		printf "           | active_cable_400g: host_interface: ${host_iface_400}, lane_count: ${lane_cnt_400}, appselect#: ${appsel_no_400}\n"
+		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect#: ${appsel_num_200}\n"
+		printf "           | active_cable_400g: host_interface: ${host_interface_400}, lane_count: ${lane_count_400}, appselect#: ${appsel_num_400}\n"
 	fi
 	printf "           | speeds: "
 	local have_speed=no
@@ -335,12 +358,19 @@ function print_lgrp {
         local furcation=$(cat ${LGRP_PATH}/config/furcation)
         local tech_map=$(cat ${LGRP_PATH}/config/tech_map)
         local fec_map=$(cat ${LGRP_PATH}/config/fec_map)
+        local fec_mode=$(cat ${LGRP_PATH}/config/fec_mode)
+        local mfs=$(cat ${LGRP_PATH}/config/mfs)
         local link_type=$(cat ${LGRP_PATH}/config/link_type)
+        local fabric_link=$(cat ${LGRP_PATH}/config/fabric_link)
+        local r1_partner=$(cat ${LGRP_PATH}/config/r1_partner)
 
-        printf "lgrp%02d     | furcation  : ${furcation}\n" ${LGRP}
-        printf "           | tech_config: ${tech_map}\n"
-        printf "           | fec_config : ${fec_map}\n"
-        printf "           | link_type  : ${link_type}\n"
+        printf "lgrp%02d     | furcation   : ${furcation}\n" ${LGRP}
+        printf "           | mfs         : ${mfs}\n"
+        printf "           | technology  : ${tech_map}\n"
+        printf "           | fec         : ${fec_map}  (fec_mode = ${fec_mode})\n"
+        printf "           | link_type   : ${link_type}\n"
+        printf "           | fabric_link : ${fabric_link}\n"
+        printf "           | r1_partner  : ${r1_partner}\n"
 }
 
 function print_link {
@@ -376,6 +406,11 @@ function print_link {
         local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
         local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_lane_map)
         local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
+        local fec_mon_ccw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_down_limit)
+        local fec_mon_ccw_warn_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_warn_limit)
+        local fec_mon_ucw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ucw_down_limit)
+        local fec_mon_ucw_warn_limit=$(cat ${LINK_PATH}/policies/fec_mon_ucw_warn_limit)
+        local fec_mon_period_ms=$(cat ${LINK_PATH}/policies/fec_mon_period_ms)
 
         print_link_state
 
@@ -387,6 +422,9 @@ function print_link {
         printf "           | use_unsupported_cable    : ${use_unsupported_cable}\n"
         printf "           | use_supported_ss200_cable: ${use_supported_ss200_cable}\n"
         printf "           | ignore_media_error       : ${ignore_media_error}\n"
+        printf "           | fec_monitor: period = ${fec_mon_period_ms}ms\n"
+        printf "           |              ccw_warn_limit = ${fec_mon_ccw_warn_limit}, ucw_warn_limit = ${fec_mon_ucw_warn_limit}\n"
+        printf "           |              ccw_down_limit = ${fec_mon_ccw_down_limit}, ucw_down_limit = ${fec_mon_ucw_down_limit}\n"
         printf "    config | hpe     : ${hpe_map}\n"
         printf "           | loopback: ${loopback}\n"
         printf "           | pause   : ${pause_map}\n"
@@ -705,10 +743,33 @@ case $option in
                         print_link_counters
 		fi
 		;;
+	mac )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_lgrp
+                        print_mac
+                        print_mac_counters
+		fi
+		;;
+	llr )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_lgrp
+                        print_llr
+                        print_llr_counters
+		fi
+		;;
         serdes )
                 if [ ${num_args} -ge 3 ] ; then
                         print_ldev
                         print_serdes_settings
+		fi
+		;;
+        fec )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_fec
+                        print_fec_bins
 		fi
 		;;
         cable )
