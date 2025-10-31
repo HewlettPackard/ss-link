@@ -1106,29 +1106,25 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 
 int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
 {
-	int                  rtn;
-	struct xcvr_i2c_data data;
+	int rtn;
+	u8  data8;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable temp get");
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable temp get");
 
 	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-						media_jack->cable_info[0].lgrp_num))
+						media_jack->cable_info[0].lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
 		return -EBADRQC;
+	}
 
-	data.addr   = 0;
-	data.page   = 0;
-	data.bank   = 0;
-	data.offset = 14;
-	data.len    = 1;
-
-	rtn = hsnxcvr_i2c_read(media_jack->hdl, &data);
-	if (rtn) {
+	rtn = sl_media_io_read8(media_jack, 0, 14, &data8);
+	if (rtn != sizeof(data8)) {
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 			"temp get read failed [%d]", rtn);
 		return -EIO;
 	}
 
-	*temp = data.data[0];
+	*temp = data8;
 	return 0;
 }
 
