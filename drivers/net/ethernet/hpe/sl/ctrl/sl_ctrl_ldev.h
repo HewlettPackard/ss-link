@@ -9,6 +9,7 @@
 #include <linux/completion.h>
 
 #include <linux/hpe/sl/sl_ldev.h>
+#include <linux/hpe/sl/sl_media.h>
 
 #include "data/sl_media_data_cable_db.h"
 
@@ -16,14 +17,28 @@
 #define SL_CTRL_LDEV_VER   2
 
 enum sl_cable_types {
-	SL_CABLE_TYPE_PEC,
+	SL_CABLE_TYPE_PEC    = 0,
 	SL_CABLE_TYPE_AOC,
 	SL_CABLE_TYPE_AEC,
 	SL_CABLE_TYPE_POC,
-	SL_CABLE_TYPES_NUM,
+
+	SL_CABLE_TYPES_NUM
 };
 
-#define SL_CABLE_VENDORS_NUM 11
+enum sl_cable_vendors {
+	SL_CABLE_VENDOR_TE            = 0,
+	SL_CABLE_VENDOR_HISENSE,
+	SL_CABLE_VENDOR_LEONI,
+	SL_CABLE_VENDOR_FINISAR,
+	SL_CABLE_VENDOR_MOLEX,
+	SL_CABLE_VENDOR_BIZLINK,
+	SL_CABLE_VENDOR_HPE,
+	SL_CABLE_VENDOR_CLOUD_LIGHT,
+	SL_CABLE_VENDOR_MULTILANE,
+	SL_CABLE_VENDOR_AMPHENOL,
+
+	SL_CABLE_VENDORS_NUM
+};
 
 struct sl_ctrl_ldev_cable_hpe_pn_kobj {
 	struct sl_ctrl_ldev *ctrl_ldev;
@@ -44,6 +59,7 @@ struct sl_ctrl_ldev {
 	u64                       lgrp_map;
 
 	struct kobject           *parent_kobj;
+	bool                      is_sysfs_ok;
 	struct kobject            sl_info_kobj;
 
 	spinlock_t                data_lock;

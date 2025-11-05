@@ -127,6 +127,8 @@ EXPORT_SYMBOL(sl_media_type_str);
 const char *sl_media_shape_str(u32 shape)
 {
 	switch (shape) {
+	case SL_MEDIA_SHAPE_INVALID:
+		return "invalid";
 	case SL_MEDIA_SHAPE_STRAIGHT:
 		return "straight";
 	case SL_MEDIA_SHAPE_SPLITTER:
@@ -134,7 +136,7 @@ const char *sl_media_shape_str(u32 shape)
 	case SL_MEDIA_SHAPE_BIFURCATED:
 		return "bifurcated(H)";
 	default:
-		return "invalid";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_shape_str);
@@ -142,6 +144,8 @@ EXPORT_SYMBOL(sl_media_shape_str);
 const char *sl_media_cable_end_str(u8 cable_end)
 {
 	switch (cable_end) {
+	case SL_MEDIA_CABLE_END_INVALID:
+		return "invalid";
 	case SL_MEDIA_CABLE_END_DD:
 		return "qsfp_dd";
 	case SL_MEDIA_CABLE_END_END1:
@@ -149,7 +153,7 @@ const char *sl_media_cable_end_str(u8 cable_end)
 	case SL_MEDIA_CABLE_END_END2:
 		return "qsfp_end2";
 	default:
-		return "invalid";
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_end_str);
@@ -159,8 +163,6 @@ const char *sl_media_vendor_str(u32 vendor)
 	switch (vendor) {
 	case SL_MEDIA_VENDOR_INVALID:
 		return "invalid";
-	case SL_MEDIA_VENDOR_UNKNOWN:
-		return "unknown";
 	case SL_MEDIA_VENDOR_TE:
 		return "te";
 	case SL_MEDIA_VENDOR_HISENSE:
