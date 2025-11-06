@@ -64,11 +64,7 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	media_ldevs[ldev_num] = media_ldev;
 	spin_unlock(&media_ldevs_lock);
 
-	INIT_DELAYED_WORK(&media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
-			  sl_media_jack_cable_monitor_high_temp_delayed_work);
-
-	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
-			   msecs_to_jiffies(SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS));
+	sl_media_data_jack_cable_high_temp_monitor_start(media_ldev);
 
 	return 0;
 }

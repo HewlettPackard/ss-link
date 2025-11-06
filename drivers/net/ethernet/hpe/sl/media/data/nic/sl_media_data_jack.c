@@ -432,27 +432,6 @@ static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
 	return physical_jack_num - 1;
 }
 
-bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
+void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev)
 {
-	int                   rtn;
-	u8                    data;
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
-
-	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
-	if (rtn != sizeof(data)) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "TempMon/VccMon get read failed [%d]", rtn);
-		return false;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon: 0x%X", data);
-
-	if (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) {
-		spin_lock(&media_jack->data_lock);
-		media_jack->is_high_temp = true;
-		spin_unlock(&media_jack->data_lock);
-		return true;
-	}
-
-	return false;
 }

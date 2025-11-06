@@ -208,7 +208,6 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
 int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
-void sl_media_jack_cable_monitor_high_temp_delayed_work(struct work_struct *work);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 

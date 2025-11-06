@@ -37,7 +37,6 @@ int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack);
 
 bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
-bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
 
 int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
 int  sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold);
@@ -57,5 +56,6 @@ int  sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack);
 
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack);
 void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state);
+void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev);
 
 #endif /* _SL_MEDIA_DATA_JACK_H_ */
