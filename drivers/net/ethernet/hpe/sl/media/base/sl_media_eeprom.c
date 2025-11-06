@@ -384,8 +384,9 @@ bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struc
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "is fw version valid");
 
-	if (sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-					       media_jack->cable_info[0].lgrp_num))
+	if (media_attr->type != SL_MEDIA_TYPE_AOC &&
+	    media_attr->type != SL_MEDIA_TYPE_AEC &&
+	    media_attr->type != SL_MEDIA_TYPE_POC)
 		return false;
 
 	if (media_jack->is_cable_not_supported)
@@ -417,8 +418,9 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 			 sl_media_cable_end_str(media_jack->cable_end),
 			 media_jack->is_cable_not_supported ? "no" : "yes");
 
-	if (sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-					       media_jack->cable_info[0].lgrp_num)) {
+	if (media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AOC &&
+	    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AEC &&
+	    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_POC) {
 		snprintf(target_fw_str, target_fw_size, "invalid-type\n");
 		return;
 	}

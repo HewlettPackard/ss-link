@@ -50,16 +50,18 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
 				       core_link->core_lgrp->num);
 
+	if (core_llr)
+		sl_core_llr_stop(core_link->core_lgrp->core_ldev->num,
+				 core_link->core_lgrp->num, core_link->num);
+
+	msleep(100);
+
 	if (core_mac) {
 		rx_state = sl_core_hw_mac_rx_state_get(core_mac);
 		tx_state = sl_core_hw_mac_tx_state_get(core_mac);
 		/* stop TX mac before PCS so we don't lock up PCS */
 		sl_core_hw_mac_tx_stop(core_mac);
 	}
-
-	if (core_llr)
-		sl_core_llr_stop(core_link->core_lgrp->core_ldev->num,
-				 core_link->core_lgrp->num, core_link->num);
 
 	sl_core_hw_pcs_stop(core_link);
 
