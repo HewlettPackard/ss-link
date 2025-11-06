@@ -354,8 +354,9 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 
 bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
-	if (media_attr->type != SL_MEDIA_TYPE_AOC && media_attr->type != SL_MEDIA_TYPE_AEC &&
-		media_attr->type != SL_MEDIA_TYPE_POC)
+	if (media_attr->type != SL_MEDIA_TYPE_AOC &&
+	    media_attr->type != SL_MEDIA_TYPE_AEC &&
+	    media_attr->type != SL_MEDIA_TYPE_POC)
 		return false;
 
 	if (media_attr->shape == SL_MEDIA_SHAPE_SPLITTER && media_jack->cable_end != SL_MEDIA_CABLE_END_DD)
