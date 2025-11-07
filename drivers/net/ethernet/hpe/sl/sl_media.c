@@ -308,6 +308,8 @@ const char *sl_media_error_str(u32 error)
 		return "invalid-fw";
 	case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
 		return "headshell-fault";
+	case SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT:
+		return "temperature-thresh-default";
 	default:
 		return "unknown";
 	}

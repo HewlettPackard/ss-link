@@ -72,6 +72,9 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 
+	media_jack->temperature_value     = -1;
+	media_jack->temperature_threshold = -1;
+
 	sl_media_log_dbg(media_jack, LOG_NAME, "new (jack = 0x%p)", media_jack);
 
 	spin_lock(&media_jacks_lock);

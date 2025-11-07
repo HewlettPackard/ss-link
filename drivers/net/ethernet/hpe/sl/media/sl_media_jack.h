@@ -150,6 +150,9 @@ struct sl_media_jack {
 	u8                              port_count;
 	u16                             asic_port[4];
 	u32                             status;
+
+	int                             temperature_value;
+	int                             temperature_threshold;
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0

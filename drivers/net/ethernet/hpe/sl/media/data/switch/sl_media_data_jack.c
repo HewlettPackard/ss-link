@@ -127,6 +127,8 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	spin_lock(&media_jack->data_lock);
 	sl_media_data_cable_serdes_settings_clr(media_jack);
 	sl_media_data_jack_eeprom_clr(media_jack);
+	media_jack->temperature_value = -1;
+	media_jack->temperature_threshold = -1;
 	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 	spin_unlock(&media_jack->data_lock);
 	sl_media_data_jack_led_set(media_jack);
@@ -158,6 +160,8 @@ static bool sl_media_data_jack_remove_verify(struct sl_media_jack *media_jack)
 			sl_media_data_jack_media_attr_clr(media_jack, &media_jack->cable_info[i]);
 		sl_media_data_cable_serdes_settings_clr(media_jack);
 		sl_media_data_jack_eeprom_clr(media_jack);
+		media_jack->temperature_value = -1;
+		media_jack->temperature_threshold = -1;
 		media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
 		is_removed = true;
 	}
@@ -397,6 +401,117 @@ void sl_media_data_jack_unregister_event_notifier(void)
 	unregister_hsnxcvr_notifier(&event_notifier);
 }
 
+#define TEMPERATURE_CELSIUS_MIN 10
+#define TEMPERATURE_CELSIUS_MAX 200
+static int sl_media_data_jack_temp_value_get(struct sl_media_jack *media_jack, u8 *data)
+{
+	u8  i;
+	u8  value;
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "temp value get");
+
+	for (i = 0; i < 3; ++i) {
+		rtn = sl_media_io_read8(media_jack, 0, 14, &value);
+		if (rtn != sizeof(value))
+			continue;
+
+		if (value < TEMPERATURE_CELSIUS_MIN || value > TEMPERATURE_CELSIUS_MAX)
+			continue;
+
+		*data = value;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+#define TEMPERATURE_THRESHOLD_CELSIUS_MIN     70
+#define TEMPERATURE_THRESHOLD_CELSIUS_MAX     90
+#define TEMPERATURE_THRESHOLD_CELSIUS_DEFAULT 80
+static int sl_media_data_jack_temp_threshold_get(struct sl_media_jack *media_jack, u8 *data)
+{
+	u8  i;
+	u8  value;
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "temp threshold get");
+
+	for (i = 0; i < 3; ++i) {
+		rtn = sl_media_io_read8(media_jack, 2, 128, &value);
+		if (rtn != sizeof(value))
+			continue;
+
+		if (value < TEMPERATURE_THRESHOLD_CELSIUS_MIN || value > TEMPERATURE_THRESHOLD_CELSIUS_MAX)
+			continue;
+
+		*data = value;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+#define TEMPERATURE_CELSIUS_SLOPE 10
+static bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
+{
+	int  rtn;
+	u8   current_temp;
+	int  prev_temp;
+	bool is_high_temp;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
+
+	spin_lock(&media_jack->data_lock);
+	is_high_temp = media_jack->is_high_temp;
+	spin_unlock(&media_jack->data_lock);
+
+	/* If "is_high_temp" flag set, it indicates high temperature was detected before and the action
+	 * has been taken. Returning false in this case short-circuits the flow, signaling the caller
+	 * that no further action is required.
+	 */
+	if (is_high_temp)
+		return false;
+
+	rtn = sl_media_data_jack_temp_value_get(media_jack, &current_temp);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "temperature value read failed [%d]", rtn);
+		media_jack->temperature_value = -1;
+		return false;
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "cable is high temp set (temperature = 0x%X, threshold = 0x%X)",
+			 current_temp, media_jack->temperature_threshold);
+
+	prev_temp = media_jack->temperature_value;
+	media_jack->temperature_value = current_temp;
+
+	if (prev_temp < 0)
+		goto out;
+
+	if (current_temp < prev_temp - TEMPERATURE_CELSIUS_SLOPE ||
+	    current_temp > prev_temp + TEMPERATURE_CELSIUS_SLOPE) {
+		sl_media_log_err_trace(media_jack, LOG_NAME,
+				       "temperature slope check failure (temperature = %dc, previous = %dc, slope = %dc)",
+				       current_temp, prev_temp, TEMPERATURE_CELSIUS_SLOPE);
+		return false;
+	}
+
+out:
+	if (current_temp > media_jack->temperature_threshold) {
+		spin_lock(&media_jack->data_lock);
+		media_jack->is_high_temp = true;
+		sl_media_log_warn(media_jack, LOG_NAME,
+				  "cable high temperature alert (temperature = %dc, threshold = %dc)",
+				  current_temp, media_jack->temperature_threshold);
+		spin_unlock(&media_jack->data_lock);
+		return true;
+	}
+
+	return false;
+}
+
 #define SL_MEDIA_JACK_CABLE_EVENT_TIMEOUT 200
 int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 {
@@ -406,6 +521,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	struct sl_media_jack   *media_jack;
 	struct sl_media_attr    media_attr;
 	u8                      count;
+	u8                      value;
 	struct xcvr_i2c_data    i2c_data;
 	struct xcvr_jack_data   jack_data;
 	struct xcvr_status_data status_data;
@@ -622,6 +738,19 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			if (ret)
 				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
 			return rtn;
+		}
+	}
+
+	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
+	    media_attr.type == SL_MEDIA_TYPE_POC) {
+		rtn = sl_media_data_jack_temp_threshold_get(media_jack, &value);
+		if (rtn) {
+			media_jack->temperature_threshold = TEMPERATURE_THRESHOLD_CELSIUS_DEFAULT;
+			media_attr.errors |= SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT;
+			sl_media_log_dbg(media_jack, LOG_NAME, "media error cable temp theshold (0x%x)",
+					 media_attr.errors);
+		} else {
+			media_jack->temperature_threshold = value;
 		}
 	}
 
@@ -1106,9 +1235,6 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 
 int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
 {
-	int rtn;
-	u8  data8;
-
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable temp get");
 
 	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
@@ -1117,22 +1243,15 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 		return -EBADRQC;
 	}
 
-	rtn = sl_media_io_read8(media_jack, 0, 14, &data8);
-	if (rtn != sizeof(data8)) {
-		sl_media_log_err_trace(media_jack, LOG_NAME,
-			"temp get read failed [%d]", rtn);
+	if (media_jack->temperature_value < 0)
 		return -EIO;
-	}
 
-	*temp = data8;
+	*temp = media_jack->temperature_value;
 	return 0;
 }
 
 int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold)
 {
-	int rtn;
-	u8  data;
-
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp threshold get");
 
 	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
@@ -1141,13 +1260,10 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 		return -EBADRQC;
 	}
 
-	rtn = sl_media_io_read8(media_jack, 2, 128, &data);
-	if (rtn != sizeof(data)) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "cable high temp threshold read failed [%d]", rtn);
+	if (media_jack->temperature_threshold < 0)
 		return -EIO;
-	}
 
-	*temp_threshold = data;
+	*temp_threshold = media_jack->temperature_threshold;
 	return 0;
 }
 
@@ -1238,31 +1354,6 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 		sl_media_io_led_set(media_jack, LED_OFF);
 }
 
-static bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
-{
-	int rtn;
-	u8  data;
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
-
-	rtn = sl_media_io_read8(media_jack, 0, 9, &data);
-	if (rtn != sizeof(data)) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "TempMon/VccMon get read failed [%d]", rtn);
-		return false;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "TempMon/VccMon: 0x%X", data);
-
-	if (data & SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK) {
-		spin_lock(&media_jack->data_lock);
-		media_jack->is_high_temp = true;
-		spin_unlock(&media_jack->data_lock);
-		return true;
-	}
-
-	return false;
-}
-
 static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_struct *work)
 {
 	int                   rtn;
@@ -1285,8 +1376,9 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 		if (!sl_media_lgrp_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num))
 			continue;
 
-		if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-							media_jack->cable_info[0].lgrp_num)) {
+		if (media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AOC &&
+		    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AEC &&
+		    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_POC) {
 			sl_media_log_dbg(media_ldev, LOG_NAME, "not active cable (jack_num = %u)", jack_num);
 			continue;
 		}
