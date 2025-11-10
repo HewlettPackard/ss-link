@@ -2669,7 +2669,7 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.major             = 0,
 		.fw_ver.minor             = 18,
 		.fw_ver.split_major       = 0,
-		.fw_ver.split_minor       = 18,
+		.fw_ver.split_minor       = 15,
 	},
 	{
 		.hpe_pn                   = 65068001,
@@ -2726,7 +2726,7 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.major             = 0,
 		.fw_ver.minor             = 18,
 		.fw_ver.split_major       = 0,
-		.fw_ver.split_minor       = 18,
+		.fw_ver.split_minor       = 15,
 	},
 	{
 		.hpe_pn                   = 65072001,
@@ -2783,7 +2783,7 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.major             = 0,
 		.fw_ver.minor             = 18,
 		.fw_ver.split_major       = 0,
-		.fw_ver.split_minor       = 18,
+		.fw_ver.split_minor       = 15,
 	},
 	{
 		.hpe_pn                   = 66805001,
@@ -3087,7 +3087,7 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.major             = 0,
 		.fw_ver.minor             = 18,
 		.fw_ver.split_major       = 0,
-		.fw_ver.split_minor       = 18,
+		.fw_ver.split_minor       = 15,
 	},
 	{
 		.hpe_pn                   = 82013001,
@@ -5505,7 +5505,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn                = "2505170-6",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5562,7 +5562,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn                = "2505170-7",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
