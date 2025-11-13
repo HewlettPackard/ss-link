@@ -435,3 +435,7 @@ static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
 void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev)
 {
 }
+
+void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev)
+{
+}

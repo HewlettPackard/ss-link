@@ -81,7 +81,7 @@ void sl_media_data_ldev_del(u8 ldev_num)
 		return;
 	}
 
-	cancel_delayed_work_sync(&media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP]);
+	sl_media_data_jack_cable_high_temp_monitor_stop(media_ldev);
 
 	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = NULL;

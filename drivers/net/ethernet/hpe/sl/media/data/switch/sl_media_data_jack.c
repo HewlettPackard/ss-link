@@ -1404,3 +1404,8 @@ void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *medi
 	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP],
 			   msecs_to_jiffies(SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS));
 }
+
+void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev)
+{
+	cancel_delayed_work_sync(&media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP]);
+}

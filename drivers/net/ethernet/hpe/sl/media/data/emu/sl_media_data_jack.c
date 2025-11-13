@@ -82,3 +82,7 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev)
 {
 }
+
+void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev)
+{
+}
