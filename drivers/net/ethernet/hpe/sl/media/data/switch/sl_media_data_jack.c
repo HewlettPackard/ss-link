@@ -727,8 +727,20 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		return rtn;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
-		media_attr.type == SL_MEDIA_TYPE_POC) {
+	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
+	    media_attr.type == SL_MEDIA_TYPE_AEC ||
+	    media_attr.type == SL_MEDIA_TYPE_POC) {
+		rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			if (ret)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+			return rtn;
+		}
+
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
@@ -760,8 +772,9 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		return rtn;
 	}
 
-	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC) ||
-		media_attr.type == SL_MEDIA_TYPE_POC) {
+	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
+	    media_attr.type == SL_MEDIA_TYPE_AEC ||
+	    media_attr.type == SL_MEDIA_TYPE_POC) {
 		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)
@@ -810,7 +823,7 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 }
 
 #define DATA_PATH_STATE_DEACTIVATED       0x1
-#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x01
+#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x00
 #define DATA_PATH_ID                      0x08
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
 #define DATA_PATH_UPPER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE | DATA_PATH_ID)
@@ -919,7 +932,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
-	msleep(500);
+	msleep(8000);
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -940,7 +953,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(2000);
+	msleep(3000);
 
 	return 0;
 }
@@ -1122,7 +1135,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
-	msleep(500);
+	msleep(8000);
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -1143,7 +1156,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(2000);
+	msleep(3000);
 
 	return 0;
 }
@@ -1186,7 +1199,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(5000);
+	msleep(10000);
 
 	return 0;
 }

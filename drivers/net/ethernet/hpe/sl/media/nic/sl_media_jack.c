@@ -174,8 +174,20 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return 0;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
-		media_attr.type == SL_MEDIA_TYPE_POC) {
+	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
+	    media_attr.type == SL_MEDIA_TYPE_AEC ||
+	    media_attr.type == SL_MEDIA_TYPE_POC) {
+		rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
+			if (rtn)
+				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			return rtn;
+		}
+
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
@@ -203,8 +215,9 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return rtn;
 	}
 
-	if ((media_attr.type == SL_MEDIA_TYPE_AOC) || (media_attr.type == SL_MEDIA_TYPE_AEC) ||
-		(media_attr.type == SL_MEDIA_TYPE_POC)) {
+	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
+	    media_attr.type == SL_MEDIA_TYPE_AEC ||
+	    media_attr.type == SL_MEDIA_TYPE_POC) {
 		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)

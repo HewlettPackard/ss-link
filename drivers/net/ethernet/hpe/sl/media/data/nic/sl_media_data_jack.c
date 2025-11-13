@@ -53,7 +53,7 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 }
 
 #define DATA_PATH_STATE_DEACTIVATED       0x1
-#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x01
+#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x00
 #define DATA_PATH_ID                      0x08
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
 #define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
@@ -122,7 +122,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
-	msleep(500);
+	msleep(8000);
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -137,7 +137,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(2000);
+	msleep(3000);
 
 	return 0;
 }
@@ -247,7 +247,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
 		return rtn;
 	}
-	msleep(500);
+	msleep(8000);
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -262,7 +262,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(2000);
+	msleep(3000);
 
 	return 0;
 }
@@ -290,7 +290,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(5000);
+	msleep(10000);
 
 	return 0;
 }

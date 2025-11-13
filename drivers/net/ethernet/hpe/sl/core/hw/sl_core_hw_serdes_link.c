@@ -223,6 +223,16 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		// FIXME: options?
 	}
 
+	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G &&
+	    (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AEC ||
+	     media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AOC ||
+	     media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_POC)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "serdes settings - 200G half rate");
+		core_link->serdes.media_serdes_settings.pre1    = 0;
+		core_link->serdes.media_serdes_settings.cursor  = 80;
+		core_link->serdes.media_serdes_settings.post1   = 0;
+	}
+
 	return 0;
 }
 
