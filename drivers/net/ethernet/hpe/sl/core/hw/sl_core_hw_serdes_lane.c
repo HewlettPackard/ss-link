@@ -808,6 +808,9 @@ int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u32 addr;
 	u8  serdes_lane_num;
 
+	if (!sl_core_ldev_serdes_is_ready(core_lgrp->core_ldev))
+		return -EIO;
+
 	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
@@ -830,6 +833,9 @@ int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	int rtn;
 	u32 addr;
 	u8  serdes_lane_num;
+
+	if (!sl_core_ldev_serdes_is_ready(core_lgrp->core_ldev))
+		return -EIO;
 
 	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 

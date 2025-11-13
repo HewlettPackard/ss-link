@@ -16,6 +16,7 @@
 
 static ssize_t value_upper_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                              rtn;
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
 	u8                               eye_upper;
@@ -26,7 +27,11 @@ static ssize_t value_upper_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
-	sl_core_lgrp_eye_upper_get(core_lgrp, lane_kobj->asic_lane_num, &eye_upper);
+	rtn = sl_core_lgrp_eye_upper_get(core_lgrp, lane_kobj->asic_lane_num, &eye_upper);
+	if (rtn == -EIO)
+		return scnprintf(buf, PAGE_SIZE, "no-serdes\n");
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"eye value upper show (asic_lane_num = %u, eye = %u)",
@@ -37,6 +42,7 @@ static ssize_t value_upper_show(struct kobject *kobj, struct kobj_attribute *kat
 
 static ssize_t value_lower_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                              rtn;
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
 	u8                               eye_lower;
@@ -47,7 +53,11 @@ static ssize_t value_lower_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
-	sl_core_lgrp_eye_lower_get(core_lgrp, lane_kobj->asic_lane_num, &eye_lower);
+	rtn = sl_core_lgrp_eye_lower_get(core_lgrp, lane_kobj->asic_lane_num, &eye_lower);
+	if (rtn == -EIO)
+		return scnprintf(buf, PAGE_SIZE, "no-serdes\n");
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"eye value lower show (asic_lane_num = %u, eye = %u)",
