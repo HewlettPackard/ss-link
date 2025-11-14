@@ -1181,7 +1181,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 		return rtn;
 	}
 
-	msleep(500);
+	msleep(300);
 
 	i2c_data.page    = 0;
 	i2c_data.bank    = 0;
@@ -1199,7 +1199,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(10000);
+	msleep(3000);
 
 	return 0;
 }

@@ -279,7 +279,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 		return rtn;
 	}
 
-	msleep(500);
+	msleep(300);
 
 	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
 	if (rtn) {
@@ -290,7 +290,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	/*
 	 * waiting for firmware reload
 	 */
-	msleep(10000);
+	msleep(3000);
 
 	return 0;
 }
