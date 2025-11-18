@@ -228,7 +228,7 @@ void sl_ctrl_lgrp_notif_work(struct work_struct *notif_work)
 			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "read from kfifo failed");
 			goto out;
 		}
-		for (reg_idx = 0; reg_idx < SL_CTRL_LGRP_NOTIF_COUNT; ++reg_idx) {
+		for (reg_idx = 0; reg_idx < SL_CTRL_LGRP_NOTIF_REG_COUNT; ++reg_idx) {
 			if (notif_msg.type & ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types)
 				(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].callback)
 				(ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].tag, &notif_msg);

@@ -26,9 +26,9 @@ static DEFINE_SPINLOCK(ctrl_lgrps_lock);
 
 int sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 {
-	int                   rtn;
-	struct sl_ctrl_ldev  *ctrl_ldev;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	int                  rtn;
+	struct sl_ctrl_ldev *ctrl_ldev;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
 	ctrl_ldev = sl_ctrl_ldev_get(ldev_num);
 	if (!ctrl_ldev) {
@@ -46,11 +46,12 @@ int sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 	if (!ctrl_lgrp)
 		return -ENOMEM;
 
-	snprintf(ctrl_lgrp->log_connect_id, sizeof(ctrl_lgrp->log_connect_id), "ctrl-lgrp%02u", lgrp_num);
+	snprintf(ctrl_lgrp->log_connect_id,
+		 sizeof(ctrl_lgrp->log_connect_id), "ctrl-lgrp%02u", lgrp_num);
 
-	ctrl_lgrp->magic    = SL_CTRL_LGRP_MAGIC;
-	ctrl_lgrp->ver      = SL_CTRL_LGRP_VER;
-	ctrl_lgrp->num      = lgrp_num;
+	ctrl_lgrp->magic     = SL_CTRL_LGRP_MAGIC;
+	ctrl_lgrp->ver       = SL_CTRL_LGRP_VER;
+	ctrl_lgrp->num       = lgrp_num;
 	ctrl_lgrp->ctrl_ldev = sl_ctrl_ldev_get(ldev_num);
 
 	kref_init(&ctrl_lgrp->ref_cnt);
@@ -62,7 +63,9 @@ int sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 
 	spin_lock_init(&(ctrl_lgrp->ctrl_notif.lock));
 
-	rtn = kfifo_alloc(&ctrl_lgrp->ctrl_notif.fifo, SL_CTRL_LGRP_NOTIF_FIFO_SIZE, GFP_KERNEL);
+	rtn = kfifo_alloc(&ctrl_lgrp->ctrl_notif.fifo,
+			  SL_CTRL_LGRP_NOTIF_MSG_COUNT * sizeof(struct sl_lgrp_notif_msg),
+			  GFP_KERNEL);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "create notif fifo failed");
 		rtn = -ENOMEM;
@@ -88,7 +91,7 @@ int sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 		rtn = sl_sysfs_lgrp_create(ctrl_lgrp);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_lgrp, LOG_NAME,
-				"sysfs_lgrp_create failed");
+					      "sysfs_lgrp_create failed");
 			goto out_core_lgrp;
 		}
 	}
