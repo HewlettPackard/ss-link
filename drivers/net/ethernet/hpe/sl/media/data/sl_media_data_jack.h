@@ -59,4 +59,9 @@ void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 j
 void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev);
 void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev);
 
+#define SL_MEDIA_JACK_HEADSHELL_BUSY 1
+#define SL_MEDIA_JACK_HEADSHELL_IDLE 0
+void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value);
+bool sl_media_data_jack_is_headshell_busy(struct sl_media_jack *media_jack);
+
 #endif /* _SL_MEDIA_DATA_JACK_H_ */

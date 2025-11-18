@@ -835,6 +835,8 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable downshift");
 
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
+
 	/*
 	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
@@ -848,6 +850,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -859,6 +862,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -880,7 +884,8 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(100);
@@ -901,7 +906,8 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(100);
@@ -919,6 +925,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -930,6 +937,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(8000);
@@ -947,6 +955,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 
@@ -954,6 +963,8 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	 * waiting for firmware reload
 	 */
 	msleep(3000);
+
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 
 	return 0;
 }
@@ -1038,6 +1049,8 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable upshift");
 
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
+
 	/*
 	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
@@ -1051,6 +1064,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -1062,6 +1076,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -1083,7 +1098,8 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 1-4 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(100);
@@ -1104,7 +1120,8 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 5-8 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(100);
@@ -1122,6 +1139,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "apply dpinit = 0xFF - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(500);
@@ -1133,6 +1151,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 	msleep(8000);
@@ -1150,6 +1169,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 
@@ -1157,6 +1177,8 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	 * waiting for firmware reload
 	 */
 	msleep(3000);
+
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 
 	return 0;
 }
@@ -1168,6 +1190,8 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable soft reset");
 
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
+
 	i2c_data.page    = 0;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 0x1a;
@@ -1176,8 +1200,9 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "write failed [%d] (%u <- %u)", rtn, i2c_data.offset,
-				 i2c_data.data[0]);
+				       "write failed [%d] (%u <- %u)", rtn,
+				       i2c_data.offset, i2c_data.data[0]);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 
@@ -1191,8 +1216,9 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "write failed [%d] (%u <- %u)", rtn, i2c_data.offset,
-				 i2c_data.data[0]);
+				       "write failed [%d] (%u <- %u)", rtn,
+				       i2c_data.offset, i2c_data.data[0]);
+		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
 
@@ -1200,6 +1226,8 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	 * waiting for firmware reload
 	 */
 	msleep(3000);
+
+	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 
 	return 0;
 }
@@ -1384,6 +1412,9 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		media_jack = sl_media_data_jack_get(media_ldev->num, jack_num);
 		if (!media_jack)
+			continue;
+
+		if (sl_media_data_jack_is_headshell_busy(media_jack))
 			continue;
 
 		if (!sl_media_lgrp_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num))

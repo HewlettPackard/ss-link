@@ -6,6 +6,7 @@
 
 #include <linux/spinlock.h>
 #include <linux/time64.h>
+#include <linux/atomic.h>
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -145,6 +146,8 @@ struct sl_media_jack {
 	u8                              appsel_num_400_gaui; /* used for upshifting */
 	u8                              lane_count_400_gaui; /* used for upshifting */
 	u8                              host_interface_400_gaui; /* used for upshifting */
+
+	atomic_t                        is_headshell_busy;
 
 	void                           *hdl;
 	u8                              port_count;

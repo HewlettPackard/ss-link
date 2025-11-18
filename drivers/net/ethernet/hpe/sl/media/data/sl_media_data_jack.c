@@ -3,6 +3,7 @@
 
 #include <linux/slab.h>
 #include <linux/kernel.h>
+#include <linux/atomic.h>
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -255,4 +256,14 @@ int sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack)
 		}
 	}
 	return 0;
+}
+
+void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value)
+{
+	atomic_set(&media_jack->is_headshell_busy, value);
+}
+
+bool sl_media_data_jack_is_headshell_busy(struct sl_media_jack *media_jack)
+{
+	return (atomic_read(&media_jack->is_headshell_busy) == SL_MEDIA_JACK_HEADSHELL_BUSY);
 }
