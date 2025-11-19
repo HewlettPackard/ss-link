@@ -430,7 +430,7 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 		return;
 	}
 
-	if (!media_jack->is_supported_ss200_cable) {
+	if (media_jack->is_supported_ss200_cable) {
 		snprintf(target_fw_str, target_fw_size, "ss200-cable\n");
 		return;
 	}

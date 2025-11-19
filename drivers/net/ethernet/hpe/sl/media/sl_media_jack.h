@@ -217,8 +217,6 @@ int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 
-void sl_media_jack_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size);
-
 int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			       u8 *eeprom_page0, u8 *eeprom_page1, u32 flags);
 int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num);
