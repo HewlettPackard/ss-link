@@ -108,6 +108,9 @@ struct sl_media_lgrp_cable_info {
 
 	int                  real_cable_status;
 	int                  fake_cable_status;
+
+	bool                 high_temp_client_ready;
+	bool                 high_temp_notif_sent;
 };
 
 #define SL_MEDIA_EEPROM_PAGE_SIZE 256
@@ -208,11 +211,17 @@ int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause);
 void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
 	time64_t *fault_time);
-const char *sl_media_fault_cause_str(u32 fault_cause);
 
 bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
+bool sl_media_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
+						  struct sl_media_lgrp_cable_info *cable_info, bool value);
+
+const char *sl_media_fault_cause_str(u32 fault_cause);
+
 int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);

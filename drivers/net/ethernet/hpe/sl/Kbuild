@@ -22,6 +22,7 @@ $(SL_NAME)-$(SL_BUILD_SWITCH) += \
 	switch/sl_ldev.o                            \
 	media/switch/sl_media_io.o                  \
 	media/switch/sl_media_jack.o                \
+	media/switch/sl_media_jack_fake.o           \
 	media/data/switch/sl_media_data_jack.o      \
 	media/data/switch/sl_media_data_jack_emu.o  \
 	core/hw/switch/sl_core_hw_fec.o             \
@@ -35,7 +36,8 @@ $(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \
 	switch/sl_media.o                           \
 	switch/sl_ldev.o                            \
 	media/emu/sl_media_io.o                     \
-	media/switch/sl_media_jack.o                \
+	media/emu/sl_media_jack.o                   \
+	media/switch/sl_media_jack_fake.o           \
 	media/data/emu/sl_media_data_jack.o         \
 	media/data/switch/sl_media_data_jack_emu.o  \
 	media/data/nic/sl_media_data_jack_emu.o     \

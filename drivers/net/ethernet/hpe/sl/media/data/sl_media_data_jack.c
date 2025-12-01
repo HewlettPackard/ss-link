@@ -227,37 +227,6 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
 	return is_high_temp;
 }
 
-int sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack)
-{
-	int                  rtn;
-	int                  i;
-	struct sl_ctrl_link *ctrl_link;
-	u8                   ldev_num;
-	u8                   lgrp_num;
-	u8                   link_num;
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "high temp link down");
-
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_TEMP);
-
-	for (i = 0; i < media_jack->port_count; ++i) {
-		ldev_num = media_jack->cable_info[i].ldev_num;
-		lgrp_num = media_jack->cable_info[i].lgrp_num;
-
-		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
-			ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
-			if (!ctrl_link)
-				continue;
-
-			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
-			if (rtn)
-				sl_media_log_err_trace(media_jack, LOG_NAME,
-						       "high temp link down async_down failed [%d]", rtn);
-		}
-	}
-	return 0;
-}
-
 void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value)
 {
 	atomic_set(&media_jack->is_headshell_busy, value);

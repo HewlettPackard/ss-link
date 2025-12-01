@@ -36,12 +36,6 @@ int  sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jac
 int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack);
 
-bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
-
-int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
-int  sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold);
-int  sl_media_data_jack_high_temp_link_down(struct sl_media_jack *media_jack);
-
 int  sl_media_data_jack_scan(u8 ldev_num);
 int  sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp);
 
@@ -56,6 +50,18 @@ int  sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack);
 
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack);
 void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state);
+
+bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
+bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *media_jack,
+							struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
+bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *media_jack,
+						      struct sl_media_lgrp_cable_info *cable_info);
+int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
+int  sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold);
+void sl_media_data_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack);
+void sl_media_data_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
+						       struct sl_media_lgrp_cable_info *cable_info, bool value);
 void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev);
 void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev);
 

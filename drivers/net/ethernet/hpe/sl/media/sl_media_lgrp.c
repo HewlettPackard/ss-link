@@ -116,6 +116,20 @@ void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num)
 	sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 }
 
+void sl_media_lgrp_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "high temp client ready set (%s)",
+			 value ? "true" : "false");
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	media_lgrp->cable_info->high_temp_client_ready = value;
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+}
+
 u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)
 {
 	u32 vendor;

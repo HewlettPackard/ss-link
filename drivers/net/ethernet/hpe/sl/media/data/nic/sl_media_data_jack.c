@@ -384,11 +384,6 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	if (!core_link)
 		return;
 
-	if (sl_media_data_jack_cable_is_high_temp(media_jack)) {
-		sl_media_io_led_set(media_jack, LED_ON_YEL);
-		return;
-	}
-
 	sl_core_link_state_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num,
 			       0, &link_state); /* hardcoding 0 since only one link*/
 

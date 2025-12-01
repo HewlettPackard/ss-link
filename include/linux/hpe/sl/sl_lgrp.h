@@ -37,6 +37,7 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(18)  /* autoneg timeout                 */
 #define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* autoneg error                   */
 #define SL_LGRP_NOTIF_LANE_DEGRADE      BIT(20)  /* auto lane degrade               */
+#define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP   BIT(21)  /* media/cable high temp detected  */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -57,6 +58,7 @@ struct sl_lgrp_config;
 
 #define SL_LGRP_NOTIF_MEDIA    (SL_LGRP_NOTIF_MEDIA_PRESENT     | \
 				SL_LGRP_NOTIF_MEDIA_NOT_PRESENT | \
+				SL_LGRP_NOTIF_MEDIA_HIGH_TEMP   | \
 				SL_LGRP_NOTIF_MEDIA_ERROR)
 
 #define SL_LGRP_NOTIF_AN       (SL_LGRP_NOTIF_AN_DATA    | \
