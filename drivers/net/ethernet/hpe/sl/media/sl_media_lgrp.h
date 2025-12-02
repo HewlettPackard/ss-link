@@ -42,6 +42,7 @@ struct sl_media_lgrp {
 	char                                connect_id[SL_LOG_CONNECT_ID_LEN + 1];
 
 	// FIXME: for now only enable at the lgrp level
+	spinlock_t                          data_lock;
 	bool                                err_trace_enable;
 	bool                                warn_trace_enable;
 };

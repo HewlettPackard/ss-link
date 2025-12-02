@@ -228,3 +228,25 @@ u32 sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp)
 
 	return flags;
 }
+
+int sl_core_data_lgrp_err_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool err_trace_enable)
+{
+	spin_lock(&core_lgrp->data_lock);
+	core_lgrp->err_trace_enable = err_trace_enable;
+	spin_unlock(&core_lgrp->data_lock);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (err_trace_enable = %s)", err_trace_enable ? "true" : "false");
+
+	return 0;
+}
+
+int sl_core_data_lgrp_warn_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool warn_trace_enable)
+{
+	spin_lock(&core_lgrp->data_lock);
+	core_lgrp->warn_trace_enable = warn_trace_enable;
+	spin_unlock(&core_lgrp->data_lock);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", warn_trace_enable ? "true" : "false");
+
+	return 0;
+}

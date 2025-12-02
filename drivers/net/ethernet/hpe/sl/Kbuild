@@ -79,6 +79,7 @@ $(SL_NAME)-y += \
 	media/sl_media_jack.o                   \
 	media/data/sl_media_data_ldev.o         \
 	media/data/sl_media_data_lgrp.o         \
+	media/data/sl_media_data_lgrp_trace.o   \
 	media/data/sl_media_data_jack.o         \
 	media/data/sl_media_data_cable_db_ops.o \
 	media/base/sl_media_eeprom.o
@@ -96,6 +97,7 @@ $(SL_NAME)-y += \
 	core/base/sl_core_timer_llr.o       \
 	core/data/sl_core_data_ldev.o       \
 	core/data/sl_core_data_lgrp.o       \
+	core/data/sl_core_data_lgrp_trace.o \
 	core/data/sl_core_data_link.o       \
 	core/data/sl_core_data_llr.o        \
 	core/data/sl_core_data_mac.o        \
@@ -122,18 +124,20 @@ $(SL_NAME)-y += \
 	core/hw/sl_core_hw_reset.o
 
 $(SL_NAME)-y += \
-	ctrl/sl_ctrl_ldev.o          \
-	ctrl/sl_ctrl_lgrp.o          \
-	ctrl/sl_ctrl_lgrp_notif.o    \
-	ctrl/sl_ctrl_link.o          \
-	ctrl/sl_ctrl_link_priv.o     \
-	ctrl/sl_ctrl_link_fec.o      \
-	ctrl/sl_ctrl_link_fec_priv.o \
-	ctrl/sl_ctrl_link_counters.o \
-	ctrl/sl_ctrl_mac.o           \
-	ctrl/sl_ctrl_mac_counters.o  \
-	ctrl/sl_ctrl_llr.o           \
-	ctrl/sl_ctrl_llr_counters.o
+	ctrl/sl_ctrl_ldev.o                 \
+	ctrl/sl_ctrl_lgrp.o                 \
+	ctrl/sl_ctrl_lgrp_notif.o           \
+	ctrl/sl_ctrl_link.o                 \
+	ctrl/sl_ctrl_link_priv.o            \
+	ctrl/sl_ctrl_link_fec.o             \
+	ctrl/sl_ctrl_link_fec_priv.o        \
+	ctrl/sl_ctrl_link_counters.o        \
+	ctrl/sl_ctrl_mac.o                  \
+	ctrl/sl_ctrl_mac_counters.o         \
+	ctrl/sl_ctrl_llr.o                  \
+	ctrl/sl_ctrl_llr_counters.o         \
+	ctrl/data/sl_ctrl_data_lgrp.o       \
+	ctrl/data/sl_ctrl_data_lgrp_trace.o
 
 $(SL_NAME)-y += \
 	log/sl_log.o

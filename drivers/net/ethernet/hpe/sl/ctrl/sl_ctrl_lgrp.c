@@ -292,23 +292,6 @@ out:
 	return rtn;
 }
 
-int sl_ctrl_lgrp_config_get(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp_config)
-{
-	struct sl_ctrl_lgrp *ctrl_lgrp;
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
-	if (!ctrl_lgrp) {
-		sl_ctrl_log_err(NULL, LOG_NAME, "NULL lgrp");
-		return -EBADRQC;
-	}
-
-	spin_lock(&ctrl_lgrp->config_lock);
-	*lgrp_config = ctrl_lgrp->config;
-	spin_unlock(&ctrl_lgrp->config_lock);
-
-	return 0;
-}
-
 int sl_ctrl_lgrp_policy_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_policy *lgrp_policy)
 {
 	struct sl_ctrl_lgrp *ctrl_lgrp;

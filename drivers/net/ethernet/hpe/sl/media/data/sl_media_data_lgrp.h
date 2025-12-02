@@ -12,4 +12,9 @@ struct sl_media_lgrp *sl_media_data_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
 void                  sl_media_data_lgrp_connect_id_set(struct sl_media_lgrp *lgrp, const char *connect_id);
 
+int                   sl_media_data_lgrp_err_trace_enable_set(struct sl_media_lgrp *media_lgrp,
+							      bool err_trace_enable);
+int                   sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp,
+							       bool warn_trace_enable);
+
 #endif

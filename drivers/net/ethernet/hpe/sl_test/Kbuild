@@ -5,14 +5,17 @@
 obj-m := $(SL_TEST_NAME).o
 
 $(SL_TEST_NAME)-y := \
-	../sl/log/sl_log.o        \
-	sl_test_module.o          \
-	sl_test_debugfs.o         \
-	sl_test_debugfs_ldev.o    \
-	sl_test_debugfs_lgrp.o    \
-	sl_test_debugfs_link.o    \
-	sl_test_debugfs_llr.o     \
-	sl_test_debugfs_mac.o     \
+	../sl/media/data/sl_media_data_lgrp_trace.o \
+	../sl/core/data/sl_core_data_lgrp_trace.o   \
+	../sl/ctrl/data/sl_ctrl_data_lgrp_trace.o   \
+	../sl/log/sl_log.o                          \
+	sl_test_module.o                            \
+	sl_test_debugfs.o                           \
+	sl_test_debugfs_ldev.o                      \
+	sl_test_debugfs_lgrp.o                      \
+	sl_test_debugfs_link.o                      \
+	sl_test_debugfs_llr.o                       \
+	sl_test_debugfs_mac.o                       \
 	sl_test_debugfs_serdes.o
 
 ccflags-y := -I$(M)/../sl

@@ -26,14 +26,19 @@
 #include "sl_ctrl_llr.h"
 #include "sl_ctrl_mac.h"
 
+#include "data/sl_ctrl_data_lgrp_trace.h"
+
 #include "hw/sl_core_hw_intr.h"
 #include "data/sl_core_data_link.h"
 #include "data/sl_core_data_lgrp.h"
+#include "data/sl_core_data_lgrp_trace.h"
 #include "data/sl_core_data_ldev.h"
 
 #include "sl_media_ldev.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
+
+#include "data/sl_media_data_lgrp_trace.h"
 
 #define SL_LOG_MSG_LEN              150
 #define SL_LOG_NULL_ID_FMT          "%c[-:--:-] ???         "
@@ -260,6 +265,7 @@ void sl_log(void *ptr, const char *level, const char *block,
 void sl_log_err_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...)
 {
+	int                  rtn;
 	char                 msg[SL_LOG_MSG_LEN + 1];
 	va_list              args;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -271,6 +277,7 @@ void sl_log_err_trace(void *ptr, const char *block,
 	struct sl_core_mac   *core_mac;
 	struct sl_core_llr   *core_llr;
 	struct sl_media_lgrp *media_lgrp;
+	bool                  err_trace_enable;
 
 	if (!block) {
 		pr_err("NULL block\n");
@@ -291,47 +298,74 @@ void sl_log_err_trace(void *ptr, const char *block,
 	switch (*((u32 *)ptr)) {
 	case SL_CTRL_LGRP_MAGIC:
 		ctrl_lgrp = ptr;
-		if (!ctrl_lgrp->err_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CTRL_LINK_MAGIC:
 		ctrl_link = ptr;
-		if (!ctrl_link->ctrl_lgrp->err_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_link->ctrl_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CTRL_LLR_MAGIC:
 		ctrl_llr = ptr;
-		if (!ctrl_llr->ctrl_lgrp->err_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_llr->ctrl_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CTRL_MAC_MAGIC:
 		ctrl_mac = ptr;
-		if (!ctrl_mac->ctrl_lgrp->err_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_llr->ctrl_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CORE_LGRP_MAGIC:
 		core_lgrp = ptr;
-		if (!core_lgrp->err_trace_enable)
+		rtn = sl_core_data_lgrp_is_err_trace_enabled(core_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CORE_LINK_MAGIC:
 		core_link = ptr;
-		if (!core_link->core_lgrp->err_trace_enable)
+		rtn = sl_core_data_lgrp_is_err_trace_enabled(core_link->core_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CORE_MAC_MAGIC:
 		core_mac = ptr;
-		if (!core_mac->core_lgrp->err_trace_enable)
+		rtn = sl_core_data_lgrp_is_err_trace_enabled(core_mac->core_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_CORE_LLR_MAGIC:
 		core_llr = ptr;
-		if (!core_llr->core_lgrp->err_trace_enable)
+		rtn = sl_core_data_lgrp_is_err_trace_enabled(core_llr->core_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	case SL_MEDIA_LGRP_MAGIC:
 		media_lgrp = ptr;
-		if (!media_lgrp->err_trace_enable)
+		rtn = sl_media_data_lgrp_is_err_trace_enabled(media_lgrp, &err_trace_enable);
+		if (rtn)
+			return;
+		if (!err_trace_enable)
 			return;
 		break;
 	default:
@@ -348,6 +382,7 @@ void sl_log_err_trace(void *ptr, const char *block,
 void sl_log_warn_trace(void *ptr, const char *block,
 	const char *name, const char *text, ...)
 {
+	int                   rtn;
 	char                  msg[SL_LOG_MSG_LEN + 1];
 	va_list               args;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -359,6 +394,7 @@ void sl_log_warn_trace(void *ptr, const char *block,
 	struct sl_core_mac   *core_mac;
 	struct sl_core_llr   *core_llr;
 	struct sl_media_lgrp *media_lgrp;
+	bool                  warn_trace_enable;
 
 	if (!block) {
 		pr_err("NULL block\n");
@@ -379,47 +415,74 @@ void sl_log_warn_trace(void *ptr, const char *block,
 	switch (*((u32 *)ptr)) {
 	case SL_CTRL_LGRP_MAGIC:
 		ctrl_lgrp = ptr;
-		if (!ctrl_lgrp->warn_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_warn_trace_enabled(ctrl_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CTRL_LINK_MAGIC:
 		ctrl_link = ptr;
-		if (!ctrl_link->ctrl_lgrp->warn_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_warn_trace_enabled(ctrl_link->ctrl_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CTRL_LLR_MAGIC:
 		ctrl_llr = ptr;
-		if (!ctrl_llr->ctrl_lgrp->warn_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_warn_trace_enabled(ctrl_llr->ctrl_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CTRL_MAC_MAGIC:
 		ctrl_mac = ptr;
-		if (!ctrl_mac->ctrl_lgrp->warn_trace_enable)
+		rtn = sl_ctrl_data_lgrp_is_warn_trace_enabled(ctrl_mac->ctrl_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CORE_LGRP_MAGIC:
 		core_lgrp = ptr;
-		if (!core_lgrp->warn_trace_enable)
+		rtn = sl_core_data_lgrp_is_warn_trace_enabled(core_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CORE_LINK_MAGIC:
 		core_link = ptr;
-		if (!core_link->core_lgrp->warn_trace_enable)
+		rtn = sl_core_data_lgrp_is_warn_trace_enabled(core_link->core_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CORE_MAC_MAGIC:
 		core_mac = ptr;
-		if (!core_mac->core_lgrp->warn_trace_enable)
+		rtn = sl_core_data_lgrp_is_warn_trace_enabled(core_mac->core_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_CORE_LLR_MAGIC:
 		core_llr = ptr;
-		if (!core_llr->core_lgrp->warn_trace_enable)
+		rtn = sl_core_data_lgrp_is_warn_trace_enabled(core_llr->core_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	case SL_MEDIA_LGRP_MAGIC:
 		media_lgrp = ptr;
-		if (!media_lgrp->warn_trace_enable)
+		rtn = sl_media_data_lgrp_is_warn_trace_enabled(media_lgrp, &warn_trace_enable);
+		if (rtn)
+			return;
+		if (!warn_trace_enable)
 			return;
 		break;
 	default:
