@@ -6,6 +6,7 @@
 
 #include <linux/kobject.h>
 
+struct sl_core_link;
 struct sl_ctrl_ldev;
 struct sl_ctrl_lgrp;
 struct sl_ctrl_link;
@@ -42,8 +43,8 @@ void sl_sysfs_link_config_delete(struct sl_ctrl_link *ctrl_link);
 int  sl_sysfs_link_policy_create(struct sl_ctrl_link *ctrl_link);
 void sl_sysfs_link_policy_delete(struct sl_ctrl_link *ctrl_link);
 
-int  sl_sysfs_link_degrade_create(struct sl_ctrl_link *ctrl_link);
-void sl_sysfs_link_degrade_delete(struct sl_ctrl_link *ctrl_link);
+int sl_sysfs_link_degrade_create(struct sl_core_link *core_link, struct kobject *parent_kobj);
+void sl_sysfs_link_degrade_delete(struct sl_core_link *core_link);
 
 int  sl_sysfs_link_fec_create(struct sl_ctrl_link *ctrl_link);
 void sl_sysfs_link_fec_delete(struct sl_ctrl_link *ctrl_link);

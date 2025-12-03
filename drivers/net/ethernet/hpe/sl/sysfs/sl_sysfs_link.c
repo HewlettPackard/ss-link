@@ -439,7 +439,8 @@ static struct kobj_type link_info = {
 
 int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 {
-	int rtn;
+	int                  rtn;
+	struct sl_core_link *core_link;
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link create (num = %u)", ctrl_link->num);
 
@@ -447,6 +448,8 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "link create missing parent");
 		return -EBADRQC;
 	}
+
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 
 	rtn = kobject_init_and_add(&ctrl_link->kobj, &link_info, ctrl_link->parent_kobj, "link");
 	if (rtn) {
@@ -472,7 +475,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		return rtn;
 	}
 
-	rtn = sl_sysfs_link_degrade_create(ctrl_link);
+	rtn = sl_sysfs_link_degrade_create(core_link, &ctrl_link->kobj);
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_degrade_create failed [%d]", rtn);
 		sl_sysfs_link_policy_delete(ctrl_link);
@@ -486,7 +489,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_fec_create failed [%d]", rtn);
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
-		sl_sysfs_link_degrade_delete(ctrl_link);
+		sl_sysfs_link_degrade_delete(core_link);
 		kobject_put(&ctrl_link->kobj);
 		return rtn;
 	}
@@ -496,7 +499,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_caps_create failed [%d]", rtn);
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
-		sl_sysfs_link_degrade_delete(ctrl_link);
+		sl_sysfs_link_degrade_delete(core_link);
 		sl_sysfs_link_fec_delete(ctrl_link);
 		kobject_put(&ctrl_link->kobj);
 		return rtn;
@@ -507,7 +510,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_counters_create failed [%d]", rtn);
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
-		sl_sysfs_link_degrade_delete(ctrl_link);
+		sl_sysfs_link_degrade_delete(core_link);
 		sl_sysfs_link_fec_delete(ctrl_link);
 		sl_sysfs_link_caps_delete(ctrl_link);
 		kobject_put(&ctrl_link->kobj);
@@ -522,14 +525,18 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 
 void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link)
 {
+	struct sl_core_link *core_link;
+
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link delete (num = %u)", ctrl_link->num);
 
 	if (!ctrl_link->parent_kobj)
 		return;
 
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+
 	sl_sysfs_link_policy_delete(ctrl_link);
 	sl_sysfs_link_config_delete(ctrl_link);
-	sl_sysfs_link_degrade_delete(ctrl_link);
+	sl_sysfs_link_degrade_delete(core_link);
 	sl_sysfs_link_fec_delete(ctrl_link);
 	sl_sysfs_link_caps_delete(ctrl_link);
 	sl_sysfs_link_counters_delete(ctrl_link);

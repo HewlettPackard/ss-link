@@ -945,3 +945,133 @@ u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link)
 
 	return flags;
 }
+
+static char *sl_core_link_degrade_state_str(int degrade_state)
+{
+	switch (degrade_state) {
+	case SL_LINK_DEGRADE_STATE_INVALID:
+		return "invalid";
+	case SL_LINK_DEGRADE_STATE_ENABLED:
+		return "enabled";
+	case SL_LINK_DEGRADE_STATE_DISABLED:
+		return "disabled";
+	case SL_LINK_DEGRADE_STATE_FAILED:
+		return "failed";
+	default:
+		return "unknown";
+	}
+}
+
+int  sl_core_data_link_degrade_state_get(struct sl_core_link *core_link, int *degrade_state)
+{
+	spin_lock(&core_link->link.data_lock);
+	*degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (degrade_state = %d %s",
+			*degrade_state, sl_core_link_degrade_state_str(*degrade_state));
+
+	return 0;
+}
+
+int sl_core_data_link_is_rx_degrade_get(struct sl_core_link *core_link, bool *is_rx_degrade)
+{
+	spin_lock(&core_link->link.data_lock);
+	*is_rx_degrade = core_link->degrade_info.is_rx_degrade;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (is_rx_degrade = %s)", *is_rx_degrade ? "yes" : "no");
+
+	return 0;
+}
+
+int sl_core_data_link_is_tx_degrade_get(struct sl_core_link *core_link, bool *is_tx_degrade)
+{
+	spin_lock(&core_link->link.data_lock);
+	*is_tx_degrade = core_link->degrade_info.is_tx_degrade;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (is_tx_degrade = %s)", *is_tx_degrade ? "yes" : "no");
+
+	return 0;
+}
+
+int  sl_core_data_link_degrade_tx_link_speed_get(struct sl_core_link *core_link, u16 *tx_link_speed)
+{
+	int degrade_state;
+
+	spin_lock(&core_link->link.data_lock);
+	*tx_link_speed = core_link->degrade_info.tx_link_speed;
+	degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->link.data_lock);
+
+	if (degrade_state != SL_LINK_DEGRADE_STATE_ENABLED) {
+		sl_core_log_dbg(core_link, LOG_NAME, "get tx_link_speed failed (degrade_state = %d %s)",
+				degrade_state, sl_core_link_degrade_state_str(degrade_state));
+		return -EBADRQC;
+	}
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (tx_link_speed = %u)", *tx_link_speed);
+
+	return 0;
+}
+
+int  sl_core_data_link_degrade_rx_link_speed_get(struct sl_core_link *core_link, u16 *rx_link_speed)
+{
+	int degrade_state;
+
+	spin_lock(&core_link->link.data_lock);
+	*rx_link_speed = core_link->degrade_info.rx_link_speed;
+	degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->link.data_lock);
+
+	if (degrade_state != SL_LINK_DEGRADE_STATE_ENABLED) {
+		sl_core_log_dbg(core_link, LOG_NAME, "get rx_link_speed failed (degrade_state = %d %s)",
+				degrade_state, sl_core_link_degrade_state_str(degrade_state));
+		return -EBADRQC;
+	}
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (rx_link_speed = %u)", *rx_link_speed);
+
+	return 0;
+}
+
+int  sl_core_data_link_degrade_tx_lane_map_get(struct sl_core_link *core_link, u8 *tx_lane_map)
+{
+	int degrade_state;
+
+	spin_lock(&core_link->link.data_lock);
+	*tx_lane_map = core_link->degrade_info.tx_lane_map;
+	degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->link.data_lock);
+
+	if (degrade_state != SL_LINK_DEGRADE_STATE_ENABLED) {
+		sl_core_log_dbg(core_link, LOG_NAME, "get tx_lane_map failed (degrade_state = %d %s)",
+				degrade_state, sl_core_link_degrade_state_str(degrade_state));
+		return -EBADRQC;
+	}
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (tx_lane_map = 0x%02X)", *tx_lane_map);
+
+	return 0;
+}
+
+int  sl_core_data_link_degrade_rx_lane_map_get(struct sl_core_link *core_link, u8 *rx_lane_map)
+{
+	int degrade_state;
+
+	spin_lock(&core_link->link.data_lock);
+	*rx_lane_map = core_link->degrade_info.rx_lane_map;
+	degrade_state = core_link->degrade_state;
+	spin_unlock(&core_link->link.data_lock);
+
+	if (degrade_state != SL_LINK_DEGRADE_STATE_ENABLED) {
+		sl_core_log_dbg(core_link, LOG_NAME, "get rx_lane_map failed (degrade_state = %d %s)",
+				degrade_state, sl_core_link_degrade_state_str(degrade_state));
+		return -EBADRQC;
+	}
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (rx_lane_map = 0x%02X)", *rx_lane_map);
+
+	return 0;
+}

@@ -7,7 +7,8 @@
 #include <linux/types.h>
 #include <linux/time64.h>
 
-struct sl_core_link;
+#include "sl_core_link.h"
+
 struct sl_core_link_config;
 
 int		     sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num);
@@ -61,5 +62,13 @@ void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fai
 
 u32 sl_core_data_link_an_retry_count_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link);
+
+int sl_core_data_link_degrade_state_get(struct sl_core_link *core_link, int *state);
+int sl_core_data_link_is_rx_degrade_get(struct sl_core_link *core_link, bool *is_rx_degrade);
+int sl_core_data_link_is_tx_degrade_get(struct sl_core_link *core_link, bool *is_tx_degrade);
+int sl_core_data_link_degrade_tx_link_speed_get(struct sl_core_link *core_link, u16 *tx_link_speed);
+int sl_core_data_link_degrade_rx_link_speed_get(struct sl_core_link *core_link, u16 *rx_link_speed);
+int sl_core_data_link_degrade_tx_lane_map_get(struct sl_core_link *core_link, u8 *tx_lane_map);
+int sl_core_data_link_degrade_rx_lane_map_get(struct sl_core_link *core_link, u8 *rx_lane_map);
 
 #endif /* _SL_CORE_DATA_LINK_H_ */

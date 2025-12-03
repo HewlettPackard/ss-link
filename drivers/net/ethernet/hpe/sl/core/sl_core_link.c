@@ -312,17 +312,6 @@ bool sl_core_link_config_is_enable_ald_set(struct sl_core_link *core_link)
 	return is_config_set;
 }
 
-bool sl_core_link_is_degrade_state_enabled(struct sl_core_link *core_link)
-{
-	int degrade_state;
-
-	spin_lock(&core_link->data_lock);
-	degrade_state = core_link->degrade_state;
-	spin_unlock(&core_link->data_lock);
-
-	return degrade_state == SL_LINK_DEGRADE_STATE_ENABLED;
-}
-
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy)
 {
 	struct sl_core_link *core_link;

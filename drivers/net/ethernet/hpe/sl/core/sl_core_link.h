@@ -280,6 +280,7 @@ struct sl_core_link {
 	struct sl_core_link_policy       policy;
 	int                              degrade_state;
 	struct sl_link_degrade_info      degrade_info;
+	struct kobject                   degrade_kobj;
 	u64                              info_map;
 
 	spinlock_t                       irq_data_lock;
