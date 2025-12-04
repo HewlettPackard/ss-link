@@ -340,6 +340,8 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "media-present";
 	case SL_LGRP_NOTIF_MEDIA_NOT_PRESENT:
 		return "media-not-present";
+	case SL_LGRP_NOTIF_MEDIA_HIGH_TEMP:
+		return "media-high-temp";
 	case SL_LGRP_NOTIF_MEDIA_ERROR:
 		return "media-error";
 	case SL_LGRP_NOTIF_AN_DATA:
