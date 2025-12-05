@@ -12,6 +12,15 @@
 #include "base/sl_core_log.h"
 #include "sl_core_ldev.h"
 
+enum sl_dt_jack_type {
+	SL_DT_JACK_TYPE_LEGACY,
+	SL_DT_JACK_TYPE_DD,
+	SL_DT_JACK_TYPE_EXAMAX_LEFT,
+	SL_DT_JACK_TYPE_EXAMAX_RIGHT,
+	SL_DT_JACK_TYPE_LOW,
+	SL_DT_JACK_TYPE_HIGH,
+};
+
 #define SL_CORE_LGRP_MAGIC 0x736c474D
 struct sl_core_lgrp {
 	u32                             magic;
@@ -72,5 +81,13 @@ int sl_core_lgrp_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *w
 int sl_core_lgrp_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *width);
 int sl_core_lgrp_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper);
 int sl_core_lgrp_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower);
+
+bool sl_core_lgrp_media_lane_data_swap(u8 ldev_num, u8 lgrp_num);
+u32  sl_core_lgrp_jack_part_get(u8 ldev_num, u8 lgrp_num);
+
+int sl_core_lgrp_tx_lane_is_lol(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_tx_lol);
+int sl_core_lgrp_rx_lane_is_lol(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_rx_lol);
+int sl_core_lgrp_tx_lane_is_los(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_tx_los);
+int sl_core_lgrp_rx_lane_is_los(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_rx_los);
 
 #endif /* _SL_CORE_LGRP_H_ */

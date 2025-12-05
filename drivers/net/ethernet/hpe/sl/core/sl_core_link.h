@@ -110,6 +110,22 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_CCW               | \
 		SL_LINK_DOWN_RETRYABLE               | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_TX_LOL_UP_MAP (             \
+		SL_LINK_DOWN_CAUSE_TX_LOL            | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_RX_LOL_UP_MAP (             \
+		SL_LINK_DOWN_CAUSE_RX_LOL            | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_TX_LOS_UP_MAP (             \
+		SL_LINK_DOWN_CAUSE_TX_LOS            | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
+#define SL_LINK_DOWN_CAUSE_RX_LOS_UP_MAP (             \
+		SL_LINK_DOWN_CAUSE_RX_LOS            | \
+		SL_LINK_DOWN_RETRYABLE               | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
 #define SL_LINK_DOWN_CAUSE_LF_MAP (                    \
 		SL_LINK_DOWN_CAUSE_LF                | \
 		SL_LINK_DOWN_RETRYABLE               | \

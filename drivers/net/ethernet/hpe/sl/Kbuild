@@ -157,6 +157,8 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_serdes.o             \
 	sysfs/sl_sysfs_serdes_settings.o    \
 	sysfs/sl_sysfs_serdes_eye.o         \
+	sysfs/sl_sysfs_serdes_lol.o         \
+	sysfs/sl_sysfs_serdes_los.o         \
 	sysfs/sl_sysfs_serdes_state.o       \
 	sysfs/sl_sysfs_serdes_swizzle.o     \
 	sysfs/sl_sysfs_llr.o                \

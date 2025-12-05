@@ -7,6 +7,8 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
+#include "sl_core_str.h"
+#include "sl_core_lgrp.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_media_lgrp.h"
@@ -716,6 +718,49 @@ static ssize_t is_supported_ss200_cable_show(struct kobject *kobj, struct kobj_a
 	return scnprintf(buf, PAGE_SIZE, "no\n");
 }
 
+static ssize_t jack_part_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	u8                    ldev_num;
+	u8                    lgrp_num;
+	u32                   jack_part;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ldev_num = media_lgrp->media_ldev->num;
+	lgrp_num = media_lgrp->num;
+
+	jack_part = sl_core_lgrp_jack_part_get(ldev_num, lgrp_num);
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
+		   "jack part show (jack_part = %u %s)", jack_part, sl_core_lgrp_dt_jack_part_str(jack_part));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_lgrp_dt_jack_part_str(jack_part));
+}
+
+static ssize_t signal_cache_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	struct sl_media_lgrp *media_lgrp;
+	u8                   ldev_num;
+	u8                   lgrp_num;
+	time64_t             signal_cache_time_s;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ldev_num = media_lgrp->media_ldev->num;
+	lgrp_num = media_lgrp->num;
+
+	rtn = sl_media_jack_signal_cache_time_s_get(ldev_num, lgrp_num, &signal_cache_time_s);
+	if (rtn) {
+		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME, "signal cache time show failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "no-cache\n");
+	}
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
+		   "signal cache time show (signal_cache_time_s = %llu)", signal_cache_time_s);
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &signal_cache_time_s, &signal_cache_time_s);
+}
+
 static struct kobj_attribute media_state                              = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state                   = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_temperature_celsius                = __ATTR_RO(temperature_celsius);
@@ -746,6 +791,8 @@ static struct kobj_attribute media_active_cable_400g_appsel_num       = __ATTR_R
 static struct kobj_attribute media_last_fault_cause                   = __ATTR_RO(last_fault_cause);
 static struct kobj_attribute media_last_fault_time                    = __ATTR_RO(last_fault_time);
 static struct kobj_attribute media_is_supported_ss200_cable           = __ATTR_RO(is_supported_ss200_cable);
+static struct kobj_attribute media_jack_part                          = __ATTR_RO(jack_part);
+static struct kobj_attribute media_signal_cache_time                  = __ATTR_RO(signal_cache_time);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -778,6 +825,8 @@ static struct attribute *media_attrs[] = {
 	&media_last_fault_cause.attr,
 	&media_last_fault_time.attr,
 	&media_is_supported_ss200_cable.attr,
+	&media_jack_part.attr,
+	&media_signal_cache_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

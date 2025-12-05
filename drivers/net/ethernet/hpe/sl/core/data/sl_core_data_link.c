@@ -932,3 +932,16 @@ u32 sl_core_data_link_an_retry_count_get(struct sl_core_link *core_link)
 
 	return retry_count;
 }
+
+u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link)
+{
+	u32 flags;
+
+	spin_lock(&core_link->data_lock);
+	flags = core_link->config.flags;
+	spin_unlock(&core_link->data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "config flags get (flags = 0x%X)", flags);
+
+	return flags;
+}

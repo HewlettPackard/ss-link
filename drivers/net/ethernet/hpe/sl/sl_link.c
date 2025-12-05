@@ -515,6 +515,18 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 		case SL_LINK_DOWN_CAUSE_UP_CANCELED:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-canceled ");
 			break;
+		case SL_LINK_DOWN_CAUSE_TX_LOL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "tx-lol ");
+			break;
+		case SL_LINK_DOWN_CAUSE_RX_LOL:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rx-lol ");
+			break;
+		case SL_LINK_DOWN_CAUSE_TX_LOS:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "tx-los ");
+			break;
+		case SL_LINK_DOWN_CAUSE_RX_LOS:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rx-los ");
+			break;
 
 		case SL_LINK_DOWN_RETRYABLE:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retryable ");

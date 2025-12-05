@@ -12,3 +12,4 @@ keep_serdes_up=0
 lock=0
 use_unsupported_cable=0
 ignore_media_error=0
+use_supported_ss200_cable=0

@@ -86,4 +86,6 @@ bool sl_media_lgrp_is_cable_not_supported(struct sl_media_lgrp *media_lgrp);
 void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str);
 void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver);
 
+bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num);
+
 #endif /* _SL_MEDIA_LGRP_H_ */

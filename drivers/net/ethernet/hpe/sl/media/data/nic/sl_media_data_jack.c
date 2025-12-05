@@ -157,7 +157,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_read8(media_jack, 0x10, 145 + i, &read_data[i]);
-		if (rtn != sizeof(read_data[0])) {
+		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
 			return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
@@ -341,7 +341,7 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	}
 
 	rtn = sl_media_io_read8(media_jack, 0, 14, &data);
-	if (rtn != sizeof(data)) {
+	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "temp get read failed [%d]", rtn);
 		return -EIO;
 	}
@@ -364,7 +364,7 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 	}
 
 	rtn = sl_media_io_read8(media_jack, 2, 128, &data);
-	if (rtn != sizeof(data)) {
+	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "cable high temp threshold read failed [%d]", rtn);
 		return -EIO;
 	}

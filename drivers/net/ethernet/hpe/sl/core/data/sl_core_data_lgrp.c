@@ -63,6 +63,8 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 		sl_core_log_dbg(core_lgrp, LOG_NAME, "DT lane = 3 tx = %u tx_inv = %u rx = %u rx_inv = %u",
 			core_lgrp->serdes.dt.lane_info[3].tx_source, core_lgrp->serdes.dt.lane_info[3].tx_invert,
 			core_lgrp->serdes.dt.lane_info[3].rx_source, core_lgrp->serdes.dt.lane_info[3].rx_invert);
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "DT jack_type = %u %s", core_lgrp->serdes.dt.jack_type,
+				sl_core_lgrp_dt_jack_part_str(core_lgrp->serdes.dt.jack_type));
 	} else {
 		/* straight for emulator */
 		core_lgrp->serdes.dt.lane_info[0].tx_source = 0;
@@ -73,6 +75,9 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 		core_lgrp->serdes.dt.lane_info[1].rx_source = 1;
 		core_lgrp->serdes.dt.lane_info[2].rx_source = 2;
 		core_lgrp->serdes.dt.lane_info[3].rx_source = 3;
+
+		/* No swap for emulator */
+		core_lgrp->serdes.dt.jack_type = lgrp_num % 2 ? SL_DT_JACK_TYPE_DD : SL_DT_JACK_TYPE_LEGACY;
 	}
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "new - dt info (id = %u, addr = 0x%X)",
 		core_lgrp->serdes.dt.dev_id, core_lgrp->serdes.dt.dev_addr);

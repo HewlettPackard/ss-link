@@ -264,3 +264,19 @@ const char *sl_core_serdes_lane_width_str(u16 width)
 		return "unknown";
 	}
 }
+
+const char *sl_core_lgrp_dt_jack_part_str(u32 jack_type)
+{
+	switch (jack_type) {
+	case SL_DT_JACK_TYPE_LEGACY:
+		return "legacy";
+	case SL_DT_JACK_TYPE_DD:
+		return "double-density";
+	case SL_DT_JACK_TYPE_EXAMAX_LEFT:
+		return "examax-left";
+	case SL_DT_JACK_TYPE_EXAMAX_RIGHT:
+		return "examax-right";
+	default:
+		return "unknown";
+	}
+}

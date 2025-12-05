@@ -2,11 +2,13 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
+#include <linux/delay.h>
 
 #include "sl_asic.h"
 #include "sl_core_link.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
+#include "sl_media_io.h"
 #include "sl_ctrl_ldev.h"
 #include "data/sl_media_data_jack.h"
 #include "data/sl_media_data_lgrp.h"
@@ -14,6 +16,32 @@
 #include "base/sl_media_log.h"
 
 #define LOG_NAME SL_MEDIA_JACK_LOG_NAME
+
+#define SL_MEDIA_JACK_SIGNAL_CACHE_LIFETIME_MS 1200
+#define SL_MEDIA_JACK_SIGNAL_READ_TIMEOUT_MS   (2 * SL_MEDIA_JACK_SIGNAL_CACHE_LIFETIME_MS)
+#define SL_MEDIA_JACK_MAX_NUM_LANE_DATA_READS  4
+#define SL_MEDIA_JACK_LANE_DATA_POLL_TIME_MS   (SL_MEDIA_JACK_SIGNAL_CACHE_LIFETIME_MS / \
+						SL_MEDIA_JACK_MAX_NUM_LANE_DATA_READS)
+
+#define SWAP_BYTE_NIBBLE(_x) ({                    \
+	typeof(_x) __x = (_x);                     \
+	((__x & 0x0F) << 4) | ((__x & 0xF0) >> 4); \
+})
+
+#define MEDIA_LANE_DP_STATE_GET(_lane_data, _lane_num) ({ \
+	typeof(_lane_data) __lane_data = (_lane_data);    \
+	typeof(_lane_num)  __lane_num  = (_lane_num);     \
+	(__lane_data)->dp_states[__lane_num / 2] >>       \
+		(4 * (__lane_num & 1)) & 0x0F;            \
+})
+
+#define SL_MEDIA_JACK_SIGNAL_INFO_ALLOWED(_dp_state) ({         \
+	typeof(_dp_state) __dp_state = (_dp_state);             \
+	((__dp_state) == SL_MEDIA_JACK_DP_STATE_ACTIVATED)   || \
+	((__dp_state) == SL_MEDIA_JACK_DP_STATE_TX_TURN_ON)  || \
+	((__dp_state) == SL_MEDIA_JACK_DP_STATE_TX_TURN_OFF) || \
+	((__dp_state) == SL_MEDIA_JACK_DP_STATE_INITIALIZED);   \
+})
 
 enum sl_media_cable_shift {
 	SL_MEDIA_JACK_CABLE_DOWNSHIFT,
@@ -487,4 +515,429 @@ void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num)
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "led set");
 
 	sl_media_data_jack_led_set(media_lgrp->media_jack);
+}
+
+static const char *sl_media_jack_lane_dp_state_str(u8 dp_state)
+{
+	switch (dp_state) {
+	case SL_MEDIA_JACK_DP_STATE_DEACTIVATED:
+		return "dp-deactivated";
+	case SL_MEDIA_JACK_DP_STATE_INIT:
+		return "dp-init";
+	case SL_MEDIA_JACK_DP_STATE_DEINIT:
+		return "dp-deinit";
+	case SL_MEDIA_JACK_DP_STATE_ACTIVATED:
+		return "dp-activated";
+	case SL_MEDIA_JACK_DP_STATE_TX_TURN_ON:
+		return "dp-tx-turn-on";
+	case SL_MEDIA_JACK_DP_STATE_TX_TURN_OFF:
+		return "dp-tx-turn-off";
+	case SL_MEDIA_JACK_DP_STATE_INITIALIZED:
+		return "dp-initialized";
+	default:
+		return "unknown";
+	}
+}
+
+/* Swap the lanes in the lane data structure. See sl_core_lgrp_media_lane_data_swap
+ * for more details.
+ */
+static void sl_media_jack_lane_data_swap(struct sl_media_jack_lane_data *lane_data)
+{
+	u8 dp_states;
+
+	lane_data->signal.rx.los_map = SWAP_BYTE_NIBBLE(lane_data->signal.rx.los_map);
+	lane_data->signal.tx.los_map = SWAP_BYTE_NIBBLE(lane_data->signal.tx.los_map);
+	lane_data->signal.rx.lol_map = SWAP_BYTE_NIBBLE(lane_data->signal.rx.lol_map);
+	lane_data->signal.tx.lol_map = SWAP_BYTE_NIBBLE(lane_data->signal.tx.lol_map);
+	lane_data->dp_states_changed = SWAP_BYTE_NIBBLE(lane_data->dp_states_changed);
+
+	/* Swap lanes 0 & 1 for 4 & 5 and visa versa */
+	dp_states = lane_data->dp_states[2];
+	lane_data->dp_states[2] = lane_data->dp_states[0];
+	lane_data->dp_states[0] = dp_states;
+
+	/* Swap lanes 2 & 3 for 6 & 7 and visa versa */
+	dp_states = lane_data->dp_states[3];
+	lane_data->dp_states[3] = lane_data->dp_states[1];
+	lane_data->dp_states[1] = dp_states;
+}
+
+#define SL_MEDIA_JACK_DP_STATE_OFFSET    128
+#define SL_MEDIA_JACK_TX_LOS_OFFSET      136
+#define SL_MEDIA_JACK_RX_LOS_OFFSET      147
+#define SL_MEDIA_JACK_MAX_COHERENT_BYTES 8
+static int sl_media_jack_lane_data_read(u8 ldev_num, u8 lgrp_num, struct sl_media_jack_lane_data *lane_data)
+{
+	int                             rtn;
+	u8                              read_bytes[SL_MEDIA_JACK_MAX_COHERENT_BYTES];
+	bool                            swap;
+	struct sl_media_jack_lane_data  tmp_lane_data;
+	struct sl_media_jack           *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "media_io_read_lane_data (ldev_num = %u, lgrp_num = %u)",
+			 ldev_num, lgrp_num);
+
+	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_TX_LOS_OFFSET, (u8 *)&tmp_lane_data.signal.tx, 2);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		return -EIO;
+	}
+
+	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_RX_LOS_OFFSET, (u8 *)&tmp_lane_data.signal.rx, 2);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		return -EIO;
+	}
+
+	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_DP_STATE_OFFSET, read_bytes,
+			       SL_MEDIA_JACK_MAX_COHERENT_BYTES);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		return -EIO;
+	}
+
+	memcpy(tmp_lane_data.dp_states, read_bytes, 4);
+	tmp_lane_data.dp_states_changed = read_bytes[6];
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lane data read (dp_states_changed = 0x%X)", tmp_lane_data.dp_states_changed);
+
+	swap = sl_core_lgrp_media_lane_data_swap(ldev_num, lgrp_num);
+	if (swap)
+		sl_media_jack_lane_data_swap(&tmp_lane_data);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "lane data swap = %s", swap ? "yes" : "no");
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lane data read map (rx_lol = 0x%X, tx_lol = 0x%X, rx_los = 0x%X, tx_los = 0x%X)",
+			 tmp_lane_data.signal.rx.lol_map, tmp_lane_data.signal.tx.lol_map,
+			 tmp_lane_data.signal.rx.los_map, tmp_lane_data.signal.tx.los_map);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lanes dp_state (0 = %s, 1 = %s, 2 = %s, 3 = %s, 4 = %s, 5 = %s, 6 = %s, 7 = %s)",
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 0)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 1)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 2)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 3)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 4)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 5)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 6)),
+			 sl_media_jack_lane_dp_state_str(MEDIA_LANE_DP_STATE_GET(&tmp_lane_data, 7)));
+
+	spin_lock(&media_jack->data_lock);
+	memcpy(lane_data, &tmp_lane_data, sizeof(*lane_data));
+	spin_unlock(&media_jack->data_lock);
+
+	return 0;
+}
+
+static bool sl_media_jack_is_lane_data_valid(struct sl_media_jack *media_jack, unsigned long serdes_lane_map,
+					     struct sl_media_jack_lane_data *lane_data)
+{
+	u8 serdes_lane_num;
+	u8 lane_dp_state;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "lane data valid (serdes_lane_map = 0x%lx)", serdes_lane_map);
+
+	if (lane_data->dp_states_changed & serdes_lane_map) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "lane data valid DP state changed (dp_states_changed = 0x%X, serdes_lane_map = 0x%lx)",
+				 lane_data->dp_states_changed, serdes_lane_map);
+		return false;
+	}
+
+	for_each_set_bit(serdes_lane_num, &serdes_lane_map, SL_ASIC_MAX_LANES) {
+		lane_dp_state = MEDIA_LANE_DP_STATE_GET(lane_data, serdes_lane_num);
+
+		if (!SL_MEDIA_JACK_SIGNAL_INFO_ALLOWED(lane_dp_state)) {
+			sl_media_log_err(media_jack, LOG_NAME,
+					 "lane data valid DP state not allowed (lane_num = %u, dp_state = %u %s)",
+					 serdes_lane_num, lane_dp_state,
+					 sl_media_jack_lane_dp_state_str(lane_dp_state));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static void sl_media_jack_lane_data_cache_set(struct sl_media_jack *media_jack,
+					      struct sl_media_jack_lane_data *lane_data)
+{
+	spin_lock(&media_jack->data_lock);
+	media_jack->lane_data.cache.data   = *lane_data;
+	media_jack->lane_data.cache.cached = true;
+	media_jack->lane_data.cache.timestamp_s = ktime_get_real_seconds();
+	spin_unlock(&media_jack->data_lock);
+}
+
+static bool sl_media_jack_lane_data_cache_get(struct sl_media_jack *media_jack,
+					      struct sl_media_jack_lane_data *lane_data)
+{
+	bool     cached;
+
+	spin_lock(&media_jack->data_lock);
+	cached     = media_jack->lane_data.cache.cached;
+	*lane_data = media_jack->lane_data.cache.data;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lane data cache get map (rx_los = 0x%X, tx_los = 0x%X, rx_lol = 0x%X, tx_lol = 0x%X)",
+			 lane_data->signal.rx.los_map, lane_data->signal.tx.los_map,
+			 lane_data->signal.rx.lol_map, lane_data->signal.tx.lol_map);
+
+	return cached;
+}
+
+static bool sl_media_jack_signal_equal(struct sl_media_jack_signal *a, struct sl_media_jack_signal *b)
+{
+	return (a->rx.los_map == b->rx.los_map) &&
+	       (a->tx.los_map == b->tx.los_map) &&
+	       (a->rx.lol_map == b->rx.lol_map) &&
+	       (a->tx.lol_map == b->tx.lol_map);
+}
+
+static void sl_media_jack_signal_or(struct sl_media_jack_signal *a, struct sl_media_jack_signal *b)
+{
+	a->rx.los_map |= b->rx.los_map;
+	a->tx.los_map |= b->tx.los_map;
+	a->rx.lol_map |= b->rx.lol_map;
+	a->tx.lol_map |= b->tx.lol_map;
+}
+
+static int sl_media_jack_lane_data_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
+				       struct sl_media_jack_lane_data *lane_data)
+{
+	int                             rtn;
+	u8                              read_count;
+	bool                            is_stable;
+	struct sl_media_jack_lane_data  current_lane_data;
+	struct sl_media_jack_signal     prev_signal;
+	struct sl_media_jack           *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "lane data get (ldev_num = %u, lgrp_num = %u, serdes_lane_map = 0x%X)",
+			 ldev_num, lgrp_num, serdes_lane_map);
+
+	rtn = sl_media_jack_lane_data_read(ldev_num, lgrp_num, lane_data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
+		return rtn;
+	}
+
+	msleep(SL_MEDIA_JACK_LANE_DATA_POLL_TIME_MS);
+
+	read_count = 0;
+	is_stable  = false;
+
+	rtn = sl_media_jack_lane_data_read(ldev_num, lgrp_num, lane_data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
+		return rtn;
+	}
+
+	if (!sl_media_jack_is_lane_data_valid(media_jack, serdes_lane_map, lane_data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lane data not valid");
+		return -EIO;
+	}
+
+	/* Short circuit, no new bits can be set */
+	if (lane_data->signal.rx.los_map == 0xFF &&
+	    lane_data->signal.tx.los_map == 0xFF &&
+	    lane_data->signal.rx.lol_map == 0xFF &&
+	    lane_data->signal.tx.lol_map == 0xFF) {
+		read_count++;
+		is_stable = true;
+		goto out;
+	}
+
+	prev_signal = lane_data->signal;
+
+	msleep(SL_MEDIA_JACK_LANE_DATA_POLL_TIME_MS);
+
+	for (read_count = 1; read_count < SL_MEDIA_JACK_MAX_NUM_LANE_DATA_READS; ++read_count) {
+		rtn = sl_media_jack_lane_data_read(ldev_num, lgrp_num, &current_lane_data);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (!sl_media_jack_is_lane_data_valid(media_jack, serdes_lane_map, &current_lane_data)) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data not valid");
+			return -EIO;
+		}
+
+		prev_signal = lane_data->signal;
+		sl_media_jack_signal_or(&lane_data->signal, &current_lane_data.signal);
+
+		is_stable = sl_media_jack_signal_equal(&lane_data->signal, &prev_signal);
+		if (is_stable) {
+			++read_count;
+			break;
+		}
+
+		msleep(SL_MEDIA_JACK_LANE_DATA_POLL_TIME_MS);
+	}
+
+out:
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lane data get (read_count = %u)", read_count);
+
+	if (!is_stable) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lane data unstable");
+		return -EIO;
+	}
+
+	sl_media_jack_lane_data_cache_set(media_jack, lane_data);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "lane data get map (rx_los = 0x%X, tx_los = 0x%X, rx_lol = 0x%X, tx_lol = 0x%X)",
+			 lane_data->signal.rx.los_map, lane_data->signal.tx.los_map,
+			 lane_data->signal.rx.lol_map, lane_data->signal.tx.lol_map);
+
+	return 0;
+}
+
+int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struct sl_media_jack_signal *media_signal)
+{
+	int                             rtn;
+	struct sl_media_jack_lane_data  lane_data;
+	struct sl_media_jack           *media_jack;
+	bool                            cached;
+	unsigned long                   time_left;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "signal get (ldev_num = %u, lgrp_num = %u, serdes_lane_map = 0x%X)",
+			 ldev_num, lgrp_num, serdes_lane_map);
+
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_log_warn_trace(media_jack, LOG_NAME, "cable not active");
+		return -EBADRQC;
+	}
+
+	if (!sl_media_lgrp_is_signal_status_supported(ldev_num, lgrp_num)) {
+		sl_media_log_err(media_jack, LOG_NAME, "signal status not supported");
+		return -EBADRQC;
+	}
+
+	spin_lock(&media_jack->data_lock);
+	switch (media_jack->lane_data.read_state) {
+	case SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE:
+		media_jack->lane_data.read_state = SL_MEDIA_JACK_LANE_DATA_READ_STATE_BUSY;
+		sl_media_log_dbg(media_jack, LOG_NAME, "reading lane data - state set to BUSY");
+		spin_unlock(&media_jack->data_lock);
+
+		init_completion(&media_jack->lane_data.read_complete);
+
+		rtn = sl_media_jack_lane_data_get(ldev_num, lgrp_num, serdes_lane_map, &lane_data);
+
+		spin_lock(&media_jack->data_lock);
+		media_jack->lane_data.read_state    = SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE;
+		media_jack->lane_data.last_read_rtn = rtn;
+		spin_unlock(&media_jack->data_lock);
+
+		complete(&media_jack->lane_data.read_complete);
+
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
+			return rtn;
+		}
+
+		goto out;
+
+	case SL_MEDIA_JACK_LANE_DATA_READ_STATE_BUSY:
+		sl_media_log_dbg(media_jack, LOG_NAME, "waiting for lane data read to complete");
+		spin_unlock(&media_jack->data_lock);
+
+		time_left = wait_for_completion_timeout(&media_jack->lane_data.read_complete,
+							msecs_to_jiffies(SL_MEDIA_JACK_SIGNAL_READ_TIMEOUT_MS));
+
+		if (time_left == 0) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read timed out");
+			return -ETIMEDOUT;
+		}
+
+		spin_lock(&media_jack->data_lock);
+		rtn = media_jack->lane_data.last_read_rtn;
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
+			spin_unlock(&media_jack->data_lock);
+			return rtn;
+		}
+
+		cached    = media_jack->lane_data.cache.cached;
+		lane_data = media_jack->lane_data.cache.data;
+		spin_unlock(&media_jack->data_lock);
+
+		if (!cached) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data not cached");
+			return -EIO;
+		}
+
+		goto out;
+
+	default:
+		sl_media_log_err(media_jack, LOG_NAME, "invalid lane data read state (%u)",
+				 media_jack->lane_data.read_state);
+		spin_unlock(&media_jack->data_lock);
+		return -EIO;
+	}
+
+out:
+	*media_signal = lane_data.signal;
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "signal get (rx_los = 0x%X, rx_lol = 0x%X, tx_los = 0x%X, tx_lol = 0x%X)",
+			 media_signal->rx.los_map, media_signal->rx.lol_map,
+			 media_signal->tx.los_map, media_signal->tx.lol_map);
+
+	return 0;
+}
+
+int sl_media_jack_signal_cache_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
+				   struct sl_media_jack_signal *media_signal)
+{
+	struct sl_media_jack_lane_data  lane_data;
+	struct sl_media_jack           *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "signal cache get (ldev_num =%u, lgrp_num = %u, serdes_lane_map = 0x%X)",
+			 ldev_num, lgrp_num, serdes_lane_map);
+
+	if (!sl_media_jack_lane_data_cache_get(media_jack, &lane_data)) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lane data not cached");
+		return -ENOENT;
+	}
+
+	*media_signal = lane_data.signal;
+
+	return 0;
+}
+
+int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *cache_time)
+{
+	bool                  cached;
+	struct sl_media_jack *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "signal cache time get (ldev_num =%u, lgrp_num = %u)",
+			 ldev_num, lgrp_num);
+
+	spin_lock(&media_jack->data_lock);
+	cached = media_jack->lane_data.cache.cached;
+	*cache_time = media_jack->lane_data.cache.timestamp_s;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "signal cache time get (cache_time = %lld, cached = %s)",
+			 *cache_time, cached ? "yes" : "no");
+
+	return cached ? 0 : -ENOENT;
 }

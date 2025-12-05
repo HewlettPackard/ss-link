@@ -905,3 +905,99 @@ u32 sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 
 	return state;
 }
+
+int sl_core_hw_serdes_tx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_lol)
+{
+	int                         rtn;
+	u8                          serdes_lane_map;
+	struct sl_media_jack_signal media_signal;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "tx lane is lol (asic_lane_num = %u)", asic_lane_num);
+
+	serdes_lane_map = BIT(sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num));
+
+	rtn = sl_media_jack_signal_cache_get(core_lgrp->core_ldev->num, core_lgrp->num,
+					     serdes_lane_map, &media_signal);
+	if (rtn) {
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "signal cache get failed [%d]", rtn);
+		return rtn;
+	}
+
+	*is_tx_lol = media_signal.tx.lol_map & serdes_lane_map;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "tx lane lol check (is_tx_lol = %s)", *is_tx_lol ? "yes" : "no");
+
+	return 0;
+}
+
+int sl_core_hw_serdes_rx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_lol)
+{
+	int                         rtn;
+	u8                          serdes_lane_map;
+	struct sl_media_jack_signal media_signal;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "rx lane is lol (asic_lane_num = %u)", asic_lane_num);
+
+	serdes_lane_map = BIT(sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num));
+
+	rtn = sl_media_jack_signal_cache_get(core_lgrp->core_ldev->num, core_lgrp->num,
+					     serdes_lane_map, &media_signal);
+	if (rtn) {
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "signal cache get failed [%d]", rtn);
+		return rtn;
+	}
+
+	*is_rx_lol = media_signal.rx.lol_map & serdes_lane_map;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "rx lane lol check (is_rx_lol = %s)", *is_rx_lol ? "yes" : "no");
+
+	return 0;
+}
+
+int sl_core_hw_serdes_tx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_los)
+{
+	int                         rtn;
+	u8                          serdes_lane_map;
+	struct sl_media_jack_signal media_signal;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "tx lane is los (asic_lane_num = %u)", asic_lane_num);
+
+	serdes_lane_map = BIT(sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num));
+
+	rtn = sl_media_jack_signal_cache_get(core_lgrp->core_ldev->num, core_lgrp->num,
+					     serdes_lane_map, &media_signal);
+	if (rtn) {
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "signal cache get failed [%d]", rtn);
+		return rtn;
+	}
+
+	*is_tx_los = media_signal.tx.los_map & serdes_lane_map;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "tx lane los check (is_tx_los = %s)", *is_tx_los ? "yes" : "no");
+
+	return 0;
+}
+
+int sl_core_hw_serdes_rx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_los)
+{
+	int                         rtn;
+	u8                          serdes_lane_map;
+	struct sl_media_jack_signal media_signal;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "rx lane is los (asic_lane_num = %u)", asic_lane_num);
+
+	serdes_lane_map = BIT(sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num));
+
+	rtn = sl_media_jack_signal_cache_get(core_lgrp->core_ldev->num, core_lgrp->num,
+					     serdes_lane_map, &media_signal);
+	if (rtn) {
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "signal cache get failed [%d]", rtn);
+		return rtn;
+	}
+
+	*is_rx_los = media_signal.rx.los_map & serdes_lane_map;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "rx lane los check (is_rx_los = %s)", *is_rx_los ? "yes" : "no");
+
+	return 0;
+}

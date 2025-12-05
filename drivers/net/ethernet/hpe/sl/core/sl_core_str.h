@@ -10,6 +10,8 @@
 
 int sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size);
 
+const char *sl_core_lgrp_dt_jack_part_str(u32 jack_type);
+
 const char *sl_core_link_state_str(enum sl_core_link_state link_state);
 
 const char *sl_core_mac_state_str(enum sl_core_mac_state mac_state);

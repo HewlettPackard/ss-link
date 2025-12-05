@@ -23,6 +23,7 @@
 #include "hw/sl_core_hw_an.h"
 #include "hw/sl_core_hw_an_up.h"
 #include "hw/sl_core_hw_serdes_link.h"
+#include "hw/sl_core_hw_serdes_lane.h"
 #include "hw/sl_core_hw_settings.h"
 #include "hw/sl_core_hw_pcs.h"
 #include "hw/sl_core_hw_fec.h"
@@ -174,6 +175,12 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 	int                   rtn;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "media check (link = 0x%p)", core_link);
+
+	if (is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "skipping - serdes loopback set");
+		return 0;
+	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_CHECK);
 
@@ -608,6 +615,32 @@ static bool sl_core_hw_link_is_media_present(struct sl_core_link *core_link)
 	return sl_media_jack_is_cable_online(media_lgrp->media_jack);
 }
 
+static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
+					    struct sl_media_jack_signal *media_signal)
+{
+	u32 lgrp_flags;
+	u32 link_flags;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "media signal get");
+
+	lgrp_flags = sl_core_data_lgrp_config_flags_get(core_link->core_lgrp);
+	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "serdes loopback set (flags = %u)", lgrp_flags);
+		memset(media_signal, 0, sizeof(*media_signal));
+		return 0;
+	}
+
+	link_flags = sl_core_data_link_config_flags_get(core_link);
+	if (is_flag_set(link_flags, SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "los lol up fail hide set (flags = %u)", link_flags);
+		memset(media_signal, 0, sizeof(*media_signal));
+		return 0;
+	}
+
+	return sl_media_jack_signal_get(core_link->core_lgrp->core_ldev->num,
+					core_link->core_lgrp->num, core_link->serdes.lane_map, media_signal);
+}
+
 static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 {
 	int                                rtn;
@@ -716,9 +749,9 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 {
 	int                  rtn;
 	u32                  port;
-	u64                   data64;
-	struct sl_core_link  *core_link;
-	u32                   link_state;
+	u64                  data64;
+	struct sl_core_link *core_link;
+	u32                  link_state;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CHECK]);
 
@@ -871,12 +904,29 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 	sl_core_hw_link_up_success(core_link);
 }
 
+static void sl_core_hw_link_last_up_fail_cause_map_set_from_signal(struct sl_core_link *core_link,
+								   struct sl_media_jack_signal *media_signal)
+{
+	if (media_signal->tx.lol_map & core_link->serdes.lane_map)
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_TX_LOL_UP_MAP);
+
+	if (media_signal->rx.lol_map & core_link->serdes.lane_map)
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RX_LOL_UP_MAP);
+
+	if (media_signal->tx.los_map & core_link->serdes.lane_map)
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_TX_LOS_UP_MAP);
+
+	if (media_signal->rx.los_map & core_link->serdes.lane_map)
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RX_LOS_UP_MAP);
+}
+
 void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 {
 	struct sl_core_link         *core_link;
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
 	int                          rtn;
+	struct sl_media_jack_signal  media_signal;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_TIMEOUT]);
 
@@ -945,6 +995,17 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 
+	/* Check media */
+	if (!sl_core_hw_link_is_media_present(core_link))
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
+
+	/* Check signal before turning the link off */
+	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+	if (rtn)
+		sl_core_log_err_trace(core_link, LOG_NAME, "up timeout work - media signal get failed [%d]", rtn);
+	else
+		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
@@ -965,6 +1026,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
 	int                          rtn;
+	struct sl_media_jack_signal  media_signal;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CANCEL]);
 
@@ -1026,6 +1088,13 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 
+	/* Check signal before turning the link off */
+	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+	if (rtn)
+		sl_core_log_err_trace(core_link, LOG_NAME, "up cancel work - media signal get failed [%d]", rtn);
+	else
+		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
@@ -1049,6 +1118,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	struct sl_core_link_up_info  link_up_info;
 	u32                          link_state;
 	int                          rtn;
+	struct sl_media_jack_signal  media_signal;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_FAIL]);
 
@@ -1107,6 +1177,13 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
+
+	/* Check signal before turning the link off */
+	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+	if (rtn)
+		sl_core_log_err_trace(core_link, LOG_NAME, "up fail work - media signal get failed [%d]", rtn);
+	else
+		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
@@ -1187,6 +1264,10 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	else
 		sl_ctrl_link_fec_down_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
+
+	/* Check media */
+	if (!sl_core_hw_link_is_media_present(core_link))
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_hw_link_off(core_link);
 

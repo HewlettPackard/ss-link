@@ -106,4 +106,9 @@ u32  sl_core_hw_serdes_tx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic
 void sl_core_hw_serdes_rx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 state);
 u32  sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
 
+int sl_core_hw_serdes_tx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_lol);
+int sl_core_hw_serdes_rx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_lol);
+int sl_core_hw_serdes_tx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_los);
+int sl_core_hw_serdes_rx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_los);
+
 #endif /* _SL_CORE_HW_SERDES_LANE_H_ */

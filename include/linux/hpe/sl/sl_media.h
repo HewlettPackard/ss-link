@@ -110,6 +110,10 @@ enum sl_media_shape {
 #define SL_MEDIA_JACK_TYPE_QSFP      3
 #define SL_MEDIA_JACK_TYPE_OSFP      4
 
+#define SL_MEDIA_ADVERTISED_FLAGS_TX_LOS BIT(1)
+#define SL_MEDIA_ADVERTISED_FLAGS_TX_LOL BIT(2)
+#define SL_MEDIA_ADVERTISED_FLAGS_RX_LOS BIT(1)
+#define SL_MEDIA_ADVERTISED_FLAGS_RX_LOL BIT(2)
 
 enum sl_media_mgmt_if {
 	SL_MEDIA_MGMT_IF_UNKNOWN = 0,
@@ -121,11 +125,12 @@ struct sl_media_qsfp {
 	u32 density;
 };
 
-#define SL_MEDIA_SERIAL_NUM_SIZE       17
-#define SL_MEDIA_HPE_PN_SIZE           13
-#define SL_MEDIA_DATE_CODE_SIZE        9
-#define SL_MEDIA_FIRMWARE_VERSION_SIZE 2
-#define SL_MEDIA_VENDOR_PN_SIZE        17
+#define SL_MEDIA_SERIAL_NUM_SIZE                 17
+#define SL_MEDIA_HPE_PN_SIZE                     13
+#define SL_MEDIA_DATE_CODE_SIZE                  9
+#define SL_MEDIA_FIRMWARE_VERSION_SIZE           2
+#define SL_MEDIA_VENDOR_PN_SIZE                  17
+#define SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE 2
 
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
 #define SL_MEDIA_ATTR_VER   11
@@ -154,6 +159,8 @@ struct sl_media_attr {
 	union {
 		struct sl_media_qsfp qsfp;
 	} jack_type_info;
+
+	u8 supported_flags_advertised[SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE];
 
 	u32 info;
 	u32 errors;

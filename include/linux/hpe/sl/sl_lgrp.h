@@ -175,6 +175,7 @@ struct sl_dt_lgrp_info {
 		u8 rx_source;
 		u8 rx_invert;
 	} lane_info[SL_MAX_LANES];
+	u32 jack_type;
 };
 
 struct sl_lgrp *sl_lgrp_new(struct sl_ldev *ldev, u8 lgrp_num, struct kobject *sysfs_parent);

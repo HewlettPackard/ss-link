@@ -54,6 +54,8 @@ struct sl_ctrl_lgrp {
 	struct sl_lgrp_serdes_lane_kobj  serdes_lane_swizzle_kobjs[SL_ASIC_MAX_LANES];
 	struct sl_lgrp_serdes_lane_kobj  serdes_lane_settings_kobjs[SL_ASIC_MAX_LANES];
 	struct sl_lgrp_serdes_lane_kobj  serdes_lane_eye_kobjs[SL_ASIC_MAX_LANES];
+	struct sl_lgrp_serdes_lane_kobj  serdes_lane_los_kobjs[SL_ASIC_MAX_LANES];
+	struct sl_lgrp_serdes_lane_kobj  serdes_lane_lol_kobjs[SL_ASIC_MAX_LANES];
 
 	// FIXME: for now only enable at the lgrp level
 	bool                             err_trace_enable;

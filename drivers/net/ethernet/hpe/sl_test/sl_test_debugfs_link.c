@@ -262,10 +262,11 @@ STATIC_CONFIG_OPT_ENTRY(headshell_loopback,   HEADSHELL_LOOPBACK_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(remote_loopback,      REMOTE_LOOPBACK_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(extended_reach_force, EXTENDED_REACH_FORCE);
 
-STATIC_POLICY_OPT_ENTRY(lock,                  LOCK);
-STATIC_POLICY_OPT_ENTRY(keep_serdes_up,        KEEP_SERDES_UP);
-STATIC_POLICY_OPT_ENTRY(use_unsupported_cable, USE_UNSUPPORTED_CABLE);
-STATIC_POLICY_OPT_ENTRY(ignore_media_error,    IGNORE_MEDIA_ERROR);
+STATIC_POLICY_OPT_ENTRY(lock,                      LOCK);
+STATIC_POLICY_OPT_ENTRY(keep_serdes_up,            KEEP_SERDES_UP);
+STATIC_POLICY_OPT_ENTRY(use_unsupported_cable,     USE_UNSUPPORTED_CABLE);
+STATIC_POLICY_OPT_ENTRY(use_supported_ss200_cable, USE_SUPPORTED_SS200_CABLE);
+STATIC_POLICY_OPT_ENTRY(ignore_media_error,        IGNORE_MEDIA_ERROR);
 
 STATIC_HPE_MAP_ENTRY(linktrain, LINKTRAIN);
 STATIC_HPE_MAP_ENTRY(precode, PRECODING);
@@ -495,6 +496,14 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 				 "link policy ignore_media_error debugfs_create_file failed");
+		return -ENOMEM;
+	}
+
+	rtn = sl_test_debugfs_create_opt("use_supported_ss200_cable", 0644, policy_dir,
+					 &policy_option_use_supported_ss200_cable);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+				 "link policy use_supported_ss200_cable debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

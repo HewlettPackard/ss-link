@@ -380,6 +380,16 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 	return 0;
 }
 
+#define SUPPORTED_FLAGS_ADVERTISEMENT_OFFSET 157
+static void sl_media_eeprom_supported_flags_advertised_get(struct sl_media_jack *media_jack,
+							   u8 *supported_flags_advertised)
+{
+	spin_lock(&media_jack->data_lock);
+	memcpy(supported_flags_advertised, &media_jack->eeprom_page1[SUPPORTED_FLAGS_ADVERTISEMENT_OFFSET],
+	       SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE);
+	spin_unlock(&media_jack->data_lock);
+}
+
 bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -463,6 +473,7 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_length_get(media_jack, media_attr->format, &(media_attr->length_cm));
 	sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map));
 	sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation));
+	sl_media_eeprom_supported_flags_advertised_get(media_jack, media_attr->supported_flags_advertised);
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X)",

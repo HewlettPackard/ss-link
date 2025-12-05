@@ -4,6 +4,7 @@
 #ifndef _SL_MEDIA_JACK_H_
 #define _SL_MEDIA_JACK_H_
 
+#include <linux/completion.h>
 #include <linux/spinlock.h>
 #include <linux/time64.h>
 #include <linux/atomic.h>
@@ -68,6 +69,38 @@
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED 2
 
 #define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
+
+enum sl_media_jack_dp_state {
+	SL_MEDIA_JACK_DP_STATE_DEACTIVATED = 1,
+	SL_MEDIA_JACK_DP_STATE_INIT,
+	SL_MEDIA_JACK_DP_STATE_DEINIT,
+	SL_MEDIA_JACK_DP_STATE_ACTIVATED,
+	SL_MEDIA_JACK_DP_STATE_TX_TURN_ON,
+	SL_MEDIA_JACK_DP_STATE_TX_TURN_OFF,
+	SL_MEDIA_JACK_DP_STATE_INITIALIZED,
+};
+
+enum sl_media_jack_lane_data_read_state {
+	SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE = 0,
+	SL_MEDIA_JACK_LANE_DATA_READ_STATE_BUSY,
+};
+
+struct sl_media_jack_signal {
+	struct {
+		u8 los_map;
+		u8 lol_map;
+	} tx;
+	struct {
+		u8 los_map;
+		u8 lol_map;
+	} rx;
+};
+
+struct sl_media_jack_lane_data {
+	u8                          dp_states[4];
+	u8                          dp_states_changed;
+	struct sl_media_jack_signal signal;
+};
 
 struct sl_media_serdes_settings {
 	s16 pre1;
@@ -152,6 +185,17 @@ struct sl_media_jack {
 
 	atomic_t                        is_headshell_busy;
 
+	struct {
+		u32               read_state;
+		struct completion read_complete;
+		int               last_read_rtn;
+		struct {
+			struct sl_media_jack_lane_data data;
+			time64_t                       timestamp_s;
+			bool                           cached;
+		} cache;
+	} lane_data;
+
 	void                           *hdl;
 	u8                              port_count;
 	u16                             asic_port[4];
@@ -232,5 +276,10 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num);
 
 int  sl_media_jack_fake_cable_insert(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
 void sl_media_jack_fake_cable_remove(u8 ldev_num, u8 lgrp_num);
+
+int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struct sl_media_jack_signal *media_signal);
+int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *cache_time);
+int sl_media_jack_signal_cache_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
+				   struct sl_media_jack_signal *media_signal);
 
 #endif /* _SL_MEDIA_JACK_H_ */

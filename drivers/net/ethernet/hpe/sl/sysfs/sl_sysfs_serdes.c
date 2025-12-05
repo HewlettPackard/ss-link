@@ -14,6 +14,8 @@
 #include "sl_sysfs_serdes_eye.h"
 #include "sl_sysfs_serdes_state.h"
 #include "sl_sysfs_serdes_swizzle.h"
+#include "sl_sysfs_serdes_lol.h"
+#include "sl_sysfs_serdes_los.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -225,12 +227,30 @@ int sl_sysfs_serdes_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 				"serdes_lane_eye_create failed [%d]", rtn);
 			goto out_settings;
 		}
+
+		rtn = sl_sysfs_serdes_lane_lol_create(ctrl_lgrp, asic_lane_num);
+		if (rtn) {
+			sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+				   "serdes_lane_lol_create failed [%d]", rtn);
+			goto out_eye;
+		}
+
+		rtn = sl_sysfs_serdes_lane_los_create(ctrl_lgrp, asic_lane_num);
+		if (rtn) {
+			sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+				   "serdes_lane_los_create failed [%d]", rtn);
+			goto out_lol;
+		}
 	}
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"serdes create (serdes_kobj = 0x%p)", &(ctrl_lgrp->serdes_kobj));
 	return 0;
 
+out_lol:
+	sl_sysfs_serdes_lane_lol_delete(ctrl_lgrp, asic_lane_num);
+out_eye:
+	sl_sysfs_serdes_lane_eye_delete(ctrl_lgrp, asic_lane_num);
 out_settings:
 	sl_sysfs_serdes_lane_settings_delete(ctrl_lgrp, asic_lane_num);
 out_state:
@@ -241,6 +261,8 @@ out_lanes:
 	kobject_put(&(ctrl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 out_all:
 	for (asic_lane_num = asic_lane_num - 1; asic_lane_num >= 0; --asic_lane_num) {
+		sl_sysfs_serdes_lane_los_delete(ctrl_lgrp, asic_lane_num);
+		sl_sysfs_serdes_lane_lol_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_eye_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_settings_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_swizzle_delete(ctrl_lgrp, asic_lane_num);
@@ -265,6 +287,8 @@ void sl_sysfs_serdes_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return;
 
 	for (asic_lane_num = 0; asic_lane_num < SL_ASIC_MAX_LANES; ++asic_lane_num) {
+		sl_sysfs_serdes_lane_los_delete(ctrl_lgrp, asic_lane_num);
+		sl_sysfs_serdes_lane_lol_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_eye_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_settings_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_swizzle_delete(ctrl_lgrp, asic_lane_num);

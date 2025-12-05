@@ -289,6 +289,7 @@ function print_jack {
 	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version_hex)
 	local shape=$(cat ${LGRP_PATH}/media/shape)
 	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
+        local jack_part=$(cat ${LGRP_PATH}/media/jack_part)
 
 
 	if [ "${length}" == "invalid-format" ] || [ "${length}" == "no-cable" ] ; then
@@ -348,6 +349,7 @@ function print_jack {
         printf "\n"
         printf "           |   max_speed: ${max_speed}\n"
         printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
+        printf "           | jack_part: ${jack_part}\n"
 }
 
 function print_lgrp {

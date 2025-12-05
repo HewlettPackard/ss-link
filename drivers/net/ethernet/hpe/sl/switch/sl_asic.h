@@ -39,4 +39,7 @@
 #define SL_SERDES_NUM_PLLS      1
 #define SL_SERDES_NUM_LANES     8
 
+//FIXME: Remove when SS3 changes merged in SSHOTPFCMN-218
+#define PLATFORM_NIC (SL_MAX_SERDES_LANES == 4)
+
 #endif /* _SL_ASIC_H_ */

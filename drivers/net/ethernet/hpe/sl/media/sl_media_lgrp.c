@@ -369,3 +369,15 @@ void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver)
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
+
+bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_attr media_attr;
+
+	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+
+	return (media_attr.supported_flags_advertised[0] & SL_MEDIA_ADVERTISED_FLAGS_TX_LOS) ||
+	       (media_attr.supported_flags_advertised[0] & SL_MEDIA_ADVERTISED_FLAGS_TX_LOL) ||
+	       (media_attr.supported_flags_advertised[1] & SL_MEDIA_ADVERTISED_FLAGS_RX_LOS) ||
+	       (media_attr.supported_flags_advertised[1] & SL_MEDIA_ADVERTISED_FLAGS_RX_LOL);
+}

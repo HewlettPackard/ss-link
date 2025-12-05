@@ -71,7 +71,9 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 
 	media_jack->media_ldev = media_ldev;
 
-	media_jack->state = SL_MEDIA_JACK_CABLE_REMOVED;
+	media_jack->state                  = SL_MEDIA_JACK_CABLE_REMOVED;
+	media_jack->lane_data.cache.cached = false;
+	media_jack->lane_data.read_state   = SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE;
 
 	media_jack->temperature_value     = -1;
 	media_jack->temperature_threshold = -1;

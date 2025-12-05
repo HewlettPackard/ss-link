@@ -417,7 +417,7 @@ static int sl_media_data_jack_temp_value_get(struct sl_media_jack *media_jack, u
 
 	for (i = 0; i < 3; ++i) {
 		rtn = sl_media_io_read8(media_jack, 0, 14, &value);
-		if (rtn != sizeof(value))
+		if (rtn)
 			continue;
 
 		if (value < TEMPERATURE_CELSIUS_MIN || value > TEMPERATURE_CELSIUS_MAX)
@@ -443,7 +443,7 @@ static int sl_media_data_jack_temp_threshold_get(struct sl_media_jack *media_jac
 
 	for (i = 0; i < 3; ++i) {
 		rtn = sl_media_io_read8(media_jack, 2, 128, &value);
-		if (rtn != sizeof(value))
+		if (rtn)
 			continue;
 
 		if (value < TEMPERATURE_THRESHOLD_CELSIUS_MIN || value > TEMPERATURE_THRESHOLD_CELSIUS_MAX)

@@ -171,3 +171,78 @@ int sl_core_lgrp_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num,
 {
 	return sl_core_hw_serdes_eye_lower_get(core_lgrp, asic_lane_num, eye_lower);
 }
+
+/* Shift media lane data based on the table below,
+ *
+ * | pgrp num | jack type | Swap Nibble |
+ * | -------- | --------- | ----------- |
+ * | even     | legacy    | no          |
+ * | even     | DD        | yes         |
+ * | odd      | legacy    | yes         |
+ * | odd      | DD        | no          |
+ */
+bool sl_core_lgrp_media_lane_data_swap(u8 ldev_num, u8 lgrp_num)
+{
+	u32                  jack_type;
+	bool                 swap;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "media lane data swap");
+
+	if (PLATFORM_NIC) {
+		sl_core_log_dbg(core_lgrp, LOG_NAME,
+				"media lane data swap - NIC platform, no swap");
+		return false;
+	}
+
+	jack_type    = core_lgrp->serdes.dt.jack_type;
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+			"media lane data swap (jack_type = %u)", jack_type);
+
+	if (jack_type == SL_DT_JACK_TYPE_EXAMAX_LEFT || jack_type == SL_DT_JACK_TYPE_EXAMAX_RIGHT ||
+	    jack_type == SL_DT_JACK_TYPE_LOW || jack_type == SL_DT_JACK_TYPE_HIGH) {
+		sl_core_log_warn(core_lgrp, LOG_NAME, "media lane data swap (Examax jack - no shift)");
+		return false;
+	}
+
+	swap = (((core_lgrp->num & 1) && jack_type == SL_DT_JACK_TYPE_LEGACY) ||
+		(!(core_lgrp->num & 1) && jack_type == SL_DT_JACK_TYPE_DD));
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "media lane data swap (swap = %s)", swap ? "yes" : "no");
+
+	return swap;
+}
+
+u32 sl_core_lgrp_jack_part_get(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "jack part get");
+
+	return core_lgrp->serdes.dt.jack_type;
+}
+
+int sl_core_lgrp_tx_lane_is_lol(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_tx_lol)
+{
+	return sl_core_hw_serdes_tx_lane_is_lol(sl_core_lgrp_get(ldev_num, lgrp_num), asic_lane_num, is_tx_lol);
+}
+
+int sl_core_lgrp_rx_lane_is_lol(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_rx_lol)
+{
+	return sl_core_hw_serdes_rx_lane_is_lol(sl_core_lgrp_get(ldev_num, lgrp_num), asic_lane_num, is_rx_lol);
+}
+
+int sl_core_lgrp_tx_lane_is_los(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_tx_los)
+{
+	return sl_core_hw_serdes_tx_lane_is_los(sl_core_lgrp_get(ldev_num, lgrp_num), asic_lane_num, is_tx_los);
+}
+
+int sl_core_lgrp_rx_lane_is_los(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool *is_rx_los)
+{
+	return sl_core_hw_serdes_rx_lane_is_los(sl_core_lgrp_get(ldev_num, lgrp_num), asic_lane_num, is_rx_los);
+}

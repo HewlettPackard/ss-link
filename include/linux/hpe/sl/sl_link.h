@@ -88,12 +88,13 @@ struct sl_link_config {
 	u32 options;
 };
 
-#define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE              BIT(0)
-#define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE   BIT(1)
-#define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE   BIT(2)
-#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE      BIT(3)
-#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE        BIT(4)
-#define SL_LINK_CONFIG_OPT_ALD_ENABLE                  BIT(5) /* Enable Auto Lane Degrade */
+#define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE            BIT(0)
+#define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE BIT(1)
+#define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE BIT(2)
+#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE    BIT(3)
+#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE      BIT(4)
+#define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(5) /* Enable Auto Lane Degrade */
+#define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(6) /* Disable LOS/LOL link up fail cause */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 
@@ -162,6 +163,10 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(30) /* link up canceled, link down          */
 #define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(31) /* unsupported speed                    */
 #define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(32) /* SS200 cable                          */
+#define SL_LINK_DOWN_CAUSE_TX_LOL            BIT(33) /* TX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_RX_LOL            BIT(34) /* RX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_TX_LOS            BIT(35) /* TX Loss of Signal                    */
+#define SL_LINK_DOWN_CAUSE_RX_LOS            BIT(36) /* RX Loss of Signal                    */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */
