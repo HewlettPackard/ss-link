@@ -24,13 +24,25 @@
 int sl_test_serdes_params_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			      s16 pre1, s16 pre2, s16 pre3, s16 cursor,
 			      s16 post1, s16 post2, u16 media, u16 osr, u16 encoding,
-			      u16 clocking, u16 width, u16 dfe, u16 scramble, u32 options)
+			      u16 clocking, u16 width, u16 dfe, u16 scramble_dis, u32 options)
 {
 	return sl_core_test_serdes_settings_set(ldev_num, lgrp_num, link_num,
 			pre1, pre2, pre3, cursor, post1, post2, media, osr, encoding,
-			clocking, width, dfe, scramble, options);
+			clocking, width, dfe, scramble_dis, options);
 }
 EXPORT_SYMBOL(sl_test_serdes_params_set);
+
+int sl_test_serdes_params_unset(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	return sl_core_test_serdes_settings_unset(ldev_num, lgrp_num, link_num);
+}
+EXPORT_SYMBOL(sl_test_serdes_params_unset);
+
+void sl_test_state_opts(char *buf, size_t size)
+{
+	snprintf(buf, size, "enabled disabled\n");
+}
+EXPORT_SYMBOL(sl_test_state_opts);
 
 const char *sl_test_state_str(u16 state)
 {
@@ -56,18 +68,6 @@ int sl_test_state_from_str(const char *str, u16 *state)
 	return -ENOENT;
 }
 EXPORT_SYMBOL(sl_test_state_from_str);
-
-void sl_test_state_opts(char *buf, size_t size)
-{
-	snprintf(buf, size, "enabled disabled\n");
-}
-EXPORT_SYMBOL(sl_test_state_opts);
-
-int sl_test_serdes_params_unset(u8 ldev_num, u8 lgrp_num, u8 link_num)
-{
-	return sl_core_test_serdes_settings_unset(ldev_num, lgrp_num, link_num);
-}
-EXPORT_SYMBOL(sl_test_serdes_params_unset);
 
 const char *sl_test_serdes_lane_encoding_str(u16 encoding)
 {
@@ -134,6 +134,37 @@ int sl_test_media_type_from_str(const char *str, u32 *type)
 	return sl_media_test_type_from_str(str, type);
 }
 EXPORT_SYMBOL(sl_test_media_type_from_str);
+
+void sl_test_scramble_dis_opts(char *buf, size_t size)
+{
+	snprintf(buf, size, "set not_set\n");
+}
+EXPORT_SYMBOL(sl_test_scramble_dis_opts);
+
+const char *sl_test_scramble_dis_str(u16 scramble_dis)
+{
+	return scramble_dis ? "set" : "not_set";
+}
+EXPORT_SYMBOL(sl_test_scramble_dis_str);
+
+int sl_test_scramble_dis_from_str(const char *str, u16 *scramble_dis)
+{
+	if (!str || !scramble_dis)
+		return -EINVAL;
+
+	if (!strncmp(str, "set", 3)) {
+		*scramble_dis = 1;
+		return 0;
+	}
+
+	if (!strncmp(str, "not_set", 7)) {
+		*scramble_dis = 0;
+		return 0;
+	}
+
+	return -ENOENT;
+}
+EXPORT_SYMBOL(sl_test_scramble_dis_from_str);
 
 struct kobject *sl_test_ldev_kobj_get(u8 ldev_num)
 {

@@ -78,7 +78,7 @@ int sl_core_lgrp_osr_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *o
 int sl_core_lgrp_encoding_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *encoding);
 int sl_core_lgrp_width_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *width);
 int sl_core_lgrp_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *width);
-int sl_core_lgrp_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *width);
+int sl_core_lgrp_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble_dis);
 int sl_core_lgrp_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper);
 int sl_core_lgrp_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_lower);
 

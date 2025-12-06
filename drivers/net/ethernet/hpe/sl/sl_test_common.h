@@ -68,25 +68,27 @@ struct str_conv_u32 {
 int sl_test_serdes_params_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			      s16 pre1, s16 pre2, s16 pre3, s16 cursor,
 			      s16 post1, s16 post2, u16 media, u16 osr, u16 encoding,
-			      u16 clocking, u16 width, u16 dfe, u16 scramble, u32 options);
-
+			      u16 clocking, u16 width, u16 dfe, u16 scramble_dis, u32 options);
 int sl_test_serdes_params_unset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
+void        sl_test_state_opts(char *buf, size_t size);
 const char *sl_test_state_str(u16 state);
+int         sl_test_state_from_str(const char *str, u16 *state);
+
 const char *sl_test_serdes_lane_encoding_str(u16 encoding);
 const char *sl_test_serdes_lane_clocking_str(u16 clocking);
 const char *sl_test_serdes_lane_osr_str(u16 osr);
 const char *sl_test_serdes_lane_width_str(u16 width);
-const char *sl_test_media_type_str(u32 type);
 
-int sl_test_state_from_str(const char *str, u16 *state);
 int sl_test_serdes_lane_encoding_from_str(const char *str, u16 *encoding);
 int sl_test_serdes_lane_clocking_from_str(const char *str, u16 *clocking);
 int sl_test_serdes_lane_osr_from_str(const char *str, u16 *osr);
 int sl_test_serdes_lane_width_from_str(const char *str, u16 *width);
 int sl_test_media_type_from_str(const char *str, u32 *type);
 
-void sl_test_state_opts(char *buf, size_t size);
+void        sl_test_scramble_dis_opts(char *buf, size_t size);
+const char *sl_test_scramble_dis_str(u16 scramble_dis);
+int         sl_test_scramble_dis_from_str(const char *str, u16 *scramble_dis);
 
 struct kobject *sl_test_ldev_kobj_get(u8 ldev_num);
 struct kobject *sl_test_lgrp_kobj_get(u8 ldev_num, u8 lgrp_num);

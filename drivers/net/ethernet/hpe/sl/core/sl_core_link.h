@@ -265,7 +265,7 @@ struct sl_core_serdes_settings {
 	u16 clocking;
 	u16 width;
 	u16 dfe;
-	u16 scramble;
+	u16 scramble_dis;
 	u16 tx_pll_bw;
 };
 
@@ -361,7 +361,7 @@ struct sl_core_link {
 		spinlock_t                       data_lock;
 		u8                               serdes_state;
 		struct {
-			// media settings
+			/* media settings */
 			s16 pre1;
 			s16 pre2;
 			s16 pre3;
@@ -369,14 +369,14 @@ struct sl_core_link {
 			s16 post1;
 			s16 post2;
 			u16 media;
-			// core settings
+			/* core settings */
 			u16 osr;
 			u16 encoding;
 			u16 clocking;
 			u16 width;
 			u16 dfe;
-			u16 scramble;
-			// options
+			u16 scramble_dis;
+			/* options */
 			u32 options;
 		} test_settings;
 	} serdes;

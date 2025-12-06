@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=5
+MINOR=6
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -234,10 +234,10 @@ function print_mac_counters {
         for counter in ${MAC_PATH}/counters/* ; do
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        printf " %20s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                        printf "           | %20s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }
@@ -253,10 +253,10 @@ function print_llr_counters {
         for counter in ${LLR_PATH}/counters/* ; do
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %25s = ${val}\n" $(basename "${counter}")
+                        printf " %20s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %25s = ${val}\n" $(basename "${counter}")
+                        printf "           | %20s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }
@@ -305,7 +305,7 @@ function print_jack {
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
         printf "           | is_supported_cable: ${is_supported_cable}, is_supported_ss200_cable: ${is_supported_ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
-		printf "           | active_cable: fw_ver_hex: ${fw_ver}, (target_fw_ver_hex = ${target_fw_ver})\n"
+		printf "           | active_cable: fw_ver_hex: ${fw_ver} (target_fw_ver_hex = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect: ${appsel_num_200}\n"
 		printf "           | active_cable_400g: host_interface: ${host_interface_400}, lane_count: ${lane_count_400}, appselect: ${appsel_num_400}\n"
 	fi
@@ -366,13 +366,13 @@ function print_lgrp {
         local fabric_link=$(cat ${LGRP_PATH}/config/fabric_link)
         local r1_partner=$(cat ${LGRP_PATH}/config/r1_partner)
 
-        printf "lgrp%02d     | furcation   : ${furcation}\n" ${LGRP}
-        printf "           | mfs         : ${mfs}\n"
-        printf "           | technology  : ${tech_map}\n"
-        printf "           | fec         : ${fec_map}  (fec_mode = ${fec_mode})\n"
-        printf "           | link_type   : ${link_type}\n"
-        printf "           | fabric_link : ${fabric_link}\n"
-        printf "           | r1_partner  : ${r1_partner}\n"
+        printf "lgrp%02d     | furcation  : ${furcation}\n" ${LGRP}
+        printf "           | mfs        : ${mfs}\n"
+        printf "           | technology : ${tech_map}\n"
+        printf "           | fec        : ${fec_map}  (fec_mode = ${fec_mode})\n"
+        printf "           | link_type  : ${link_type}\n"
+        printf "           | fabric_link: ${fabric_link}\n"
+        printf "           | r1_partner : ${r1_partner}\n"
 }
 
 function print_link {
@@ -712,7 +712,7 @@ function print_serdes_settings {
         print_col_serdes "settings/link_training" "link_train"
         print_col_serdes "settings/media" "media"
         print_col_serdes "settings/osr" "osr"
-        print_col_serdes "settings/scramble" "scramble"
+        print_col_serdes "settings/scramble_dis" "scramble_dis"
         print_col_serdes "settings/clocking" "clocking"
         print_serdes_footer
 }

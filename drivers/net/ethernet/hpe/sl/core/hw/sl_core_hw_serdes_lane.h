@@ -28,8 +28,8 @@
 #define SL_CORE_HW_SERDES_WIDTH_80  1
 #define SL_CORE_HW_SERDES_WIDTH_160 2
 
-#define SL_CORE_HW_SERDES_SCRAMBLE_ENABLE  0
-#define SL_CORE_HW_SERDES_SCRAMBLE_DISABLE 1
+#define SL_CORE_HW_SERDES_SCRAMBLE_DIS_SET    1
+#define SL_CORE_HW_SERDES_SCRAMBLE_DIS_NOTSET 0
 
 #define SL_CORE_HW_SERDES_DFE_DISABLE 0
 #define SL_CORE_HW_SERDES_DFE_ENABLE  1
@@ -84,7 +84,7 @@ u16  sl_core_hw_serdes_config(struct sl_core_lgrp *core_lgrp,
 			      struct sl_core_serdes_settings *core_serdes_settings,
 			      struct sl_media_serdes_settings *media_serdes_settings);
 int  sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 lane_num, u8 *dfe);
-int  sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble);
+int  sl_core_hw_serdes_lane_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble_dis);
 
 int  sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg);
 int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num, bool is_autoneg);

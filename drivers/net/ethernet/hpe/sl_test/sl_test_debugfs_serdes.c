@@ -33,7 +33,7 @@ struct sl_test_serdes_settings {
 	u16 clocking;
 	u16 width;
 	u16 dfe;
-	u16 scramble;
+	u16 scramble_dis;
 	// options
 	u32 options;
 };
@@ -107,11 +107,11 @@ static struct str_conv_u16 lane_dfe = {
 	.value  = &settings.dfe,
 };
 
-static struct str_conv_u16 lane_scramble = {
-	.to_str = sl_test_state_str,
-	.to_u16 = sl_test_state_from_str,
-	.opts   = sl_test_state_opts,
-	.value  = &settings.scramble,
+static struct str_conv_u16 lane_scramble_dis = {
+	.to_str = sl_test_scramble_dis_str,
+	.to_u16 = sl_test_scramble_dis_from_str,
+	.opts   = sl_test_scramble_dis_opts,
+	.value  = &settings.scramble_dis,
 };
 
 enum serdes_cmd_index {
@@ -211,22 +211,22 @@ static const struct file_operations sl_test_serdes_cmd_fops = {
 
 static void sl_test_serdes_init(void)
 {
-	settings.pre1     = 0;
-	settings.pre2     = 0;
-	settings.pre3     = 0;
-	settings.cursor   = 100;
-	settings.post1    = 0;
-	settings.post2    = 0;
-	settings.media    = 1;
+	settings.pre1         = 0;
+	settings.pre2         = 0;
+	settings.pre3         = 0;
+	settings.cursor       = 100;
+	settings.post1        = 0;
+	settings.post2        = 0;
+	settings.media        = 1;
 
-	settings.osr      = 1;
-	settings.encoding = 4;
-	settings.clocking = 1;
-	settings.width    = 1;
-	settings.dfe      = 0;
-	settings.scramble = 0;
+	settings.osr          = 1;
+	settings.encoding     = 4;
+	settings.clocking     = 1;
+	settings.width        = 1;
+	settings.dfe          = 0;
+	settings.scramble_dis = 0;
 
-	settings.options  = 0;
+	settings.options      = 0;
 }
 
 int sl_test_serdes_create(struct dentry *parent)
@@ -260,12 +260,12 @@ int sl_test_serdes_create(struct dentry *parent)
 	sl_test_debugfs_create_s16("post2",    0644, settings_dir, &(settings.post2));
 	sl_test_debugfs_create_s16("media",    0644, settings_dir, &(settings.media));
 
-	sl_test_debugfs_create_str_conv_u16("encoding", 0644, settings_dir, &lane_encoding);
-	sl_test_debugfs_create_str_conv_u16("clocking", 0644, settings_dir, &lane_clocking);
-	sl_test_debugfs_create_str_conv_u16("osr",      0644, settings_dir, &lane_osr);
-	sl_test_debugfs_create_str_conv_u16("width",    0644, settings_dir, &lane_width);
-	sl_test_debugfs_create_str_conv_u16("dfe",      0644, settings_dir, &lane_dfe);
-	sl_test_debugfs_create_str_conv_u16("scramble", 0644, settings_dir, &lane_scramble);
+	sl_test_debugfs_create_str_conv_u16("encoding",     0644, settings_dir, &lane_encoding);
+	sl_test_debugfs_create_str_conv_u16("clocking",     0644, settings_dir, &lane_clocking);
+	sl_test_debugfs_create_str_conv_u16("osr",          0644, settings_dir, &lane_osr);
+	sl_test_debugfs_create_str_conv_u16("width",        0644, settings_dir, &lane_width);
+	sl_test_debugfs_create_str_conv_u16("dfe",          0644, settings_dir, &lane_dfe);
+	sl_test_debugfs_create_str_conv_u16("scramble_dis", 0644, settings_dir, &lane_scramble_dis);
 
 	dentry = debugfs_create_file("cmds", 0644, sl_test_serdes_dir, NULL, &sl_test_serdes_cmds_fops);
 	if (!dentry) {
@@ -293,16 +293,16 @@ int sl_test_serdes_set(void)
 		settings.pre1, settings.pre2, settings.pre3, settings.cursor,
 		settings.post1, settings.post2, settings.media);
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-		"serdes set (osr = %u, encoding = %u, clocking = %u, width = %u, dfe = %u, scramble = %u)",
+		"serdes set (osr = %u, encoding = %u, clocking = %u, width = %u, dfe = %u, scramble_dis = %u)",
 		settings.osr, settings.encoding, settings.clocking, settings.width,
-		settings.dfe, settings.scramble);
+		settings.dfe, settings.scramble_dis);
 
 	return sl_test_serdes_params_set(sl_test_debugfs_ldev_num_get(),
 		sl_test_debugfs_lgrp_num_get(), sl_test_debugfs_link_num_get(),
 		settings.pre1, settings.pre2, settings.pre3, settings.cursor,
 		settings.post1, settings.post2, settings.media,
 		settings.osr, settings.encoding, settings.clocking, settings.width,
-		settings.dfe, settings.scramble, settings.options);
+		settings.dfe, settings.scramble_dis, settings.options);
 }
 
 int sl_test_serdes_unset(void)

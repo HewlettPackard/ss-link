@@ -40,13 +40,13 @@ static int sl_core_hw_serdes_link_up_an_settings(struct sl_core_link *core_link)
 	sl_media_lgrp_media_serdes_settings_get(core_link->core_lgrp->core_ldev->num,
 					core_link->core_lgrp->num, &core_link->serdes.media_serdes_settings);
 
-	core_link->serdes.core_serdes_settings.dfe      = SL_CORE_HW_SERDES_DFE_DISABLE;
-	core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
-	core_link->serdes.core_serdes_settings.osr      = SL_CORE_HW_SERDES_OSR_OSX42P5;
-	core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_NRZ;
+	core_link->serdes.core_serdes_settings.dfe          = SL_CORE_HW_SERDES_DFE_DISABLE;
+	core_link->serdes.core_serdes_settings.scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_SET;
+	core_link->serdes.core_serdes_settings.osr          = SL_CORE_HW_SERDES_OSR_OSX42P5;
+	core_link->serdes.core_serdes_settings.encoding     = SL_CORE_HW_SERDES_ENCODING_NRZ;
 // FIXME: might need to worry about third party
-	core_link->serdes.core_serdes_settings.clocking = SL_CORE_HW_SERDES_CLOCKING_85;
-	core_link->serdes.core_serdes_settings.width    = SL_CORE_HW_SERDES_WIDTH_40;
+	core_link->serdes.core_serdes_settings.clocking     = SL_CORE_HW_SERDES_CLOCKING_85;
+	core_link->serdes.core_serdes_settings.width        = SL_CORE_HW_SERDES_WIDTH_40;
 
 	switch (core_link->core_lgrp->config.furcation) {
 	case SL_MEDIA_FURCATION_X1:
@@ -159,9 +159,9 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 
 	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
 	if (sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED)
-		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_DISABLE;
+		core_link->serdes.core_serdes_settings.scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_SET;
 	else
-		core_link->serdes.core_serdes_settings.scramble = SL_CORE_HW_SERDES_SCRAMBLE_ENABLE;
+		core_link->serdes.core_serdes_settings.scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_NOTSET;
 
 	switch (core_link->core_lgrp->config.furcation) {
 	case SL_MEDIA_FURCATION_X1:
@@ -212,20 +212,20 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 	if (core_link->serdes.use_test_settings) {
 		sl_core_log_warn(core_link, LOG_NAME, "link up settings test");
 		// media settings
-		core_link->serdes.media_serdes_settings.pre1    = core_link->serdes.test_settings.pre1;
-		core_link->serdes.media_serdes_settings.pre2    = core_link->serdes.test_settings.pre2;
-		core_link->serdes.media_serdes_settings.pre3    = core_link->serdes.test_settings.pre3;
-		core_link->serdes.media_serdes_settings.cursor  = core_link->serdes.test_settings.cursor;
-		core_link->serdes.media_serdes_settings.post1   = core_link->serdes.test_settings.post1;
-		core_link->serdes.media_serdes_settings.post2   = core_link->serdes.test_settings.post2;
-		core_link->serdes.media_serdes_settings.media   = core_link->serdes.test_settings.media;
+		core_link->serdes.media_serdes_settings.pre1        = core_link->serdes.test_settings.pre1;
+		core_link->serdes.media_serdes_settings.pre2        = core_link->serdes.test_settings.pre2;
+		core_link->serdes.media_serdes_settings.pre3        = core_link->serdes.test_settings.pre3;
+		core_link->serdes.media_serdes_settings.cursor      = core_link->serdes.test_settings.cursor;
+		core_link->serdes.media_serdes_settings.post1       = core_link->serdes.test_settings.post1;
+		core_link->serdes.media_serdes_settings.post2       = core_link->serdes.test_settings.post2;
+		core_link->serdes.media_serdes_settings.media       = core_link->serdes.test_settings.media;
 		// core settings
-		core_link->serdes.core_serdes_settings.osr      = core_link->serdes.test_settings.osr;
-		core_link->serdes.core_serdes_settings.encoding = core_link->serdes.test_settings.encoding;
-		core_link->serdes.core_serdes_settings.clocking = core_link->serdes.test_settings.clocking;
-		core_link->serdes.core_serdes_settings.width    = core_link->serdes.test_settings.width;
-		core_link->serdes.core_serdes_settings.dfe      = core_link->serdes.test_settings.dfe;
-		core_link->serdes.core_serdes_settings.scramble = core_link->serdes.test_settings.scramble;
+		core_link->serdes.core_serdes_settings.osr          = core_link->serdes.test_settings.osr;
+		core_link->serdes.core_serdes_settings.encoding     = core_link->serdes.test_settings.encoding;
+		core_link->serdes.core_serdes_settings.clocking     = core_link->serdes.test_settings.clocking;
+		core_link->serdes.core_serdes_settings.width        = core_link->serdes.test_settings.width;
+		core_link->serdes.core_serdes_settings.dfe          = core_link->serdes.test_settings.dfe;
+		core_link->serdes.core_serdes_settings.scramble_dis = core_link->serdes.test_settings.scramble_dis;
 		// FIXME: options?
 	}
 
@@ -236,10 +236,10 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 			core_link->serdes.test_settings.post1, core_link->serdes.test_settings.post2,
 			core_link->serdes.test_settings.media);
 	sl_core_log_dbg(core_link, LOG_NAME,
-			"link up settings (osr = %u, encoding = %u, clocking = %u, width = %u, dfe = %u, scramble = %u)",
+			"link up settings (osr = %u, encoding = %u, clocking = %u, width = %u, dfe = %u, scramble_dis = %u)",
 			core_link->serdes.test_settings.osr, core_link->serdes.test_settings.encoding,
 			core_link->serdes.test_settings.clocking, core_link->serdes.test_settings.width,
-			core_link->serdes.test_settings.dfe, core_link->serdes.test_settings.scramble);
+			core_link->serdes.test_settings.dfe, core_link->serdes.test_settings.scramble_dis);
 
 	return 0;
 }

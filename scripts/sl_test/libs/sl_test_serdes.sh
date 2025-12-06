@@ -188,19 +188,19 @@ function sl_test_serdes_settings_set {
 	-h, --help  This message.
 
 	Settings Options:
-	clocking = $(__sl_test_serdes_settings_options_get "clocking")
-	cursor   = -32,768 < cursor < 32,767
-	dfe      = $(__sl_test_serdes_settings_options_get "dfe")
-	encoding = $(__sl_test_serdes_settings_options_get "encoding")
-	media    = 1
-	osr      = $(__sl_test_serdes_settings_options_get "osr")
-	post1    = -32,768 < post1 < 32,767
-	post2    = -32,768 < post2 < 32,767
-	pre1     = -32,768 < pre1 < 32,767
-	pre2     = -32,768 < pre2 < 32,767
-	pre3     = -32,768 < pre3 < 32,767
-	scramble = $(__sl_test_serdes_settings_options_get "scramble")
-	width    = $(__sl_test_serdes_settings_options_get "width")
+	clocking     = $(__sl_test_serdes_settings_options_get "clocking")
+	cursor       = -32,768 < cursor < 32,767
+	dfe          = $(__sl_test_serdes_settings_options_get "dfe")
+	encoding     = $(__sl_test_serdes_settings_options_get "encoding")
+	media        = 1
+	osr          = $(__sl_test_serdes_settings_options_get "osr")
+	post1        = -32,768 < post1 < 32,767
+	post2        = -32,768 < post2 < 32,767
+	pre1         = -32,768 < pre1 < 32,767
+	pre2         = -32,768 < pre2 < 32,767
+	pre3         = -32,768 < pre3 < 32,767
+	scramble_dis = $(__sl_test_serdes_settings_options_get "scramble_dis")
+	width        = $(__sl_test_serdes_settings_options_get "width")
 
 	Settings File:
 	$(find ${SL_TEST_SERDES_SETTINGS_DIR} -type f)
@@ -333,10 +333,10 @@ function sl_test_serdes_settings_set {
 		return ${rtn}
 	fi
 
-	__sl_test_serdes_settings_check "scramble" "${scramble}"
+	__sl_test_serdes_settings_check "scramble_dis" "${scramble_dis}"
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed (encoding = ${scramble}) [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "serdes_settings_check failed (encoding = ${scramble_dis}) [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -357,7 +357,7 @@ function sl_test_serdes_settings_set {
 	echo -n ${pre1} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre1
 	echo -n ${pre2} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre2
 	echo -n ${pre3} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/pre3
-	echo -n ${scramble} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/scramble
+	echo -n ${scramble_dis} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/scramble_dis
 	echo -n ${width} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/width
 	echo -n ${media} > ${SL_TEST_SERDES_DEBUGFS_SETTINGS_DIR}/media
 

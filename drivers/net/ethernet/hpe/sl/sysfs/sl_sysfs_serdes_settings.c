@@ -326,12 +326,12 @@ static ssize_t dfe_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	return scnprintf(buf, PAGE_SIZE, "%s\n", (dfe) ? "enabled" : "disabled");
 }
 
-static ssize_t scramble_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t scramble_dis_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
 	struct sl_core_link             *core_link;
-	u8                               scramble;
+	u8                               scramble_dis;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
@@ -344,20 +344,20 @@ static ssize_t scramble_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
-	sl_core_lgrp_scramble_get(core_lgrp, lane_kobj->asic_lane_num, &scramble);
+	sl_core_lgrp_scramble_dis_get(core_lgrp, lane_kobj->asic_lane_num, &scramble_dis);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
-		"settings scramble show (scramble = %s)", (scramble) ? "enabled" : "disabled");
+		"settings scramble_dis show (scramble_dis = %s)", (scramble_dis) ? "set" : "not-set");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", (scramble) ? "enabled" : "disabled");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", (scramble_dis) ? "set" : "not-set");
 }
 
-static struct kobj_attribute settings_osr      = __ATTR_RO(osr);
-static struct kobj_attribute settings_encoding = __ATTR_RO(encoding);
-static struct kobj_attribute settings_clocking = __ATTR_RO(clocking);
-static struct kobj_attribute settings_width    = __ATTR_RO(width);
-static struct kobj_attribute settings_dfe      = __ATTR_RO(dfe);
-static struct kobj_attribute settings_scramble = __ATTR_RO(scramble);
+static struct kobj_attribute settings_osr          = __ATTR_RO(osr);
+static struct kobj_attribute settings_encoding     = __ATTR_RO(encoding);
+static struct kobj_attribute settings_clocking     = __ATTR_RO(clocking);
+static struct kobj_attribute settings_width        = __ATTR_RO(width);
+static struct kobj_attribute settings_dfe          = __ATTR_RO(dfe);
+static struct kobj_attribute settings_scramble_dis = __ATTR_RO(scramble_dis);
 
 static ssize_t link_training_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -396,7 +396,7 @@ static struct attribute *serdes_lane_settings_attrs[] = {
 	&settings_clocking.attr,
 	&settings_width.attr,
 	&settings_dfe.attr,
-	&settings_scramble.attr,
+	&settings_scramble_dis.attr,
 	&settings_link_training.attr,
 	NULL
 };

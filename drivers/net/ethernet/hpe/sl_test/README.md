@@ -666,19 +666,19 @@ Below is an example of the default SerDes settings file. Taken from a link on oa
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-clocking = 85/170
-cursor   = 100
-dfe      = enabled
-encoding = PAM4_normal
-media    = headshell
-osr      = OSX2
-post1    = 0
-post2    = 0
-pre1     = 0
-pre2     = 0
-pre3     = 0
-scramble = disabled
-width    = 80
+clocking     = 85/170
+cursor       = 100
+dfe          = enabled
+encoding     = PAM4_normal
+media        = headshell
+osr          = OSX2
+post1        = 0
+post2        = 0
+pre1         = 0
+pre2         = 0
+pre3         = 0
+scramble_dis = not_set
+width        = 80
 ```
 
 The options available for non-numeric values can be found in the help for
@@ -701,19 +701,19 @@ Options:
 -h, --help  This message.
 
 Settings Options:
-clocking = 82.5/165 | 85/170
-cursor   = -32,768 < cursor < 32,767
-dfe      = enabled | disabled
-encoding = NRZ | PAM4_normal | PAM4_extended
-media    = headshell | backplane | electrical | optical | passive | active | analog | digital | AOC | PEC | AEC | BKP
-osr      = OSX1 | OSX2 | OSX4 | OSX42P5
-post1    = -32,768 < post1 < 32,767
-post2    = -32,768 < post2 < 32,767
-pre1     = -32,768 < pre1 < 32,767
-pre2     = -32,768 < pre2 < 32,767
-pre3     = -32,768 < pre3 < 32,767
-scramble = enabled | disabled
-width    = 40 | 80 | 160
+clocking     = 82.5/165 | 85/170
+cursor       = -32,768 < cursor < 32,767
+dfe          = enabled | disabled
+encoding     = NRZ | PAM4_normal | PAM4_extended
+media        = headshell | backplane | electrical | optical | passive | active | analog | digital | AOC | PEC | AEC | BKP
+osr          = OSX1 | OSX2 | OSX4 | OSX42P5
+post1        = -32,768 < post1 < 32,767
+post2        = -32,768 < post2 < 32,767
+pre1         = -32,768 < pre1 < 32,767
+pre2         = -32,768 < pre2 < 32,767
+pre3         = -32,768 < pre3 < 32,767
+scramble_dis = set | not_set
+width        = 40 | 80 | 160
 
 Settings File:
 /usr/bin/sl_test_scripts/settings/serdes/default.config
@@ -759,7 +759,7 @@ post2: 0
 pre1: 0
 pre2: 0
 pre3: 0
-scramble: disabled
+scramble_dis: not_set
 width: 160
 ```
 
@@ -773,7 +773,7 @@ for f in $(find /sys/kernel/debug/sl/serdes/settings/ -type f -not -name "*_opti
 ```
 
 ```txt
-scramble: disabled
+scramble_dis: not_set
 dfe: enabled
 media: headshell
 width: 160
@@ -830,7 +830,7 @@ post2: 0
 pre1: 0
 pre2: 0
 pre3: 0
-scramble: disabled
+scramble_dis: not_set
 width: 80
 ...
 ```

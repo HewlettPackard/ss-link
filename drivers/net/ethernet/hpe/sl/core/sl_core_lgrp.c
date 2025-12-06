@@ -157,9 +157,9 @@ int sl_core_lgrp_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *d
 	return sl_core_hw_serdes_lane_dfe_get(core_lgrp, asic_lane_num, dfe);
 }
 
-int sl_core_lgrp_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble)
+int sl_core_lgrp_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble_dis)
 {
-	return sl_core_hw_serdes_lane_scramble_get(core_lgrp, asic_lane_num, scramble);
+	return sl_core_hw_serdes_lane_scramble_dis_get(core_lgrp, asic_lane_num, scramble_dis);
 }
 
 int sl_core_lgrp_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper)

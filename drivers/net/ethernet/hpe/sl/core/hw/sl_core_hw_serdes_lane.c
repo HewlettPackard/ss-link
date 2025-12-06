@@ -304,7 +304,7 @@ u16 sl_core_hw_serdes_config(struct sl_core_lgrp *core_lgrp,
 
 	config |= ((media_serdes_settings->media & 0x3) << 5);
 
-	config |= ((core_serdes_settings->scramble & 0x1) << 8);
+	config |= ((core_serdes_settings->scramble_dis & 0x1) << 8);
 
 	switch (core_serdes_settings->encoding) {
 	case SL_CORE_HW_SERDES_ENCODING_PAM4_ER:
@@ -341,7 +341,7 @@ out:
 	return rtn;
 }
 
-int sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble)
+int sl_core_hw_serdes_lane_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble_dis)
 {
 	int rtn;
 	u16 data16;
@@ -352,7 +352,7 @@ int sl_core_hw_serdes_lane_scramble_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 		core_lgrp->core_ldev->serdes.addrs[SERDES_FW_API_DATA0], &data16);
 
-	*scramble = ((data16 >> 8) & 0x1);
+	*scramble_dis = ((data16 >> 8) & 0x1);
 
 	return 0;
 out:
