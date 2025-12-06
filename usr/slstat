@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=4
+MINOR=5
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -272,8 +272,8 @@ function print_jack {
         local serial_num=$(cat ${LGRP_PATH}/media/serial_num)
         local hpe_part=$(cat ${LGRP_PATH}/media/hpe_part_num)
         local date_code=$(cat ${LGRP_PATH}/media/date_code)
-        local supported=$(cat ${LGRP_PATH}/media/supported)
-        local ss200_cable=$(cat ${LGRP_PATH}/media/is_supported_ss200_cable)
+        local is_supported_cable=$(cat ${LGRP_PATH}/media/is_supported_cable)
+        local is_supported_ss200_cable=$(cat ${LGRP_PATH}/media/is_supported_ss200_cable)
         local furcation=$(cat ${LGRP_PATH}/media/furcation)
         local length=$(cat ${LGRP_PATH}/media/length_cm)
         local max_speed=$(cat ${LGRP_PATH}/media/max_speed)
@@ -303,7 +303,7 @@ function print_jack {
         printf "           | cable: ${vendor} ${type} ${length}${units}\n"
         printf "           |        type: ${jack_type}, part#: ${hpe_part}, serial#: ${serial_num}, data_code: ${date_code}\n"
         printf "           |        shape: ${shape}, end: ${cable_end}, furcation: ${furcation}\n"
-        printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
+        printf "           | is_supported_cable: ${is_supported_cable}, is_supported_ss200_cable: ${is_supported_ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		printf "           | active_cable: fw_ver_hex: ${fw_ver}, (target_fw_ver_hex = ${target_fw_ver})\n"
 		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect: ${appsel_num_200}\n"

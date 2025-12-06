@@ -78,14 +78,11 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_type, sl_media_type_str(media_type), flags);
 
 	if (flags & SL_MEDIA_TYPE_NOT_SUPPORTED) {
-		if (media_type == SL_MEDIA_TYPE_AEC || media_type == SL_MEDIA_TYPE_POC) {
-			media_jack->serdes_settings.pre1   = -4;
-			media_jack->serdes_settings.pre2   = 0;
-			media_jack->serdes_settings.pre3   = 0;
-			media_jack->serdes_settings.cursor = 98;
-			media_jack->serdes_settings.post1  = 0;
-			media_jack->serdes_settings.post2  = 0;
-		} else if (media_type == SL_MEDIA_TYPE_AOC) {
+		sl_media_log_warn(media_jack, LOG_NAME, "serdes setting get unsuppported cable");
+		if (media_type == SL_MEDIA_TYPE_AEC ||
+		    media_type == SL_MEDIA_TYPE_ACC ||
+		    media_type == SL_MEDIA_TYPE_POC ||
+		    media_type == SL_MEDIA_TYPE_AOC) {
 			media_jack->serdes_settings.pre1   = -12;
 			media_jack->serdes_settings.pre2   = 0;
 			media_jack->serdes_settings.pre3   = 0;
@@ -93,10 +90,10 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 			media_jack->serdes_settings.post1  = -4;
 			media_jack->serdes_settings.post2  = 0;
 		} else {
-			media_jack->serdes_settings.pre1   = -20;
+			media_jack->serdes_settings.pre1   = 0;
 			media_jack->serdes_settings.pre2   = 0;
 			media_jack->serdes_settings.pre3   = 0;
-			media_jack->serdes_settings.cursor = 116;
+			media_jack->serdes_settings.cursor = 100;
 			media_jack->serdes_settings.post1  = 0;
 			media_jack->serdes_settings.post2  = 0;
 		}
@@ -116,8 +113,9 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_jack->serdes_settings.post2  = 0;
 	} else {
 		if (media_jack->cable_db_idx < 0 || media_jack->cable_db_idx >= ARRAY_SIZE(cable_db)) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get - invalid idx (%d)",
-					media_jack->cable_db_idx);
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "serdes settings get invalid (idx = %d)",
+					       media_jack->cable_db_idx);
 			return -ENOENT;
 		}
 		media_jack->serdes_settings = cable_db[media_jack->cable_db_idx].serdes_settings;

@@ -397,7 +397,7 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_furcation_str(furcation));
 }
 
-static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t is_supported_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -414,8 +414,9 @@ static ssize_t supported_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	not_supported = sl_media_lgrp_is_cable_not_supported(media_lgrp);
 
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "supported show (media_lgrp = 0x%p, supported = %s)",
-		media_lgrp, not_supported ? "no" : "yes");
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "is_supported_cable show (media_lgrp = 0x%p, is_supported_cable = %s)",
+		   media_lgrp, not_supported ? "no" : "yes");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", not_supported ? "no" : "yes");
 }
@@ -777,7 +778,7 @@ static struct kobj_attribute media_hpe_part_num                       = __ATTR_R
 static struct kobj_attribute media_jack_num                           = __ATTR_RO(jack_num);
 static struct kobj_attribute media_jack_type                          = __ATTR_RO(jack_type);
 static struct kobj_attribute media_furcation                          = __ATTR_RO(furcation);
-static struct kobj_attribute media_supported                          = __ATTR_RO(supported);
+static struct kobj_attribute media_is_supported_cable                 = __ATTR_RO(is_supported_cable);
 static struct kobj_attribute media_date_code                          = __ATTR_RO(date_code);
 static struct kobj_attribute media_firmware_version_hex               = __ATTR_RO(firmware_version_hex);
 static struct kobj_attribute media_target_firmware_version_hex        = __ATTR_RO(target_firmware_version_hex);
@@ -811,7 +812,7 @@ static struct attribute *media_attrs[] = {
 	&media_jack_num.attr,
 	&media_jack_type.attr,
 	&media_furcation.attr,
-	&media_supported.attr,
+	&media_is_supported_cable.attr,
 	&media_date_code.attr,
 	&media_firmware_version_hex.attr,
 	&media_target_firmware_version_hex.attr,

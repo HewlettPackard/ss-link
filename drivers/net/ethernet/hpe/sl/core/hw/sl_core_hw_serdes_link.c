@@ -105,13 +105,12 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 {
 	struct sl_media_lgrp *media_lgrp;
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"link up settings (config.flags = 0x%X)", core_link->config.flags);
-
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-	if (sl_media_lgrp_is_cable_not_supported(media_lgrp))
-		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"cable not supported - using default serdes settings");
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"link up settings (config.flags = 0x%X, pcs_mode = %u, is_active = %s)",
+			core_link->config.flags, core_link->pcs.settings.pcs_mode,
+			sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num) ? "yes" : " no");
 
 	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		sl_core_log_dbg(core_link, LOG_NAME, "link up settings loopback");
@@ -122,8 +121,6 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 							core_link->core_lgrp->num, &core_link->serdes.media_serdes_settings);
 	}
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"link up settings (pcs_mode = %u)", core_link->pcs.settings.pcs_mode);
 	switch (core_link->pcs.settings.pcs_mode) {
 	case SL_CORE_HW_PCS_MODE_BJ_100G:
 		core_link->serdes.core_serdes_settings.encoding  = SL_CORE_HW_SERDES_ENCODING_NRZ;
@@ -151,7 +148,7 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AEC)
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AEC;
 		else if (media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_AOC ||
-			media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_POC)
+			 media_lgrp->cable_info->media_attr.type == SL_MEDIA_TYPE_POC)
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_100Glane_AOC;
 		else
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;
@@ -180,8 +177,9 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		core_link->serdes.lane_map = 0;
 	}
 	core_link->serdes.lane_map <<= (4 * (core_link->core_lgrp->num & BIT(0)));
-	sl_core_log_dbg(core_link, LOG_NAME, "link up settings (lane_map = 0x%02X)",
-		core_link->serdes.lane_map);
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"link up settings (config.furcation = %u, lane_map = 0x%02X)",
+			core_link->core_lgrp->config.furcation, core_link->serdes.lane_map);
 
 	core_link->core_lgrp->serdes.eye_limits[0].low  = 15;
 	core_link->core_lgrp->serdes.eye_limits[0].high = 60;
@@ -202,9 +200,17 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		core_link->core_lgrp->serdes.eye_limits[3].high = 150;
 	}
 
-	/* test settings */
+	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G &&
+	    sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "link up settings 200G half rate");
+		core_link->serdes.media_serdes_settings.pre1   = 0;
+		core_link->serdes.media_serdes_settings.cursor = 80;
+		core_link->serdes.media_serdes_settings.post1  = 0;
+	}
+
+	/* test settings must be last */
 	if (core_link->serdes.use_test_settings) {
-		sl_core_log_warn(core_link, LOG_NAME, "using test serdes settings");
+		sl_core_log_warn(core_link, LOG_NAME, "link up settings test");
 		// media settings
 		core_link->serdes.media_serdes_settings.pre1    = core_link->serdes.test_settings.pre1;
 		core_link->serdes.media_serdes_settings.pre2    = core_link->serdes.test_settings.pre2;
@@ -223,13 +229,17 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		// FIXME: options?
 	}
 
-	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_lgrp->cable_info->media_attr.type) &&
-	    core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
-		sl_core_log_dbg(core_link, LOG_NAME, "serdes settings - 200G half rate");
-		core_link->serdes.media_serdes_settings.pre1    = 0;
-		core_link->serdes.media_serdes_settings.cursor  = 80;
-		core_link->serdes.media_serdes_settings.post1   = 0;
-	}
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"link up settings (pre1 = %d, pre2 = %d, pre3 = %d, cursor = %d, post1 = %d, post2 = %d, media = %d)",
+			core_link->serdes.test_settings.pre1, core_link->serdes.test_settings.pre2,
+			core_link->serdes.test_settings.pre3, core_link->serdes.test_settings.cursor,
+			core_link->serdes.test_settings.post1, core_link->serdes.test_settings.post2,
+			core_link->serdes.test_settings.media);
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"link up settings (osr = %u, encoding = %u, clocking = %u, width = %u, dfe = %u, scramble = %u)",
+			core_link->serdes.test_settings.osr, core_link->serdes.test_settings.encoding,
+			core_link->serdes.test_settings.clocking, core_link->serdes.test_settings.width,
+			core_link->serdes.test_settings.dfe, core_link->serdes.test_settings.scramble);
 
 	return 0;
 }
