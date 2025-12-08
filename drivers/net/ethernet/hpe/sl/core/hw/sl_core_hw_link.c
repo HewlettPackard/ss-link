@@ -148,7 +148,7 @@ static bool sl_core_hw_link_media_check_is_high_temp(struct sl_core_link *core_l
 
 	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
 							    SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		if (sl_media_lgrp_cable_type_is_active(core_link->core_lgrp->core_ldev->num,
+		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
 			if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack)) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
@@ -178,6 +178,7 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_CHECK);
 
 	if (sl_core_hw_link_media_check_is_high_temp(core_link)) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable high temperature");
 		rtn = -EINVAL;
 		goto out;
 	}
@@ -186,7 +187,7 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 
 	if (sl_media_lgrp_is_cable_not_supported(media_lgrp) &&
 		!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
-
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable not supported and override not set");
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -197,7 +198,7 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 
 	if (media_lgrp->media_jack->is_supported_ss200_cable &&
 		!sl_core_link_policy_is_use_supported_ss200_cable_set(core_link)) {
-
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable supported ss200 and override not set");
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SS200_CABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -209,7 +210,7 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 	if (sl_media_lgrp_media_has_error(media_lgrp) &&
 		!sl_core_link_policy_is_ignore_media_errors_set(core_link) &&
 		!media_lgrp->media_jack->is_supported_ss200_cable) {
-
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media check error and override not set");
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -335,8 +336,8 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 
-	if (sl_media_lgrp_cable_type_is_active(core_link->core_lgrp->core_ldev->num,
-		core_link->core_lgrp->num)) {
+	if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
+					       core_link->core_lgrp->num)) {
 		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
 				core_link->core_lgrp->num);
 		if (time_before(jiffies, media_lgrp->media_jack->cable_power_up_wait_time_end)) {
@@ -1443,7 +1444,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
 							    SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		if (sl_media_lgrp_cable_type_is_active(core_link->core_lgrp->core_ldev->num,
+		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 			if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack)) {

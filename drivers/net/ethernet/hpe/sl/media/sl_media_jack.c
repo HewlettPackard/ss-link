@@ -286,7 +286,7 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
 		return 0;
 	}
@@ -340,7 +340,7 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
-	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
+	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num)) {
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "non-active cable - shift not required");
 		return 0;
 	}

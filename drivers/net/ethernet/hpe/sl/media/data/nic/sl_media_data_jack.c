@@ -269,23 +269,13 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 
 int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 {
-	int rtn;
-
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable soft reset");
 
-	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x08)", rtn);
-		return rtn;
-	}
+	sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
 
 	msleep(300);
 
-	rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "soft reset - write failed [%d] (0x1a <- 0x00)", rtn);
-		return rtn;
-	}
+	sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
 
 	/*
 	 * waiting for firmware reload
@@ -344,9 +334,11 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable temp get");
 
-	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
-						media_jack->cable_info[0].lgrp_num))
+	if (!sl_media_lgrp_media_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
 		return -EBADRQC;
+	}
 
 	rtn = sl_media_io_read8(media_jack, 0, 14, &data);
 	if (rtn != sizeof(data)) {
@@ -365,7 +357,7 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp threshold get");
 
-	if (!sl_media_lgrp_cable_type_is_active(media_jack->cable_info[0].ldev_num,
+	if (!sl_media_lgrp_media_type_is_active(media_jack->cable_info[0].ldev_num,
 						media_jack->cable_info[0].lgrp_num)) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
 		return -EBADRQC;

@@ -57,7 +57,17 @@ void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num);
 
 void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
 bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp);
-bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num);
+
+static inline bool SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(u32 type)
+{
+	return (type == SL_MEDIA_TYPE_AEC ||
+		type == SL_MEDIA_TYPE_ACC ||
+		type == SL_MEDIA_TYPE_AOC ||
+		type == SL_MEDIA_TYPE_POC);
+}
+
+bool sl_media_lgrp_media_type_is_active(u8 ldev_num, u8 lgrp_num);
+
 void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 					     struct sl_media_serdes_settings *media_serdes_settings);
 

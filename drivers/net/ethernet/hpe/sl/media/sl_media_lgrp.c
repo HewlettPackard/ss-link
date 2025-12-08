@@ -62,7 +62,8 @@ bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp)
 
 	sl_media_lgrp_media_attr_get(media_lgrp->media_ldev->num, media_lgrp->num, &media_attr);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media has error");
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME,
+			 "media has error (media_attr.errors = 0x%X)", media_attr.errors);
 
 	return ((media_attr.errors & (SL_MEDIA_ERROR_CABLE_FORMAT_INVALID |
 				      SL_MEDIA_ERROR_CABLE_FW_INVALID)) != 0);
@@ -79,15 +80,13 @@ void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 	*media_serdes_settings = media_lgrp->media_jack->serdes_settings;
 }
 
-bool sl_media_lgrp_cable_type_is_active(u8 ldev_num, u8 lgrp_num)
+bool sl_media_lgrp_media_type_is_active(u8 ldev_num, u8 lgrp_num)
 {
 	struct sl_media_attr media_attr;
 
 	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
 
-	return (media_attr.type == SL_MEDIA_TYPE_AOC ||
-		media_attr.type == SL_MEDIA_TYPE_POC ||
-		media_attr.type == SL_MEDIA_TYPE_AEC);
+	return SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type);
 }
 
 void sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id)

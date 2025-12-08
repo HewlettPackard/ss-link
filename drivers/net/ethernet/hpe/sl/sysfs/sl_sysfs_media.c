@@ -134,7 +134,7 @@ static ssize_t is_high_temperature_show(struct kobject *kobj, struct kobj_attrib
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	if (!sl_media_lgrp_cable_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
+	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
 		return scnprintf(buf, PAGE_SIZE, "not-active\n");
 
 	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
@@ -534,7 +534,7 @@ static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struc
 		   "active cable 200g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
 		   media_lgrp, host_interface);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", host_interface);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", host_interface);
 }
 
 static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -558,7 +558,7 @@ static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct ko
 		   "active cable 200g lane coiunt show (media_lgrp = 0x%p, lane_count = 0x%X)",
 		   media_lgrp, lane_count);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", lane_count);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", lane_count);
 }
 
 static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -581,7 +581,7 @@ static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct ko
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 200g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", appsel_num);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", appsel_num);
 }
 
 static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -605,7 +605,7 @@ static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struc
 		   "active cable 400g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
 		   media_lgrp, host_interface);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", host_interface);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", host_interface);
 }
 
 static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -629,7 +629,7 @@ static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct ko
 		   "active cable 400g lane count show (media_lgrp = 0x%p, lane_count = 0x%X)",
 		   media_lgrp, lane_count);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", lane_count);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", lane_count);
 }
 
 static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -652,7 +652,7 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 400g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%x\n", appsel_num);
+	return scnprintf(buf, PAGE_SIZE, "0x%02x\n", appsel_num);
 }
 
 static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
