@@ -107,6 +107,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
 		if (rtn) {
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom format invalid");
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_INVALID;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
@@ -123,20 +124,21 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
-			sl_media_log_warn(media_jack, LOG_NAME,
-				"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds = 0x%X)",
-				rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
-				media_attr.type, sl_media_type_str(media_attr.type),
-				media_attr.length_cm, media_attr.speeds_map);
+			sl_media_log_warn_trace(media_jack, LOG_NAME,
+						"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds = 0x%X)",
+						rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
+						media_attr.type, sl_media_type_str(media_attr.type),
+						media_attr.length_cm, media_attr.speeds_map);
 
 			media_jack->is_cable_not_supported = true;
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 		}
 
-		if ((media_attr.type == SL_MEDIA_TYPE_AOC || media_attr.type == SL_MEDIA_TYPE_AEC ||
-			media_attr.type == SL_MEDIA_TYPE_POC) && !media_jack->is_supported_ss200_cable) {
+		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type) &&
+		    !media_jack->is_cable_not_supported && !media_jack->is_supported_ss200_cable) {
 			if (!sl_media_eeprom_is_fw_version_valid(media_jack, &media_attr)) {
+				sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom fw version invalid");
 				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
@@ -174,9 +176,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return 0;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
-	    media_attr.type == SL_MEDIA_TYPE_AEC ||
-	    media_attr.type == SL_MEDIA_TYPE_POC) {
+	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type)) {
 		rtn = sl_media_data_jack_cable_soft_reset(media_jack);
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
@@ -215,9 +215,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return rtn;
 	}
 
-	if (media_attr.type == SL_MEDIA_TYPE_AOC ||
-	    media_attr.type == SL_MEDIA_TYPE_AEC ||
-	    media_attr.type == SL_MEDIA_TYPE_POC) {
+	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type)) {
 		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)

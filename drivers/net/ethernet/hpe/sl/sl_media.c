@@ -116,6 +116,8 @@ const char *sl_media_type_str(u32 type)
 			return "PEC";
 		if (type == SL_MEDIA_TYPE_AEC)
 			return "AEC";
+		if (type == SL_MEDIA_TYPE_ACC)
+			return "ACC";
 		if (type == SL_MEDIA_TYPE_BKP)
 			return "BKP";
 		else

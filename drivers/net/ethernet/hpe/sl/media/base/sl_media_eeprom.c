@@ -382,18 +382,19 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 
 bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "is fw version valid");
-
-	if (media_attr->type != SL_MEDIA_TYPE_AOC &&
-	    media_attr->type != SL_MEDIA_TYPE_AEC &&
-	    media_attr->type != SL_MEDIA_TYPE_POC)
-		return false;
-
-	if (media_jack->is_cable_not_supported)
-		return false;
-
-	if (!media_jack->is_supported_ss200_cable)
-		return false;
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "is fw version valid (type = 0x%X %s, shape = %u %s, end = %u %s, idx = %d)",
+			 media_attr->type, sl_media_type_str(media_attr->type),
+			 media_attr->shape, sl_media_shape_str(media_attr->shape),
+			 media_jack->cable_end, sl_media_cable_end_str(media_jack->cable_end),
+			 media_jack->cable_db_idx);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "is fw version valid (fw_ver = %02X.%02X, db_fw_ver = %02X.%02X, db_split_fw_ver = %02X.%02X)",
+			 media_attr->fw_ver[0], media_attr->fw_ver[1],
+			 cable_db[media_jack->cable_db_idx].fw_ver.major,
+			 cable_db[media_jack->cable_db_idx].fw_ver.minor,
+			 cable_db[media_jack->cable_db_idx].fw_ver.split_major,
+			 cable_db[media_jack->cable_db_idx].fw_ver.split_minor);
 
 	if (media_attr->shape == SL_MEDIA_SHAPE_SPLITTER && media_jack->cable_end != SL_MEDIA_CABLE_END_DD)
 		return ((media_attr->fw_ver[0] > cable_db[media_jack->cable_db_idx].fw_ver.split_major) ||
@@ -418,9 +419,7 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 			 sl_media_cable_end_str(media_jack->cable_end),
 			 media_jack->is_cable_not_supported ? "no" : "yes");
 
-	if (media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AOC &&
-	    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_AEC &&
-	    media_jack->cable_info[0].media_attr.type != SL_MEDIA_TYPE_POC) {
+	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_jack->cable_info[0].media_attr.type)) {
 		snprintf(target_fw_str, target_fw_size, "invalid-type\n");
 		return;
 	}
@@ -493,15 +492,15 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
                   ((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
 
     if (is_sff8636) {
-        *format = SL_MEDIA_MGMT_IF_SFF8636;
-        sl_media_log_dbg(media_jack, LOG_NAME, "format (id = 0x%X, rev = 0x%X)", identifier, revision);
-        return 0;
+	*format = SL_MEDIA_MGMT_IF_SFF8636;
+	sl_media_log_dbg(media_jack, LOG_NAME, "format SFF8636 (id = 0x%X, rev = 0x%X)", identifier, revision);
+	return 0;
     }
 
     if (is_cmis) {
-        *format = SL_MEDIA_MGMT_IF_CMIS;
-        sl_media_log_dbg(media_jack, LOG_NAME, "format (id = 0x%X, rev = 0x%X)", identifier, revision);
-        return 0;
+	*format = SL_MEDIA_MGMT_IF_CMIS;
+	sl_media_log_dbg(media_jack, LOG_NAME, "format CMIS (id = 0x%X, rev = 0x%X)", identifier, revision);
+	return 0;
     }
 
     media_jack->is_cable_format_invalid = true;

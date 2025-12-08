@@ -141,7 +141,7 @@ function print_jack_state {
 		if [ "${temp}" == "invalid-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
 			printf "           | temperature: ${temp}\n"
 		else
-			printf "           | temperature: ${temp}c, (is_high_temperature = ${is_high_temp}, high_temperature_threshold: ${high_temp_threshold}c)\n"
+			printf "           | temperature: ${temp}c (is_high_temperature = ${is_high_temp}, high_temperature_threshold: ${high_temp_threshold}c)\n"
 		fi
 	fi
 }
@@ -305,8 +305,8 @@ function print_jack {
         printf "           | supported: ${supported}, is_supported_ss200_cable: ${ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		printf "           | active_cable: fw_ver_hex: ${fw_ver}, (target_fw_ver_hex = ${target_fw_ver})\n"
-		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect#: ${appsel_num_200}\n"
-		printf "           | active_cable_400g: host_interface: ${host_interface_400}, lane_count: ${lane_count_400}, appselect#: ${appsel_num_400}\n"
+		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect: ${appsel_num_200}\n"
+		printf "           | active_cable_400g: host_interface: ${host_interface_400}, lane_count: ${lane_count_400}, appselect: ${appsel_num_400}\n"
 	fi
 	printf "           | speeds: "
 	local have_speed=no
