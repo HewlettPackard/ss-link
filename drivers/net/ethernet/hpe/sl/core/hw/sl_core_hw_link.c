@@ -1292,9 +1292,10 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
+	case SL_CORE_LINK_STATE_GOING_DOWN:
 		break;
 	default:
-		sl_core_log_err(core_link, LOG_NAME, "high SER intr work - invalid state (%u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME, "high SER intr work - invalid state (%u %s)",
 			link_state, sl_core_link_state_str(link_state));
 			return;
 	}
