@@ -467,7 +467,7 @@ bool sl_core_link_is_degrade_state_enabled(struct sl_core_link *core_link);
 
 int  sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *is_canceled_or_timed_out);
 
-int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed);
+int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
 void sl_core_link_last_down_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num,

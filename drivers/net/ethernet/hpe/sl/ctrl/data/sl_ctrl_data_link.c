@@ -347,3 +347,75 @@ int sl_ctrl_data_link_fec_up_cache_tail_cntr_get(struct sl_ctrl_link *ctrl_link,
 
 	return 0;
 }
+
+int sl_ctrl_data_link_policy_options_get(struct sl_ctrl_link *ctrl_link, u32 *options)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*options = ctrl_link->policy.options;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (options = 0x%08x)", *options);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_up_timeout_ms_get(struct sl_ctrl_link *ctrl_link, u32 *link_up_timeout_ms)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*link_up_timeout_ms = ctrl_link->config.link_up_timeout_ms;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (link_up_timeout_ms = %d)", *link_up_timeout_ms);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_up_tries_max_get(struct sl_ctrl_link *ctrl_link, u32 *link_up_tries_max)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*link_up_tries_max = ctrl_link->config.link_up_tries_max;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (link_up_tries_max = %d)", *link_up_tries_max);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_config_options_get(struct sl_ctrl_link *ctrl_link, u32 *options)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*options = ctrl_link->config.options;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (options = 0x%08x)", *options);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_pause_map_get(struct sl_ctrl_link *ctrl_link, u32 *pause_map)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*pause_map = ctrl_link->config.pause_map;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (pause_map = 0x%x)", *pause_map);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_hpe_map_get(struct sl_ctrl_link *ctrl_link, u32 *hpe_map)
+{
+	spin_lock(&ctrl_link->data_lock);
+	*hpe_map = ctrl_link->config.hpe_map;
+	spin_unlock(&ctrl_link->data_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"get (hpe_map = 0x%x)", *hpe_map);
+
+	return 0;
+}

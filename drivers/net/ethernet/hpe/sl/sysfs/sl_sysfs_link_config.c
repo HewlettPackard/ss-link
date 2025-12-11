@@ -5,6 +5,7 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
+#include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link.h"
 #include "sl_core_link.h"
 #include "sl_ctrl_lgrp.h"
@@ -19,35 +20,41 @@
 
 static ssize_t link_up_timeout_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  link_up_timeout_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_up_timeout_ms_get(ctrl_link, &link_up_timeout_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link up timeout show (link_up_timeout = %ums)", config.link_up_timeout_ms);
+		   "link up timeout show (link_up_timeout = %ums)", link_up_timeout_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", config.link_up_timeout_ms);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", link_up_timeout_ms);
 }
 
 static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  link_up_tries_max;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_up_tries_max_get(ctrl_link, &link_up_tries_max);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link up tries max show (link_up_tries_max = %d)", config.link_up_tries_max);
+		   "link up tries max show (link_up_tries_max = %d)", link_up_tries_max);
 
-	if (config.link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
+	if (link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
 		return scnprintf(buf, PAGE_SIZE, "infinite\n");
 	else
-		return scnprintf(buf, PAGE_SIZE, "%d\n", config.link_up_tries_max);
+		return scnprintf(buf, PAGE_SIZE, "%d\n", link_up_tries_max);
 }
 
 static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -124,21 +131,25 @@ static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link_config_option_locked show (options = %u)", config.options);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "lock show (options = 0x%X)", options);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", (config.options & SL_LINK_CONFIG_OPT_LOCK) ? "enabled" : "disabled");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_flag_set(options,
+			 SL_LINK_CONFIG_OPT_LOCK) ? "enabled" : "disabled");
 }
 
 static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 	int                  idx;
 	char                 output[20];
@@ -146,7 +157,9 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	pause_map = ctrl_link->config.pause_map;
+	rtn = sl_ctrl_data_link_pause_map_get(ctrl_link, &pause_map);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"pause map show (link = 0x%p, map = 0x%X)", ctrl_link, pause_map);
@@ -168,6 +181,7 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 	int                  idx;
 	char                 output[80];
@@ -175,7 +189,9 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	hpe_map = ctrl_link->config.hpe_map;
+	rtn = sl_ctrl_data_link_hpe_map_get(ctrl_link, &hpe_map);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"hpe map show (link = 0x%p, map = 0x%X)", ctrl_link, hpe_map);
@@ -215,16 +231,22 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"autoneg show (link = 0x%p, options = 0x%X)", ctrl_link, ctrl_link->config.options);
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "autoneg show (options = 0x%X)", options);
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE))
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled-continuous\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
@@ -232,16 +254,22 @@ static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"loopback show (link = 0x%p, options = 0x%X)", ctrl_link, ctrl_link->config.options);
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled-headshell\n");
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled-remote\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
@@ -249,14 +277,20 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 static ssize_t extended_reach_force_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"extended reach force show (link = 0x%p, options = 0x%X)", ctrl_link, ctrl_link->config.options);
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "extended reach force show (options = 0x%X)", options);
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
@@ -264,14 +298,20 @@ static ssize_t extended_reach_force_show(struct kobject *kobj, struct kobj_attri
 
 static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"auto lane degrade show (link = 0x%p, options = 0x%X)", ctrl_link, ctrl_link->config.options);
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (is_flag_set(ctrl_link->config.options, SL_LINK_CONFIG_OPT_ALD_ENABLE))
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "auto lane degrade show (options = 0x%X)", options);
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_ALD_ENABLE))
 		return scnprintf(buf, PAGE_SIZE, "enabled\n");
 
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");

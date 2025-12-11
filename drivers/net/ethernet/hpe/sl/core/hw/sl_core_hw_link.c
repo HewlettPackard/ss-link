@@ -317,10 +317,14 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 		return;
 	}
 
+	spin_lock(&core_link->data_lock);
+	spin_lock(&core_link->core_lgrp->data_lock);
 	core_link->core_lgrp->link_caps[core_link->num].tech_map  = core_link->core_lgrp->config.tech_map;
 	core_link->core_lgrp->link_caps[core_link->num].fec_map   = core_link->core_lgrp->config.fec_map;
 	core_link->core_lgrp->link_caps[core_link->num].pause_map = core_link->config.pause_map;
 	core_link->core_lgrp->link_caps[core_link->num].hpe_map   = core_link->config.hpe_map;
+	spin_unlock(&core_link->core_lgrp->data_lock);
+	spin_unlock(&core_link->data_lock);
 
 	rtn = sl_core_data_link_settings(core_link);
 	if (rtn != 0) {

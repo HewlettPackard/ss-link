@@ -613,18 +613,26 @@ int sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state)
 	return 0;
 }
 
-u32 sl_core_data_link_speed_get(struct sl_core_link *core_link)
+int sl_core_data_link_speed_get(struct sl_core_link *core_link, u32 *link_speed)
 {
-	u32 link_speed;
+	u32 state;
 
 	spin_lock(&core_link->link.data_lock);
-	link_speed = core_link->pcs.settings.speed;
+	state       = core_link->link.state;
+	*link_speed = core_link->pcs.settings.speed;
 	spin_unlock(&core_link->link.data_lock);
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"get speed = %u", link_speed);
+	if (state != SL_CORE_LINK_STATE_UP) {
+		sl_core_log_err(core_link, LOG_NAME,
+				"get speed failed (state = %u %s)",
+				state, sl_core_link_state_str(state));
+		return -ENOLINK;
+	}
 
-	return link_speed;
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"get speed = %u", *link_speed);
+
+	return 0;
 }
 
 u16 sl_core_data_link_clocking_get(struct sl_core_link *core_link)

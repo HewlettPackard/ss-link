@@ -108,81 +108,96 @@ static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_att
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link_policy_option_locked show (options = 0x%X)", policy.options);
+		   "link_policy_option_locked show (options = 0x%X)", options);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", (policy.options & SL_LINK_POLICY_OPT_LOCK) ? "enabled" : "disabled");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", (options & SL_LINK_POLICY_OPT_LOCK) ? "enabled" : "disabled");
 }
 
 static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link_policy_option_keep_serdes_up show (options = 0x%X)", policy.options);
+		   "link_policy_option_keep_serdes_up show (options = 0x%X)", options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(policy.options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) ? "enabled" : "disabled");
+			 (options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) ? "enabled" : "disabled");
 }
 
 static ssize_t use_unsupported_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link_policy_option_use_unsupported_cable show (options = 0x%X)", policy.options);
+		   "link_policy_option_use_unsupported_cable show (options = 0x%X)", options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(policy.options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) ? "enabled" : "disabled");
+			 (options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) ? "enabled" : "disabled");
 }
 
 static ssize_t use_supported_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		  "link_policy_option_use_supported_ss200_cable show (options = 0x%X)", policy.options);
+		  "link_policy_option_use_supported_ss200_cable show (options = 0x%X)", options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(policy.options & SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE) ? "enabled" : "disabled");
+			 (options & SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE) ? "enabled" : "disabled");
 }
 
 static ssize_t ignore_media_error_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "link_policy_option_ignore_media_error show (options = %u)", policy.options);
+		   "link_policy_option_ignore_media_error show (options = %u)", options);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(policy.options & SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR) ? "enabled" : "disabled");
+			 (options & SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR) ? "enabled" : "disabled");
 }
 
 static struct kobj_attribute fec_mon_period_ms         = __ATTR_RO(fec_mon_period_ms);

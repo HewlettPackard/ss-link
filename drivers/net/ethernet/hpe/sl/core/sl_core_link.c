@@ -377,11 +377,9 @@ int sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *
 	return 0;
 }
 
-int sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed)
+int sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_speed)
 {
-	*speed = sl_core_data_link_speed_get(sl_core_link_get(ldev_num, lgrp_num, link_num));
-
-	return 0;
+	return sl_core_data_link_speed_get(sl_core_link_get(ldev_num, lgrp_num, link_num), link_speed);
 }
 
 int sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking)
