@@ -4,74 +4,87 @@
 #include <linux/kobject.h>
 
 #include "sl_log.h"
-#include "sl_sysfs_link_fec.h"
-#include "sl_ctrl_link.h"
 #include "sl_core_link.h"
-#include "sl_ctrl_lgrp.h"
-#include "sl_ctrl_ldev.h"
-#include "sl_ctrl_link_priv.h"
-#include "sl_core_link_fec.h"
-#include "sl_sysfs_link_fec_mon_check.h"
-#include "sl_sysfs_link_fec_up_check.h"
+
+#include "sl_sysfs_link_fec_current.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
 static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	int                               rtn;
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int                  rtn;
+	u64                  ccw;
+	struct sl_core_link *core_link;
 
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.current_kobj);
+	core_link = container_of(kobj, struct sl_core_link, fec.current_kobj);
 
-	rtn = sl_core_link_fec_cw_cntrs_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs);
-	if (rtn)
+	rtn = sl_core_link_fec_ccw_get(core_link, &ccw);
+	if (rtn == -ENOLINK) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+	}
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ccw show (link = 0x%p, ccw = %llu)", ctrl_link, cw_cntrs.ccw);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ccw show (ccw = %llu)", ccw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.ccw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw);
 }
 
 static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	int                               rtn;
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int                  rtn;
+	u64                  ucw;
+	struct sl_core_link *core_link;
 
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.current_kobj);
+	core_link = container_of(kobj, struct sl_core_link, fec.current_kobj);
 
-	rtn = sl_core_link_fec_cw_cntrs_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs);
-	if (rtn)
+	rtn = sl_core_link_fec_ucw_get(core_link, &ucw);
+	if (rtn == -ENOLINK) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+	}
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ucw show (link = 0x%p, ucw = %llu)", ctrl_link, cw_cntrs.ucw);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ucw show (ucw = %llu)", ucw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.ucw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", ucw);
 }
 
 static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	int                               rtn;
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int		     rtn;
+	u64                  gcw;
+	struct sl_core_link *core_link;
 
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.current_kobj);
+	core_link = container_of(kobj, struct sl_core_link, fec.current_kobj);
 
-	rtn = sl_core_link_fec_cw_cntrs_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs);
-	if (rtn)
+	rtn = sl_core_link_fec_gcw_get(core_link, &gcw);
+	if (rtn == -ENOLINK) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+	}
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"gcw show (link = 0x%p, gcw = %llu)", ctrl_link, cw_cntrs.gcw);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
+		   "gcw show (link = 0x%p, gcw = %llu)", core_link, gcw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.gcw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", gcw);
 }
 
 static struct kobj_attribute link_fec_ccw = __ATTR_RO(ccw);
@@ -103,30 +116,34 @@ static struct kobj_type link_fec_current_lane = {
 
 static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
-	int                                 rtn;
-	struct sl_ctrl_link_fecl_kobj      *fecl_kobj;
-	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
-	u8                                  fecl_num;
-	struct sl_ctrl_link                *ctrl_link;
+	int                            rtn;
+	struct sl_core_link_fecl_kobj *fecl_kobj;
+	struct sl_core_link           *core_link;
+	u8                             fecl_num;
+	u64                            fecl;
 
-	fecl_kobj = container_of(kobj, struct sl_ctrl_link_fecl_kobj, kobj);
-	if (!fecl_kobj->ctrl_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	fecl_kobj = container_of(kobj, struct sl_core_link_fecl_kobj, kobj);
 
-	ctrl_link = fecl_kobj->ctrl_link;
-
-	rtn = sl_core_link_fec_lane_cntrs_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &lane_cntrs);
-	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	core_link = fecl_kobj->core_link;
 
 	fecl_num = ((4 * fecl_kobj->lane_num) + num);
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"current fecl show (link = 0x%p, num = %u, lane_num = %u, fecl %u = %llu)",
-		ctrl_link, num, fecl_kobj->lane_num, fecl_num, lane_cntrs.lanes[fecl_num]);
+	rtn = sl_core_link_fec_lane_cntr_get(core_link, fecl_num, &fecl);
+	if (rtn == -ENOLINK) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+	}
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", lane_cntrs.lanes[fecl_num]);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current fecl show (num = %u, lane_num = %u, fecl %u = %llu)",
+		   num, fecl_kobj->lane_num, fecl_num, fecl);
+
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", fecl);
 }
 
 #define link_fec_current_fecl(_num)                                                                            \
@@ -138,22 +155,27 @@ static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attr
 
 static ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
-	int                                  rtn;
-	struct sl_ctrl_link                 *ctrl_link;
-	struct sl_core_link_fec_tail_cntrs   tail_cntrs;
+	int                  rtn;
+	struct sl_core_link *core_link;
+	u64                  ccw_bin;
 
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.current_tail_kobj);
+	core_link = container_of(kobj, struct sl_core_link, fec.current_tail_kobj);
 
-	rtn = sl_core_link_fec_tail_cntrs_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &tail_cntrs);
-	if (rtn)
+	rtn = sl_core_link_fec_tail_cntr_get(core_link, num, &ccw_bin);
+	if (rtn == -ENOLINK) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
+				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+	}
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"current bin show (link = 0x%p, bin %u = %llu)",
-		ctrl_link, num, tail_cntrs.ccw_bins[num]);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current bin show (bin %u = %llu)", num, ccw_bin);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", tail_cntrs.ccw_bins[num]);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw_bin);
 }
 
 #define link_fec_current_tail0(_num)                                                                    \
@@ -230,92 +252,75 @@ static struct kobj_type link_fec_current_tail = {
 	.default_groups = link_fec_current_tail_groups,
 };
 
-int sl_sysfs_link_fec_current_create(struct sl_ctrl_link *ctrl_link)
+int sl_sysfs_link_fec_current_create(struct sl_core_link *core_link, struct kobject *parent_kobj)
 {
 	int rtn;
 	int x;
 	int out;
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"link fec current create (num = %u)", ctrl_link->num);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
+		   "link fec current create (num = %u)", core_link->num);
 
-	rtn = kobject_init_and_add(&ctrl_link->fec.current_kobj, &link_fec_current,
-		&ctrl_link->fec.kobj, "current");
+	rtn = kobject_init_and_add(&core_link->fec.current_kobj, &link_fec_current, parent_kobj, "current");
 	if (rtn) {
-		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
-			"link fec current create kobject_init_and_add failed [%d]", rtn);
+		sl_log_err(core_link, LOG_BLOCK, LOG_NAME,
+			   "link fec current create kobject_init_and_add failed [%d]", rtn);
 		goto out_current;
 	}
 
-	rtn = kobject_init_and_add(&ctrl_link->fec.current_lane_kobj,
-		&link_fec_current_lane, &ctrl_link->fec.current_kobj, "lane");
+	rtn = kobject_init_and_add(&core_link->fec.current_lane_kobj,
+				   &link_fec_current_lane, &core_link->fec.current_kobj, "lane");
 	if (rtn) {
-		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
-			"link fec current lane create kobject_init_and_add failed [%d]", rtn);
+		sl_log_err(core_link, LOG_BLOCK, LOG_NAME,
+			   "link fec current lane create kobject_init_and_add failed [%d]", rtn);
 		goto out_current_lane;
 	}
 	for (x = 0; x < SL_MAX_LANES; ++x) {
-		rtn = kobject_init_and_add(&ctrl_link->fec.current_fecl_kobjs[x].kobj,
-			&link_fec_current_fecl, &ctrl_link->fec.current_lane_kobj, "%d", x);
+		rtn = kobject_init_and_add(&core_link->fec.current_fecl_kobjs[x].kobj,
+					   &link_fec_current_fecl, &core_link->fec.current_lane_kobj, "%d", x);
 		if (rtn) {
-			sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
-				"link fec current fecl create kobject_init_and_add failed [%d]", rtn);
+			sl_log_err(core_link, LOG_BLOCK, LOG_NAME,
+				   "link fec current fecl create kobject_init_and_add failed [%d]", rtn);
 			goto out_current_fecl;
 		}
-		ctrl_link->fec.current_fecl_kobjs[x].ctrl_link = ctrl_link;
-		ctrl_link->fec.current_fecl_kobjs[x].lane_num = x;
+		core_link->fec.current_fecl_kobjs[x].core_link = core_link;
+		core_link->fec.current_fecl_kobjs[x].lane_num = x;
 	}
 
-	rtn = kobject_init_and_add(&ctrl_link->fec.current_tail_kobj,
-		&link_fec_current_tail, &ctrl_link->fec.current_kobj, "tail");
+	rtn = kobject_init_and_add(&core_link->fec.current_tail_kobj,
+				   &link_fec_current_tail, &core_link->fec.current_kobj, "tail");
 	if (rtn) {
-		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
-			"link fec current tail create kobject_init_and_add failed [%d]", rtn);
+		sl_log_err(core_link, LOG_BLOCK, LOG_NAME,
+			   "link fec current tail create kobject_init_and_add failed [%d]", rtn);
 		goto out_current_tail;
-	}
-
-	rtn = sl_sysfs_link_fec_mon_check_create(ctrl_link);
-	if (rtn) {
-		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "fec mon check create failed [%d]", rtn);
-		goto out_current_tail;
-	}
-
-	rtn = sl_sysfs_link_fec_up_check_create(ctrl_link);
-	if (rtn) {
-		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "fec up check create failed [%d]", rtn);
-		goto out_fec_mon_check;
 	}
 
 	return 0;
 
-out_fec_mon_check:
-	kobject_put(&ctrl_link->fec.mon_check_kobj);
 out_current_tail:
-	kobject_put(&ctrl_link->fec.current_tail_kobj);
+	kobject_put(&core_link->fec.current_tail_kobj);
 out_current_fecl:
-	kobject_put(&ctrl_link->fec.current_fecl_kobjs[x].kobj);
+	kobject_put(&core_link->fec.current_fecl_kobjs[x].kobj);
 	for (out = 0; out < x; ++out)
-		kobject_put(&ctrl_link->fec.current_fecl_kobjs[out].kobj);
+		kobject_put(&core_link->fec.current_fecl_kobjs[out].kobj);
 out_current_lane:
-	kobject_put(&ctrl_link->fec.current_lane_kobj);
+	kobject_put(&core_link->fec.current_lane_kobj);
 out_current:
-	kobject_put(&ctrl_link->fec.current_kobj);
+	kobject_put(&core_link->fec.current_kobj);
 
 	return rtn;
 }
 
-void sl_sysfs_link_fec_current_delete(struct sl_ctrl_link *ctrl_link)
+void sl_sysfs_link_fec_current_delete(struct sl_core_link *core_link)
 {
 	int x;
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"link fec current delete (link_num = %u)", ctrl_link->num);
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
+		   "link fec current delete (link_num = %u)", core_link->num);
 
-	kobject_put(&ctrl_link->fec.current_tail_kobj);
+	kobject_put(&core_link->fec.current_tail_kobj);
 	for (x = 0; x < SL_MAX_LANES; ++x)
-		kobject_put(&ctrl_link->fec.current_fecl_kobjs[x].kobj);
-	kobject_put(&ctrl_link->fec.current_lane_kobj);
-	kobject_put(&ctrl_link->fec.mon_check_kobj);
-	kobject_put(&ctrl_link->fec.up_check_kobj);
-	kobject_put(&ctrl_link->fec.current_kobj);
+		kobject_put(&core_link->fec.current_fecl_kobjs[x].kobj);
+	kobject_put(&core_link->fec.current_lane_kobj);
+	kobject_put(&core_link->fec.current_kobj);
 }

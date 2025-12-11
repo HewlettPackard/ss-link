@@ -4,9 +4,8 @@
 #include <linux/kobject.h>
 
 #include "sl_log.h"
-#include "sl_sysfs.h"
-#include "sl_ctrl_link.h"
-#include "sl_ctrl_link_priv.h"
+#include "data/sl_ctrl_data_link.h"
+
 #include "sl_sysfs_link_fec_mon_check.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -14,23 +13,24 @@
 
 static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link  *ctrl_link;
-	s32                   ucw_down_limit;
-	u32                   period_ms;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  ucw_down_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	ucw_down_limit = ctrl_link->fec_data.info.monitor.ucw_down_limit;
-	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_ucw_down_limit show (ucw_down_limit = %d, period = %ums)",
-		ucw_down_limit, period_ms);
-
-	if (!period_ms)
+	rtn = sl_ctrl_data_link_fec_mon_ucw_down_limit_get(ctrl_link, &ucw_down_limit);
+	if (rtn == -EBADRQC) {
+		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
+				  "ucw down limit show monitoring not enabled");
 		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ucw_down_limit_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+	}
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw down limit show (ucw_down_limit = %d)", ucw_down_limit);
 
 	if (ucw_down_limit == -1)
 		return scnprintf(buf, PAGE_SIZE, "calculated\n");
@@ -40,23 +40,24 @@ static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link  *ctrl_link;
-	s32                   ucw_warn_limit;
-	u32                   period_ms;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  ucw_warn_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	ucw_warn_limit = ctrl_link->fec_data.info.monitor.ucw_warn_limit;
-	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_ucw_warn_limit show (ucw_warn_limit = %d, period = %ums)",
-		ucw_warn_limit, period_ms);
-
-	if (!period_ms)
+	rtn = sl_ctrl_data_link_fec_mon_ucw_warn_limit_get(ctrl_link, &ucw_warn_limit);
+	if (rtn == -EBADRQC) {
+		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
+				  "ucw warn limit show monitoring not enabled");
 		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ucw_warn_limit_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+	}
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw warn limit show (ucw_warn_limit = %d)", ucw_warn_limit);
 
 	if (ucw_warn_limit == -1)
 		return scnprintf(buf, PAGE_SIZE, "calculated\n");
@@ -66,23 +67,25 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link  *ctrl_link;
-	s32                   ccw_down_limit;
-	u32                   period_ms;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  ccw_down_limit;
+	int                  rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	ccw_down_limit = ctrl_link->fec_data.info.monitor.ccw_down_limit;
-	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
+	rtn = sl_ctrl_data_link_fec_mon_ccw_down_limit_get(ctrl_link, &ccw_down_limit);
+	if (rtn == -EBADRQC) {
+		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
+				  "ccw down limit show monitoring not enabled");
+		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ccw_down_limit_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_ccw_down_limit show (ccw_down_limit = %d, period = %ums)",
-		ccw_down_limit, period_ms);
-
-	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+		   "fec_mon_ccw_down_limit show (ccw_down_limit = %d)", ccw_down_limit);
 
 	if (ccw_down_limit == -1)
 		return scnprintf(buf, PAGE_SIZE, "calculated\n");
@@ -92,23 +95,25 @@ static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link  *ctrl_link;
-	s32                   ccw_warn_limit;
-	u32                   period_ms;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  ccw_warn_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	ccw_warn_limit = ctrl_link->fec_data.info.monitor.ccw_warn_limit;
-	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
+	rtn = sl_ctrl_data_link_fec_mon_ccw_warn_limit_get(ctrl_link, &ccw_warn_limit);
+	if (rtn == -EBADRQC) {
+		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
+				  "ccw warn limit show monitoring not enabled");
+		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+	}
+	if (rtn) {
+		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ccw_warn_limit_get failed [%d]", rtn);
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_ccw_warn_limit show (ccw_warn_limit = %d, period = %ums)",
-		ccw_warn_limit, period_ms);
-
-	if (!period_ms)
-		return scnprintf(buf, PAGE_SIZE, "not-monitoring\n");
+		   "fec_mon_ccw_warn_limit show (ccw_warn_limit = %d)", ccw_warn_limit);
 
 	if (ccw_warn_limit == -1)
 		return scnprintf(buf, PAGE_SIZE, "calculated\n");
@@ -118,17 +123,18 @@ static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 
 static ssize_t period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link  *ctrl_link;
-	u32                   period_ms;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  period_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.mon_check_kobj);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	period_ms = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
+	rtn = sl_ctrl_data_link_fec_mon_period_ms_get(ctrl_link, &period_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"fec_mon_period_ms_show show (period_ms = %u)", period_ms);
+		   "fec_mon_period_ms_show show (period_ms = %u)", period_ms);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", period_ms);
 }
@@ -170,4 +176,11 @@ int sl_sysfs_link_fec_mon_check_create(struct sl_ctrl_link *ctrl_link)
 	}
 
 	return 0;
+}
+
+void sl_sysfs_link_fec_mon_check_delete(struct sl_ctrl_link *ctrl_link)
+{
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link fec mon check delete (num = %u)", ctrl_link->num);
+
+	kobject_put(&ctrl_link->fec.mon_check_kobj);
 }

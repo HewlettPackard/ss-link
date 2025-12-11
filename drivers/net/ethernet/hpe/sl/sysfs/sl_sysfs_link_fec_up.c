@@ -4,60 +4,63 @@
 #include <linux/kobject.h>
 
 #include "sl_log.h"
-#include "sl_sysfs_link_fec.h"
-#include "sl_ctrl_link.h"
-#include "sl_core_link.h"
-#include "sl_ctrl_lgrp.h"
-#include "sl_ctrl_ldev.h"
-#include "sl_ctrl_link_priv.h"
-#include "sl_core_link_fec.h"
+#include "data/sl_ctrl_data_link.h"
+
+#include "sl_sysfs_link_fec_up.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
 static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u64                  ccw;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.up_kobj);
 
-	sl_ctrl_link_fec_up_cache_cw_cntrs_get(ctrl_link, &cw_cntrs);
+	rtn = sl_ctrl_data_link_fec_up_cache_ccw_cntr_get(ctrl_link, &ccw);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ccw show (link = 0x%p, ccw = %llu)", ctrl_link, cw_cntrs.ccw);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ccw show (ccw = %llu)", ccw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.ccw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw);
 }
 
 static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u64                  ucw;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.up_kobj);
 
-	sl_ctrl_link_fec_up_cache_cw_cntrs_get(ctrl_link, &cw_cntrs);
+	rtn = sl_ctrl_data_link_fec_up_cache_ucw_cntr_get(ctrl_link, &ucw);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ucw show (link = 0x%p, ucw = %llu)", ctrl_link, cw_cntrs.ucw);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw show (ucw = %llu)", ucw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.ucw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", ucw);
 }
 
 static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link              *ctrl_link;
-	struct sl_core_link_fec_cw_cntrs  cw_cntrs;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u64                  gcw;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.up_kobj);
 
-	sl_ctrl_link_fec_up_cache_cw_cntrs_get(ctrl_link, &cw_cntrs);
+	rtn = sl_ctrl_data_link_fec_up_cache_gcw_cntr_get(ctrl_link, &gcw);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"gcw show (link = 0x%p, gcw = %llu)", ctrl_link, cw_cntrs.gcw);
+		   "gcw show (link = 0x%p, gcw = %llu)", ctrl_link, gcw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", cw_cntrs.gcw);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", gcw);
 }
 
 static struct kobj_attribute link_fec_ccw = __ATTR_RO(ccw);
@@ -89,23 +92,26 @@ static struct kobj_type link_fec_up_lane = {
 
 static ssize_t link_fec_up_fecl_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
-	struct sl_ctrl_link_fecl_kobj       *fecl_kobj;
-	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
-	u8                                  fecl_num;
+	int                            rtn;
+	struct sl_ctrl_link           *ctrl_link;
+	struct sl_ctrl_link_fecl_kobj *fecl_kobj;
+	u8                             fecl_num;
+	u64                            fecl;
 
 	fecl_kobj = container_of(kobj, struct sl_ctrl_link_fecl_kobj, kobj);
-	if (!fecl_kobj->ctrl_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
-
-	sl_ctrl_link_fec_up_cache_lane_cntrs_get(fecl_kobj->ctrl_link, &lane_cntrs);
+	ctrl_link = fecl_kobj->ctrl_link;
 
 	fecl_num = ((4 * fecl_kobj->lane_num) + num);
 
+	rtn = sl_ctrl_data_link_fec_up_cache_lane_cntr_get(ctrl_link, fecl_num, &fecl);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
 	sl_log_dbg(fecl_kobj->ctrl_link, LOG_BLOCK, LOG_NAME,
 		"current fecl show (link = 0x%p, num = %u, lane_num = %u, fecl %u = %llu)",
-		fecl_kobj->ctrl_link, num, fecl_kobj->lane_num, fecl_num, lane_cntrs.lanes[fecl_num]);
+		fecl_kobj->ctrl_link, num, fecl_kobj->lane_num, fecl_num, fecl);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", lane_cntrs.lanes[fecl_num]);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", fecl);
 }
 
 #define link_fec_up_fecl(_num)                                                                                 \
@@ -117,18 +123,21 @@ static ssize_t link_fec_up_fecl_show(struct kobject *kobj, struct kobj_attribute
 
 static ssize_t link_fec_up_bin_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
 {
-	struct sl_ctrl_link                 *ctrl_link;
-	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u64                 tail_cntr;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.up_tail_kobj);
 
-	sl_ctrl_link_fec_up_cache_tail_cntrs_get(ctrl_link, &tail_cntrs);
+	rtn = sl_ctrl_data_link_fec_up_cache_tail_cntr_get(ctrl_link, num, &tail_cntr);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"up bin show (link = 0x%p, bin %u = %llu)",
-		ctrl_link, num, tail_cntrs.ccw_bins[num]);
+		ctrl_link, num, tail_cntr);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", tail_cntrs.ccw_bins[num]);
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", tail_cntr);
 }
 
 #define link_fec_up_tail0(_num)                                                                         \

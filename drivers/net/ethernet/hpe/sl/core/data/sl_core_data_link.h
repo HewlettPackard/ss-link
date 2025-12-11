@@ -63,6 +63,11 @@ void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fai
 u32 sl_core_data_link_an_retry_count_get(struct sl_core_link *core_link);
 u32 sl_core_data_link_config_flags_get(struct sl_core_link *core_link);
 
+int sl_core_data_link_fec_up_settle_wait_ms_get(struct sl_core_link *core_link, u32 *fec_settle_wait_ms);
+int sl_core_data_link_fec_up_check_wait_ms_get(struct sl_core_link *core_link, u32 *fec_check_wait_ms);
+int sl_core_data_link_fec_up_ucw_limit_get(struct sl_core_link *core_link, s32 *fec_up_ucw_limit);
+int sl_core_data_link_fec_up_ccw_limit_get(struct sl_core_link *core_link, s32 *fec_up_ccw_limit);
+
 int sl_core_data_link_degrade_state_get(struct sl_core_link *core_link, int *state);
 int sl_core_data_link_is_rx_degrade_get(struct sl_core_link *core_link, bool *is_rx_degrade);
 int sl_core_data_link_is_tx_degrade_get(struct sl_core_link *core_link, bool *is_tx_degrade);

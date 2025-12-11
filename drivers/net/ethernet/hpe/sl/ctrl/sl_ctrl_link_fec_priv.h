@@ -81,10 +81,6 @@ int sl_ctrl_link_fec_up_cache_lane_cntrs_get(struct sl_ctrl_link *ctrl_link,
 int sl_ctrl_link_fec_up_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
 					     struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 
-int sl_ctrl_link_fec_down_cache_cw_cntrs_get(struct sl_ctrl_link *ctrl_link,
-					     struct sl_core_link_fec_cw_cntrs *cw_cntrs);
-int sl_ctrl_link_fec_down_cache_lane_cntrs_get(struct sl_ctrl_link *ctrl_link,
-					       struct sl_core_link_fec_lane_cntrs *lane_cntrs);
 int sl_ctrl_link_fec_down_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
 					       struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 

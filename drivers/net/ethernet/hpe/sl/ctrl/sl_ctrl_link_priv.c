@@ -682,6 +682,72 @@ void sl_ctrl_link_policy_get(struct sl_ctrl_link *ctrl_link, struct sl_link_poli
 	spin_unlock(&ctrl_link->config_lock);
 }
 
+s32 sl_ctrl_link_policy_fec_mon_ucw_down_limit_get(struct sl_ctrl_link *ctrl_link)
+{
+	s32 fec_mon_ucw_down_limit;
+
+	spin_lock(&ctrl_link->config_lock);
+	fec_mon_ucw_down_limit = ctrl_link->policy.fec_mon_ucw_down_limit;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return fec_mon_ucw_down_limit;
+}
+
+s32 sl_ctrl_link_policy_fec_mon_ucw_warn_limit_get(struct sl_ctrl_link *ctrl_link)
+{
+	s32 fec_mon_ucw_warn_limit;
+
+	spin_lock(&ctrl_link->config_lock);
+	fec_mon_ucw_warn_limit = ctrl_link->policy.fec_mon_ucw_warn_limit;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return fec_mon_ucw_warn_limit;
+}
+
+s32 sl_ctrl_link_policy_fec_mon_ccw_down_limit_get(struct sl_ctrl_link *ctrl_link)
+{
+	s32 fec_mon_ccw_down_limit;
+
+	spin_lock(&ctrl_link->config_lock);
+	fec_mon_ccw_down_limit = ctrl_link->policy.fec_mon_ccw_down_limit;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return fec_mon_ccw_down_limit;
+}
+
+s32 sl_ctrl_link_policy_fec_mon_ccw_warn_limit_get(struct sl_ctrl_link *ctrl_link)
+{
+	s32 fec_mon_ccw_warn_limit;
+
+	spin_lock(&ctrl_link->config_lock);
+	fec_mon_ccw_warn_limit = ctrl_link->policy.fec_mon_ccw_warn_limit;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return fec_mon_ccw_warn_limit;
+}
+
+s32 sl_ctrl_link_policy_fec_mon_period_ms_get(struct sl_ctrl_link *ctrl_link)
+{
+	s32 fec_mon_period_ms;
+
+	spin_lock(&ctrl_link->config_lock);
+	fec_mon_period_ms = ctrl_link->policy.fec_mon_period_ms;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return fec_mon_period_ms;
+}
+
+u32 sl_ctrl_link_policy_options_get(struct sl_ctrl_link *ctrl_link)
+{
+	u32 options;
+
+	spin_lock(&ctrl_link->config_lock);
+	options = ctrl_link->policy.options;
+	spin_unlock(&ctrl_link->config_lock);
+
+	return options;
+}
+
 void sl_ctrl_link_state_set(struct sl_ctrl_link *ctrl_link, u32 link_state)
 {
 	spin_lock(&ctrl_link->data_lock);

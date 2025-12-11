@@ -269,6 +269,12 @@ struct sl_core_serdes_settings {
 	u16 tx_pll_bw;
 };
 
+struct sl_core_link_fecl_kobj {
+	struct sl_core_link *core_link;
+	u8                   lane_num;
+	struct kobject       kobj;
+};
+
 #define SL_CORE_LINK_MAGIC 0x736c4C4E
 struct sl_core_link {
 	u32                              magic;
@@ -383,6 +389,12 @@ struct sl_core_link {
 	} serdes;
 
 	struct {
+		struct kobject                up_check_kobj;
+		struct kobject                current_kobj;
+		struct kobject                current_lane_kobj;
+		struct sl_core_link_fecl_kobj current_fecl_kobjs[SL_MAX_LANES];
+		struct kobject                current_tail_kobj;
+
 		struct sl_core_link_fec_cw_cntrs test_cntrs;
 		struct sl_core_link_fec_cw_cntrs mock_cntr;
 		spinlock_t                       test_lock;

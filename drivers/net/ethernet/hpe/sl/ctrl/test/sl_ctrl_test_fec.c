@@ -39,8 +39,9 @@ int sl_ctrl_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool u
 	sl_core_test_fec_cntrs_use_set(ldev_num, lgrp_num, link_num, use_test_cntrs);
 	sl_ctrl_test_fec_data_store_clr(ctrl_link);
 
-	rtn = sl_core_link_fec_data_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs, &lane_cntrs, &tail_cntrs);
+	rtn = sl_ctrl_link_fec_data_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+					ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs, &lane_cntrs,
+					&tail_cntrs);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "fec_data_get failed [%d]", rtn);
 		return rtn;

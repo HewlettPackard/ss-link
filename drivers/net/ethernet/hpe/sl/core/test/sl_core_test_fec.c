@@ -57,10 +57,6 @@ int sl_core_test_fec_cw_cntrs_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct 
 	struct sl_core_link *core_link;
 
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
-	if (!core_link) {
-		sl_core_log_err(core_link, LOG_NAME, "NULL core_link");
-		return -EINVAL;
-	}
 
 	spin_lock(&core_link->fec.test_lock);
 	core_link->fec.mock_cntr.ucw += core_link->fec.test_cntrs.ucw;
@@ -69,9 +65,8 @@ int sl_core_test_fec_cw_cntrs_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct 
 	*cw_cntrs = core_link->fec.mock_cntr;
 	spin_unlock(&core_link->fec.test_lock);
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"cntrs get (ucw = %llu, ccw = %llu, gcw = %llu)",
-		 cw_cntrs->ucw, cw_cntrs->ccw, cw_cntrs->gcw);
+	sl_core_log_dbg(core_link, LOG_NAME, "cntrs get (ucw = %llu, ccw = %llu, gcw = %llu)",
+			cw_cntrs->ucw, cw_cntrs->ccw, cw_cntrs->gcw);
 
 	return 0;
 }

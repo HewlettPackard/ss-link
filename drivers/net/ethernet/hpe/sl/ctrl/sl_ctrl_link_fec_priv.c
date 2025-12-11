@@ -245,66 +245,6 @@ struct sl_fec_tail sl_ctrl_link_fec_data_tail_get(struct sl_ctrl_link *ctrl_link
 	return fec_tail;
 }
 
-int sl_ctrl_link_fec_up_cache_cw_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_cw_cntrs *cw_cntrs)
-{
-	spin_lock(&ctrl_link->fec_up_cache.lock);
-	*cw_cntrs = ctrl_link->fec_up_cache.cw_cntrs;
-	spin_unlock(&ctrl_link->fec_up_cache.lock);
-
-	return 0;
-}
-
-int sl_ctrl_link_fec_up_cache_lane_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_lane_cntrs *lane_cntrs)
-{
-	spin_lock(&ctrl_link->fec_up_cache.lock);
-	*lane_cntrs = ctrl_link->fec_up_cache.lane_cntrs;
-	spin_unlock(&ctrl_link->fec_up_cache.lock);
-
-	return 0;
-}
-
-int sl_ctrl_link_fec_up_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
-{
-	spin_lock(&ctrl_link->fec_up_cache.lock);
-	*tail_cntrs = ctrl_link->fec_up_cache.tail_cntrs;
-	spin_unlock(&ctrl_link->fec_up_cache.lock);
-
-	return 0;
-}
-
-int sl_ctrl_link_fec_down_cache_cw_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_cw_cntrs *cw_cntrs)
-{
-	spin_lock(&ctrl_link->fec_down_cache.lock);
-	*cw_cntrs = ctrl_link->fec_down_cache.cw_cntrs;
-	spin_unlock(&ctrl_link->fec_down_cache.lock);
-
-	return 0;
-}
-
-int sl_ctrl_link_fec_down_cache_lane_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_lane_cntrs *lane_cntrs)
-{
-	spin_lock(&ctrl_link->fec_down_cache.lock);
-	*lane_cntrs = ctrl_link->fec_down_cache.lane_cntrs;
-	spin_unlock(&ctrl_link->fec_down_cache.lock);
-
-	return 0;
-}
-
-int sl_ctrl_link_fec_down_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
-	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
-{
-	spin_lock(&ctrl_link->fec_down_cache.lock);
-	*tail_cntrs = ctrl_link->fec_down_cache.tail_cntrs;
-	spin_unlock(&ctrl_link->fec_down_cache.lock);
-
-	return 0;
-}
-
 static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_link, s32 limit, struct sl_fec_info *info)
 {
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(limit, info)) {
@@ -461,8 +401,9 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 		return;
 	}
 
-	rtn = sl_core_link_fec_data_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs, &lane_cntrs, &tail_cntrs);
+	rtn = sl_ctrl_link_fec_data_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+					ctrl_link->ctrl_lgrp->num, ctrl_link->num, &cw_cntrs, &lane_cntrs,
+					&tail_cntrs);
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 			"core_link_fec_tail_cntrs_get failed [%d]", rtn);

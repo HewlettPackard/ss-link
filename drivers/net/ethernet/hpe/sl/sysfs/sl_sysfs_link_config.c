@@ -10,6 +10,7 @@
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_link_priv.h"
+#include "data/sl_ctrl_data_link.h"
 // FIXME: remove this header when LOCK is removed
 #include "sl_test_common.h"
 
@@ -51,62 +52,74 @@ static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribut
 
 static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  fec_up_settle_wait_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_fec_up_settle_wait_ms_get(ctrl_link, &fec_up_settle_wait_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_settle_wait show (fec_up_settle_wait = %dms)", config.fec_up_settle_wait_ms);
+	    "fec_up_settle_wait show (fec_up_settle_wait = %dms)", fec_up_settle_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_settle_wait_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_settle_wait_ms);
 }
 
 static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  fec_up_check_wait_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_fec_up_check_wait_ms_get(ctrl_link, &fec_up_check_wait_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_check_wait show (fec_up_check_wait = %ums)", config.fec_up_check_wait_ms);
+	    "fec_up_check_wait show (fec_up_check_wait = %dms)", fec_up_check_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_check_wait_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_check_wait_ms);
 }
 
 static ssize_t fec_up_ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32		     fec_up_ucw_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_fec_up_ucw_limit_get(ctrl_link, &fec_up_ucw_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_ucw_limit show (fec_up_ucw_limit = %d)", config.fec_up_ucw_limit);
+	    "fec_up_ucw_limit show (fec_up_ucw_limit = %d)", fec_up_ucw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_ucw_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_ucw_limit);
 }
 
 static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_config  config;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32		     fec_up_ccw_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
-	sl_ctrl_link_config_get(ctrl_link, &config);
+	rtn = sl_ctrl_data_link_fec_up_ccw_limit_get(ctrl_link, &fec_up_ccw_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_up_ccw_limit show (fec_up_ccw_limit = %d)", config.fec_up_ccw_limit);
+	    "fec_up_ccw_limit show (fec_up_ccw_limit = %d)", fec_up_ccw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", config.fec_up_ccw_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_ccw_limit);
 }
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

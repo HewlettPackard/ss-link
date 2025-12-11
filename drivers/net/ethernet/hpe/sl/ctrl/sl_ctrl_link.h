@@ -84,20 +84,18 @@ struct sl_ctrl_link {
 	struct kobject               counters_kobj;
 	struct {
 		struct kobject                kobj;
-		struct kobject                current_kobj;
-		struct kobject                current_lane_kobj;
-		struct sl_ctrl_link_fecl_kobj current_fecl_kobjs[SL_MAX_LANES];
-		struct kobject                current_tail_kobj;
-		struct kobject                up_kobj;
-		struct kobject                up_lane_kobj;
-		struct sl_ctrl_link_fecl_kobj up_fecl_kobjs[SL_MAX_LANES];
-		struct kobject                up_tail_kobj;
+
+		struct kobject                mon_check_kobj;
+
 		struct kobject                down_kobj;
 		struct kobject                down_lane_kobj;
 		struct sl_ctrl_link_fecl_kobj down_fecl_kobjs[SL_MAX_LANES];
 		struct kobject                down_tail_kobj;
-		struct kobject                mon_check_kobj;
-		struct kobject                up_check_kobj;
+
+		struct kobject                up_kobj;
+		struct kobject                up_lane_kobj;
+		struct sl_ctrl_link_fecl_kobj up_fecl_kobjs[SL_MAX_LANES];
+		struct kobject                up_tail_kobj;
 	} fec;
 
 	u32               state;
@@ -141,5 +139,10 @@ void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *
 u32 sl_ctrl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
+
+int sl_ctrl_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+			      struct sl_core_link_fec_cw_cntrs *cw_cntrs,
+			      struct sl_core_link_fec_lane_cntrs *lane_cntrs,
+			      struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 
 #endif /* _SL_CTRL_LINK_H_ */

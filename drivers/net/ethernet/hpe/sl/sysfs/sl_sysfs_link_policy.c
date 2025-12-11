@@ -5,6 +5,7 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
+#include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_ldev.h"
@@ -17,77 +18,92 @@
 
 static ssize_t fec_mon_period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  fec_mon_period_ms;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_fec_mon_period_ms_get(ctrl_link, &fec_mon_period_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_period_ms show (fec_mon_period_ms = %d)", policy.fec_mon_period_ms);
+	    "fec_mon_period_ms show (fec_mon_period_ms = %d)", fec_mon_period_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_period_ms);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_mon_period_ms);
 }
 
 static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  fec_mon_ucw_down_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_fec_mon_ucw_down_limit_get(ctrl_link, &fec_mon_ucw_down_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %d)", policy.fec_mon_ucw_down_limit);
+	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %d)", fec_mon_ucw_down_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_down_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_mon_ucw_down_limit);
 }
 
 static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  fec_mon_ucw_warn_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_fec_mon_ucw_warn_limit_get(ctrl_link, &fec_mon_ucw_warn_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %d)", policy.fec_mon_ucw_warn_limit);
+	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %d)", fec_mon_ucw_warn_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ucw_warn_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_mon_ucw_warn_limit);
 }
 
 static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  fec_mon_ccw_down_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_fec_mon_ccw_down_limit_get(ctrl_link, &fec_mon_ccw_down_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", policy.fec_mon_ccw_down_limit);
+	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", fec_mon_ccw_down_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_down_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_mon_ccw_down_limit);
 }
 
 static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_link   *ctrl_link;
-	struct sl_link_policy  policy;
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	s32                  fec_mon_ccw_warn_limit;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, policy_kobj);
 
-	sl_ctrl_link_policy_get(ctrl_link, &policy);
+	rtn = sl_ctrl_data_link_policy_fec_mon_ccw_warn_limit_get(ctrl_link, &fec_mon_ccw_warn_limit);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %d)", policy.fec_mon_ccw_warn_limit);
+	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %d)", fec_mon_ccw_warn_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", policy.fec_mon_ccw_warn_limit);
+	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_mon_ccw_warn_limit);
 }
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

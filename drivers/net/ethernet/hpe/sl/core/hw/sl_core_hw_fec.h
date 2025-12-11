@@ -10,11 +10,11 @@ struct sl_core_link_fec_lane_cntrs;
 struct sl_core_link_fec_tail_cntrs;
 
 int sl_core_hw_fec_cw_cntrs_get(struct sl_core_link *core_link,
-				 struct sl_core_link_fec_cw_cntrs *cw_cntrs);
+				struct sl_core_link_fec_cw_cntrs *cw_cntrs);
 int sl_core_hw_fec_lane_cntrs_get(struct sl_core_link *core_link,
-				   struct sl_core_link_fec_lane_cntrs *lane_cntrs);
+				  struct sl_core_link_fec_lane_cntrs *lane_cntrs);
 int sl_core_hw_fec_tail_cntrs_get(struct sl_core_link *core_link,
-				   struct sl_core_link_fec_tail_cntrs *tail_cntrs);
+				  struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 int sl_core_hw_fec_data_get(struct sl_core_link *core_link,
 			    struct sl_core_link_fec_cw_cntrs *cw_cntrs,
 			    struct sl_core_link_fec_lane_cntrs *lane_cntrs,

@@ -1070,3 +1070,12 @@ int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_m
 
 	return 0;
 }
+
+int sl_ctrl_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+			      struct sl_core_link_fec_cw_cntrs *cw_cntrs,
+			      struct sl_core_link_fec_lane_cntrs *lane_cntrs,
+			      struct sl_core_link_fec_tail_cntrs *tail_cntrs)
+{
+	return sl_core_link_fec_data_get(sl_core_link_get(ldev_num, lgrp_num, link_num), cw_cntrs, lane_cntrs,
+					 tail_cntrs);
+}

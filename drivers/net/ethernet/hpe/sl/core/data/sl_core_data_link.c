@@ -1085,3 +1085,47 @@ int  sl_core_data_link_degrade_rx_lane_map_get(struct sl_core_link *core_link, u
 
 	return 0;
 }
+
+int sl_core_data_link_fec_up_settle_wait_ms_get(struct sl_core_link *core_link, u32 *fec_settle_wait_ms)
+{
+	spin_lock(&core_link->link.data_lock);
+	*fec_settle_wait_ms = core_link->fec.settings.up_settle_wait_ms;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (fec_settle_wait_ms = %u)", *fec_settle_wait_ms);
+
+	return 0;
+}
+
+int sl_core_data_link_fec_up_check_wait_ms_get(struct sl_core_link *core_link, u32 *fec_check_wait_ms)
+{
+	spin_lock(&core_link->link.data_lock);
+	*fec_check_wait_ms = core_link->fec.settings.up_check_wait_ms;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (fec_check_wait_ms = %u)", *fec_check_wait_ms);
+
+	return 0;
+}
+
+int sl_core_data_link_fec_up_ucw_limit_get(struct sl_core_link *core_link, s32 *fec_up_ucw_limit)
+{
+	spin_lock(&core_link->link.data_lock);
+	*fec_up_ucw_limit = core_link->fec.settings.up_ucw_limit;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (fec_up_ucw_limit = %d)", *fec_up_ucw_limit);
+
+	return 0;
+}
+
+int sl_core_data_link_fec_up_ccw_limit_get(struct sl_core_link *core_link, s32 *fec_up_ccw_limit)
+{
+	spin_lock(&core_link->link.data_lock);
+	*fec_up_ccw_limit = core_link->fec.settings.up_ccw_limit;
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "get (fec_up_ccw_limit = %d)", *fec_up_ccw_limit);
+
+	return 0;
+}

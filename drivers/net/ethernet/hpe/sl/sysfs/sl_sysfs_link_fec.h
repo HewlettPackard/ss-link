@@ -6,12 +6,7 @@
 
 struct sl_ctrl_link;
 
-int  sl_sysfs_link_fec_current_create(struct sl_ctrl_link *ctrl_link);
-int  sl_sysfs_link_fec_up_create(struct sl_ctrl_link *ctrl_link);
-int  sl_sysfs_link_fec_down_create(struct sl_ctrl_link *ctrl_link);
-
-void sl_sysfs_link_fec_current_delete(struct sl_ctrl_link *ctrl_link);
-void sl_sysfs_link_fec_up_delete(struct sl_ctrl_link *ctrl_link);
-void sl_sysfs_link_fec_down_delete(struct sl_ctrl_link *ctrl_link);
+int  sl_sysfs_link_fec_create(struct sl_ctrl_link *ctrl_link);
+void sl_sysfs_link_fec_delete(struct sl_ctrl_link *ctrl_link);
 
 #endif /* _SL_SYSFS_LINK_FEC_H_ */

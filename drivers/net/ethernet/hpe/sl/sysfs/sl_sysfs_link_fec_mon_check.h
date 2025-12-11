@@ -6,6 +6,7 @@
 
 struct sl_ctrl_link;
 
-int sl_sysfs_link_fec_mon_check_create(struct sl_ctrl_link *ctrl_link);
+int  sl_sysfs_link_fec_mon_check_create(struct sl_ctrl_link *ctrl_link);
+void sl_sysfs_link_fec_mon_check_delete(struct sl_ctrl_link *ctrl_link);
 
 #endif /* _SL_SYSFS_LINK_FEC_MON_CHECK_H_ */
