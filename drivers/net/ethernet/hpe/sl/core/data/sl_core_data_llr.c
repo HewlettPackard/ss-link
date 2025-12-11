@@ -312,22 +312,20 @@ void sl_core_data_llr_state_set(struct sl_core_llr *core_llr, u32 llr_state)
 	core_llr->state = llr_state;
 	spin_unlock(&core_llr->data_lock);
 
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"set state = %s", sl_core_llr_state_str(llr_state));
+	sl_core_log_dbg(core_llr, LOG_NAME, "set (llr_state = %u %s)",
+			llr_state, sl_core_llr_state_str(llr_state));
 }
 
-u32 sl_core_data_llr_state_get(struct sl_core_llr *core_llr)
+int sl_core_data_llr_state_get(struct sl_core_llr *core_llr, u32 *llr_state)
 {
-	u32 llr_state;
-
 	spin_lock(&core_llr->data_lock);
-	llr_state = core_llr->state;
+	*llr_state = core_llr->state;
 	spin_unlock(&core_llr->data_lock);
 
-	sl_core_log_dbg(core_llr, LOG_NAME,
-		"get state = %u %s", llr_state, sl_core_llr_state_str(llr_state));
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (llr_state = %u %s)",
+			*llr_state, sl_core_llr_state_str(*llr_state));
 
-	return llr_state;
+	return 0;
 }
 
 void sl_core_data_llr_data_set(struct sl_core_llr *core_llr, struct sl_llr_data llr_data)
@@ -407,22 +405,20 @@ void sl_core_data_llr_info_map_set(struct sl_core_llr *core_llr, u32 bit_num)
 	spin_unlock(&core_llr->data_lock);
 }
 
-u64 sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr)
+int sl_core_data_llr_info_map_get(struct sl_core_llr *core_llr, u64 *info_map)
 {
-	u64 info_map;
-
 	spin_lock(&core_llr->data_lock);
-	info_map = core_llr->info_map;
+	*info_map = core_llr->info_map;
 	spin_unlock(&core_llr->data_lock);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
-		"get info map 0x%016llX", info_map);
+		"get (info_map = 0x%016llX)", *info_map);
 
-	return info_map;
+	return 0;
 }
 
-void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr_fail_cause,
-	time64_t *llr_fail_time)
+int sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr_fail_cause,
+					 time64_t *llr_fail_time)
 {
 	spin_lock(&core_llr->data_lock);
 	*llr_fail_cause = core_llr->last_fail_cause;
@@ -432,6 +428,8 @@ void sl_core_data_llr_last_fail_cause_get(struct sl_core_llr *core_llr, u32 *llr
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"last llr fail cause get (cause = %u %s)", *llr_fail_cause,
 		sl_core_llr_fail_cause_str(*llr_fail_cause));
+
+	return 0;
 }
 
 void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_fail_cause)
@@ -443,4 +441,74 @@ void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"last llr fail cause set (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
+}
+
+int sl_core_data_llr_policy_options_get(struct sl_core_llr *core_llr, u32 *options)
+{
+	spin_lock(&core_llr->data_lock);
+	*options = core_llr->policy.options;
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (options = 0x%X)", *options);
+
+	return 0;
+}
+
+int sl_core_data_llr_loop_time_get(struct sl_core_llr *core_llr, u64 *loop_time)
+{
+	spin_lock(&core_llr->data_lock);
+	memcpy(loop_time, core_llr->loop_time, sizeof(core_llr->loop_time));
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME,
+			"get (loop time 0 = %lluns, 1 = %lluns, 2 = %lluns, 3 = %lluns, 4 = %lluns, "
+			"5 = %lluns, 6 = %lluns, 7 = %lluns, 8 = %lluns, 9 = %lluns)",
+			loop_time[0], loop_time[1], loop_time[2], loop_time[3], loop_time[4],
+			loop_time[5], loop_time[6], loop_time[7], loop_time[8], loop_time[9]);
+
+	return 0;
+}
+
+int sl_core_data_llr_loop_calculated_ns_get(struct sl_core_llr *core_llr, u64 *calculated_ns)
+{
+	spin_lock(&core_llr->data_lock);
+	*calculated_ns = core_llr->data.loop.calculated;
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (calculated_ns = %lldns)", *calculated_ns);
+
+	return 0;
+}
+
+int sl_core_data_llr_loop_min_ns_get(struct sl_core_llr *core_llr, u64 *min_ns)
+{
+	spin_lock(&core_llr->data_lock);
+	*min_ns = core_llr->data.loop.min;
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (min_ns = %lldns)", *min_ns);
+
+	return 0;
+}
+
+int sl_core_data_llr_loop_max_ns_get(struct sl_core_llr *core_llr, u64 *max_ns)
+{
+	spin_lock(&core_llr->data_lock);
+	*max_ns = core_llr->data.loop.max;
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (max_ns = %lldns)", *max_ns);
+
+	return 0;
+}
+
+int sl_core_data_llr_loop_average_ns_get(struct sl_core_llr *core_llr, u64 *average_ns)
+{
+	spin_lock(&core_llr->data_lock);
+	*average_ns = core_llr->data.loop.average;
+	spin_unlock(&core_llr->data_lock);
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "get (average_ns = %lldns)", *average_ns);
+
+	return 0;
 }

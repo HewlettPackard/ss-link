@@ -2,68 +2,88 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
-
 #include <linux/hpe/sl/sl_lgrp.h>
 
 #include "sl_log.h"
-#include "sl_sysfs.h"
-#include "sl_ctrl_llr.h"
+#include "data/sl_ctrl_data_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
 static ssize_t mode_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
+	u32                 mode;
 
 	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, config_kobj);
 
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
-		"mode (llr = 0x%p, mode = %u %s)",
-		ctrl_llr, ctrl_llr->config.mode, sl_lgrp_llr_mode_str(ctrl_llr->config.mode));
+	rtn = sl_ctrl_data_llr_config_mode_get(ctrl_llr, &mode);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_llr_mode_str(ctrl_llr->config.mode));
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		   "mode (mode = %u %s)",
+		   mode, sl_lgrp_llr_mode_str(mode));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_llr_mode_str(mode));
 }
 
 static ssize_t setup_timeout_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
+	u32                 setup_timeout_ms;
 
 	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, config_kobj);
 
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
-		"setup timeout show (llr = 0x%p, setup_timeout = %ums)",
-		ctrl_llr, ctrl_llr->config.setup_timeout_ms);
+	rtn = sl_ctrl_data_llr_config_setup_timeout_ms_get(ctrl_llr, &setup_timeout_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", ctrl_llr->config.setup_timeout_ms);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		   "setup timeout show (setup_timeout = %ums)",
+		   setup_timeout_ms);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", setup_timeout_ms);
 }
 
 static ssize_t start_timeout_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
+	u32                 start_timeout_ms;
 
 	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, config_kobj);
 
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
-		"start timeout show (llr = 0x%p, start_timeout = %ums)",
-		ctrl_llr, ctrl_llr->config.start_timeout_ms);
+	rtn = sl_ctrl_data_llr_config_start_timeout_ms_get(ctrl_llr, &start_timeout_ms);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", ctrl_llr->config.start_timeout_ms);
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		   "start timeout show (start_timeout = %ums)",
+		   start_timeout_ms);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", start_timeout_ms);
 }
 
 static ssize_t link_down_behavior_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
+	u32                 link_dn_behavior;
 
 	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, config_kobj);
 
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
-		"down behavior show (llr = 0x%p, dn_behavior = %u %s)",
-		ctrl_llr, ctrl_llr->config.link_dn_behavior,
-		sl_llr_link_dn_behavior_str(ctrl_llr->config.link_dn_behavior));
+	rtn = sl_ctrl_data_llr_config_link_dn_behavior_get(ctrl_llr, &link_dn_behavior);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		sl_llr_link_dn_behavior_str(ctrl_llr->config.link_dn_behavior));
+	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
+		   "down behavior show (dn_behavior = %u %s)",
+		   link_dn_behavior, sl_llr_link_dn_behavior_str(link_dn_behavior));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_llr_link_dn_behavior_str(link_dn_behavior));
 }
 
 // FIXME: add options here when/if any are defined
@@ -87,13 +107,13 @@ static struct kobj_type llr_config = {
 	.default_groups = llr_config_groups,
 };
 
-int sl_sysfs_llr_config_create(struct sl_ctrl_llr *ctrl_llr)
+int sl_sysfs_llr_config_create(struct sl_ctrl_llr *ctrl_llr, struct kobject *parent_kobj)
 {
 	int rtn;
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr config create (num = %u)", ctrl_llr->num);
 
-	rtn = kobject_init_and_add(&ctrl_llr->config_kobj, &llr_config, &ctrl_llr->kobj, "config");
+	rtn = kobject_init_and_add(&ctrl_llr->config_kobj, &llr_config, parent_kobj, "config");
 	if (rtn) {
 		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
 			"llr config create kobject_init_and_add failed [%d]", rtn);

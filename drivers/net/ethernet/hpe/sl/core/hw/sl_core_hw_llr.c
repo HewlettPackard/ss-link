@@ -374,8 +374,8 @@ static void sl_core_hw_llr_setup_fail(struct sl_core_llr *core_llr)
 		sl_core_hw_llr_settingup_cancel_cmd(core_llr);
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "setup fail - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME, "setup fail - invalid state (link_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return;
 	}
@@ -391,10 +391,16 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup work");
 
-	llr_state = sl_core_data_llr_state_get(core_llr);
+	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
+	if (rtn) {
+		sl_core_log_err(core_llr, LOG_NAME,
+				"setup work - llr_state_get failed [%d]", rtn);
+		return;
+	}
+
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "setup work - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err_trace(core_llr, LOG_NAME, "setup work - invalid state (link_state = %u %s)",
+				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
 
@@ -417,6 +423,7 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 
 void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 {
+	int                 rtn;
 	u32                 port;
 	int                 x;
 	u64                 data64;
@@ -427,10 +434,16 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]);
 
-	llr_state = sl_core_data_llr_state_get(core_llr);
+	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
+	if (rtn) {
+		sl_core_log_err(core_llr, LOG_NAME,
+				"loop time intr work - llr_state_get failed [%d]", rtn);
+		return;
+	}
+
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "loop time intr work - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err_trace(core_llr, LOG_NAME, "loop time intr work - invalid state (link_state = %u %s)",
+				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
 
@@ -484,8 +497,8 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "setup loop time - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME, "setup loop time - invalid state (link_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return;
 	}
@@ -493,6 +506,7 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 
 void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
 {
+	int                 rtn;
 	struct sl_core_llr *core_llr;
 	u32                 llr_state;
 
@@ -500,10 +514,17 @@ void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "unexpected loop time received");
 
-	llr_state = sl_core_data_llr_state_get(core_llr);
+	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
+	if (rtn) {
+		sl_core_log_err(core_llr, LOG_NAME,
+				"unexpected loop time intr work - llr_state_get failed [%d]", rtn);
+		return;
+	}
+
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "unexpected loop time intr work - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err_trace(core_llr, LOG_NAME,
+				      "unexpected loop time intr work - invalid state (link_state = %u %s)",
+				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
 }
@@ -635,8 +656,8 @@ static void sl_core_hw_llr_start_fail(struct sl_core_llr *core_llr)
 		sl_core_hw_llr_starting_cancel_cmd(core_llr);
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "start fail - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME, "start fail - invalid state (link_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return;
 	}
@@ -652,10 +673,16 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "start work");
 
-	llr_state = sl_core_data_llr_state_get(core_llr);
+	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
+	if (rtn) {
+		sl_core_log_err(core_llr, LOG_NAME,
+				"start work - llr_state_get failed [%d]", rtn);
+		return;
+	}
+
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "start work - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err_trace(core_llr, LOG_NAME, "start work - invalid state (link_state = %u %s)",
+				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
 
@@ -674,6 +701,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 
 void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 {
+	int                 rtn;
 	u32                 port;
 	u32                 llr_state;
 	u64                 data64;
@@ -681,10 +709,17 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 
 	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]);
 
-	llr_state = sl_core_data_llr_state_get(core_llr);
+	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
+	if (rtn) {
+		sl_core_log_err(core_llr, LOG_NAME,
+				"start init complete intr work - llr_state_get failed [%d]", rtn);
+		return;
+	}
+
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "start init complete intr work - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err_trace(core_llr, LOG_NAME,
+				      "start init complete intr work - invalid state (link_state = %u %s)",
+				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
 
@@ -722,8 +757,8 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 		sl_core_hw_llr_start_callback(core_llr);
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "start init complete - invalid state (%u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME, "start init complete - invalid state (link_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return;
 	}

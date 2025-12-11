@@ -7,6 +7,7 @@
 #include <linux/kobject.h>
 
 struct sl_core_link;
+struct sl_core_llr;
 struct sl_ctrl_ldev;
 struct sl_ctrl_lgrp;
 struct sl_ctrl_link;
@@ -58,17 +59,17 @@ void sl_sysfs_link_counters_delete(struct sl_ctrl_link *ctrl_link);
 int  sl_sysfs_llr_create(struct sl_ctrl_llr *ctrl_llr);
 void sl_sysfs_llr_delete(struct sl_ctrl_llr *ctrl_llr);
 
-int  sl_sysfs_llr_counters_create(struct sl_ctrl_llr *ctrl_llr);
+int  sl_sysfs_llr_counters_create(struct sl_ctrl_llr *ctrl_llr, struct kobject *parent_kobj);
 void sl_sysfs_llr_counters_delete(struct sl_ctrl_llr *ctrl_llr);
 
-int  sl_sysfs_llr_config_create(struct sl_ctrl_llr *ctrl_llr);
+int sl_sysfs_llr_config_create(struct sl_ctrl_llr *ctrl_llr, struct kobject *parent_kobj);
 void sl_sysfs_llr_config_delete(struct sl_ctrl_llr *ctrl_llr);
 
-int  sl_sysfs_llr_policy_create(struct sl_ctrl_llr *ctrl_llr);
-void sl_sysfs_llr_policy_delete(struct sl_ctrl_llr *ctrl_llr);
+int  sl_sysfs_llr_policy_create(struct sl_core_llr *core_llr, struct kobject *parent_kobj);
+void sl_sysfs_llr_policy_delete(struct sl_core_llr *core_llr);
 
-int  sl_sysfs_llr_loop_time_create(struct sl_ctrl_llr *ctrl_llr);
-void sl_sysfs_llr_loop_time_delete(struct sl_ctrl_llr *ctrl_llr);
+int  sl_sysfs_llr_loop_time_create(struct sl_core_llr *core_llr, struct kobject *parent_kobj);
+void sl_sysfs_llr_loop_time_delete(struct sl_core_llr *core_llr);
 
 int  sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac);
 void sl_sysfs_mac_delete(struct sl_ctrl_mac *ctrl_mac);

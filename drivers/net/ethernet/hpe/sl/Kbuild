@@ -137,7 +137,8 @@ $(SL_NAME)-y += \
 	ctrl/sl_ctrl_llr.o                  \
 	ctrl/sl_ctrl_llr_counters.o         \
 	ctrl/data/sl_ctrl_data_lgrp.o       \
-	ctrl/data/sl_ctrl_data_lgrp_trace.o
+	ctrl/data/sl_ctrl_data_lgrp_trace.o \
+	ctrl/data/sl_ctrl_data_llr.o
 
 $(SL_NAME)-y += \
 	log/sl_log.o

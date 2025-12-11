@@ -24,7 +24,8 @@ struct work_struct;
 #define SL_CORE_LLR_DATA_MAGIC 0x736c4C52
 
 enum sl_core_llr_state {
-	SL_CORE_LLR_STATE_NEW              = 1,    /* next: CONFIGURED                */
+	SL_CORE_LLR_STATE_INVALID         = 0,     /* Invalid State */
+	SL_CORE_LLR_STATE_NEW,                     /* next: CONFIGURED                */
 	SL_CORE_LLR_STATE_CONFIGURED,              /* next: SETTING_UP                */
 	SL_CORE_LLR_STATE_SETTING_UP,              /* -- BUSY --                      */
 	SL_CORE_LLR_STATE_SETUP_TIMEOUT,           /* next: CONFIGURED                */
@@ -61,6 +62,7 @@ struct sl_core_llr {
 
 	struct sl_core_lgrp             *core_lgrp;
 
+	struct kobject                             kobj;
 	spinlock_t                                 data_lock;
 	u32                                        last_fail_cause;
 	time64_t                                   last_fail_time;
@@ -69,6 +71,7 @@ struct sl_core_llr {
 	u64                                        info_map;
 	void                                      *tag;
 	u64                                        loop_time[SL_CORE_LLR_MAX_LOOP_TIME_COUNT];
+	struct kobject                             loop_time_kobj;
 	bool                                       is_data_valid;
 	struct sl_llr_data                         data;
 	struct {
@@ -80,6 +83,7 @@ struct sl_core_llr {
 		u32                                start;
 	} flags;
 	struct sl_llr_policy                       policy;
+	struct kobject                             policy_kobj;
 	struct {
 		u8      size;
 		u8      lossless_when_off;
@@ -110,9 +114,6 @@ int  sl_core_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 			    struct sl_llr_config *llr_config);
 int  sl_core_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 			    struct sl_llr_policy *llr_policy);
-int  sl_core_llr_policy_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-			    struct sl_llr_policy *llr_policy);
-
 int  sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		       sl_core_llr_setup_callback_t callback, void *tag, u32 flags);
 int  sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
@@ -121,17 +122,11 @@ int  sl_core_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 int  sl_core_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_state);
 
-struct sl_llr_data sl_core_llr_data_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
-
 bool sl_core_llr_setup_should_stop(struct sl_core_llr *core_llr);
 bool sl_core_llr_start_should_stop(struct sl_core_llr *core_llr);
 bool sl_core_llr_should_stop(struct sl_core_llr *core_llr);
 
 void sl_core_llr_last_fail_cause_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 llr_fail_cause);
-void sl_core_llr_last_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *llr_fail_cause,
-	time64_t *llr_fail_time);
-
-u64 sl_core_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
 const char *sl_core_llr_fail_cause_str(u32 llr_fail_cause);
 

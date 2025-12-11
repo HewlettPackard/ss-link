@@ -251,6 +251,8 @@ EXPORT_SYMBOL(sl_llr_state_get);
 const char *sl_llr_state_str(u32 state)
 {
 	switch (state) {
+	case SL_LLR_STATE_INVALID:
+		return "invalid";
 	case SL_LLR_STATE_OFF:
 		return "off";
 	case SL_LLR_STATE_CONFIGURED:

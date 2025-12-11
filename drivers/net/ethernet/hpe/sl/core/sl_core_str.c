@@ -150,6 +150,8 @@ const char *sl_core_mac_state_str(enum sl_core_mac_state mac_state)
 const char *sl_core_llr_state_str(enum sl_core_llr_state llr_state)
 {
 	switch (llr_state) {
+	case SL_CORE_LLR_STATE_INVALID:
+		return "invalid";
 	case SL_CORE_LLR_STATE_NEW:
 		return "new";
 	case SL_CORE_LLR_STATE_CONFIGURED:

@@ -4,27 +4,27 @@
 #include <linux/kobject.h>
 
 #include "sl_log.h"
+#include "data/sl_core_data_llr.h"
+
 #include "sl_sysfs.h"
-#include "sl_ctrl_ldev.h"
-#include "sl_ctrl_lgrp.h"
-#include "sl_ctrl_link.h"
-#include "sl_ctrl_llr.h"
-#include "sl_core_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
 static ssize_t continuous_tries_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
-	struct sl_ctrl_llr   *ctrl_llr;
-	struct sl_llr_policy  llr_policy;
+	int                 rtn;
+	struct sl_core_llr *core_llr;
+	u32                 options;
 
-	ctrl_llr = container_of(kobj, struct sl_ctrl_llr, policy_kobj);
-	sl_core_llr_policy_get(ctrl_llr->ctrl_lgrp->ctrl_ldev->num,
-			       ctrl_llr->ctrl_lgrp->num, ctrl_llr->num, &llr_policy);
+	core_llr = container_of(kobj, struct sl_core_llr, policy_kobj);
+
+	rtn = sl_core_data_llr_policy_options_get(core_llr, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n",
-		(llr_policy.options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? "enabled" : "disabled");
+		(options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? "enabled" : "disabled");
 }
 
 static struct kobj_attribute continuous_tries = __ATTR_RO(continuous_tries);
@@ -40,26 +40,26 @@ static struct kobj_type llr_policy = {
 	.default_groups = llr_policy_groups,
 };
 
-int sl_sysfs_llr_policy_create(struct sl_ctrl_llr *ctrl_llr)
+int sl_sysfs_llr_policy_create(struct sl_core_llr *core_llr, struct kobject *parent_kobj)
 {
 	int rtn;
 
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr policy create (num = %u)", ctrl_llr->num);
+	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME, "llr policy create (num = %u)", core_llr->num);
 
-	rtn = kobject_init_and_add(&ctrl_llr->policy_kobj, &llr_policy, &ctrl_llr->kobj, "policies");
+	rtn = kobject_init_and_add(&core_llr->policy_kobj, &llr_policy, parent_kobj, "policies");
 	if (rtn) {
-		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME,
-			"llr policy create kobject_init_and_add failed [%d]", rtn);
-		kobject_put(&ctrl_llr->policy_kobj);
+		sl_log_err(core_llr, LOG_BLOCK, LOG_NAME,
+			   "llr policy create kobject_init_and_add failed [%d]", rtn);
+		kobject_put(&core_llr->policy_kobj);
 		return rtn;
 	}
 
 	return 0;
 }
 
-void sl_sysfs_llr_policy_delete(struct sl_ctrl_llr *ctrl_llr)
+void sl_sysfs_llr_policy_delete(struct sl_core_llr *core_llr)
 {
-	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr policy delete (num = %u)", ctrl_llr->num);
+	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME, "llr policy delete (num = %u)", core_llr->num);
 
-	kobject_put(&ctrl_llr->policy_kobj);
+	kobject_put(&core_llr->policy_kobj);
 }

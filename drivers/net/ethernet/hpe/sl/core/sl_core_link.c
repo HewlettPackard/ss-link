@@ -249,9 +249,11 @@ u64 sl_core_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 {
+	int                  rtn;
 	struct sl_core_link *core_link;
 	struct sl_core_mac  *core_mac;
 	struct sl_core_llr  *core_llr;
+	u64                  llr_info_map;
 
 	BUILD_BUG_ON(SL_CORE_INFO_MAP_NUM_BITS >= 64);
 
@@ -261,15 +263,24 @@ int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 	*info_map = sl_core_data_link_info_map_get(core_link);
 	if (core_mac)
 		*info_map |= sl_core_data_mac_info_map_get(core_mac);
+
 	core_llr  = sl_core_llr_get(ldev_num, lgrp_num, link_num);
+	if (!core_llr)
+		goto out;
 
-	*info_map = sl_core_data_link_info_map_get(core_link);
-	if (core_llr)
-		*info_map |= sl_core_data_llr_info_map_get(core_llr);
+	rtn = sl_core_data_llr_info_map_get(core_llr, &llr_info_map);
+	if (rtn) {
+		sl_core_log_dbg(core_link, LOG_NAME,
+				"info map get - llr info map get failed (rtn = %d)", rtn);
+		goto out;
+	}
 
+	*info_map |= llr_info_map;
+
+out:
 	sl_core_log_dbg(core_link, LOG_NAME, "info map get (map = 0x%llX)", *info_map);
 
-	return 0;
+	return rtn;
 }
 
 int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,

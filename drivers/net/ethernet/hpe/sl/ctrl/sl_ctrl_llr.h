@@ -40,10 +40,7 @@ struct sl_ctrl_llr {
 	struct sl_ctrl_lgrp        *ctrl_lgrp;
 
 	struct kobject             *parent_kobj;
-	struct kobject              kobj;
 	struct kobject              config_kobj;
-	struct kobject              policy_kobj;
-	struct kobject              loop_time_kobj;
 	struct kobject              counters_kobj;
 
 	struct kref                 ref_cnt;
@@ -61,6 +58,7 @@ int sl_ctrl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 int sl_ctrl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 int sl_ctrl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
+u32 sl_ctrl_llr_state_from_core_llr_state(u32 core_llr_state);
 int sl_ctrl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state);
 
 int sl_ctrl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map);

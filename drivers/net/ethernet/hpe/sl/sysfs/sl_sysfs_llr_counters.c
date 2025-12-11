@@ -198,13 +198,13 @@ static struct kobj_type llr_counters = {
 	.default_groups = llr_counters_groups,
 };
 
-int sl_sysfs_llr_counters_create(struct sl_ctrl_llr *ctrl_llr)
+int sl_sysfs_llr_counters_create(struct sl_ctrl_llr *ctrl_llr, struct kobject *parent_kobj)
 {
 	int rtn;
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr counters create");
 
-	rtn = kobject_init_and_add(&ctrl_llr->counters_kobj, &llr_counters, &ctrl_llr->kobj, "counters");
+	rtn = kobject_init_and_add(&ctrl_llr->counters_kobj, &llr_counters, parent_kobj, "counters");
 	if (rtn) {
 		sl_log_err(ctrl_llr, LOG_BLOCK, LOG_NAME, "llr counters create kobject_init_and_add failed [%d]", rtn);
 		kobject_put(&ctrl_llr->counters_kobj);

@@ -13,7 +13,7 @@
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_lgrp_notif.h"
 #include "sl_ctrl_llr.h"
-#include "sl_core_llr.h"
+#include "data/sl_core_data_llr.h"
 #include "sl_core_str.h"
 #include "sl_ctrl_llr_counters.h"
 
@@ -471,6 +471,35 @@ int sl_ctrl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	return rtn;
 }
 
+u32 sl_ctrl_llr_state_from_core_llr_state(u32 core_llr_state)
+{
+	switch (core_llr_state) {
+	case SL_CORE_LLR_STATE_NEW:
+		return SL_LLR_STATE_OFF;
+	case SL_CORE_LLR_STATE_CONFIGURED:
+	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
+	case SL_CORE_LLR_STATE_SETUP_STOPPING:
+		return SL_LLR_STATE_CONFIGURED;
+	case SL_CORE_LLR_STATE_SETTING_UP:
+		return SL_LLR_STATE_SETUP_BUSY;
+	case SL_CORE_LLR_STATE_SETUP:
+	case SL_CORE_LLR_STATE_START_TIMEOUT:
+		return SL_LLR_STATE_SETUP;
+	case SL_CORE_LLR_STATE_STARTING:
+		return SL_LLR_STATE_START_BUSY;
+	case SL_CORE_LLR_STATE_RUNNING:
+		return SL_LLR_STATE_RUNNING;
+	case SL_CORE_LLR_STATE_STOPPING:
+		return SL_LLR_STATE_STOP_BUSY;
+	case SL_CORE_LLR_STATE_SETUP_CANCELING:
+	case SL_CORE_LLR_STATE_START_CANCELING:
+		return SL_LLR_STATE_CANCELING;
+	case SL_CORE_LLR_STATE_INVALID:
+	default:
+		return SL_LLR_STATE_INVALID;
+	}
+}
+
 int sl_ctrl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 {
 	int                rtn;
@@ -498,41 +527,11 @@ int sl_ctrl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 		goto out;
 	}
 
-	switch (core_llr_state) {
-	case SL_CORE_LLR_STATE_NEW:
-		*state = SL_LLR_STATE_OFF;
-		break;
-	case SL_CORE_LLR_STATE_CONFIGURED:
-	case SL_CORE_LLR_STATE_SETUP_TIMEOUT:
-	case SL_CORE_LLR_STATE_SETUP_STOPPING:
-		*state = SL_LLR_STATE_CONFIGURED;
-		break;
-	case SL_CORE_LLR_STATE_SETTING_UP:
-		*state = SL_LLR_STATE_SETUP_BUSY;
-		break;
-	case SL_CORE_LLR_STATE_SETUP:
-	case SL_CORE_LLR_STATE_START_TIMEOUT:
-		*state = SL_LLR_STATE_SETUP;
-		break;
-	case SL_CORE_LLR_STATE_STARTING:
-		*state = SL_LLR_STATE_START_BUSY;
-		break;
-	case SL_CORE_LLR_STATE_RUNNING:
-		*state = SL_LLR_STATE_RUNNING;
-		break;
-	case SL_CORE_LLR_STATE_STOPPING:
-		*state = SL_LLR_STATE_STOP_BUSY;
-		break;
-	case SL_CORE_LLR_STATE_SETUP_CANCELING:
-	case SL_CORE_LLR_STATE_START_CANCELING:
-		*state = SL_LLR_STATE_CANCELING;
-		break;
-	default:
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "invalid (core state = %u %s)",
+	*state = sl_ctrl_llr_state_from_core_llr_state(core_llr_state);
+	if (*state == SL_LLR_STATE_INVALID)
+		sl_ctrl_log_err(ctrl_llr, LOG_NAME,
+				"invalid (core_llr_state = %u %s)",
 				core_llr_state, sl_core_llr_state_str(core_llr_state));
-		*state = 0;
-		break;
-	}
 
 	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "state (core = %u %s, ctrl = %u %s)",
 			core_llr_state, sl_core_llr_state_str(core_llr_state),
@@ -547,6 +546,7 @@ out:
 
 int sl_ctrl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map)
 {
+	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
 	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
@@ -562,12 +562,17 @@ int sl_ctrl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map
 		return -EBADRQC;
 	}
 
-	*info_map = sl_core_llr_info_map_get(ldev_num, lgrp_num, llr_num);
+	rtn = sl_core_data_llr_info_map_get(sl_core_llr_get(ldev_num, lgrp_num, llr_num), info_map);
+	if (rtn) {
+		sl_ctrl_log_err_trace(ctrl_llr, LOG_NAME, "core_data_llr_info_map_get failed [%d]", rtn);
+		goto out;
+	}
 
 	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "info map get (info_map = 0x%llX)", *info_map);
 
+out:
 	if (sl_ctrl_llr_put(ctrl_llr))
 		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "info map get - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
 
-	return 0;
+	return rtn;
 }

@@ -42,7 +42,8 @@ struct sl_llr_policy {
 };
 
 enum sl_llr_state {
-	SL_LLR_STATE_OFF          = 1,
+	SL_LLR_STATE_INVALID     = 0,
+	SL_LLR_STATE_OFF,
 	SL_LLR_STATE_CONFIGURED,
 	SL_LLR_STATE_SETUP_BUSY,
 	SL_LLR_STATE_SETUP,
