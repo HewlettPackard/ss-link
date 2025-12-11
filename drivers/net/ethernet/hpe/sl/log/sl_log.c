@@ -322,7 +322,7 @@ void sl_log_err_trace(void *ptr, const char *block,
 		break;
 	case SL_CTRL_MAC_MAGIC:
 		ctrl_mac = ptr;
-		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_llr->ctrl_lgrp, &err_trace_enable);
+		rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_mac->ctrl_lgrp, &err_trace_enable);
 		if (rtn)
 			return;
 		if (!err_trace_enable)

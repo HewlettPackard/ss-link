@@ -114,6 +114,8 @@ int  sl_core_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 			    struct sl_llr_config *llr_config);
 int  sl_core_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 			    struct sl_llr_policy *llr_policy);
+int  sl_core_llr_policy_get(u8 ldev_num, u8 lgrp_num, u8 llr_num,
+			    struct sl_llr_policy *llr_policy);
 int  sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		       sl_core_llr_setup_callback_t callback, void *tag, u32 flags);
 int  sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,

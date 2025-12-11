@@ -36,7 +36,7 @@ function __sl_test_media_wb_connections_map_get {
 		serial_num=$(cut -d '-' -f1 ${ldev_sysfs_dir}/pgrp/${i}/media/serial_num)
 		media_type=$(cat ${ldev_sysfs_dir}/pgrp/${i}/media/type)
 		jack_type=$(cat ${ldev_sysfs_dir}/pgrp/${i}/media/jack_type)
-		supported=$(cat ${ldev_sysfs_dir}/pgrp/${i}/media/supported)
+		supported=$(cat ${ldev_sysfs_dir}/pgrp/${i}/media/is_supported_cable)
 
 		if [[ "${media_type}" == "no_cable" ]]; then
 			continue

@@ -4,6 +4,7 @@
 #include <linux/kobject.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "sl_core_link.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"

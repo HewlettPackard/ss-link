@@ -5,6 +5,7 @@
 #include <linux/hpe/sl/sl_lgrp.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "data/sl_ctrl_data_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK

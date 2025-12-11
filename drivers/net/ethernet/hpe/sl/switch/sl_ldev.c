@@ -6,6 +6,7 @@
 #include <linux/hpe/sl/sl_ldev.h>
 
 #include "sl_log.h"
+#include "sl_ldev.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_LDEV_LOG_NAME

@@ -805,6 +805,8 @@ static ssize_t cause_media_error_show(struct kobject *kobj, struct kobj_attribut
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
 	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_ERROR, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause media error show (counter = %u)", counter);
 
@@ -854,6 +856,8 @@ static ssize_t cause_ss200_cable_show(struct kobject *kobj, struct kobj_attribut
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
 	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_SS200_CABLE, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause ss200 cable show (counter = %u)", counter);
 
