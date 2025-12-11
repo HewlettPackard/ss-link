@@ -955,6 +955,12 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_media_counters_create(ctrl_lgrp);
+	if (rtn) {
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media counters create failed [%d]", rtn);
+		return rtn;
+	}
+
 	/*
 	 * This if condition will be false for nic here
 	 */
@@ -1039,6 +1045,8 @@ void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 
 	if (!ctrl_lgrp->parent_kobj)
 		return;
+
+	sl_sysfs_media_counters_delete(ctrl_lgrp);
 
 	media_lgrp = sl_media_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 	if (!media_lgrp) {

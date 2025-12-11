@@ -8,6 +8,7 @@
 
 #define SL_CTRL_LOG_BLOCK           "ctrl"
 
+#define SL_CTRL_MEDIA_LOG_NAME      "media"
 #define SL_CTRL_LDEV_LOG_NAME       "ldev"
 #define SL_CTRL_LGRP_LOG_NAME       "lgrp"
 #define SL_CTRL_LGRP_NOTIF_LOG_NAME "lgrp-ntf"

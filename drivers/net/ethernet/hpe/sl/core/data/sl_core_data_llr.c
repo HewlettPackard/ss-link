@@ -17,6 +17,7 @@
 #include "hw/sl_core_hw_intr_llr.h"
 #include "sl_core_hw_intr_flgs_llr.h"
 #include "data/sl_core_data_llr.h"
+#include "sl_ctrl_llr_counters.h"
 
 static struct sl_core_llr *core_llrs[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(core_llrs_lock);
@@ -438,6 +439,8 @@ void sl_core_data_llr_last_fail_cause_set(struct sl_core_llr *core_llr, u32 llr_
 	core_llr->last_fail_cause = llr_fail_cause;
 	core_llr->last_fail_time  = ktime_get_real_seconds();
 	spin_unlock(&core_llr->data_lock);
+
+	sl_ctrl_llr_cause_counter_inc(core_llr, llr_fail_cause);
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
 		"last llr fail cause set (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));

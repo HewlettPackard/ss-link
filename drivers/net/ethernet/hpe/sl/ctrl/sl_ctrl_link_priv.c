@@ -582,12 +582,6 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 	case SL_CORE_LINK_STATE_DOWN:
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN);
 
-		if (core_cause_map & SL_LINK_DOWN_CAUSE_UCW)
-			SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_UCW_CAUSE);
-
-		if (core_cause_map & SL_LINK_DOWN_CAUSE_CCW)
-			SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_CCW_CAUSE);
-
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 

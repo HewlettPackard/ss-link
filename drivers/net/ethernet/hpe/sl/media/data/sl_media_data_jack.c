@@ -21,6 +21,7 @@
 #include "sl_core_link.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_link_priv.h"
+#include "sl_ctrl_media_counters.h"
 
 static struct sl_media_jack *media_jacks[SL_ASIC_MAX_LDEVS][SL_MEDIA_MAX_JACK_NUM];
 static DEFINE_SPINLOCK(media_jacks_lock);
@@ -37,6 +38,8 @@ void sl_media_data_jack_del(u8 ldev_num, u8 jack_num)
 		return;
 	}
 
+	sl_ctrl_media_cause_counters_del(media_jack);
+
 	spin_lock(&media_jacks_lock);
 	media_jacks[ldev_num][jack_num] = NULL;
 	spin_unlock(&media_jacks_lock);
@@ -49,6 +52,7 @@ void sl_media_data_jack_del(u8 ldev_num, u8 jack_num)
 int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 {
 	struct sl_media_jack *media_jack;
+	int                   rtn;
 
 	media_jack = sl_media_data_jack_get(media_ldev->num, jack_num);
 	if (media_jack) {
@@ -65,6 +69,12 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	media_jack->physical_num      = 1;
 	media_jack->cable_db_idx      = -1;
 	media_jack->fault_cause       = SL_MEDIA_FAULT_CAUSE_NONE;
+
+	rtn = sl_ctrl_media_cause_counters_init(media_jack);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "ctrl_media_cause_counters_init failed [%d]", rtn);
+		goto out;
+	}
 
 	spin_lock_init(&(media_jack->data_lock));
 	spin_lock_init(&(media_jack->log_lock));
@@ -85,6 +95,10 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	spin_unlock(&media_jacks_lock);
 
 	return 0;
+
+out:
+	kfree(media_jack);
+	return -ENOMEM;
 }
 
 struct sl_media_jack *sl_media_data_jack_get(u8 ldev_num, u8 jack_num)

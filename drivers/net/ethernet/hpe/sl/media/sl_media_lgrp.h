@@ -35,6 +35,7 @@ struct sl_media_lgrp {
 	struct kobject                      kobj;
 	struct kobject                      parent_speed_kobj;
 	struct sl_media_lgrp_speed_kobject  speeds_kobj[SL_MEDIA_MAX_SUPPORTED_SPEEDS];
+	struct kobject                      counters_kobj;
 	u8                                  supported_speeds_num;
 	bool                                speeds_kobj_init;
 

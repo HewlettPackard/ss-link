@@ -10,6 +10,8 @@
 
 #include <linux/hpe/sl/sl_llr.h>
 
+#include "sl_core_llr.h"
+
 #define SL_LLR_DATA_MAGIC 0x636c6c72
 #define SL_LLR_DATA_VER   2
 
@@ -24,6 +26,7 @@ struct sl_ctrl_llr {
 	spinlock_t                  data_lock;
 
 	struct sl_ctrl_llr_counter *counters;
+	struct sl_ctrl_llr_counter *cause_counters;
 
 	struct sl_llr_config        config;
 	struct sl_llr_policy        policy;

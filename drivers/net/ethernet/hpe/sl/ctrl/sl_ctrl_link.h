@@ -53,6 +53,8 @@ struct sl_ctrl_link {
 	bool                         is_canceled;
 
 	struct sl_ctrl_link_counter *counters;
+	struct sl_ctrl_link_counter *cause_counters;
+	struct sl_ctrl_link_counter *an_cause_counters;
 
 	struct {
 		ktime_t              start;
@@ -136,7 +138,7 @@ int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32
 
 void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time);
 
-u32 sl_ctrl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
+u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count);
 
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
 

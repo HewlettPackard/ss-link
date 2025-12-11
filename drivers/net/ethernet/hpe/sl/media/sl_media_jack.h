@@ -13,7 +13,7 @@
 
 #include "sl_asic.h"
 #include "sl_media_ldev.h"
-
+#include "sl_ctrl_media_counters.h"
 /*
  * These states reflect whether a physical module is inserted in
  * a jack or not. And if it is inserted, can it be talked to or not.
@@ -164,8 +164,8 @@ struct sl_media_jack {
 
 	struct sl_media_serdes_settings serdes_settings;
 
-	spinlock_t                      data_lock;
-	spinlock_t                      log_lock;
+	spinlock_t                      data_lock; /* data lock for jack object */
+	spinlock_t                      log_lock;  /* log lock for jack object  */
 
 	bool                            is_cable_not_supported;
 	bool                            is_cable_format_invalid;
@@ -203,6 +203,8 @@ struct sl_media_jack {
 
 	int                             temperature_value;
 	int                             temperature_threshold;
+
+	struct sl_ctrl_media_counter   *cause_counters;
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0

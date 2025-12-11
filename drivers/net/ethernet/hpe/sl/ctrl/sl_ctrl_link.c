@@ -71,6 +71,20 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 		goto out;
 	}
 
+	rtn = sl_ctrl_link_cause_counters_init(ctrl_link);
+	if (rtn) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"ctrl_link_cause_counters_init failed [%d]", rtn);
+		goto out;
+	}
+
+	rtn = sl_ctrl_link_an_cause_counters_init(ctrl_link);
+	if (rtn) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"ctrl_link_an_cause_counters_init failed [%d]", rtn);
+		goto out;
+	}
+
 	ctrl_link->up_clock.start           = ktime_set(0, 0);
 	ctrl_link->up_clock.elapsed         = ktime_set(0, 0);
 	ctrl_link->up_clock.attempt_count   = 0;
@@ -247,6 +261,8 @@ static void sl_ctrl_link_release(struct kref *kref)
 	sl_core_link_del(ldev_num, lgrp_num, link_num);
 
 	sl_ctrl_link_counters_del(ctrl_link);
+	sl_ctrl_link_cause_counters_del(ctrl_link);
+	sl_ctrl_link_an_cause_counters_del(ctrl_link);
 
 	spin_lock(&ctrl_links_lock);
 	ctrl_links[ldev_num][lgrp_num][link_num] = NULL;
@@ -1040,9 +1056,14 @@ void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *
 	sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
 }
 
-u32 sl_ctrl_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
+u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count)
 {
-	return sl_core_link_an_retry_count_get(ldev_num, lgrp_num, link_num);
+	*count = sl_core_link_an_retry_count_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+						 ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an retry get (count = %d)", *count);
+
+	return 0;
 }
 
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)

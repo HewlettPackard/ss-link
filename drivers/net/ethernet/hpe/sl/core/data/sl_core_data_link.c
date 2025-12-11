@@ -15,6 +15,7 @@
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "sl_ctrl_link.h"
+#include "sl_ctrl_link_counters.h"
 #include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_intr.h"
 #include "hw/sl_core_hw_link.h"
@@ -731,6 +732,10 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 	core_link->link.last_up_fail_time       = ktime_get_real_seconds();
 	spin_unlock(&core_link->link.data_lock);
 
+	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+							core_link->core_lgrp->num, core_link->num),
+				       up_fail_cause_map);
+
 	sl_core_log_dbg(core_link, LOG_NAME,
 			"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
 }
@@ -780,6 +785,10 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 	core_link->link.last_down_cause_map |= down_cause_map;
 	core_link->link.last_down_time       = ktime_get_real_seconds();
 	spin_unlock(&core_link->link.data_lock);
+
+	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+							core_link->core_lgrp->num, core_link->num),
+				       down_cause_map);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"last down cause map set (down_cause_map = 0x%llX)", down_cause_map);
@@ -935,6 +944,10 @@ void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fai
 	core_link->an.fail_cause = fail_cause;
 	core_link->an.fail_time  = ktime_get_real_seconds();
 	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
+
+	sl_ctrl_link_an_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+							   core_link->core_lgrp->num, core_link->num),
+					  fail_cause);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause set (fail_cause = %u %s)",
 		fail_cause, sl_core_link_an_fail_cause_str(fail_cause));

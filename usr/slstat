@@ -213,12 +213,37 @@ function print_link_counters {
 
         printf "  counters |"
         for counter in ${LINK_PATH}/counters/* ; do
+                if [[ $(basename "${counter}") == cause_* || $(basename "${counter}") == an_cause_* ]]; then
+                        continue
+                fi
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %30s = ${val}\n" $(basename "${counter}")
+                        printf " %36s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %30s = ${val}\n" $(basename "${counter}")
+                        printf "           | %36s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_link_cause_counters {
+        if [ ! -e ${LINK_PATH}/counters ] ; then
+		return
+	fi
+
+        local first=0;
+
+        printf "           |"
+        for counter in ${LINK_PATH}/counters/* ; do
+                if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
+                        continue
+                fi
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %36s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %36s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }
@@ -251,12 +276,59 @@ function print_llr_counters {
 
         printf "  counters |"
         for counter in ${LLR_PATH}/counters/* ; do
+                if [[ $(basename "${counter}") == cause_* || $(basename "${counter}") == an_cause_* ]]; then
+                        continue
+                fi
                 val=$(cat ${counter})
                 if [ ${first} -eq 0 ] ; then
-                        printf " %20s = ${val}\n" $(basename "${counter}")
+                        printf " %23s = ${val}\n" $(basename "${counter}")
                         first=1
                 else
-                        printf "           | %20s = ${val}\n" $(basename "${counter}")
+                        printf "           | %23s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_llr_cause_counters {
+        if [ ! -e ${LLR_PATH}/counters ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "           |"
+        for counter in ${LLR_PATH}/counters/* ; do
+                if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
+                        continue
+                fi
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %23s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %23s = ${val}\n" $(basename "${counter}")
+                fi
+        done
+}
+
+function print_jack_cause_counters {
+        if [ ! -e ${LGRP_PATH}/media/counters ] ; then
+                return
+        fi
+
+        local first=0;
+
+        printf "  counters |"
+        for counter in ${LGRP_PATH}/media/counters/* ; do
+                if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
+                        continue
+                fi
+                val=$(cat ${counter})
+                if [ ${first} -eq 0 ] ; then
+                        printf " %39s = ${val}\n" $(basename "${counter}")
+                        first=1
+                else
+                        printf "           | %39s = ${val}\n" $(basename "${counter}")
                 fi
         done
 }
@@ -784,12 +856,15 @@ case $option in
                 if [ ${num_args} -ge 3 ] ; then
                         print_ldev
                         print_jack_state
+                        print_jack_cause_counters
                         print_link_state
                         print_link_counters
+                        print_link_cause_counters
                         print_mac_state
                         print_mac_counters
                         print_llr_state
                         print_llr_counters
+                        print_llr_cause_counters
                 fi
                 exit
                 ;;

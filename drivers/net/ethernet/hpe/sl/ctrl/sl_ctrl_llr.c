@@ -172,6 +172,12 @@ int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_
 		goto out;
 	}
 
+	rtn = sl_ctrl_llr_cause_counters_init(ctrl_llr);
+	if (rtn) {
+		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "ctrl_llr_cause_counters_init failed [%d]", rtn);
+		goto out;
+	}
+
 	rtn = sl_core_llr_new(ldev_num, lgrp_num, llr_num);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "core_llr_new failed [%d]", rtn);
@@ -226,6 +232,7 @@ static void sl_ctrl_llr_release(struct kref *kref)
 	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
 
 	sl_ctrl_llr_counters_del(ctrl_llr);
+	sl_ctrl_llr_cause_counters_del(ctrl_llr);
 
 	spin_lock(&ctrl_llrs_lock);
 	ctrl_llrs[ldev_num][lgrp_num][llr_num] = NULL;

@@ -136,6 +136,7 @@ $(SL_NAME)-y += \
 	ctrl/sl_ctrl_mac_counters.o         \
 	ctrl/sl_ctrl_llr.o                  \
 	ctrl/sl_ctrl_llr_counters.o         \
+	ctrl/sl_ctrl_media_counters.o       \
 	ctrl/data/sl_ctrl_data_lgrp.o       \
 	ctrl/data/sl_ctrl_data_lgrp_trace.o \
 	ctrl/data/sl_ctrl_data_link.o       \
@@ -160,6 +161,7 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_link_fec_current.o   \
 	sysfs/sl_sysfs_link_fec_up.o        \
 	sysfs/sl_sysfs_link_fec_down.o      \
+	sysfs/sl_sysfs_link_counters.o      \
 	sysfs/sl_sysfs_serdes.o             \
 	sysfs/sl_sysfs_serdes_settings.o    \
 	sysfs/sl_sysfs_serdes_eye.o         \
@@ -175,7 +177,7 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_mac.o                \
 	sysfs/sl_sysfs_mac_counters.o       \
 	sysfs/sl_sysfs_media.o              \
-	sysfs/sl_sysfs_link_counters.o
+	sysfs/sl_sysfs_media_counters.o
 
 ccflags-y := -I$(M)
 ccflags-$(SL_BUILD_NIC) += \

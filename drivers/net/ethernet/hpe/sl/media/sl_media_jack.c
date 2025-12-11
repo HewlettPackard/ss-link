@@ -425,6 +425,8 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HIGH_TEMP)
 		sl_media_data_jack_led_set(media_jack);
 
+	sl_ctrl_media_cause_counter_inc(media_jack, fault_cause);
+
 	sl_media_log_dbg(media_jack, LOG_NAME, "fault cause set (cause = %u %s)", fault_cause,
 		sl_media_fault_cause_str(fault_cause));
 }
