@@ -218,17 +218,20 @@ int sl_core_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 int sl_core_link_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_state)
 {
+	int                  rtn;
 	struct sl_core_link *core_link;
 
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 
-	*link_state = sl_core_data_link_state_get(core_link);
-
-	if (*link_state == SL_CORE_LINK_STATE_INVALID)
-		return -EINVAL;
+	rtn = sl_core_data_link_state_get(core_link, link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "state get - failed to get link state [%d]", rtn);
+		return rtn;
+	}
 
 	sl_core_log_dbg(core_link, LOG_NAME, "state get (link_state = %u %s)",
-		*link_state, sl_core_link_state_str(*link_state));
+			*link_state, sl_core_link_state_str(*link_state));
 
 	return 0;
 }
@@ -351,21 +354,27 @@ int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_
 	return 0;
 }
 
-bool sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link)
+int sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *is_canceled_or_timed_out)
 {
-	u32 state;
-	bool is_canceled;
-	bool is_timed_out;
+	int  rtn;
+	u32  state;
 
-	state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "is canceled or timed out - failed to get link state [%d]", rtn);
+		return rtn;
+	}
 
-	is_canceled = (state == SL_CORE_LINK_STATE_CANCELING);
-	is_timed_out = (state == SL_CORE_LINK_STATE_TIMEOUT);
+	sl_core_log_dbg(core_link, LOG_NAME, "is_canceled_or_timed_out (state %u %s)",
+			state, sl_core_link_state_str(state));
 
-	sl_core_log_dbg(core_link, LOG_NAME, "is_canceled = %s, is_timed_out = %s",
-		is_canceled ? "true" : "false", is_timed_out ? "true" : "false");
+	*is_canceled_or_timed_out = ((state == SL_CORE_LINK_STATE_CANCELING) || (state == SL_CORE_LINK_STATE_TIMEOUT));
 
-	return (is_canceled || is_timed_out);
+	sl_core_log_dbg(core_link, LOG_NAME, "get (is_canceled_or_timed_out = %s)",
+			*is_canceled_or_timed_out ? "true" : "false");
+
+	return 0;
 }
 
 int sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *speed)

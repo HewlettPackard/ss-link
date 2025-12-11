@@ -5,6 +5,7 @@
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
+#include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_ldev.h"
@@ -18,13 +19,15 @@
 
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 	u32                  state;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
-	sl_ctrl_link_state_get_cmd(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-				   ctrl_link->ctrl_lgrp->num, ctrl_link->num, &state);
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"state show (link = 0x%p, state = %u %s)", ctrl_link, state, sl_link_state_str(state));
@@ -247,6 +250,8 @@ static ssize_t up_count_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
+	u32                  state;
 	struct sl_ctrl_link *ctrl_link;
 	s64                  attempt_time_ms;
 	s64                  total_time_ms;
@@ -254,7 +259,11 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
-	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (state != SL_LINK_STATE_UP)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
@@ -269,6 +278,8 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 
 static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
+	u32                  state;
 	struct sl_ctrl_link *ctrl_link;
 	s64                  attempt_time_ms;
 	s64                  total_time_ms;
@@ -276,7 +287,11 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
-	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (state != SL_LINK_STATE_UP)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
@@ -291,6 +306,8 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 
 static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                  rtn;
+	u32                  state;
 	struct sl_ctrl_link *ctrl_link;
 	s64                  attempt_time_ms;
 	s64                  total_time_ms;
@@ -298,7 +315,11 @@ static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
-	if (sl_ctrl_link_state_get(ctrl_link) != SL_LINK_STATE_UP)
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (state != SL_LINK_STATE_UP)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,

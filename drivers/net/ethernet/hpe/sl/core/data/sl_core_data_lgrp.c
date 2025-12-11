@@ -152,6 +152,7 @@ struct sl_core_lgrp *sl_core_data_lgrp_get(u8 ldev_num, u8 lgrp_num)
 
 int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 {
+	int                  rtn;
 	int                  link_num;
 	struct sl_core_link *core_link;
 	u32                  link_state;
@@ -162,8 +163,14 @@ int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 		core_link = sl_core_link_get(core_lgrp->core_ldev->num, core_lgrp->num, link_num);
 		if (!core_link)
 			continue;
-		sl_core_link_state_get(core_lgrp->core_ldev->num,
-			core_lgrp->num, link_num, &link_state);
+
+		rtn = sl_core_data_link_state_get(core_link, &link_state);
+		if (rtn) {
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
+					      "lgrp link config check - link_state_get failed [%d]", rtn);
+			return rtn;
+		}
+
 		switch (link_state) {
 		case SL_CORE_LINK_STATE_UNCONFIGURED:
 		case SL_CORE_LINK_STATE_CONFIGURING:
@@ -172,8 +179,8 @@ int sl_core_data_lgrp_link_config_check(struct sl_core_lgrp *core_lgrp)
 			continue;
 		default:
 			sl_core_log_err(core_lgrp, LOG_NAME,
-				"link config check wrong state (link_num = %u, state = %u %s)",
-				link_num, link_state, sl_core_link_state_str(link_state));
+					"lgrp link config check wrong state (link_num = %u, state = %u %s)",
+					link_num, link_state, sl_core_link_state_str(link_state));
 			return -EBADRQC;
 		}
 	}

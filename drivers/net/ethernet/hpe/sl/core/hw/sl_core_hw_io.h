@@ -220,11 +220,22 @@ static inline int sl_core_hw_intr_unregister(struct sl_core_link *link,
 static inline int sl_core_hw_intr_enable(struct sl_core_link *core_link,
 	u64 *err_flgs, sl_intr_handler_t handler)
 {
+	int  rtn;
+	bool is_canceled_or_timed_out;
+
 	sl_core_log_dbg(core_link, SL_CORE_HW_IO_LOG_NAME,
 		"EN (hdlr = 0x%p, ptr = 0x%p, flgs = 0x%016llX, 0x%016llX, 0x%016llX, 0x%016llX)",
 		handler, err_flgs, err_flgs[0], err_flgs[1], err_flgs[2], err_flgs[3]);
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+	rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, SL_CORE_HW_IO_LOG_NAME,
+				      "intr enable - is_canceled_or_timed_out failed [%d]",
+				      rtn);
+		return rtn;
+	}
+
+	if (is_canceled_or_timed_out) {
 		sl_core_log_dbg(core_link, SL_CORE_HW_IO_LOG_NAME, "canceled");
 		return 0;
 	}

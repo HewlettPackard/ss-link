@@ -73,6 +73,7 @@ static void sl_core_hw_an_up_start_test_caps(struct sl_core_link *core_link)
 
 void sl_core_hw_an_up_start_work(struct work_struct *work)
 {
+	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -80,10 +81,16 @@ void sl_core_hw_an_up_start_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start work (link = 0x%p)", core_link);
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "up start work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up start work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "up start work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -144,10 +151,16 @@ void sl_core_hw_an_up_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up work");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "up work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "up work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -196,10 +209,16 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up done work");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "up done work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up done work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "up done work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 

@@ -52,6 +52,7 @@ u32 sl_core_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
+	int                  rtn;
 	u32                  link_state;
 	struct sl_core_link *core_link;
 
@@ -59,7 +60,12 @@ int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps stop");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "lp caps stop - failed to get link state [%d]", rtn);
+		return rtn;
+	}
 
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:

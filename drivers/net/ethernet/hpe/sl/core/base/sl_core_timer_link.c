@@ -21,7 +21,9 @@
 
 void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 {
-	u32 link_state;
+	int  rtn;
+	u32  link_state;
+	bool is_canceled_or_timed_out;
 
 	if (core_link->timers[timer_num].data.timeout_ms == 0) {
 		sl_core_log_warn_trace(core_link, LOG_NAME,
@@ -39,7 +41,15 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 		core_link->timers[timer_num].data.timeout_ms,
 		core_link->timers[timer_num].timer.expires);
 
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+	rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "begin %s is_canceled_or_timed_out failed (timer_num = %u) [%d]",
+				      core_link->timers[timer_num].data.log, timer_num, rtn);
+		return;
+	}
+
+	if (is_canceled_or_timed_out) {
 		sl_core_log_dbg(core_link, LOG_NAME,
 			"begin %s canceled (timer_num = %u)",
 			core_link->timers[timer_num].data.log, timer_num);

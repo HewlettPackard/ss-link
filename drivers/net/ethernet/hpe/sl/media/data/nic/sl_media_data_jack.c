@@ -375,6 +375,7 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
+	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -384,8 +385,18 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	if (!core_link)
 		return;
 
-	sl_core_link_state_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num,
-			       0, &link_state); /* hardcoding 0 since only one link*/
+	if (sl_media_data_jack_cable_is_high_temp(media_jack)) {
+		sl_media_io_led_set(media_jack, LED_ON_YEL);
+		return;
+	}
+
+	/* hardcoding 0 since only one link*/
+	rtn = sl_core_link_state_get(media_jack->cable_info[0].ldev_num,
+				     media_jack->cable_info[0].lgrp_num, 0, &link_state);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "core link state get failed [%d]", rtn);
+		return;
+	}
 
 	switch (sl_media_jack_state_get(media_jack)) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:

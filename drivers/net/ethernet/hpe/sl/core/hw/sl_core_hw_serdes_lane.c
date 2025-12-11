@@ -432,6 +432,8 @@ out:
 				    LANE_UP_TX_CLOCK_VALID_BIT)
 static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
+	int                  rtn;
+	bool                 is_canceled_or_timed_out;
 	u8                   x;
 	u32                  port;
 	u64                  status;
@@ -450,7 +452,14 @@ static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8
 		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_CHECK);
 
 	for (x = 0; x < LANE_UP_TX_CHECK_NUM_TRIES; ++x) {
-		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+		if (rtn) {
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
+					      "lane up tx check - is_canceled_or_timed_out failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (is_canceled_or_timed_out) {
 			sl_core_log_dbg(core_link, LOG_NAME, "lane up tx check canceled");
 			return -ECANCELED;
 		}
@@ -477,6 +486,8 @@ static int sl_core_hw_serdes_lane_up_tx_check(struct sl_core_link *core_link, u8
 /* wait for 6s for PAM4 and 1.5s for NRZ */
 static int sl_core_hw_serdes_lane_up_rx_check(struct sl_core_link *core_link, u8 serdes_lane_num)
 {
+	int                  rtn;
+	bool                 is_canceled_or_timed_out;
 	u8                   x;
 	u32                  port;
 	u64                  status;
@@ -495,7 +506,14 @@ static int sl_core_hw_serdes_lane_up_rx_check(struct sl_core_link *core_link, u8
 		asic_lane_num, SL_CORE_HW_SERDES_LANE_STATE_CHECK);
 
 	for (x = 0; x < LANE_UP_RX_CHECK_NUM_TRIES; ++x) {
-		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+		if (rtn) {
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
+					      "lane up rx check - is_canceled_or_timed_out failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (is_canceled_or_timed_out) {
 			sl_core_log_dbg(core_link, LOG_NAME, "lane up rx check canceled");
 			return -ECANCELED;
 		}
@@ -526,6 +544,7 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	struct sl_core_lgrp *core_lgrp;
 	u16                  extended;
 	u64                  data64;
+	bool                 is_canceled_or_timed_out;
 
 	core_lgrp     = core_link->core_lgrp;
 	port          = core_lgrp->num;
@@ -559,7 +578,14 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x7, serdes_lane_num, core_lgrp);
 
 	for (x = 0; x < LANE_UP_QUALITY_CHECK_NUM_TRIES; ++x) {
-		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+		if (rtn) {
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
+					      "lane up quality check - is_canceled_or_timed_out failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (is_canceled_or_timed_out) {
 			sl_core_log_dbg(core_lgrp, LOG_NAME, "lane up quality check canceled");
 			return -ECANCELED;
 		}
@@ -581,7 +607,14 @@ static int sl_core_hw_serdes_lane_up_quality_check(struct sl_core_link *core_lin
 	addr = SL_CORE_HW_SERDES_LANE_ADDR(0x8, serdes_lane_num, core_lgrp);
 
 	for (x = 0; x < LANE_UP_QUALITY_CHECK_NUM_TRIES; ++x) {
-		if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+		rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+		if (rtn) {
+			sl_core_log_err_trace(core_lgrp, LOG_NAME,
+					      "lane up quality check - is_canceled_or_timed_out failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (is_canceled_or_timed_out) {
 			sl_core_log_dbg(core_lgrp, LOG_NAME, "lane up quality check canceled");
 			return -ECANCELED;
 		}

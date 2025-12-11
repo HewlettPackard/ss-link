@@ -22,7 +22,7 @@ u16  sl_core_data_link_clock_period_get(void);
 void sl_core_data_link_timeouts(struct sl_core_link *core_link);
 
 void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state);
-u32  sl_core_data_link_state_get(struct sl_core_link *core_link);
+int  sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state);
 
 u32  sl_core_data_link_speed_get(struct sl_core_link *core_link);
 u16  sl_core_data_link_clocking_get(struct sl_core_link *core_link);

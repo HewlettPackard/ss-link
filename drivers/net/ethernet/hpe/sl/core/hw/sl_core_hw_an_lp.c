@@ -92,10 +92,16 @@ void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "lp caps get work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "up lp caps get work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -161,10 +167,16 @@ void sl_core_hw_an_lp_caps_get_timeout_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "lp caps get timeout work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get timeout work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -193,10 +205,16 @@ void sl_core_hw_an_lp_caps_get_done_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work");
 
-	link_state = sl_core_data_link_state_get(core_link);
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "lp caps get done work - failed to get link state [%d]", rtn);
+		return;
+	}
+
 	if (link_state != SL_CORE_LINK_STATE_AN) {
-		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work - invalid state (%u %s)",
-			link_state, sl_core_link_state_str(link_state));
+		sl_core_log_dbg(core_link, LOG_NAME, "lp caps get done work - invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 

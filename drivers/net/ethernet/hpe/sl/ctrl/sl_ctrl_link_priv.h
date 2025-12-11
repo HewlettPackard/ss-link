@@ -28,7 +28,6 @@ void sl_ctrl_link_config_get(struct sl_ctrl_link *ctrl_link, struct sl_link_conf
 void sl_ctrl_link_policy_get(struct sl_ctrl_link *ctrl_link, struct sl_link_policy *link_policy);
 
 void sl_ctrl_link_state_set(struct sl_ctrl_link *ctrl_link, u32 link_state);
-u32  sl_ctrl_link_state_get(struct sl_ctrl_link *ctrl_link);
 
 bool sl_ctrl_link_is_canceled(struct sl_ctrl_link *ctrl_link);
 void sl_ctrl_link_is_canceled_set(struct sl_ctrl_link *ctrl_link, bool canceled);

@@ -12,6 +12,7 @@
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link.h"
+#include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_ctrl_link_counters.h"
 #include "sl_core_str.h"
@@ -418,7 +419,12 @@ int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EBADRQC;
 	}
 
-	link_state = sl_ctrl_link_state_get(ctrl_link);
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &link_state);
+	if (rtn) {
+		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "data_link_state_get failed [%d]", rtn);
+		goto out;
+	}
+
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "config set (link_state = %u %s)",
 		link_state, sl_link_state_str(link_state));
 
@@ -510,10 +516,13 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		goto out;
 	}
 
-	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-		ctrl_link->num, &link_state);
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, &link_state);
+	if (rtn) {
+		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "data link state get failed [%d]", rtn);
+		goto out;
+	}
 
-	if (link_state != SL_CORE_LINK_STATE_UP) {
+	if (link_state != SL_LINK_STATE_UP) {
 		sl_core_log_dbg(ctrl_link, LOG_NAME, "link_policy_set not up (link_state = %u %s)", link_state,
 		  sl_core_link_state_str(link_state));
 		rtn = 0;
@@ -965,7 +974,6 @@ void sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attem
 int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
 {
 	int                  rtn;
-	u32                  core_link_state;
 	struct sl_ctrl_link *ctrl_link;
 
 	*state = SL_LINK_STATE_INVALID;
@@ -983,17 +991,11 @@ int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state
 		return -EBADRQC;
 	}
 
-	core_link_state = SL_CORE_LINK_STATE_INVALID;
-	rtn = sl_core_link_state_get(ldev_num, lgrp_num, link_num, &core_link_state);
+	rtn = sl_ctrl_data_link_state_get(ctrl_link, state);
 	if (rtn) {
-		sl_ctrl_log_err_trace(NULL, LOG_NAME, "core state get invalid");
+		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "data_link_state_get failed [%d]", rtn);
 		goto out;
 	}
-
-	if (core_link_state == SL_CORE_LINK_STATE_AN)
-		*state = SL_LINK_STATE_AN;
-	else
-		*state = sl_ctrl_link_state_get(ctrl_link);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 		"state get (state = %u %s)",

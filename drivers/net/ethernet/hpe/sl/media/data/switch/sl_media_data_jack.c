@@ -1206,6 +1206,7 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 #define LED_FAST_AMBER XCVR_LED_B_FAST
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
+	int                   rtn;
 	struct sl_core_link  *core_link;
 	struct sl_core_lgrp  *core_lgrp;
 	u32                   link_state;
@@ -1262,7 +1263,13 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 			if (!core_link)
 				continue;
 
-			sl_core_link_state_get(ldev_num, lgrp_num, link_num, &link_state);
+			rtn = sl_core_link_state_get(ldev_num, lgrp_num, link_num, &link_state);
+			if (rtn) {
+				sl_media_log_err_trace(media_jack, LOG_NAME,
+						       "link state get failed (ldev=%u, lgrp=%u, link=%u) [%d] ",
+						       ldev_num, lgrp_num, link_num, rtn);
+				return;
+			}
 
 			switch (link_state) {
 			case SL_CORE_LINK_STATE_GOING_UP:

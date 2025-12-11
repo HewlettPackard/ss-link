@@ -601,18 +601,16 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 		"set state = %s", sl_core_link_state_str(link_state));
 }
 
-u32 sl_core_data_link_state_get(struct sl_core_link *core_link)
+int sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state)
 {
-	u32 link_state;
-
 	spin_lock(&core_link->link.data_lock);
-	link_state = core_link->link.state;
+	*link_state = core_link->link.state;
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"get state = %u", link_state);
+			"get (link_state = %u %s)", *link_state, sl_link_state_str(*link_state));
 
-	return link_state;
+	return 0;
 }
 
 u32 sl_core_data_link_speed_get(struct sl_core_link *core_link)
@@ -702,9 +700,21 @@ void sl_core_data_link_last_up_fail_cause_map_clr(struct sl_core_link *core_link
 
 void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
 {
-	if (sl_core_link_is_canceled_or_timed_out(core_link)) {
+	int  rtn;
+	bool is_canceled_or_timed_out;
+
+	rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "last_up_fail_cause_map_set sl_core_link_is_canceled_or_timed_out failed [%d]",
+				      rtn);
+		return;
+	}
+
+	if (is_canceled_or_timed_out) {
 		sl_core_log_dbg(core_link, LOG_NAME,
-			"last_up_fail_cause_map_set ignoring (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
+				"last_up_fail_cause_map_set ignoring (up_fail_cause_map = 0x%llX)",
+				up_fail_cause_map);
 		return;
 	}
 
@@ -714,7 +724,7 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
+			"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
 }
 
 void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
