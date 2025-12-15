@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=6
+MINOR=7
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -665,6 +665,7 @@ function print_fec {
         local up_settle_wait=$(cat ${LINK_PATH}/fec/up_check/settle_wait_ms)
         local up_check_ccw_limit=$(cat ${LINK_PATH}/fec/up_check/ccw_limit)
         local up_check_ucw_limit=$(cat ${LINK_PATH}/fec/up_check/ucw_limit)
+        local mon_state=$(cat ${LINK_PATH}/fec/monitor_state)
         local mon_period=$(cat ${LINK_PATH}/fec/monitor_check/period_ms)
         local mon_ccw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_down_limit)
         local mon_ccw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ccw_warn_limit)
@@ -674,7 +675,8 @@ function print_fec {
         printf "fec        | up_settle: wait = ${up_settle_wait}ms\n"
         printf "           | up_check:  wait = ${up_check_wait}ms\n"
 	printf "           |            ccw_limit = ${up_check_ccw_limit}ms, ucw_limit = ${up_check_ucw_limit}ms\n"
-        printf "           | monitor:   period = ${mon_period}ms\n"
+        printf "           | monitor:   state = ${mon_state}\n"
+        printf "           |            period = ${mon_period}ms\n"
         printf "           |            ccw_warn_limit = ${mon_ccw_warn_limit}, ucw_warn_limit = ${mon_ucw_warn_limit}\n"
         printf "           |            ccw_down_limit = ${mon_ccw_down_limit}, ucw_down_limit = ${mon_ucw_down_limit}\n"
 }

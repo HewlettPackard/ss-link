@@ -13,6 +13,7 @@
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_ctrl_link_counters.h"
+#include "sl_ctrl_link_fec.h"
 #include "sl_ctrl_link_fec_priv.h"
 #include "sl_core_link.h"
 
@@ -181,6 +182,7 @@ void sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
 
 	spin_lock(&ctrl_link->fec_mon_timer_lock);
 	ctrl_link->fec_mon_timer_stop = false;
+	ctrl_link->fec_mon_state = SL_CTRL_LINK_FEC_MON_ON;
 	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
 	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 
@@ -462,6 +464,7 @@ void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link)
 	spin_lock(&ctrl_link->fec_mon_timer_lock);
 	stop = ctrl_link->fec_mon_timer_stop;
 	ctrl_link->fec_mon_timer_stop = true;
+	ctrl_link->fec_mon_state = SL_CTRL_LINK_FEC_MON_OFF;
 	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 
 	if (stop) {

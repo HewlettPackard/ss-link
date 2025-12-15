@@ -9,6 +9,7 @@
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link.h"
+#include "sl_ctrl_link_fec.h"
 #include "sl_sysfs_link_fec_current.h"
 #include "sl_sysfs_link_fec_mon_check.h"
 #include "sl_sysfs_link_fec_up_check.h"
@@ -18,7 +19,28 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+static ssize_t monitor_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  state;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, fec.kobj);
+
+	rtn = sl_ctrl_link_fec_mon_state_get(ctrl_link, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "monitor state show (link = 0x%p, state = %u, %s)", ctrl_link, state,
+		   sl_ctrl_link_fec_mon_state_str(state));
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_ctrl_link_fec_mon_state_str(state));
+}
+
+static struct kobj_attribute fec_monitor_state = __ATTR_RO(monitor_state);
+
 static struct attribute *link_fec_attrs[] = {
+	&fec_monitor_state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_fec);

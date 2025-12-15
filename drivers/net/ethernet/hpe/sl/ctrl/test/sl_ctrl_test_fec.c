@@ -7,6 +7,7 @@
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link.h"
+#include "sl_ctrl_link_fec.h"
 #include "sl_ctrl_test_fec.h"
 
 #define LOG_NAME SL_CTRL_TEST_FEC_LOG_NAME

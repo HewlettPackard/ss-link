@@ -67,6 +67,7 @@ struct sl_ctrl_link {
 	} up_clock;
 
 	struct sl_ctrl_link_fec_data  fec_data;
+	u32                           fec_mon_state;
 	struct timer_list             fec_mon_timer;
 	bool                          fec_mon_timer_stop;
 	spinlock_t                    fec_mon_timer_lock;
@@ -141,10 +142,5 @@ void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *
 u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count);
 
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
-
-int sl_ctrl_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-			      struct sl_core_link_fec_cw_cntrs *cw_cntrs,
-			      struct sl_core_link_fec_lane_cntrs *lane_cntrs,
-			      struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 
 #endif /* _SL_CTRL_LINK_H_ */

@@ -5,6 +5,7 @@
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_link_fec.h"
+#include "sl_core_link.h"
 
 #define LOG_NAME SL_CTRL_LINK_FEC_LOG_NAME
 
@@ -52,6 +53,39 @@ int sl_ctrl_link_fec_tail_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_f
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "tail get (bin %d = %llu)", x, fec_tail->ccw_bins[x]);
 
 	return 0;
+}
+
+int sl_ctrl_link_fec_data_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+			      struct sl_core_link_fec_cw_cntrs *cw_cntrs,
+			      struct sl_core_link_fec_lane_cntrs *lane_cntrs,
+			      struct sl_core_link_fec_tail_cntrs *tail_cntrs)
+{
+	return sl_core_link_fec_data_get(sl_core_link_get(ldev_num, lgrp_num, link_num), cw_cntrs, lane_cntrs,
+					 tail_cntrs);
+}
+
+int sl_ctrl_link_fec_mon_state_get(struct sl_ctrl_link *ctrl_link, u32 *state)
+{
+	spin_lock(&ctrl_link->fec_mon_timer_lock);
+	*state = ctrl_link->fec_mon_state;
+	spin_unlock(&ctrl_link->fec_mon_timer_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fec monitor (state = %u, %s)", *state,
+			sl_ctrl_link_fec_mon_state_str(*state));
+
+	return 0;
+}
+
+const char *sl_ctrl_link_fec_mon_state_str(u32 state)
+{
+	switch (state) {
+	case SL_CTRL_LINK_FEC_MON_OFF:
+		return "off";
+	case SL_CTRL_LINK_FEC_MON_ON:
+		return "on";
+	default:
+		return "unknown";
+	}
 }
 
 //#define SL_CTRL_SERDES_RATE_25	25781250000
