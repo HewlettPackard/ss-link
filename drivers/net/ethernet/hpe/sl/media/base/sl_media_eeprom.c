@@ -307,6 +307,9 @@ static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, char
 	counter = 0;
 	memset(serial_num_str, '\0', SL_MEDIA_SERIAL_NUM_SIZE);
 	for (i = 0; i < (SL_MEDIA_SERIAL_NUM_SIZE - 1); ++i) {
+		if (media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i] == '-')
+			break;
+
 		if (is_valid_char(media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i])) {
 			serial_num_str[counter] = media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i];
 			counter++;
