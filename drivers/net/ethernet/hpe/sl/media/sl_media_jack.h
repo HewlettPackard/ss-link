@@ -70,6 +70,8 @@
 
 #define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
 
+#define SL_MEDIA_JACK_ATTR_ERR_STR_SIZE 128
+
 enum sl_media_jack_dp_state {
 	SL_MEDIA_JACK_DP_STATE_DEACTIVATED = 1,
 	SL_MEDIA_JACK_DP_STATE_INIT,
@@ -283,5 +285,8 @@ int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struc
 int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *cache_time);
 int sl_media_jack_signal_cache_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
 				   struct sl_media_jack_signal *media_signal);
+
+int sl_media_jack_attr_error_map_str(u32 error_map, char *error_str, unsigned int error_str_size);
+int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *error_map);
 
 #endif /* _SL_MEDIA_JACK_H_ */

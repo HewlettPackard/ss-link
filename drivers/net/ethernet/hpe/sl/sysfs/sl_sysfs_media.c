@@ -762,6 +762,31 @@ static ssize_t signal_cache_time_show(struct kobject *kobj, struct kobj_attribut
 	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &signal_cache_time_s, &signal_cache_time_s);
 }
 
+static ssize_t error_info_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                   rtn;
+	u32                   error_map;
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	char                  error_str[SL_MEDIA_JACK_ATTR_ERR_STR_SIZE];
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	rtn = sl_media_jack_attr_error_map_get(media_lgrp->media_jack, &error_map);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	rtn = sl_media_jack_attr_error_map_str(error_map, error_str, sizeof(error_str));
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
+		   "error info show (error_map = 0x%x %s)", error_map, error_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", error_str);
+}
+
 static struct kobj_attribute media_state                              = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state                   = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_temperature_celsius                = __ATTR_RO(temperature_celsius);
@@ -794,6 +819,7 @@ static struct kobj_attribute media_last_fault_time                    = __ATTR_R
 static struct kobj_attribute media_is_supported_ss200_cable           = __ATTR_RO(is_supported_ss200_cable);
 static struct kobj_attribute media_jack_part                          = __ATTR_RO(jack_part);
 static struct kobj_attribute media_signal_cache_time                  = __ATTR_RO(signal_cache_time);
+static struct kobj_attribute media_error_info                         = __ATTR_RO(error_info);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -828,6 +854,7 @@ static struct attribute *media_attrs[] = {
 	&media_is_supported_ss200_cable.attr,
 	&media_jack_part.attr,
 	&media_signal_cache_time.attr,
+	&media_error_info.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

@@ -953,3 +953,77 @@ int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *ca
 
 	return cached ? 0 : -ENOENT;
 }
+
+int sl_media_jack_attr_error_map_str(u32 error_map, char *error_str, unsigned int error_str_size)
+{
+	int rtn;
+	int str_pos;
+	int which;
+
+	if (!error_str)
+		return -EINVAL;
+
+	if (error_str_size < SL_MEDIA_JACK_ATTR_ERR_STR_SIZE)
+		return -EINVAL;
+
+	if (!error_map) {
+		str_pos = snprintf(error_str, error_str_size, "none ");
+		goto out;
+	}
+
+	str_pos = 0;
+
+	for_each_set_bit(which, (unsigned long *)&error_map, sizeof(error_map) * BITS_PER_BYTE) {
+		switch (BIT(which)) {
+		case SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-not-supported ");
+			break;
+		case SL_MEDIA_ERROR_CABLE_FORMAT_INVALID:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-format-invalid ");
+			break;
+		case SL_MEDIA_ERROR_CABLE_FW_INVALID:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-fw-invalid ");
+			break;
+		case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-headshell-fault ");
+			break;
+		case SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-threshold-default ");
+			break;
+		case SL_MEDIA_ERROR_TRYABLE:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "tryable ");
+			break;
+		default:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "unknown ");
+			break;
+		}
+
+		if (rtn < 0) {
+			str_pos = snprintf(error_str, error_str_size, "error ");
+			goto out;
+		}
+		if (str_pos + rtn >= error_str_size) {
+			error_str[str_pos - 2] = '.';
+			error_str[str_pos - 3] = '.';
+			error_str[str_pos - 4] = '.';
+			break;
+		}
+		str_pos += rtn;
+	}
+
+out:
+	error_str[str_pos - 1] = '\0';
+
+	return 0;
+}
+
+int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *error_map)
+{
+	spin_lock(&media_jack->data_lock);
+	*error_map = media_jack->cable_info->media_attr.errors;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "attr error map get (error_map = %u)", *error_map);
+
+	return 0;
+}
