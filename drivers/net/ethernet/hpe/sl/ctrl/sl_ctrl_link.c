@@ -173,6 +173,9 @@ static int sl_ctrl_link_cancel_cmd(struct sl_ctrl_link *ctrl_link)
 
 	SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_CANCEL_CMD);
 
+	sl_ctrl_link_fec_mon_stop(ctrl_link);
+	cancel_work_sync(&ctrl_link->fec_mon_timer_work);
+
 	rtn = sl_core_link_an_lp_caps_stop(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 					   ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (rtn)

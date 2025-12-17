@@ -421,6 +421,7 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_STOPPING);
 
 	sl_ctrl_link_fec_mon_stop(ctrl_link);
+	cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
 	return 0;
 }
@@ -446,6 +447,11 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
+		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN);
+
+		sl_ctrl_link_fec_mon_stop(ctrl_link);
+		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
+
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
