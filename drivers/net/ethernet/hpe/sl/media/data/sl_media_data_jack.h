@@ -55,6 +55,7 @@ bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *media_jack,
 							struct sl_media_lgrp_cable_info *cable_info);
 bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
+void sl_media_data_jack_cable_is_high_temp_clr(struct sl_media_jack *media_jack);
 bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *media_jack,
 						      struct sl_media_lgrp_cable_info *cable_info);
 int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);

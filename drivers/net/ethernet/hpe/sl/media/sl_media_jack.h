@@ -264,6 +264,7 @@ bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
 bool sl_media_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_is_high_temp_clr(struct sl_media_jack *media_jack);
 void sl_media_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack);
 void sl_media_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
 						  struct sl_media_lgrp_cable_info *cable_info, bool value);

@@ -158,37 +158,6 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
 }
 
-static bool sl_core_hw_link_media_check_is_high_temp(struct sl_core_link *core_link)
-{
-	int                   rtn;
-	struct sl_media_lgrp *media_lgrp;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "media check is high temp (link = 0x%p)", core_link);
-
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-
-	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-							    SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
-						       core_link->core_lgrp->num)) {
-			if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack)) {
-				sl_core_log_warn_trace(core_link, LOG_NAME,
-					"media check high temp detected (jack_num = %u)",
-					media_lgrp->media_jack->physical_num);
-				sl_core_data_link_last_up_fail_cause_map_set(core_link,
-									     SL_LINK_DOWN_CAUSE_HIGH_TEMP_LINK_UP_MAP);
-				rtn = sl_core_link_up_fail(core_link);
-				if (rtn)
-					sl_core_log_err_trace(core_link, LOG_NAME,
-						"media check is high temp link_up_fail failed [%d]", rtn);
-				return -EINVAL;
-			}
-		}
-	}
-
-	return 0;
-}
-
 static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -203,12 +172,6 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_CHECK);
-
-	if (sl_core_hw_link_media_check_is_high_temp(core_link)) {
-		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable high temperature");
-		rtn = -EINVAL;
-		goto out;
-	}
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
@@ -683,14 +646,17 @@ static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
 
 static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 {
-	int                                rtn;
-	struct sl_core_link_fec_cw_cntrs   cw_cntrs;
-	struct sl_core_link_fec_lane_cntrs lane_cntrs;
-	struct sl_core_link_fec_tail_cntrs tail_cntrs;
-	struct sl_core_link_up_info        link_up_info;
-	u32                                link_state;
+	int                                 rtn;
+	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
+	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
+	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	struct sl_core_link_up_info         link_up_info;
+	u32                                 link_state;
+	struct sl_media_lgrp               *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
+
+	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn == -EAGAIN) {
@@ -776,11 +742,13 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		spin_unlock(&core_link->link.data_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
+		sl_media_jack_cable_is_high_temp_clr(media_lgrp->media_jack);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME, "up success - invalid state (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		spin_unlock(&core_link->link.data_lock);
+		sl_media_jack_cable_is_high_temp_clr(media_lgrp->media_jack);
 		return;
 	};
 }
@@ -811,9 +779,6 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 				      link_state, sl_core_link_state_str(link_state));
 		return;
 	}
-
-	if (sl_core_hw_link_media_check_is_high_temp(core_link))
-		return;
 
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {

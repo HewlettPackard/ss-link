@@ -1398,26 +1398,24 @@ bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *me
 #define TEMPERATURE_CELSIUS_SLOPE 10
 bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
 {
-	int  rtn;
-	u8   current_temp;
-	int  prev_temp;
-	bool is_high_temp;
+	int rtn;
+	u8  current_temp;
+	int prev_temp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
-
-	spin_lock(&media_jack->data_lock);
-	is_high_temp = media_jack->is_high_temp;
-	spin_unlock(&media_jack->data_lock);
 
 	/* If "is_high_temp" flag set, it indicates high temperature was detected before and the action
 	 * has been taken. If the notification was not sent previously, it re-tries to send it.
 	 * Returning false in this case short-circuits the flow, signaling the caller that no further
 	 * action is required.
 	 */
-	if (is_high_temp) {
+	spin_lock(&media_jack->data_lock);
+	if (media_jack->is_high_temp) {
+		spin_unlock(&media_jack->data_lock);
 		sl_media_data_jack_cable_high_temp_notif_send(media_jack);
 		return false;
 	}
+	spin_unlock(&media_jack->data_lock);
 
 	rtn = sl_media_data_jack_temp_value_get(media_jack, &current_temp);
 	if (rtn) {
@@ -1456,6 +1454,15 @@ out:
 	}
 
 	return false;
+}
+
+void sl_media_data_jack_cable_is_high_temp_clr(struct sl_media_jack *media_jack)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp clr");
+
+	spin_lock(&media_jack->data_lock);
+	media_jack->is_high_temp = false;
+	spin_unlock(&media_jack->data_lock);
 }
 
 bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *media_jack,
