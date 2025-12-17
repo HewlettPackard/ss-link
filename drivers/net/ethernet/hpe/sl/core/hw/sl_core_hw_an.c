@@ -427,7 +427,7 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	(((_page) >> SL_CORE_HW_AN_NP_HPE_SHIFT) & SL_LINK_CONFIG_HPE_MASK)
 
 int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
-	struct sl_link_caps *my_caps, struct sl_link_caps *link_caps)
+				  struct sl_link_caps *my_caps, struct sl_link_caps *link_caps)
 {
 	int x;
 	u32 pause_map;
@@ -438,22 +438,22 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode (count = %u)", core_link->an.rx_count);
 	for (x = 0; x < core_link->an.rx_count; ++x)
 		sl_core_log_dbg(core_link, LOG_NAME,
-		"rx pages decode pages (%d = 0x%016llX)", x, core_link->an.rx_pages[x]);
+				"rx pages decode pages (%d = 0x%016llX)", x, core_link->an.rx_pages[x]);
 
 	/* base page */
 	if (!(core_link->an.rx_pages[0] & SL_CORE_HW_AN_BP_802_3)) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no base page");
 		sl_core_data_link_an_fail_cause_set(core_link,
-			SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP);
+						    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP);
 		return -EIO;
 	}
-	pause_map = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_PAUSE_SHIFT);
+	pause_map  = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_PAUSE_SHIFT);
 	pause_map &= SL_LINK_CONFIG_PAUSE_MASK;
 	pause_map &= core_link->config.pause_map;
-	tech_map  = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_TECH_SHIFT);
+	tech_map   = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_TECH_SHIFT);
 	tech_map  &= SL_LGRP_CONFIG_TECH_MASK;
 	tech_map  &= core_link->core_lgrp->config.tech_map;
-	fec_map   = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_FEC_SHIFT);
+	fec_map    = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_FEC_SHIFT);
 	fec_map   &= SL_LGRP_CONFIG_FEC_MASK;
 	fec_map   &= core_link->core_lgrp->config.fec_map;
 
@@ -472,12 +472,13 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 				break;
 			default:
 				sl_core_log_err_trace(core_link, LOG_NAME,
-					"rx pages decode invalid oui (ver = 0x%llX)",
-					AN_OUI_VER_GET(core_link->an.rx_pages[x]));
+						      "rx pages decode invalid oui (ver = 0x%llX)",
+						      AN_OUI_VER_GET(core_link->an.rx_pages[x]));
 				sl_core_data_link_an_fail_cause_set(core_link,
-					SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
-				continue;
+								    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
+				return -EIO;
 			}
+			break;
 		}
 	}
 
@@ -496,8 +497,8 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	link_caps->hpe_map   = hpe_map & my_caps->hpe_map;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"rx pages decode (pause = 0x%X, tech = 0x%X, fec = 0x%X, hpe = 0x%X)",
-		link_caps->pause_map, link_caps->tech_map, link_caps->fec_map, link_caps->hpe_map);
+			"rx pages decode (pause = 0x%X, tech = 0x%X, fec = 0x%X, hpe = 0x%X)",
+			link_caps->pause_map, link_caps->tech_map, link_caps->fec_map, link_caps->hpe_map);
 
 	return 0;
 }

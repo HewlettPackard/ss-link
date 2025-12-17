@@ -171,11 +171,13 @@ function print_link_state {
 	fi
 
 	if [ "${up_time}" == "no-link" ] ; then
-        	printf "link%d      | state: ${state}, speed: ${speed}, up_time: no-link\n" ${LINK}
+        	printf "link%d      | state: ${state}\n" ${LINK}
+        	printf "           | speed: ${speed}\n"
 	else
-        	printf "link%d      | state: ${state}, speed: ${speed}, up_time: ${D}d ${H}h ${M}m ${S}s ${MS}ms\n" ${LINK}
+        	printf "link%d      | state: ${state}  [${D}d ${H}h ${M}m ${S}s ${MS}ms]\n" ${LINK}
+        	printf "           | speed: ${speed}\n"
 	fi
-        printf "           | time_to_link_up: ${time_to_link_up}${units}, total_time_to_link_up: ${total_time_to_link_up}${units}\n"
+                printf "           | time_to_link_up: ${time_to_link_up}${units}, total_time_to_link_up: ${total_time_to_link_up}${units}\n"
         printf "           | info_map: ${info_map}\n"
 }
 
