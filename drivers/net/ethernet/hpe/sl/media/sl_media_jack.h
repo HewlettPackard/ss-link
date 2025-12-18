@@ -174,7 +174,7 @@ struct sl_media_jack {
 	bool                            is_supported_ss200_cable;
 	bool                            is_high_powered;
 	bool                            is_high_temp;
-	unsigned long                   cable_power_up_wait_time_end;
+	unsigned long                   cable_high_power_wait_time_end;
 	u32                             fault_cause;
 	time64_t                        fault_time;
 	u8                              cable_shift_state;

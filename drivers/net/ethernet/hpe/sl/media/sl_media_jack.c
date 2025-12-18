@@ -215,7 +215,7 @@ u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_ja
 	return lane_count_400_gaui;
 }
 
-#define SL_MEDIA_XCVR_POWER_UP_WAIT_TIME 10000
+#define SL_MEDIA_HIGH_POWER_WAIT_TIME 10000
 int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 {
 	int                   rtn;
@@ -232,8 +232,8 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 		return -EIO;
 	}
 
-	media_jack->cable_power_up_wait_time_end = jiffies +
-			msecs_to_jiffies(SL_MEDIA_XCVR_POWER_UP_WAIT_TIME);
+	media_jack->cable_high_power_wait_time_end = jiffies +
+		msecs_to_jiffies(SL_MEDIA_HIGH_POWER_WAIT_TIME);
 
 	return 0;
 }

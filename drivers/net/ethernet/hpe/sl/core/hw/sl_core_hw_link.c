@@ -338,11 +338,11 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 	if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 					       core_link->core_lgrp->num)) {
 		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
-				core_link->core_lgrp->num);
-		if (time_before(jiffies, media_lgrp->media_jack->cable_power_up_wait_time_end)) {
-			core_link->timers[SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER].data.timeout_ms =
-				jiffies_to_msecs(media_lgrp->media_jack->cable_power_up_wait_time_end - jiffies);
-			sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
+					       core_link->core_lgrp->num);
+		if (time_before(jiffies, media_lgrp->media_jack->cable_high_power_wait_time_end)) {
+			core_link->timers[SL_CORE_TIMER_LINK_UP_HIGH_POWER].data.timeout_ms =
+				jiffies_to_msecs(media_lgrp->media_jack->cable_high_power_wait_time_end - jiffies);
+			sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 			return;
 		}
 	}
@@ -980,7 +980,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work - except for timeout work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
@@ -1077,7 +1077,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
@@ -1173,7 +1173,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));

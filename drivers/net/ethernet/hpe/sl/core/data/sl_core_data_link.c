@@ -89,10 +89,10 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 		sl_core_timer_link_timeout, 0);
 	SL_CORE_TIMER_INIT(core_link, SL_CORE_TIMER_LINK_UP_CHECK,
 		SL_CORE_WORK_LINK_UP_CHECK, "link up check");
-	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER].timer),
+	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP_HIGH_POWER].timer),
 		sl_core_timer_link_timeout, 0);
-	SL_CORE_TIMER_INIT(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER,
-		SL_CORE_WORK_LINK_UP, "link up xcvr high power");
+	SL_CORE_TIMER_INIT(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER,
+		SL_CORE_WORK_LINK_UP, "link up high power");
 
 	SL_CORE_INTR_INIT(core_link, SL_CORE_HW_INTR_LINK_UP,
 		SL_CORE_WORK_LINK_UP_INTR, "link up");
@@ -265,7 +265,7 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_XCVR_HIGH_POWER);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET_TIMEOUT]));
