@@ -39,7 +39,7 @@ int sl_ctrl_link_counters_init(struct sl_ctrl_link *ctrl_link)
 	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_UP_CANCELED);
 	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_RESET_CMD);
 
-	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_FAULT);
+	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_FAULT_ASYNC);
 	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_RECOVERING);
 
 	SL_CTRL_LINK_COUNTER_INIT(ctrl_link, LINK_CCW_WARN_CROSSED);

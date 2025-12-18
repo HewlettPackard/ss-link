@@ -167,7 +167,7 @@ static ssize_t link_reset_cmd_show(struct kobject *kobj, struct kobj_attribute *
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static ssize_t link_fault_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t link_fault_async_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
 	u32                  counter;
@@ -175,11 +175,11 @@ static ssize_t link_fault_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	rtn = sl_ctrl_link_counters_get(ctrl_link, LINK_FAULT, &counter);
+	rtn = sl_ctrl_link_counters_get(ctrl_link, LINK_FAULT_ASYNC, &counter);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link fault show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link fault async show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -1223,7 +1223,7 @@ static struct kobj_attribute link_down                      = __ATTR_RO(link_dow
 static struct kobj_attribute link_up_cancel_cmd             = __ATTR_RO(link_up_cancel_cmd);
 static struct kobj_attribute link_up_canceled               = __ATTR_RO(link_up_canceled);
 static struct kobj_attribute link_reset_cmd                 = __ATTR_RO(link_reset_cmd);
-static struct kobj_attribute link_fault                     = __ATTR_RO(link_fault);
+static struct kobj_attribute link_fault_async               = __ATTR_RO(link_fault_async);
 static struct kobj_attribute link_ccw_warn_crossed          = __ATTR_RO(link_ccw_warn_crossed);
 static struct kobj_attribute link_ucw_warn_crossed          = __ATTR_RO(link_ucw_warn_crossed);
 static struct kobj_attribute link_down_ccw_limit_crossed    = __ATTR_RO(link_down_ccw_limit_crossed);
@@ -1302,7 +1302,7 @@ static struct attribute *link_counters_attrs[] = {
 	&link_up_cancel_cmd.attr,
 	&link_up_canceled.attr,
 	&link_reset_cmd.attr,
-	&link_fault.attr,
+	&link_fault_async.attr,
 	&link_ccw_warn_crossed.attr,
 	&link_ucw_warn_crossed.attr,
 	&link_down_ccw_limit_crossed.attr,

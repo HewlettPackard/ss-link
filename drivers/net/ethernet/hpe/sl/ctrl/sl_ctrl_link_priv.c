@@ -435,7 +435,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 
 	ctrl_link = tag;
 
-	SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_FAULT);
+	SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_FAULT_ASYNC);
 
 	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
 

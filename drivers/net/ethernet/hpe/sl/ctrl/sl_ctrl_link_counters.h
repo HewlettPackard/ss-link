@@ -16,7 +16,7 @@ enum sl_ctrl_link_counters {
 	LINK_UP_CANCEL_CMD,             /* link up cancel commanded                           */
 	LINK_UP_CANCELED,               /* link up cancel completed                           */
 	LINK_RESET_CMD,                 /* command to reset the link                          */
-	LINK_FAULT,                     /* link fault                                         */
+	LINK_FAULT_ASYNC,               /* link fault async                                   */
 	LINK_RECOVERING,                /* FIXME: need to implement this                      */
 	LINK_CCW_WARN_CROSSED,          /* ccw warn limit crossed                             */
 	LINK_UCW_WARN_CROSSED,          /* ucw warn limit crossed                             */
