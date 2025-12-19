@@ -168,12 +168,33 @@ static ssize_t link_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "edge\n");
 }
 
+static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
+	u32                  options;
+
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
+
+	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
+
+	if (options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)
+		return scnprintf(buf, PAGE_SIZE, "enabled-serdes\n");
+
+	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+}
+
 static struct kobj_attribute lgrp_mfs       = __ATTR_RO(mfs);
 static struct kobj_attribute lgrp_furcation = __ATTR_RO(furcation);
 static struct kobj_attribute lgrp_fec_mode  = __ATTR_RO(fec_mode);
 static struct kobj_attribute lgrp_tech_map  = __ATTR_RO(tech_map);
 static struct kobj_attribute lgrp_fec_map   = __ATTR_RO(fec_map);
 static struct kobj_attribute lgrp_link_type = __ATTR_RO(link_type);
+static struct kobj_attribute lgrp_loopback  = __ATTR_RO(loopback);
 
 static ssize_t err_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -319,6 +340,7 @@ static struct attribute *lgrp_config_attrs[] = {
 	&lgrp_tech_map.attr,
 	&lgrp_fec_map.attr,
 	&lgrp_link_type.attr,
+	&lgrp_loopback.attr,
 	&lgrp_err_trace_enable.attr,
 	&lgrp_warn_trace_enable.attr,
 	&lgrp_fabric_link.attr,

@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=8
+MINOR=9
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -438,6 +438,7 @@ function print_lgrp {
         local fec_mode=$(cat ${LGRP_PATH}/config/fec_mode)
         local mfs=$(cat ${LGRP_PATH}/config/mfs)
         local link_type=$(cat ${LGRP_PATH}/config/link_type)
+        local loopback=$(cat ${LGRP_PATH}/config/loopback)
         local fabric_link=$(cat ${LGRP_PATH}/config/fabric_link)
         local r1_partner=$(cat ${LGRP_PATH}/config/r1_partner)
 
@@ -446,6 +447,7 @@ function print_lgrp {
         printf "           | technology : ${tech_map}\n"
         printf "           | fec        : ${fec_map}  (fec_mode = ${fec_mode})\n"
         printf "           | link_type  : ${link_type}\n"
+        printf "           | loopback   : ${loopback}\n"
         printf "           | fabric_link: ${fabric_link}\n"
         printf "           | r1_partner : ${r1_partner}\n"
 }
