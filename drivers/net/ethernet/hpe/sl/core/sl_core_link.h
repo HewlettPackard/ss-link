@@ -158,8 +158,8 @@ struct work_struct;
 		SL_LINK_DOWN_ORIGIN_ASYNC)
 
 #define SL_LINK_DEGRADE_STATE_INVALID   0
-#define SL_LINK_DEGRADE_STATE_ENABLED   1
-#define SL_LINK_DEGRADE_STATE_DISABLED  2
+#define SL_LINK_DEGRADE_STATE_ACTIVE    1
+#define SL_LINK_DEGRADE_STATE_INACTIVE  2
 #define SL_LINK_DEGRADE_STATE_FAILED    3
 
 enum sl_core_info_map_bits {
@@ -284,7 +284,7 @@ struct sl_core_link {
 	struct sl_core_lgrp             *core_lgrp;
 	struct sl_core_link_config       config;
 	struct sl_core_link_policy       policy;
-	int                              degrade_state;
+	u32                              degrade_state;
 	struct sl_link_degrade_info      degrade_info;
 	struct kobject                   degrade_kobj;
 	u64                              info_map;
@@ -463,7 +463,7 @@ int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_cor
 int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_caps *link_caps);
 
 bool sl_core_link_config_is_enable_ald_set(struct sl_core_link *core_link);
-bool sl_core_link_is_degrade_state_enabled(struct sl_core_link *core_link);
+bool sl_core_link_is_degrade_state_active(struct sl_core_link *core_link);
 
 int  sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *is_canceled_or_timed_out);
 

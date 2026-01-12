@@ -15,29 +15,30 @@ struct sl_ldev;
 struct sl_lgrp;
 struct sl_lgrp_config;
 
-#define SL_LGRP_NOTIF_INVALID           0
-#define SL_LGRP_NOTIF_ALL               ~0       /* all notifications               */
-#define SL_LGRP_NOTIF_LINK_UP           BIT(1)   /* link up                         */
-#define SL_LGRP_NOTIF_LINK_UP_FAIL      BIT(2)   /* link up fail                    */
-#define SL_LGRP_NOTIF_LINK_DOWN         BIT(3)   /* link down                       */
-#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN   BIT(4)   /* link down asynchronously        */
-#define SL_LGRP_NOTIF_LINK_ERROR        BIT(5)   /* link error                      */
-#define SL_LGRP_NOTIF_LINK_UCW_WARN     BIT(6)   /* UCW count crossed warning limit */
-#define SL_LGRP_NOTIF_LINK_CCW_WARN     BIT(7)   /* CCW count crossed warning limit */
-#define SL_LGRP_NOTIF_LLR_SETUP         BIT(8)   /* LLR is setup + data             */
-#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT BIT(9)   /* LLR setup timeout               */
-#define SL_LGRP_NOTIF_LLR_RUNNING       BIT(10)  /* LLR running                     */
-#define SL_LGRP_NOTIF_LLR_START_TIMEOUT BIT(11)  /* LLR start timeout               */
-#define SL_LGRP_NOTIF_LLR_CANCELED      BIT(12)  /* LLR canceled                    */
-#define SL_LGRP_NOTIF_LLR_ERROR         BIT(13)  /* LLR error                       */
-#define SL_LGRP_NOTIF_MEDIA_PRESENT     BIT(14)  /* media/cable present             */
-#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT BIT(15)  /* media/cable not present         */
-#define SL_LGRP_NOTIF_MEDIA_ERROR       BIT(16)  /* media/cable error               */
-#define SL_LGRP_NOTIF_AN_DATA           BIT(17)  /* autoneg data                    */
-#define SL_LGRP_NOTIF_AN_TIMEOUT        BIT(18)  /* autoneg timeout                 */
-#define SL_LGRP_NOTIF_AN_ERROR          BIT(19)  /* autoneg error                   */
-#define SL_LGRP_NOTIF_LANE_DEGRADE      BIT(20)  /* auto lane degrade               */
-#define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP   BIT(21)  /* media/cable high temp detected  */
+#define SL_LGRP_NOTIF_INVALID               0
+#define SL_LGRP_NOTIF_ALL                  ~0        /* all notifications                  */
+#define SL_LGRP_NOTIF_LINK_UP               BIT(1)   /* link up                            */
+#define SL_LGRP_NOTIF_LINK_UP_FAIL          BIT(2)   /* link up fail                       */
+#define SL_LGRP_NOTIF_LINK_DOWN             BIT(3)   /* link down                          */
+#define SL_LGRP_NOTIF_LINK_ASYNC_DOWN       BIT(4)   /* link down asynchronously           */
+#define SL_LGRP_NOTIF_LINK_ERROR            BIT(5)   /* link error                         */
+#define SL_LGRP_NOTIF_LINK_UCW_WARN         BIT(6)   /* UCW count crossed warning limit    */
+#define SL_LGRP_NOTIF_LINK_CCW_WARN         BIT(7)   /* CCW count crossed warning limit    */
+#define SL_LGRP_NOTIF_LLR_SETUP             BIT(8)   /* LLR is setup + data                */
+#define SL_LGRP_NOTIF_LLR_SETUP_TIMEOUT     BIT(9)   /* LLR setup timeout                  */
+#define SL_LGRP_NOTIF_LLR_RUNNING           BIT(10)  /* LLR running                        */
+#define SL_LGRP_NOTIF_LLR_START_TIMEOUT     BIT(11)  /* LLR start timeout                  */
+#define SL_LGRP_NOTIF_LLR_CANCELED          BIT(12)  /* LLR canceled                       */
+#define SL_LGRP_NOTIF_LLR_ERROR             BIT(13)  /* LLR error                          */
+#define SL_LGRP_NOTIF_MEDIA_PRESENT         BIT(14)  /* media/cable present                */
+#define SL_LGRP_NOTIF_MEDIA_NOT_PRESENT     BIT(15)  /* media/cable not present            */
+#define SL_LGRP_NOTIF_MEDIA_ERROR           BIT(16)  /* media/cable error                  */
+#define SL_LGRP_NOTIF_AN_DATA               BIT(17)  /* autoneg data                       */
+#define SL_LGRP_NOTIF_AN_TIMEOUT            BIT(18)  /* autoneg timeout                    */
+#define SL_LGRP_NOTIF_AN_ERROR              BIT(19)  /* autoneg error                      */
+#define SL_LGRP_NOTIF_LANE_DEGRADE          BIT(20)  /* auto lane degrade                  */
+#define SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY BIT(21)  /* auto lane degrade can be recovered */
+#define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP       BIT(22)  /* media/cable high temp detected     */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -151,6 +152,7 @@ union sl_lgrp_notif_info {
 	struct sl_llr_data                        llr_data;
 	struct sl_media_attr                      media_attr;
 	struct sl_link_degrade_info               degrade_info;
+	bool                                      is_degrade_recoverable;
 	int                                       error;
 	u64                                       cause_map;
 };

@@ -567,9 +567,11 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		 * enable ALD after PCS start but before MAC start
 		 */
 		sl_core_hw_pcs_enable_auto_lane_degrade(core_link);
+
+		memset(&(core_link->degrade_info), 0, sizeof(core_link->degrade_info));
 	} else {
 		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_DISABLED;
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_INACTIVE;
 		spin_unlock(&core_link->data_lock);
 	}
 }
@@ -1664,6 +1666,7 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 	struct sl_core_link        *core_link;
 	union sl_lgrp_notif_info    info;
 	struct sl_link_degrade_info ald_info;
+	bool                        is_recoverable;
 	u32                         port;
 	u64                         val64;
 	u64                         data64;
@@ -1676,47 +1679,81 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_DEGRADED);
 
+	/* wait before reading CSR so the lane degrade values stabilize */
+	msleep(20);
+
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
 
 	val64 = SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_RX_PLS_AVAILABLE_GET(data64);
-	ald_info.rx_lane_map = (u8)val64;
+	ald_info.rx_degrade_map = (u8)val64;
 
 	val64 = SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_LP_PLS_AVAILABLE_GET(data64);
-	ald_info.tx_lane_map = (u8)val64;
+	ald_info.tx_degrade_map = (u8)val64;
 
-	if ((ald_info.rx_lane_map != core_link->degrade_info.rx_lane_map) &&
-		(ald_info.rx_lane_map != 0xF))
+	if ((ald_info.rx_degrade_map != core_link->degrade_info.rx_degrade_map) &&
+		(ald_info.rx_degrade_map != 0xF))
 		ald_info.is_rx_degrade = true;
 	else
 		ald_info.is_rx_degrade = false;
 
-	if ((ald_info.tx_lane_map != core_link->degrade_info.tx_lane_map) &&
-		(ald_info.tx_lane_map != 0xF))
+	if ((ald_info.tx_degrade_map != core_link->degrade_info.tx_degrade_map) &&
+		(ald_info.tx_degrade_map != 0xF))
 		ald_info.is_tx_degrade = true;
 	else
 		ald_info.is_tx_degrade = false;
 
 	ald_info.rx_link_speed = sl_core_hw_link_speed_get(core_link->pcs.settings.pcs_mode,
-		hweight8(ald_info.rx_lane_map));
+		hweight8(ald_info.rx_degrade_map));
 	ald_info.tx_link_speed = sl_core_hw_link_speed_get(core_link->pcs.settings.pcs_mode,
-		hweight8(ald_info.tx_lane_map));
+		hweight8(ald_info.tx_degrade_map));
 
-	sl_core_log_dbg(core_link, LOG_NAME, "is_rx_degrade: %d, lane_map: 0x%X, link_speed: %u",
-			ald_info.is_rx_degrade, ald_info.rx_lane_map, ald_info.rx_link_speed);
-	sl_core_log_dbg(core_link, LOG_NAME, "is_tx_degrade: %d, lane_map: 0x%X, link_speed: %u",
-			ald_info.is_tx_degrade, ald_info.tx_lane_map, ald_info.tx_link_speed);
+	core_link->degrade_info.magic = SL_LINK_DEGRADE_INFO_MAGIC;
+	core_link->degrade_info.ver   = SL_LINK_DEGRADE_INFO_VER;
+	core_link->degrade_info.size  = sizeof(struct sl_link_degrade_info);
 
 	spin_lock(&core_link->data_lock);
 	core_link->degrade_info = ald_info;
 	info.degrade_info       = ald_info;
 	spin_unlock(&core_link->data_lock);
 
-	rtn = sl_ctrl_lgrp_notif_enqueue(
-		sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num),
-		core_link->num, SL_LGRP_NOTIF_LANE_DEGRADE, &info, 0);
+	sl_core_hw_serdes_degraded_lanes_state_set(core_link, ald_info.tx_degrade_map, ald_info.rx_degrade_map);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "lane degrade intr work (is_rx_degrade = %s, rx_degrade_map = 0x%X, rx_link_speed = %u)",
+			info.degrade_info.is_rx_degrade ? "yes" : "no", info.degrade_info.rx_degrade_map, info.degrade_info.rx_link_speed);
+	sl_core_log_dbg(core_link, LOG_NAME, "lane degrade intr work (is_tx_degrade = %s, tx_degrade_map = 0x%X, tx_link_speed = %u)",
+			info.degrade_info.is_tx_degrade ? "yes" : "no", info.degrade_info.tx_degrade_map, info.degrade_info.tx_link_speed);
+
+	rtn = sl_ctrl_lgrp_notif_enqueue(sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num,
+					 core_link->core_lgrp->num),
+					 core_link->num, SL_LGRP_NOTIF_LANE_DEGRADE, &info, 0);
 	if (rtn)
 		sl_media_log_warn_trace(core_link, LOG_NAME,
-			"lane degrade ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+					"lane degrade ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+
+	rtn = sl_core_hw_serdes_lanes_up_prbs(core_link, ald_info.tx_degrade_map, ald_info.rx_degrade_map);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "lanes up prbs failed [%d] (tx_degrade_map = 0x%X, rx_degrade_map = 0x%X)",
+				      rtn, ald_info.tx_degrade_map, ald_info.rx_degrade_map);
+		is_recoverable = false;
+	} else {
+		is_recoverable = true;
+	}
+
+	spin_lock(&core_link->data_lock);
+	core_link->degrade_info.is_recoverable = is_recoverable;
+	info.is_degrade_recoverable = is_recoverable;
+	spin_unlock(&core_link->data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "lane degrade intr work (is_recoverable = %s)",
+			info.is_degrade_recoverable ? "yes" : "no");
+
+	rtn = sl_ctrl_lgrp_notif_enqueue(sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num,
+					 core_link->core_lgrp->num),
+					 core_link->num, SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY, &info, 0);
+	if (rtn)
+		sl_media_log_warn_trace(core_link, LOG_NAME,
+					"lane degrade ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);

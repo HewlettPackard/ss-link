@@ -835,6 +835,105 @@ void sl_core_hw_serdes_lanes_down(struct sl_core_link *core_link)
 	}
 }
 
+void sl_core_hw_serdes_degraded_lanes_state_set(struct sl_core_link *core_link, u8 tx_degrade_map, u8 rx_degrade_map)
+{
+	u8            tx_asic_lane_num;
+	u8            rx_asic_lane_num;
+	unsigned long tx_degrade_lane_map_ul;
+	unsigned long rx_degrade_lane_map_ul;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "degraded lanes state set (tx_degrade_map = 0x%X, rx_degrade_map = 0x%X)",
+			tx_degrade_map, rx_degrade_map);
+
+	tx_degrade_lane_map_ul = (unsigned long)tx_degrade_map ^ 0x0F;
+	rx_degrade_lane_map_ul = (unsigned long)rx_degrade_map ^ 0x0F;
+
+	for_each_set_bit(tx_asic_lane_num, &tx_degrade_lane_map_ul, SL_MAX_SERDES_LANES)
+		sl_core_hw_serdes_tx_lane_state_set(core_link->core_lgrp, tx_asic_lane_num,
+						    SL_CORE_HW_SERDES_LANE_STATE_DEGRADED);
+
+	for_each_set_bit(rx_asic_lane_num, &rx_degrade_lane_map_ul, SL_MAX_SERDES_LANES)
+		sl_core_hw_serdes_rx_lane_state_set(core_link->core_lgrp, rx_asic_lane_num,
+						    SL_CORE_HW_SERDES_LANE_STATE_DEGRADED);
+}
+
+int sl_core_hw_serdes_lanes_up_prbs(struct sl_core_link *core_link, u8 tx_degrade_map, u8 rx_degrade_map)
+{
+	int           rtn;
+	u8            tx_asic_lane_num;
+	u8            tx_serdes_lane_num;
+	u8            rx_asic_lane_num;
+	u8            rx_serdes_lane_num;
+	unsigned long tx_degrade_lane_map_ul;
+	unsigned long rx_degrade_lane_map_ul;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "lanes up prbs (tx_degrade_map = 0x%X, rx_degrade_map = 0x%X)",
+			tx_degrade_map, rx_degrade_map);
+
+	tx_degrade_lane_map_ul = (unsigned long)tx_degrade_map ^ 0x0F;
+	rx_degrade_lane_map_ul = (unsigned long)rx_degrade_map ^ 0x0F;
+
+	for_each_set_bit(tx_asic_lane_num, &tx_degrade_lane_map_ul, SL_MAX_SERDES_LANES) {
+
+		tx_serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_link->core_lgrp, tx_asic_lane_num);
+
+		rtn = sl_core_hw_serdes_lane_tx_prbs_config(core_link, tx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "prbs config failed [%d] (asic_lane = %u, serdes_lane = %u)",
+					      rtn, tx_asic_lane_num, tx_serdes_lane_num);
+			return rtn;
+		}
+
+		rtn = sl_core_hw_serdes_lane_tx_prbs_enable(core_link, tx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "prbs enable failed [%d] (asic_lane = %u, serdes_lane = %u)",
+					      rtn, tx_asic_lane_num, tx_serdes_lane_num);
+			return rtn;
+		}
+
+		rtn = sl_core_hw_serdes_lane_tx_prbs_shrd_patt_gen_disable(core_link, tx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "prbs shared pattern gen disable failed [%d] (asic_lane = %u, serdes_lane = %u)",
+					      rtn, tx_asic_lane_num, tx_serdes_lane_num);
+			return rtn;
+		}
+
+		rtn = sl_core_hw_serdes_lane_tx_prbs_remote_loopback_disable(core_link, tx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "prbs remote loopback disable failed [%d] (asic_lane = %u, serdes_lane = %u)",
+					      rtn, tx_asic_lane_num, tx_serdes_lane_num);
+			return rtn;
+		}
+
+		rtn = sl_core_hw_serdes_lane_tx_prbs_checker_enable(core_link, tx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "prbs checker enable failed [%d] (asic_lane = %u, serdes_lane = %u)",
+					      rtn, tx_asic_lane_num, tx_serdes_lane_num);
+			return rtn;
+		}
+	}
+
+	/* sleep to give last lane time to settle */
+	msleep(20);
+
+	for_each_set_bit(rx_asic_lane_num, &rx_degrade_lane_map_ul, SL_MAX_SERDES_LANES) {
+
+		rx_serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_link->core_lgrp, rx_asic_lane_num);
+
+		rtn = sl_core_hw_serdes_lane_up_quality_check(core_link, rx_serdes_lane_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "lane_up_quality_check failed [%d] (rx_serdes_lane_num = %u)",
+					      rtn, rx_serdes_lane_num);
+			return rtn;
+		}
+	}
+
+	return 0;
+}
+
 int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *eye_upper)
 {
 	int rtn;

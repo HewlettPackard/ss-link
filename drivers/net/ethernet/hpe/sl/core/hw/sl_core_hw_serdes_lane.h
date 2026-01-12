@@ -4,13 +4,15 @@
 #ifndef _SL_CORE_HW_SERDES_LANE_H_
 #define _SL_CORE_HW_SERDES_LANE_H_
 
-#define SL_CORE_HW_SERDES_LANE_STATE_DOWN    0
-#define SL_CORE_HW_SERDES_LANE_STATE_SETUP   1
-#define SL_CORE_HW_SERDES_LANE_STATE_CONFIG  2
-#define SL_CORE_HW_SERDES_LANE_STATE_START   3
-#define SL_CORE_HW_SERDES_LANE_STATE_CHECK   4
-#define SL_CORE_HW_SERDES_LANE_STATE_STOP    5
-#define SL_CORE_HW_SERDES_LANE_STATE_UP      6
+#define SL_CORE_HW_SERDES_LANE_STATE_INVALID  0
+#define SL_CORE_HW_SERDES_LANE_STATE_DOWN     1
+#define SL_CORE_HW_SERDES_LANE_STATE_SETUP    2
+#define SL_CORE_HW_SERDES_LANE_STATE_CONFIG   3
+#define SL_CORE_HW_SERDES_LANE_STATE_START    4
+#define SL_CORE_HW_SERDES_LANE_STATE_CHECK    5
+#define SL_CORE_HW_SERDES_LANE_STATE_STOP     6
+#define SL_CORE_HW_SERDES_LANE_STATE_UP       7
+#define SL_CORE_HW_SERDES_LANE_STATE_DEGRADED 8
 
 #define SL_CORE_HW_SERDES_ENCODING_NRZ     2
 #define SL_CORE_HW_SERDES_ENCODING_PAM4_NR 4
@@ -87,6 +89,7 @@ int  sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 lane_num,
 int  sl_core_hw_serdes_lane_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u8 *scramble_dis);
 
 int  sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg);
+int  sl_core_hw_serdes_lanes_up_prbs(struct sl_core_link *core_link, u8 tx_degrade_map, u8 rx_degrade_map);
 int  sl_core_hw_serdes_lane_up_tx_setup(struct sl_core_link *core_link, u8 serdes_lane_num, bool is_autoneg);
 int  sl_core_hw_serdes_lane_up_tx_config(struct sl_core_link *core_link, u8 serdes_lane_num);
 int  sl_core_hw_serdes_lane_up_tx_start(struct sl_core_link *core_link, u8 serdes_lane_num);
@@ -106,9 +109,17 @@ u32  sl_core_hw_serdes_tx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic
 void sl_core_hw_serdes_rx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 state);
 u32  sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num);
 
+void sl_core_hw_serdes_degraded_lanes_state_set(struct sl_core_link *core_link, u8 tx_degrade_map, u8 rx_degrade_map);
+
 int sl_core_hw_serdes_tx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_lol);
 int sl_core_hw_serdes_rx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_lol);
 int sl_core_hw_serdes_tx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_los);
 int sl_core_hw_serdes_rx_lane_is_los(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_rx_los);
+
+int sl_core_hw_serdes_lane_tx_prbs_config(struct sl_core_link *core_link, u8 serdes_lane_num);
+int sl_core_hw_serdes_lane_tx_prbs_enable(struct sl_core_link *core_link, u8 serdes_lane_num);
+int sl_core_hw_serdes_lane_tx_prbs_shrd_patt_gen_disable(struct sl_core_link *core_link, u8 serdes_lane_num);
+int sl_core_hw_serdes_lane_tx_prbs_remote_loopback_disable(struct sl_core_link *core_link, u8 serdes_lane_num);
+int sl_core_hw_serdes_lane_tx_prbs_checker_enable(struct sl_core_link *core_link, u8 serdes_lane_num);
 
 #endif /* _SL_CORE_HW_SERDES_LANE_H_ */

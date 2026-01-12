@@ -152,7 +152,7 @@ void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
 		sl_core_log_dbg(core_link, LOG_NAME, "auto lane degrade is enabled (port = %u)", port);
 
 		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_ENABLED;
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_ACTIVE;
 		spin_unlock(&core_link->data_lock);
 	}
 out:

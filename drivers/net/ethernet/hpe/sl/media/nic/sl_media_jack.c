@@ -77,6 +77,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	media_attr.magic    = SL_MEDIA_ATTR_MAGIC;
 	media_attr.ver      = SL_MEDIA_ATTR_VER;
+	media_attr.size     = sizeof(struct sl_media_attr);
 	media_attr.errors   = 0;
 	media_attr.info     = 0;
 

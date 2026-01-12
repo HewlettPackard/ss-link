@@ -480,11 +480,12 @@ function print_link {
 	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
 	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
         local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
-        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_lane_map)
+        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_degrade_map)
         local rx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/rx_link_speed_gbps)
         local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
-        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_lane_map)
+        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_degrade_map)
         local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
+	local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
         local fec_mon_ccw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_down_limit)
         local fec_mon_ccw_warn_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_warn_limit)
         local fec_mon_ucw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ucw_down_limit)
@@ -513,7 +514,7 @@ function print_link {
         printf "           |   fec_caps  : ${caps_fec}\n"
         printf "           |   hpe_caps  : ${caps_hpe}\n"
         printf "           | auto_lane_degrade: ${degrade_config}\n"
-	printf "       ALD | state: ${degrade_state}\n"
+	printf "       ALD | state: ${degrade_state}, is_recoverable: ${is_recoverable}\n"
 	if [ "${degrade_state}" == "active" ] ; then
 		local rx_units="Gbps"
 	else

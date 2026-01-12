@@ -352,6 +352,8 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "an-error";
 	case SL_LGRP_NOTIF_LANE_DEGRADE:
 		return "auto-lane-degrade";
+	case SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY:
+		return "auto-lane-degrade-recovery";
 	default:
 		return "unknown";
 	}

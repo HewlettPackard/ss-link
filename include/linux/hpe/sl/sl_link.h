@@ -114,13 +114,20 @@ struct sl_link_policy {
 	u32 options;
 };
 
+#define SL_LINK_DEGRADE_INFO_MAGIC 0x0130bb03
+#define SL_LINK_DEGRADE_INFO_VER   1
 struct sl_link_degrade_info {
-	bool is_tx_degrade;
-	bool is_rx_degrade;
+	u32  magic;
+	u32  size;
+	u32  ver;
+
 	u16  tx_link_speed;  /* in Gbps */
 	u16  rx_link_speed;  /* in Gbps */
-	u8   tx_lane_map;
-	u8   rx_lane_map;
+	u8   tx_degrade_map;
+	u8   rx_degrade_map;
+	bool is_tx_degrade;
+	bool is_rx_degrade;
+	bool is_recoverable; /* whether we can recover from ALD via bouncing the link */
 };
 
 #define SL_LINK_POLICY_OPT_KEEP_SERDES_UP            BIT(0) /* Keep serdes running when link is down                   */
@@ -193,7 +200,7 @@ int sl_link_reset(struct sl_link *link);
 int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *total_time);
 
 const char *sl_link_state_str(u32 state);
-const char *sl_link_degrade_state_str(int degrade_state);
+const char *sl_link_degrade_state_str(u32 degrade_state);
 const char *sl_link_an_lp_caps_state_str(u32 lp_caps_state);
 const char *sl_link_config_opt_str(u32 option);
 const char *sl_link_policy_opt_str(u32 option);

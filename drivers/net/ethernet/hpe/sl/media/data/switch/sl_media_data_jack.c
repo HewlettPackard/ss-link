@@ -499,6 +499,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	memset(&media_attr, 0, sizeof(struct sl_media_attr));
 	media_attr.magic    = SL_MEDIA_ATTR_MAGIC;
 	media_attr.ver      = SL_MEDIA_ATTR_VER;
+	media_attr.size     = sizeof(struct sl_media_attr);
 	media_attr.errors   = 0;
 	media_attr.info     = 0;
 

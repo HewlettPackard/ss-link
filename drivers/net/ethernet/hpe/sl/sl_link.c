@@ -328,17 +328,19 @@ const char *sl_link_state_str(u32 state)
 }
 EXPORT_SYMBOL(sl_link_state_str);
 
-const char *sl_link_degrade_state_str(int degrade_state)
+const char *sl_link_degrade_state_str(u32 degrade_state)
 {
 	switch (degrade_state) {
-	case SL_LINK_DEGRADE_STATE_ENABLED:
+	case SL_LINK_DEGRADE_STATE_ACTIVE:
 		return "active";
-	case SL_LINK_DEGRADE_STATE_DISABLED:
+	case SL_LINK_DEGRADE_STATE_INACTIVE:
 		return "inactive";
 	case SL_LINK_DEGRADE_STATE_FAILED:
 		return "error";
-	default:
+	case SL_LINK_DEGRADE_STATE_INVALID:
 		return "invalid";
+	default:
+		return "unknown";
 	}
 }
 EXPORT_SYMBOL(sl_link_degrade_state_str);

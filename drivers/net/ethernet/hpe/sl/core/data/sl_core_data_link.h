@@ -73,7 +73,8 @@ int sl_core_data_link_is_rx_degrade_get(struct sl_core_link *core_link, bool *is
 int sl_core_data_link_is_tx_degrade_get(struct sl_core_link *core_link, bool *is_tx_degrade);
 int sl_core_data_link_degrade_tx_link_speed_get(struct sl_core_link *core_link, u16 *tx_link_speed);
 int sl_core_data_link_degrade_rx_link_speed_get(struct sl_core_link *core_link, u16 *rx_link_speed);
-int sl_core_data_link_degrade_tx_lane_map_get(struct sl_core_link *core_link, u8 *tx_lane_map);
-int sl_core_data_link_degrade_rx_lane_map_get(struct sl_core_link *core_link, u8 *rx_lane_map);
+int sl_core_data_link_degrade_tx_degrade_map_get(struct sl_core_link *core_link, u8 *tx_degrade_map);
+int sl_core_data_link_degrade_rx_degrade_map_get(struct sl_core_link *core_link, u8 *rx_degrade_map);
+int sl_core_data_link_degrade_is_recoverable_get(struct sl_core_link *core_link, bool *is_recoverable);
 
 #endif /* _SL_CORE_DATA_LINK_H_ */

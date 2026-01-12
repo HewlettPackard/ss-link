@@ -304,3 +304,105 @@ void sl_core_hw_serdes_lane_down_tx_stop(struct sl_core_link *core_link, u8 serd
 out:
 	return;
 }
+
+int sl_core_hw_serdes_lane_tx_prbs_config(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	int                  rtn;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "tx prbs config (serdes_lane_num = %u)", serdes_lane_num);
+
+	/* PRBS Gen Mode Select */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD171, 0x000A, 0x000E);
+
+	/* Set MSB for PRBS Mode Selection */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD171, 0x0000, 0x1000);
+
+	/* PRBS Invert Disable*/
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD171, 0x0000, 0x0010);
+
+	rtn = 0;
+out:
+	return rtn;
+}
+
+int sl_core_hw_serdes_lane_tx_prbs_enable(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	int                  rtn;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "tx prbs enable (serdes_lane_num = %u)", serdes_lane_num);
+
+	/* Enable PRBS Generator */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD171, 0x0001, 0x0001);
+
+	rtn = 0;
+out:
+	return rtn;
+}
+
+int sl_core_hw_serdes_lane_tx_prbs_shrd_patt_gen_disable(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	int                  rtn;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "tx prbs shared pattern gen disable (serdes_lane_num = %u)", serdes_lane_num);
+
+	/* Disable Fixed Pattern Generation */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD170, 0x0000, 0x0001);
+
+	rtn = 0;
+out:
+	return rtn;
+}
+
+int sl_core_hw_serdes_lane_tx_prbs_remote_loopback_disable(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	int                  rtn;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "tx prbs remote loopback disable (serdes_lane_num = %u)", serdes_lane_num);
+
+	/* Disable Loopback */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD172, 0x0000, 0x0001);
+
+	rtn = 0;
+out:
+	return rtn;
+}
+
+int sl_core_hw_serdes_lane_tx_prbs_checker_enable(struct sl_core_link *core_link, u8 serdes_lane_num)
+{
+	int                  rtn;
+	struct sl_core_lgrp *core_lgrp;
+
+	core_lgrp = core_link->core_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "tx prbs checker enable (serdes_lane_num = %u)", serdes_lane_num);
+
+	/* Disable PRBS checker */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD161, 0x0000, 0x0001);
+
+	/* Enable PRBS checker */
+	SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
+			  0xD161, 0x0001, 0x0001);
+
+	rtn = 0;
+out:
+	return rtn;
+}

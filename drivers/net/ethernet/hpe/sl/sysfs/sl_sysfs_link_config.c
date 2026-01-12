@@ -302,7 +302,7 @@ static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribut
 	struct sl_ctrl_link *ctrl_link;
 	u32                  options;
 
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
