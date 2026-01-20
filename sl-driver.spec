@@ -26,7 +26,7 @@
 %define release_extra 0
 
 Name:           sl-driver
-Version:        1.20.16
+Version:        1.20.18
 Release:        %(echo ${BUILD_METADATA})
 Summary:        HPE Slingshot Link driver
 License:        GPL-2.0
@@ -240,6 +240,6 @@ ${postinst} %{name} %{version}-%{release}
 %exclude /lib/modules/modules.order
 
 %changelog
-* Tue Apr 29 2025 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.16
+* Tue Jan 20 2026 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.18
 
 %{_git_hash}
