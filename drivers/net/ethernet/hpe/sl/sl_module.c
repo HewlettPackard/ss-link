@@ -43,7 +43,7 @@ char *sl_version_str_get(void)
 
 char *sl_git_hash_str_get(void)
 {
-	return SL_GIT_HASH_STR;
+	return (strlen(SL_GIT_HASH_STR) == 0) ? "unavailable" : SL_GIT_HASH_STR;
 }
 EXPORT_SYMBOL(sl_git_hash_str_get);
 
