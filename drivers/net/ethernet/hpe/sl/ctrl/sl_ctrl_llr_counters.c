@@ -96,7 +96,7 @@ void sl_ctrl_llr_cause_counters_del(struct sl_ctrl_llr *ctrl_llr)
 	kfree(ctrl_llr->cause_counters);
 }
 
-void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, u32 cause_map)
+void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, unsigned long cause_map)
 {
 	unsigned long       which;
 	struct sl_ctrl_llr *ctrl_llr;
@@ -105,7 +105,9 @@ void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, u32 cause_map)
 
 	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "llr cause counter inc");
 
-	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
+	BUILD_BUG_ON(SL_CTRL_LLR_CAUSE_COUNTERS_COUNT > 32);
+
+	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
 		switch (BIT(which)) {
 		case SL_LLR_FAIL_CAUSE_SETUP_CONFIG:
 			SL_CTRL_LLR_CAUSE_COUNTER_INC(ctrl_llr, LLR_CAUSE_SETUP_CONFIG);

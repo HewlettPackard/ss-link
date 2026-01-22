@@ -112,6 +112,10 @@ int sl_ctrl_link_cause_counters_init(struct sl_ctrl_link *ctrl_link)
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_UP_CANCELED);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_UNSUPPORTED_SPEED);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_SS200_CABLE);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_TX_LOL);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_RX_LOL);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_TX_LOS);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_RX_LOS);
 
 	return 0;
 }
@@ -277,6 +281,18 @@ void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_ma
 		case SL_LINK_DOWN_CAUSE_SS200_CABLE:
 			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_SS200_CABLE);
 			break;
+		case SL_LINK_DOWN_CAUSE_TX_LOL:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_TX_LOL);
+			break;
+		case SL_LINK_DOWN_CAUSE_RX_LOL:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_RX_LOL);
+			break;
+		case SL_LINK_DOWN_CAUSE_TX_LOS:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_TX_LOS);
+			break;
+		case SL_LINK_DOWN_CAUSE_RX_LOS:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_RX_LOS);
+			break;
 		default:
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
 					       "cause_counter_inc unknown cause (bit = %lu)", which);
@@ -285,13 +301,15 @@ void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_ma
 	}
 }
 
-void sl_ctrl_link_an_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u32 cause_map)
+void sl_ctrl_link_an_cause_counter_inc(struct sl_ctrl_link *ctrl_link, unsigned long cause_map)
 {
 	unsigned long which;
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "link an cause counter inc");
 
-	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
+	BUILD_BUG_ON(SL_CTRL_LINK_AN_CAUSE_COUNTERS_COUNT > 32);
+
+	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
 		switch (BIT(which)) {
 		case SL_CORE_HW_AN_FAIL_CAUSE_LP_CAPS_SERDES_LINK_UP_FAIL:
 			SL_CTRL_LINK_AN_CAUSE_COUNTER_INC(ctrl_link, LINK_AN_CAUSE_LP_CAPS_SERDES_LINK_UP_FAIL);

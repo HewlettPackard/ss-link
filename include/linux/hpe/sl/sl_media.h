@@ -135,35 +135,31 @@ struct sl_media_qsfp {
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
 #define SL_MEDIA_ATTR_VER   11
 struct sl_media_attr {
-	u32 magic;
-	u32 ver;
-	u32 size;
+	u32           magic;
+	u32           ver;
+	u32           size;
 
-	u8   format;
-	u32  type;
-	u32  vendor;
-	char vendor_pn[SL_MEDIA_VENDOR_PN_SIZE];
-	u32  length_cm;
-	u32  speeds_map;                /* Supported speeds on cable */
-	u32  hpe_pn;                    /* HPE part number */
-	u32  shape;
-	char hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
-	char serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
-	char date_code_str[SL_MEDIA_DATE_CODE_SIZE];
-	u8   fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
-	u32  max_speed;
-
-	u32 furcation;
-
-	u32 jack_type;
+	u8            format;
+	u32           type;
+	u32           vendor;
+	char          vendor_pn[SL_MEDIA_VENDOR_PN_SIZE];
+	u32           length_cm;
+	unsigned long speeds_map;      /* Supported speeds on cable */
+	u32           hpe_pn;          /* HPE part number */
+	u32           shape;
+	char          hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
+	char          serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
+	char          date_code_str[SL_MEDIA_DATE_CODE_SIZE];
+	u8            fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
+	u32           max_speed;
+	u32           furcation;
+	u32           jack_type;
 	union {
 		struct sl_media_qsfp qsfp;
 	} jack_type_info;
-
-	u8 supported_flags_advertised[SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE];
-
-	u32 info;
-	u32 errors;
+	u8            supported_flags_advertised[SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE];
+	u32           info;
+	u32           errors;
 };
 
 struct sl_lgrp;

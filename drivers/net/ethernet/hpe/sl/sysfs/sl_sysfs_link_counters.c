@@ -864,6 +864,74 @@ static ssize_t cause_ss200_cable_show(struct kobject *kobj, struct kobj_attribut
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t cause_tx_lol_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_TX_LOL, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause tx lol show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t cause_rx_lol_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_RX_LOL, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause rx lol show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t cause_tx_los_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_TX_LOS, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause tx los show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
+static ssize_t cause_rx_los_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_RX_LOS, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause rx los show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static ssize_t an_cause_lp_caps_serdes_link_up_fail_show(struct kobject *kobj,
 							 struct kobj_attribute *kattr, char *buf)
 {
@@ -1265,6 +1333,10 @@ static struct kobj_attribute link_cause_media_error       = __ATTR_RO(cause_medi
 static struct kobj_attribute link_cause_up_canceled       = __ATTR_RO(cause_up_canceled);
 static struct kobj_attribute link_cause_unsupported_speed = __ATTR_RO(cause_unsupported_speed);
 static struct kobj_attribute link_cause_ss200_cable       = __ATTR_RO(cause_ss200_cable);
+static struct kobj_attribute link_cause_tx_lol            = __ATTR_RO(cause_tx_lol);
+static struct kobj_attribute link_cause_rx_lol            = __ATTR_RO(cause_rx_lol);
+static struct kobj_attribute link_cause_tx_los            = __ATTR_RO(cause_tx_los);
+static struct kobj_attribute link_cause_rx_los            = __ATTR_RO(cause_rx_los);
 
 static struct kobj_attribute link_an_cause_lp_caps_serdes_link_up_fail =
 			     __ATTR_RO(an_cause_lp_caps_serdes_link_up_fail);
@@ -1343,6 +1415,10 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_up_canceled.attr,
 	&link_cause_unsupported_speed.attr,
 	&link_cause_ss200_cable.attr,
+	&link_cause_tx_lol.attr,
+	&link_cause_rx_lol.attr,
+	&link_cause_tx_los.attr,
+	&link_cause_rx_los.attr,
 	&link_an_cause_lp_caps_serdes_link_up_fail.attr,
 	&link_an_cause_lp_caps_not_complete.attr,
 	&link_an_cause_not_complete.attr,

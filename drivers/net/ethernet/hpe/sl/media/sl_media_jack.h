@@ -287,7 +287,7 @@ int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *ca
 int sl_media_jack_signal_cache_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
 				   struct sl_media_jack_signal *media_signal);
 
-int sl_media_jack_attr_error_map_str(u32 error_map, char *error_str, unsigned int error_str_size);
+int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, unsigned int error_str_size);
 int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *error_map);
 
 #endif /* _SL_MEDIA_JACK_H_ */

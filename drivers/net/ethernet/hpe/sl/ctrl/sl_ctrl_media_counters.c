@@ -66,13 +66,15 @@ void sl_ctrl_media_cause_counters_del(struct sl_media_jack *media_jack)
 	kfree(media_jack->cause_counters);
 }
 
-void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, u32 cause_map)
+void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned long cause_map)
 {
 	unsigned long which;
 
 	sl_ctrl_log_dbg(media_jack, LOG_NAME, "media cause counter inc");
 
-	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
+	BUILD_BUG_ON(SL_CTRL_MEDIA_CAUSE_COUNTERS_COUNT > 32);
+
+	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
 		switch (BIT(which)) {
 		case SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID:
 			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_EEPROM_FORMAT_INVALID);

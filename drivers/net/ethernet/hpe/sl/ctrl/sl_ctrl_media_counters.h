@@ -47,6 +47,6 @@ struct sl_ctrl_media_counter {
 int  sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack);
 void sl_ctrl_media_cause_counters_del(struct sl_media_jack *media_jack);
 int  sl_ctrl_media_cause_counter_get(struct sl_media_jack *media_jack, u32 counter, int *count);
-void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, u32 cause_map);
+void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned long cause_map);
 
 #endif /* _SL_CTRL_MEDIA_COUNTERS_H_ */

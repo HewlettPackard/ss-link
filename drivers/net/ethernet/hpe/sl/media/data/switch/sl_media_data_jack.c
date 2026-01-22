@@ -605,7 +605,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
 			sl_media_log_warn(media_jack, LOG_NAME,
-				"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%X)",
+				"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%lX)",
 				rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
 				media_attr.type, sl_media_type_str(media_attr.type),
 				media_attr.length_cm, media_attr.speeds_map);

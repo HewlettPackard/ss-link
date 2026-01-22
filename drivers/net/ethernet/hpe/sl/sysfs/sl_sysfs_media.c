@@ -1023,7 +1023,8 @@ int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 
 	media_lgrp->supported_speeds_num = 0;
 	if (media_lgrp->cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		for_each_set_bit(i, (unsigned long *)&media_lgrp->cable_info->media_attr.speeds_map, 32) {
+		for_each_set_bit(i, &media_lgrp->cable_info->media_attr.speeds_map,
+				 sizeof(media_lgrp->cable_info->media_attr.speeds_map) * BITS_PER_BYTE) {
 			media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].media_lgrp = media_lgrp;
 			media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].speed = BIT(i);
 			rtn = kobject_init_and_add(&media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].kobj,
@@ -1039,7 +1040,8 @@ int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 			media_lgrp->supported_speeds_num++;
 		}
 	} else if (media_lgrp->cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		for_each_set_bit(i, (unsigned long *)&media_lgrp->cable_info->stashed_media_attr.speeds_map, 32) {
+		for_each_set_bit(i, &media_lgrp->cable_info->stashed_media_attr.speeds_map,
+				 sizeof(media_lgrp->cable_info->stashed_media_attr.speeds_map) * BITS_PER_BYTE) {
 			media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].media_lgrp = media_lgrp;
 			media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].speed = BIT(i);
 			rtn = kobject_init_and_add(&media_lgrp->speeds_kobj[media_lgrp->supported_speeds_num].kobj,

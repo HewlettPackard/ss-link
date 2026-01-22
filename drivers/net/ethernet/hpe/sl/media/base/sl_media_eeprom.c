@@ -19,7 +19,7 @@
 #define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
 
 static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, u8 host_interface,
-					      u32 *speeds_map, u8 appsel_num, u8 lane_count)
+					      unsigned long *speeds_map, u8 appsel_num, u8 lane_count)
 {
 	switch (host_interface) {
 	case SL_MEDIA_SS1_HOST_INTERFACE_50GAUI_1_C2M:
@@ -102,7 +102,7 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 #define APPSEL_LAST_PAGE0         114
 #define APPSEL_LAST_PAGE1         247
 #define APPSEL_LANE_COUNT_OFFSET  2
-static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, u32 *speeds_map)
+static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, unsigned long *speeds_map)
 {
 	u8  host_interface;
 	u8  appsel_curr;
@@ -479,7 +479,7 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_supported_flags_advertised_get(media_jack, media_attr->supported_flags_advertised);
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%X)",
+		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%lX)",
 		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map);
 	sl_media_log_dbg(media_jack, LOG_NAME,
 		"parse (hpe_pn = %u, serial_num = %s, errors = 0x%X, info = 0x%X)",
