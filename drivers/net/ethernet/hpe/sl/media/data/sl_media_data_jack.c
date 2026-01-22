@@ -135,7 +135,7 @@ int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "media attr set (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%X)",
+			 "media attr set (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%lX)",
 			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
 			 media_attr->type, sl_media_type_str(media_attr->type),
 			 media_attr->length_cm, media_attr->speeds_map);

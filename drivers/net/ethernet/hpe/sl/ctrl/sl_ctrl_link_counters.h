@@ -61,6 +61,10 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_UP_CANCELED,       /* link up canceled, link down          */
 	LINK_CAUSE_UNSUPPORTED_SPEED, /* unsupported speed                    */
 	LINK_CAUSE_SS200_CABLE,       /* SS200 cable                          */
+	LINK_CAUSE_TX_LOL,            /* TX Loss of Lock                      */
+	LINK_CAUSE_RX_LOL,            /* RX Loss of Lock                      */
+	LINK_CAUSE_TX_LOS,            /* TX Loss of Signal                    */
+	LINK_CAUSE_RX_LOS,            /* RX Loss of Signal                    */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 
@@ -115,6 +119,6 @@ void sl_ctrl_link_an_cause_counters_del(struct sl_ctrl_link *ctrl_link);
 int  sl_ctrl_link_an_cause_counters_get(struct sl_ctrl_link *ctrl_link, u32 counter, int *count);
 
 void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_map);
-void sl_ctrl_link_an_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u32 cause_map);
+void sl_ctrl_link_an_cause_counter_inc(struct sl_ctrl_link *ctrl_link, unsigned long cause_map);
 
 #endif /* _SL_CTRL_LINK_COUNTERS_H_ */

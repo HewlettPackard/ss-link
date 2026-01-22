@@ -22,7 +22,7 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"fake media attr set (vendor = %d %s, type = 0x%X %s, len = %d, speeds_map = 0x%X)",
+		"fake media attr set (vendor = %d %s, type = 0x%X %s, len = %d, speeds_map = 0x%lX)",
 		fake_media_attr->vendor, sl_media_vendor_str(fake_media_attr->vendor),
 		fake_media_attr->type, sl_media_type_str(fake_media_attr->type),
 		fake_media_attr->length_cm, fake_media_attr->speeds_map);

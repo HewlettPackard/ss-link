@@ -51,6 +51,6 @@ int  sl_ctrl_llr_cause_counters_init(struct sl_ctrl_llr *ctrl_llr);
 void sl_ctrl_llr_cause_counters_del(struct sl_ctrl_llr *ctrl_llr);
 int  sl_ctrl_llr_cause_counter_get(struct sl_ctrl_llr *ctrl_llr, u32 counter, int *count);
 
-void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, u32 cause_map);
+void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, unsigned long cause_map);
 
 #endif /* _SL_CTRL_LLR_COUNTERS_H_ */

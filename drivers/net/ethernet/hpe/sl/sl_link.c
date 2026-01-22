@@ -403,7 +403,8 @@ EXPORT_SYMBOL(sl_link_policy_opt_str);
 	SL_LINK_DOWN_ORIGIN_ASYNC   |\
 	SL_LINK_DOWN_ORIGIN_LINK_UP)
 
-static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, unsigned int cause_str_size, u64 mask)
+static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *cause_str, unsigned int cause_str_size,
+					     u64 mask)
 {
 	int rtn;
 	int str_pos;
@@ -424,7 +425,7 @@ static int sl_link_down_cause_map_masked_str(u64 cause_map, char *cause_str, uns
 
 	str_pos = 0;
 
-	for_each_set_bit(which, (unsigned long *)&cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
+	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
 
 		switch (BIT(which)) {
 		case SL_LINK_DOWN_CAUSE_UCW:

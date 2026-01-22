@@ -954,7 +954,7 @@ int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *ca
 	return cached ? 0 : -ENOENT;
 }
 
-int sl_media_jack_attr_error_map_str(u32 error_map, char *error_str, unsigned int error_str_size)
+int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, unsigned int error_str_size)
 {
 	int rtn;
 	int str_pos;
@@ -973,7 +973,7 @@ int sl_media_jack_attr_error_map_str(u32 error_map, char *error_str, unsigned in
 
 	str_pos = 0;
 
-	for_each_set_bit(which, (unsigned long *)&error_map, sizeof(error_map) * BITS_PER_BYTE) {
+	for_each_set_bit(which, &error_map, sizeof(error_map) * BITS_PER_BYTE) {
 		switch (BIT(which)) {
 		case SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED:
 			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-not-supported ");

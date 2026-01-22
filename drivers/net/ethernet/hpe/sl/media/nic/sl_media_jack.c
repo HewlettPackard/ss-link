@@ -126,7 +126,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
 			sl_media_log_warn_trace(media_jack, LOG_NAME,
-						"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds = 0x%X)",
+						"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds = 0x%lX)",
 						rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
 						media_attr.type, sl_media_type_str(media_attr.type),
 						media_attr.length_cm, media_attr.speeds_map);

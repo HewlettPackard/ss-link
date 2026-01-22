@@ -147,33 +147,33 @@ struct sl_link_degrade_info {
 #define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(5)  /* link up tries exhaused               */
 #define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   BIT(6)  /* lp_caps autoneg no match             */
 #define SL_LINK_DOWN_CAUSE_AUTONEG           BIT(7)  /* autoneg failure                      */
-#define SL_LINK_DOWN_CAUSE_CONFIG            BIT(10) /* link up bad config                   */
-#define SL_LINK_DOWN_CAUSE_INTR_ENABLE       BIT(11) /* link up interrupt enable failure     */
-#define SL_LINK_DOWN_CAUSE_TIMEOUT           BIT(12) /* link up timeout                      */
-#define SL_LINK_DOWN_CAUSE_CANCELED          BIT(13) /* link up cancelled                    */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(14) /* unsuppported cable                   */
-#define SL_LINK_DOWN_CAUSE_COMMAND           BIT(15) /* client command                       */
-#define SL_LINK_DOWN_CAUSE_DOWNSHIFT         BIT(16) /* link up cable downshift failed       */
-#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    BIT(17) /* LLR replay at max fault              */
-#define SL_LINK_DOWN_CAUSE_UPSHIFT           BIT(18) /* link up cable upshift failed         */
-#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    BIT(19) /* link up config after an failed       */
-#define SL_LINK_DOWN_CAUSE_PCS_FAULT         BIT(20) /* link up PCS is not ok                */
-#define SL_LINK_DOWN_CAUSE_SERDES_PLL        BIT(21) /* link up serdes problems              */
-#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG     BIT(22) /* link up serdes config problems       */
-#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     BIT(23) /* link up serdes signal problems       */
-#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(24) /* link up serdes quality problems      */
-#define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(25) /* no media present                     */
-#define SL_LINK_DOWN_CAUSE_CCW               BIT(26) /* link up or fec mon CCW limit crossed */
-#define SL_LINK_DOWN_CAUSE_HIGH_TEMP         BIT(27) /* active cable too hot                 */
-#define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(28) /* link up interrupt register failure   */
-#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(29) /* media has errors                     */
-#define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(30) /* link up canceled, link down          */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(31) /* unsupported speed                    */
-#define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(32) /* SS200 cable                          */
-#define SL_LINK_DOWN_CAUSE_TX_LOL            BIT(33) /* TX Loss of Lock                      */
-#define SL_LINK_DOWN_CAUSE_RX_LOL            BIT(34) /* RX Loss of Lock                      */
-#define SL_LINK_DOWN_CAUSE_TX_LOS            BIT(35) /* TX Loss of Signal                    */
-#define SL_LINK_DOWN_CAUSE_RX_LOS            BIT(36) /* RX Loss of Signal                    */
+#define SL_LINK_DOWN_CAUSE_CONFIG            BIT(8)  /* link up bad config                   */
+#define SL_LINK_DOWN_CAUSE_INTR_ENABLE       BIT(9)  /* link up interrupt enable failure     */
+#define SL_LINK_DOWN_CAUSE_TIMEOUT           BIT(10) /* link up timeout                      */
+#define SL_LINK_DOWN_CAUSE_CANCELED          BIT(11) /* link up cancelled                    */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(12) /* unsuppported cable                   */
+#define SL_LINK_DOWN_CAUSE_COMMAND           BIT(13) /* client command                       */
+#define SL_LINK_DOWN_CAUSE_DOWNSHIFT         BIT(14) /* link up cable downshift failed       */
+#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    BIT(15) /* LLR replay at max fault              */
+#define SL_LINK_DOWN_CAUSE_UPSHIFT           BIT(16) /* link up cable upshift failed         */
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    BIT(17) /* link up config after an failed       */
+#define SL_LINK_DOWN_CAUSE_PCS_FAULT         BIT(18) /* link up PCS is not ok                */
+#define SL_LINK_DOWN_CAUSE_SERDES_PLL        BIT(19) /* link up serdes problems              */
+#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG     BIT(20) /* link up serdes config problems       */
+#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     BIT(21) /* link up serdes signal problems       */
+#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(22) /* link up serdes quality problems      */
+#define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(23) /* no media present                     */
+#define SL_LINK_DOWN_CAUSE_CCW               BIT(24) /* link up or fec mon CCW limit crossed */
+#define SL_LINK_DOWN_CAUSE_HIGH_TEMP         BIT(25) /* active cable too hot                 */
+#define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(26) /* link up interrupt register failure   */
+#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(27) /* media has errors                     */
+#define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(28) /* link up canceled, link down          */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(29) /* unsupported speed                    */
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(30) /* SS200 cable                          */
+#define SL_LINK_DOWN_CAUSE_TX_LOL            BIT(31) /* TX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_RX_LOL            BIT(32) /* RX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_TX_LOS            BIT(33) /* TX Loss of Signal                    */
+#define SL_LINK_DOWN_CAUSE_RX_LOS            BIT(34) /* RX Loss of Signal                    */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */
