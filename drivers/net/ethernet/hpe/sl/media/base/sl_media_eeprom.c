@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/errno.h>
@@ -158,43 +158,56 @@ static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack)
 }
 
 #define CMIS_TYPE_OFFSET    212
-#define SFF8436_TYPE_OFFSET 147
 #define CMIS_MEDIA_AOC      0x00
 #define CMIS_MEDIA_PEC      0x0A
 #define CMIS_MEDIA_AEC      0x0C
 #define CMIS_MEDIA_ACC      0x0F
+#define SFF8436_TYPE_OFFSET 147
+#define SFF_MEDIA_PEC       0xA0
 static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format, u32 vendor, u32 *type)
 {
 	u8 media;
 
-	if (format == SL_MEDIA_MGMT_IF_CMIS)
+	if (format == SL_MEDIA_MGMT_IF_CMIS) {
 		media = media_jack->eeprom_page0[CMIS_TYPE_OFFSET];
-	else
-		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
-
-	switch (media) {
-	case CMIS_MEDIA_AOC:
-		if (sl_media_eeprom_is_type_poc(media_jack))
-			*type = SL_MEDIA_TYPE_POC;
-		else
-			*type = SL_MEDIA_TYPE_AOC;
-		break;
-	case CMIS_MEDIA_PEC:
-		*type = SL_MEDIA_TYPE_PEC;
-		break;
-	case CMIS_MEDIA_AEC:
-		*type = SL_MEDIA_TYPE_AEC;
-		break;
-	case CMIS_MEDIA_ACC:
-		/* compensate for Molex type programming issue */
-		if (vendor == SL_MEDIA_VENDOR_MOLEX)
+		switch (media) {
+		case CMIS_MEDIA_AOC:
+			if (sl_media_eeprom_is_type_poc(media_jack))
+				*type = SL_MEDIA_TYPE_POC;
+			else
+				*type = SL_MEDIA_TYPE_AOC;
+			break;
+		case CMIS_MEDIA_PEC:
+			*type = SL_MEDIA_TYPE_PEC;
+			break;
+		case CMIS_MEDIA_AEC:
 			*type = SL_MEDIA_TYPE_AEC;
-		else
-			*type = SL_MEDIA_TYPE_ACC;
-		break;
-	default:
-		*type = SL_MEDIA_TYPE_INVALID;
+			break;
+		case CMIS_MEDIA_ACC:
+			/* compensate for Molex type programming issue */
+			if (vendor == SL_MEDIA_VENDOR_MOLEX)
+				*type = SL_MEDIA_TYPE_AEC;
+			else
+				*type = SL_MEDIA_TYPE_ACC;
+			break;
+		default:
+			*type = SL_MEDIA_TYPE_INVALID;
+		}
+	} else {
+		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
+		switch (media) {
+		case SFF_MEDIA_PEC:
+			*type = SL_MEDIA_TYPE_PEC;
+			break;
+// FIXME: add other SFF media
+		default:
+			*type = SL_MEDIA_TYPE_INVALID;
+		}
 	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "type get (media = 0x%X, type = 0x%X)",
+			 media, *type);
 
 	return 0;
 }
@@ -238,6 +251,8 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 		if (strnstr(vendor_ptr, vendor_list[x].name, VENDOR_NAME_MAX_LEN) == NULL)
 			continue;
 		*vendor = vendor_list[x].type;
+		sl_media_log_dbg(media_jack, LOG_NAME,
+				 "vendor get (vendor = %u %s)", *vendor, sl_media_vendor_str(*vendor));
 		return 0;
 	}
 
@@ -254,20 +269,30 @@ static bool is_valid_char(char c)
 	return c >= 33 && c <= 126;
 }
 
-#define VENDOR_PN_OFFSET 148
-static int sl_media_eeprom_vendor_pn_get(struct sl_media_jack *media_jack, char *vendor_pn)
+#define CMIS_VENDOR_PN_OFFSET 148
+#define SFF_VENDOR_PN_OFFSET  168
+static int sl_media_eeprom_vendor_pn_str_get(struct sl_media_jack *media_jack, u8 format, char *vendor_pn_str)
 {
 	int x;
 	int pos;
+	u8  vendor_pn_offset;
+
+	if (format == SL_MEDIA_MGMT_IF_CMIS)
+		vendor_pn_offset = CMIS_VENDOR_PN_OFFSET;
+	else
+		vendor_pn_offset = SFF_VENDOR_PN_OFFSET;
 
 	pos = 0;
-	memset(vendor_pn, 0, SL_MEDIA_VENDOR_PN_SIZE);
+	memset(vendor_pn_str, 0, SL_MEDIA_VENDOR_PN_SIZE);
 	for (x = 0; x < SL_MEDIA_VENDOR_PN_SIZE - 1; ++x) {
-		if (is_valid_char(media_jack->eeprom_page0[VENDOR_PN_OFFSET + x])) {
-			vendor_pn[pos] = media_jack->eeprom_page0[VENDOR_PN_OFFSET + x];
+		if (is_valid_char(media_jack->eeprom_page0[vendor_pn_offset + x])) {
+			vendor_pn_str[pos] = media_jack->eeprom_page0[vendor_pn_offset + x];
 			pos++;
 		}
 	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "vendor part num get (par_num = %s)", vendor_pn_str);
 
 	return 0;
 }
@@ -295,42 +320,66 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 		*hpe_pn = *hpe_pn * 10 + (pn_ptr[i] - '0');
 	}
 
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "hpe part num get (hpe_pn = %s)", hpe_pn_str);
+
 	return 0;
 }
 
-#define SERIAL_NUM_OFFSET 166
-static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, char *serial_num_str)
+#define CMIS_SERIAL_NUM_OFFSET 166
+#define SFF_SERIAL_NUM_OFFSET  196
+static int sl_media_eeprom_serial_num_get(struct sl_media_jack *media_jack, u8 format, char *serial_num_str)
 {
 	int i;
 	int counter;
+	u8  serial_num_offset;
+
+	if (format == SL_MEDIA_MGMT_IF_CMIS)
+		serial_num_offset = CMIS_SERIAL_NUM_OFFSET;
+	else
+		serial_num_offset = SFF_SERIAL_NUM_OFFSET;
 
 	counter = 0;
 	memset(serial_num_str, '\0', SL_MEDIA_SERIAL_NUM_SIZE);
 	for (i = 0; i < (SL_MEDIA_SERIAL_NUM_SIZE - 1); ++i) {
-		if (media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i] == '-')
+		if (media_jack->eeprom_page0[serial_num_offset + i] == '-')
 			break;
 
-		if (is_valid_char(media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i])) {
-			serial_num_str[counter] = media_jack->eeprom_page0[SERIAL_NUM_OFFSET + i];
+		if (is_valid_char(media_jack->eeprom_page0[serial_num_offset + i])) {
+			serial_num_str[counter] = media_jack->eeprom_page0[serial_num_offset + i];
 			counter++;
 		}
 	}
 
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "serial num get (serial_num = %s)", serial_num_str);
+
 	return 0;
 }
 
-#define DATE_CODE_OFFSET 182
-static int sl_media_eeprom_date_code_get(struct sl_media_jack *media_jack, char *date_code_str)
+#define CMIS_DATE_CODE_OFFSET 182
+#define SFF_DATE_CODE_OFFSET  212
+static int sl_media_eeprom_date_code_get(struct sl_media_jack *media_jack, u8 format, char *date_code_str)
 {
-	date_code_str[0] = media_jack->eeprom_page0[DATE_CODE_OFFSET];
-	date_code_str[1] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 1];
+	u8 date_code_offset;
+
+	if (format == SL_MEDIA_MGMT_IF_CMIS)
+		date_code_offset = CMIS_DATE_CODE_OFFSET;
+	else
+		date_code_offset = SFF_DATE_CODE_OFFSET;
+
+	date_code_str[0] = media_jack->eeprom_page0[date_code_offset];
+	date_code_str[1] = media_jack->eeprom_page0[date_code_offset + 1];
 	date_code_str[2] = '-';
-	date_code_str[3] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 2];
-	date_code_str[4] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 3];
+	date_code_str[3] = media_jack->eeprom_page0[date_code_offset + 2];
+	date_code_str[4] = media_jack->eeprom_page0[date_code_offset + 3];
 	date_code_str[5] = '-';
-	date_code_str[6] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 4];
-	date_code_str[7] = media_jack->eeprom_page0[DATE_CODE_OFFSET + 5];
+	date_code_str[6] = media_jack->eeprom_page0[date_code_offset + 4];
+	date_code_str[7] = media_jack->eeprom_page0[date_code_offset + 5];
 	date_code_str[8] = '\0';
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "date code get (date = %s)", date_code_str);
 
 	return 0;
 }
@@ -375,10 +424,12 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 			*length = 0;
 			break;
 		}
-		return 0;
+	} else {
+		*length = media_jack->eeprom_page0[SFF8436_LENGTH_OFFSET] * 100;
 	}
 
-	*length = media_jack->eeprom_page0[SFF8436_LENGTH_OFFSET] * 100;
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "length get (length = %ucm)", *length);
 
 	return 0;
 }
@@ -466,11 +517,11 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 
 	/* vendor get MUST be first */
 	sl_media_eeprom_vendor_get(media_jack, media_attr->format, &(media_attr->vendor));
-	sl_media_eeprom_vendor_pn_get(media_jack, media_attr->vendor_pn);
+	sl_media_eeprom_vendor_pn_str_get(media_jack, media_attr->format, media_attr->vendor_pn_str);
 	sl_media_eeprom_type_get(media_jack, media_attr->format, media_attr->vendor, &(media_attr->type));
 	sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
-	sl_media_eeprom_serial_num_get(media_jack, media_attr->serial_num_str);
-	sl_media_eeprom_date_code_get(media_jack, media_attr->date_code_str);
+	sl_media_eeprom_serial_num_get(media_jack, media_attr->format, media_attr->serial_num_str);
+	sl_media_eeprom_date_code_get(media_jack, media_attr->format, media_attr->date_code_str);
 	sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver);
 	sl_media_eeprom_cable_end_get(media_jack);
 	sl_media_eeprom_length_get(media_jack, media_attr->format, &(media_attr->length_cm));
@@ -479,12 +530,16 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_supported_flags_advertised_get(media_jack, media_attr->supported_flags_advertised);
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"parse (vendor = %u, type = 0x%X, length_cm = %u, speeds_map = 0x%lX)",
-		media_attr->vendor, media_attr->type, media_attr->length_cm, media_attr->speeds_map);
+			 "parse (format = %u, vendor = %u %s, vendor_pn_str = %s, fw = %02X.%02X)",
+			 media_attr->format, media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
+			 media_attr->vendor_pn_str, media_attr->fw_ver[0], media_attr->fw_ver[1]);
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"parse (hpe_pn = %u, serial_num = %s, errors = 0x%X, info = 0x%X)",
-		media_attr->hpe_pn, media_attr->serial_num_str, media_attr->errors, media_attr->info);
-
+			 "parse (type = 0x%X %s, length = %ucm, speeds_map = 0x%lX)",
+			 media_attr->type, sl_media_type_str(media_attr->type), media_attr->length_cm,
+			 media_attr->speeds_map);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "parse (hpe_pn = %u, serial_num = %s, errors = 0x%X, info = 0x%X)",
+			 media_attr->hpe_pn, media_attr->serial_num_str, media_attr->errors, media_attr->info);
 }
 
 #define IDENTIFIER_OFFSET 0

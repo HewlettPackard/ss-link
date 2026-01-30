@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -169,6 +169,30 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 		"vendor show (media_lgrp = 0x%p, vendor = %u %s)", media_lgrp, vendor, sl_media_vendor_str(vendor));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_vendor_str(vendor));
+}
+
+static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	char                  vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE];
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_invalid(media_lgrp->media_jack))
+			return scnprintf(buf, PAGE_SIZE, "invalid-format\n");
+		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
+	}
+
+	sl_media_lgrp_vendor_pn_str_get(media_lgrp, vendor_pn_str);
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "vendor part num show (media_lgrp = 0x%p, vendor_pn_str = %s)",
+		   media_lgrp, vendor_pn_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", vendor_pn_str);
 }
 
 static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -793,6 +817,7 @@ static struct kobj_attribute media_temperature_celsius                = __ATTR_R
 static struct kobj_attribute media_high_temperature_threshold_celsius = __ATTR_RO(high_temperature_threshold_celsius);
 static struct kobj_attribute media_is_high_temperature                = __ATTR_RO(is_high_temperature);
 static struct kobj_attribute media_vendor                             = __ATTR_RO(vendor);
+static struct kobj_attribute media_vendor_part_num                    = __ATTR_RO(vendor_part_num);
 static struct kobj_attribute media_type                               = __ATTR_RO(type);
 static struct kobj_attribute media_shape                              = __ATTR_RO(shape);
 static struct kobj_attribute media_cable_end                          = __ATTR_RO(cable_end);
@@ -828,6 +853,7 @@ static struct attribute *media_attrs[] = {
 	&media_high_temperature_threshold_celsius.attr,
 	&media_is_high_temperature.attr,
 	&media_vendor.attr,
+	&media_vendor_part_num.attr,
 	&media_type.attr,
 	&media_shape.attr,
 	&media_cable_end.attr,

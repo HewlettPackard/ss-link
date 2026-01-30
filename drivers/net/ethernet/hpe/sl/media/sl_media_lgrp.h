@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_LGRP_H_
 #define _SL_MEDIA_LGRP_H_
@@ -75,6 +75,7 @@ void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 					     struct sl_media_serdes_settings *media_serdes_settings);
 
 u32  sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp);
+void sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str);
 u32  sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp);
 u32  sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp);

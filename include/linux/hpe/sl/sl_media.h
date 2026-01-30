@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_MEDIA_H_
 #define _LINUX_SL_MEDIA_H_
@@ -142,7 +142,7 @@ struct sl_media_attr {
 	u8            format;
 	u32           type;
 	u32           vendor;
-	char          vendor_pn[SL_MEDIA_VENDOR_PN_SIZE];
+	char          vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE];
 	u32           length_cm;
 	unsigned long speeds_map;      /* Supported speeds on cable */
 	u32           hpe_pn;          /* HPE part number */

@@ -103,9 +103,9 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 vendor_str = str(cell_obj.value)
                 vendor_pn = vendor_str.replace(" ","")
                 if (len(vendor_pn) > 16):
-                    f.write("\t\t.vendor_pn                = \"?\",\n")
+                    f.write("\t\t.vendor_pn_str            = \"?\",\n")
                 else:
-                    f.write("\t\t.vendor_pn                = \"" + vendor_pn + "\",\n")
+                    f.write("\t\t.vendor_pn_str            = \"" + vendor_pn + "\",\n")
 
                 cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
                 cell_value = str(cell_obj.value).strip() #remove whitespace
