@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_DATA_LINK_H_
 #define _SL_CORE_DATA_LINK_H_
@@ -35,14 +35,13 @@ void sl_core_data_link_last_up_fail_cause_map_clr(struct sl_core_link *core_link
 void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map);
 u64  sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link);
 void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
-	time64_t *up_fail_time);
+					     time64_t *up_fail_time);
 
-void     sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool is_last_down_new);
-void     sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map);
-void     sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
-							time64_t *down_time);
-u64      sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link);
-time64_t sl_core_data_link_last_down_time_get(struct sl_core_link *core_link);
+void sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool is_last_down_new);
+void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u64 down_cause_map);
+void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u8 entry_num,
+						    u64 *down_cause_map, time64_t *down_time);
+u64  sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link);
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed);
 void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -779,33 +779,55 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 	spin_lock(&core_link->link.data_lock);
 
 	if (core_link->link.is_last_down_new) {
-		core_link->link.last_down_cause_map = 0;
+		core_link->link.last_down_entry_num++;
+		if (core_link->link.last_down_entry_num >= SL_CTRL_LAST_DOWN_NUM_ENTRIES)
+			core_link->link.last_down_entry_num = 0;
+
+		core_link->link.last_down_cause_map[core_link->link.last_down_entry_num] = down_cause_map;
+		core_link->link.last_down_time[core_link->link.last_down_entry_num]      = ktime_get_real_seconds();
+
 		core_link->link.is_last_down_new = false;
+	} else {
+		core_link->link.last_down_cause_map[core_link->link.last_down_entry_num] |= down_cause_map;
+		core_link->link.last_down_time[core_link->link.last_down_entry_num]       = ktime_get_real_seconds();
 	}
 
-	core_link->link.last_down_cause_map |= down_cause_map;
-	core_link->link.last_down_time       = ktime_get_real_seconds();
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
-							core_link->core_lgrp->num, core_link->num),
-				       down_cause_map);
+							core_link->core_lgrp->num, core_link->num), down_cause_map);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last down cause map set (down_cause_map = 0x%llX)", down_cause_map);
+			"last down cause map set (num = %u, down_cause_map = 0x%llX)",
+			core_link->link.last_down_entry_num, down_cause_map);
 }
 
-void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link, u64 *down_cause_map,
-						    time64_t *down_time)
+void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link,
+						    u8                   entry_num,
+						    u64                 *down_cause_map,
+						    time64_t            *down_time)
 {
+	u8 actual_entry_num;
+
 	spin_lock(&core_link->link.data_lock);
-	*down_cause_map = core_link->link.last_down_cause_map;
-	*down_time      = core_link->link.last_down_time;
+
+	if (entry_num > core_link->link.last_down_entry_num)
+		actual_entry_num = SL_CTRL_LAST_DOWN_NUM_ENTRIES - (entry_num - core_link->link.last_down_entry_num);
+	else
+		actual_entry_num = core_link->link.last_down_entry_num - entry_num;
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last down cause map info get (entry_num = %u, last_down_num = %u, actual_num = %u",
+			entry_num, core_link->link.last_down_entry_num, actual_entry_num);
+
+	*down_cause_map = core_link->link.last_down_cause_map[actual_entry_num];
+	*down_time      = core_link->link.last_down_time[actual_entry_num];
+
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
-		*down_cause_map, *down_time, down_time, down_time);
+			"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
+			*down_cause_map, *down_time, down_time, down_time);
 }
 
 u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
@@ -813,11 +835,11 @@ u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 	u64 down_cause_map;
 
 	spin_lock(&core_link->link.data_lock);
-	down_cause_map = core_link->link.last_down_cause_map;
+	down_cause_map = core_link->link.last_down_cause_map[core_link->link.last_down_entry_num];
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"last down cause map get (down_cause_map = 0x%llX)", down_cause_map);
+			"last down cause map get (down_cause_map = 0x%llX)", down_cause_map);
 
 	return down_cause_map;
 }
