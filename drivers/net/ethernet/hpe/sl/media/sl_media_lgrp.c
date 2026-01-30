@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -148,6 +148,23 @@ u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
 	return vendor;
+}
+
+void sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str)
+{
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		strncpy(vendor_pn_str, media_lgrp->cable_info->media_attr.vendor_pn_str, SL_MEDIA_VENDOR_PN_SIZE);
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+		strncpy(vendor_pn_str, media_lgrp->cable_info->stashed_media_attr.vendor_pn_str, SL_MEDIA_VENDOR_PN_SIZE);
+		break;
+	default:
+		memset(vendor_pn_str, '0', SL_MEDIA_VENDOR_PN_SIZE - 2);
+		vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE - 1] = '\0';
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
 u32 sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp)

@@ -14,7 +14,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 42668001,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "8363-K2-2030",
+		.vendor_pn_str            = "8363-K2-2030",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -34,7 +34,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 42668001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811A-EC30-CR",
+		.vendor_pn_str            = "DME8811A-EC30-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -54,7 +54,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 43548001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DEF8504-2C05-CR",
+		.vendor_pn_str            = "DEF8504-2C05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -74,7 +74,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 43839001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DEF8504-2C10-CR",
+		.vendor_pn_str            = "DEF8504-2C10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -94,7 +94,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 43840001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DEF8504-2C30-CR",
+		.vendor_pn_str            = "DEF8504-2C30-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -114,7 +114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 45033001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DEF8504-2C50-CR",
+		.vendor_pn_str            = "DEF8504-2C50-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 5000,
@@ -134,7 +134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 45070001,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "8363-K2-2050",
+		.vendor_pn_str            = "8363-K2-2050",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 5000,
@@ -154,7 +154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 45070001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811A-EC50-CR",
+		.vendor_pn_str            = "DME8811A-EC50-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 5000,
@@ -174,7 +174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54408001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K812-C100",
+		.vendor_pn_str            = "L45593-K812-C100",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 100,
@@ -194,7 +194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54408001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3025249101",
+		.vendor_pn_str            = "3025249101",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 100,
@@ -214,7 +214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54408001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409709-1",
+		.vendor_pn_str            = "2409709-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 100,
@@ -234,7 +234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54410001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K812-C150",
+		.vendor_pn_str            = "L45593-K812-C150",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -254,7 +254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54410001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3025249102",
+		.vendor_pn_str            = "3025249102",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -274,7 +274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54410001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409709-2",
+		.vendor_pn_str            = "2409709-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -294,7 +294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54411001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933001",
+		.vendor_pn_str            = "2202933001",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -314,7 +314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54411001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-1",
+		.vendor_pn_str            = "2480869-1",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -334,7 +334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54412001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933002",
+		.vendor_pn_str            = "2202933002",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 200,
@@ -354,7 +354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54412001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-2",
+		.vendor_pn_str            = "2480869-2",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 200,
@@ -374,7 +374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54415001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933003",
+		.vendor_pn_str            = "2202933003",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 250,
@@ -394,7 +394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54415001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-3",
+		.vendor_pn_str            = "2480869-3",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 250,
@@ -414,7 +414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54416001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933004",
+		.vendor_pn_str            = "2202933004",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 300,
@@ -434,7 +434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54416001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-4",
+		.vendor_pn_str            = "2480869-4",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 300,
@@ -454,7 +454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54417001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933005",
+		.vendor_pn_str            = "2202933005",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -474,7 +474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54417001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-5",
+		.vendor_pn_str            = "2480869-5",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -494,7 +494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54418001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2202933006",
+		.vendor_pn_str            = "2202933006",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -514,7 +514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54418001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480869-6",
+		.vendor_pn_str            = "2480869-6",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -534,7 +534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54419001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K810-C80",
+		.vendor_pn_str            = "L45593-K810-C80",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -554,7 +554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54419001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2126759001",
+		.vendor_pn_str            = "2126759001",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -574,7 +574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54419001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2500268-1",
+		.vendor_pn_str            = "2500268-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -594,7 +594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54419001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409706-1",
+		.vendor_pn_str            = "2409706-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -614,7 +614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54420001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K810-C140",
+		.vendor_pn_str            = "L45593-K810-C140",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -634,7 +634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54420001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2126759004",
+		.vendor_pn_str            = "2126759004",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -654,7 +654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54420001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2500268-4",
+		.vendor_pn_str            = "2500268-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -674,7 +674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54420001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409706-3",
+		.vendor_pn_str            = "2409706-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -694,7 +694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54421001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K810-C160",
+		.vendor_pn_str            = "L45593-K810-C160",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -714,7 +714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54421001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2126759005",
+		.vendor_pn_str            = "2126759005",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -734,7 +734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54421001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2500268-5",
+		.vendor_pn_str            = "2500268-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -754,7 +754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54421001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409706-4",
+		.vendor_pn_str            = "2409706-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -774,7 +774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54422001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2476833-0",
+		.vendor_pn_str            = "1-2476833-0",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -794,7 +794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54422001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123001",
+		.vendor_pn_str            = "2178123001",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -814,7 +814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54423001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-3",
+		.vendor_pn_str            = "2476833-3",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -834,7 +834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54423001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123003",
+		.vendor_pn_str            = "2178123003",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -854,7 +854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54424001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-8",
+		.vendor_pn_str            = "2476833-8",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -874,7 +874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54424001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123004",
+		.vendor_pn_str            = "2178123004",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -894,7 +894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54425001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K810-C120",
+		.vendor_pn_str            = "L45593-K810-C120",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -914,7 +914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54425001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2126759003",
+		.vendor_pn_str            = "2126759003",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -934,7 +934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54425001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2500268-3",
+		.vendor_pn_str            = "2500268-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -954,7 +954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54425001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409706-2",
+		.vendor_pn_str            = "2409706-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -974,7 +974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54426001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-4",
+		.vendor_pn_str            = "2476833-4",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -994,7 +994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54426001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123005",
+		.vendor_pn_str            = "2178123005",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -1014,7 +1014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54427001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-9",
+		.vendor_pn_str            = "2476833-9",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -1034,7 +1034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54427001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123006",
+		.vendor_pn_str            = "2178123006",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -1054,7 +1054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54428001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123007",
+		.vendor_pn_str            = "2178123007",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -1074,7 +1074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54428001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-5",
+		.vendor_pn_str            = "2476833-5",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -1094,7 +1094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54429001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2476833-1",
+		.vendor_pn_str            = "1-2476833-1",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -1114,7 +1114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54429001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123008",
+		.vendor_pn_str            = "2178123008",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -1134,7 +1134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54430001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2476833-2",
+		.vendor_pn_str            = "1-2476833-2",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1154,7 +1154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54430001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123009",
+		.vendor_pn_str            = "2178123009",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1174,7 +1174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54431001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K814-C80",
+		.vendor_pn_str            = "L45593-K814-C80",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -1194,7 +1194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54431001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3039169001",
+		.vendor_pn_str            = "3039169001",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -1214,7 +1214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54431001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2493257-1",
+		.vendor_pn_str            = "2493257-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -1234,7 +1234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54431001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2459248-1",
+		.vendor_pn_str            = "2459248-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -1254,7 +1254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54432001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K814-C120",
+		.vendor_pn_str            = "L45593-K814-C120",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -1274,7 +1274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54432001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3039169003",
+		.vendor_pn_str            = "3039169003",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -1294,7 +1294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54432001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2493257-3",
+		.vendor_pn_str            = "2493257-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -1314,7 +1314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54432001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2459248-3",
+		.vendor_pn_str            = "2459248-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -1334,7 +1334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54433001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K814-C160",
+		.vendor_pn_str            = "L45593-K814-C160",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1354,7 +1354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54433001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3039169005",
+		.vendor_pn_str            = "3039169005",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1374,7 +1374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54433001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2493257-5",
+		.vendor_pn_str            = "2493257-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1394,7 +1394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54433001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2459248-5",
+		.vendor_pn_str            = "2459248-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1414,7 +1414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54434001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491001",
+		.vendor_pn_str            = "3026491001",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1434,7 +1434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54434001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-1",
+		.vendor_pn_str            = "2480871-1",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -1454,7 +1454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54435001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491003",
+		.vendor_pn_str            = "3026491003",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 200,
@@ -1474,7 +1474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54435001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-3",
+		.vendor_pn_str            = "2480871-3",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 200,
@@ -1494,7 +1494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54436001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491004",
+		.vendor_pn_str            = "3026491004",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 225,
@@ -1514,7 +1514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54436001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-4",
+		.vendor_pn_str            = "2480871-4",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 225,
@@ -1534,7 +1534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54437001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491008",
+		.vendor_pn_str            = "3026491008",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 400,
@@ -1554,7 +1554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54437001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-8",
+		.vendor_pn_str            = "2480871-8",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 400,
@@ -1574,7 +1574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54438001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491009",
+		.vendor_pn_str            = "3026491009",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 500,
@@ -1594,7 +1594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54438001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-9",
+		.vendor_pn_str            = "2480871-9",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 500,
@@ -1614,7 +1614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54439001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-1",
+		.vendor_pn_str            = "2477317-1",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1634,7 +1634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54439001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C05 ",
+		.vendor_pn_str            = "FCBx8X0QE1C05 ",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1654,7 +1654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54439001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC05-CR",
+		.vendor_pn_str            = "DMQ8821-EC05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1674,7 +1674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54440001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2477317-2",
+		.vendor_pn_str            = "1-2477317-2",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -1694,7 +1694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54440001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C100",
+		.vendor_pn_str            = "FCBx8X0QE1C100",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -1714,7 +1714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54440001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-ECA0-CR",
+		.vendor_pn_str            = "DMQ8821-ECA0-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -1734,7 +1734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54442001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2477317-0",
+		.vendor_pn_str            = "1-2477317-0",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -1754,7 +1754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54442001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C50 ",
+		.vendor_pn_str            = "FCBx8X0QE1C50 ",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -1774,7 +1774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54442001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC50-CR",
+		.vendor_pn_str            = "DMQ8821-EC50-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -1794,7 +1794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54443001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2477317-1",
+		.vendor_pn_str            = "1-2477317-1",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -1814,7 +1814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54443001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C75",
+		.vendor_pn_str            = "FCBx8X0QE1C75",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -1834,7 +1834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54443001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC75-CR",
+		.vendor_pn_str            = "DMQ8821-EC75-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -1854,7 +1854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54444001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-7",
+		.vendor_pn_str            = "2477317-7",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3000,
@@ -1874,7 +1874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54444001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C30 ",
+		.vendor_pn_str            = "FCBx8X0QE1C30 ",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3000,
@@ -1894,7 +1894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54444001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC30-CR",
+		.vendor_pn_str            = "DMQ8821-EC30-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3000,
@@ -1914,7 +1914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54445001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-6",
+		.vendor_pn_str            = "2477317-6",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -1934,7 +1934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54445001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C25",
+		.vendor_pn_str            = "FCBx8X0QE1C25",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -1954,7 +1954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54445001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC25-CR",
+		.vendor_pn_str            = "DMQ8821-EC25-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -1974,7 +1974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54446001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-5",
+		.vendor_pn_str            = "2477317-5",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -1994,7 +1994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54446001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C19",
+		.vendor_pn_str            = "FCBx8X0QE1C19",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -2014,7 +2014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54446001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC19-CR",
+		.vendor_pn_str            = "DMQ8821-EC19-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -2034,7 +2034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54447001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-8",
+		.vendor_pn_str            = "2477317-8",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -2054,7 +2054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54447001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C35",
+		.vendor_pn_str            = "FCBx8X0QE1C35",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -2074,7 +2074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54447001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC35-CR",
+		.vendor_pn_str            = "DMQ8821-EC35-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -2094,7 +2094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54455001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491005",
+		.vendor_pn_str            = "3026491005",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 250,
@@ -2114,7 +2114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54455001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-5",
+		.vendor_pn_str            = "2480871-5",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 250,
@@ -2134,7 +2134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54456001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491006",
+		.vendor_pn_str            = "3026491006",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 275,
@@ -2154,7 +2154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54456001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-6",
+		.vendor_pn_str            = "2480871-6",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 275,
@@ -2174,7 +2174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54457001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491007",
+		.vendor_pn_str            = "3026491007",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 300,
@@ -2194,7 +2194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54457001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-7",
+		.vendor_pn_str            = "2480871-7",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 300,
@@ -2214,7 +2214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54458001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-2",
+		.vendor_pn_str            = "2477317-2",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -2234,7 +2234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54458001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C07 ",
+		.vendor_pn_str            = "FCBx8X0QE1C07 ",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -2254,7 +2254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54458001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC07-CR",
+		.vendor_pn_str            = "DMQ8821-EC07-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -2274,7 +2274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54459001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-3",
+		.vendor_pn_str            = "2477317-3",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -2294,7 +2294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54459001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C10 ",
+		.vendor_pn_str            = "FCBx8X0QE1C10 ",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -2314,7 +2314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54459001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC10-CR",
+		.vendor_pn_str            = "DMQ8821-EC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -2334,7 +2334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54460001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-4",
+		.vendor_pn_str            = "2477317-4",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -2354,7 +2354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54460001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C14",
+		.vendor_pn_str            = "FCBx8X0QE1C14",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -2374,7 +2374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54460001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC14-CR",
+		.vendor_pn_str            = "DMQ8821-EC14-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -2394,7 +2394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54463001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K814-C140",
+		.vendor_pn_str            = "L45593-K814-C140",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -2414,7 +2414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54463001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3039169004",
+		.vendor_pn_str            = "3039169004",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -2434,7 +2434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54463001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2493257-4",
+		.vendor_pn_str            = "2493257-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -2454,7 +2454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54463001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2459248-4",
+		.vendor_pn_str            = "2459248-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -2474,7 +2474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54473001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2477317-9",
+		.vendor_pn_str            = "2477317-9",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 4000,
@@ -2494,7 +2494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54473001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBx8X0QE1C40",
+		.vendor_pn_str            = "FCBx8X0QE1C40",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 4000,
@@ -2514,7 +2514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54473001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8821-EC40-CR",
+		.vendor_pn_str            = "DMQ8821-EC40-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 4000,
@@ -2534,7 +2534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58327001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K810-C100",
+		.vendor_pn_str            = "L45593-K810-C100",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -2554,7 +2554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58327001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2126759002",
+		.vendor_pn_str            = "2126759002",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -2574,7 +2574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58327001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2500268-2",
+		.vendor_pn_str            = "2500268-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -2594,7 +2594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58327001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2409706-6",
+		.vendor_pn_str            = "2409706-6",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -2614,7 +2614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58328001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2476833-7",
+		.vendor_pn_str            = "2476833-7",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -2634,7 +2634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58328001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "2178123002",
+		.vendor_pn_str            = "2178123002",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -2654,7 +2654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58665001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2480871-2",
+		.vendor_pn_str            = "2480871-2",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 180,
@@ -2674,7 +2674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58665001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3026491002",
+		.vendor_pn_str            = "3026491002",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 180,
@@ -2694,7 +2694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58666001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K814-C100",
+		.vendor_pn_str            = "L45593-K814-C100",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 100,
@@ -2714,7 +2714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58666001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "3039169002",
+		.vendor_pn_str            = "3039169002",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 100,
@@ -2734,7 +2734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58666001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2493257-2",
+		.vendor_pn_str            = "2493257-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 100,
@@ -2754,7 +2754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 58666001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2459248-2",
+		.vendor_pn_str            = "2459248-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 100,
@@ -2774,7 +2774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65068001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2495759-1",
+		.vendor_pn_str            = "2495759-1",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -2794,7 +2794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65068001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN9X0QE2C05-CU",
+		.vendor_pn_str            = "FCBN9X0QE2C05-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -2814,7 +2814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65068001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8821-EC05-CR",
+		.vendor_pn_str            = "DME8821-EC05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -2834,7 +2834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65072001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2495759-3",
+		.vendor_pn_str            = "2495759-3",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -2854,7 +2854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65072001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN9X0QE2C10-CU",
+		.vendor_pn_str            = "FCBN9X0QE2C10-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -2874,7 +2874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 65072001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8821-EC10-CR",
+		.vendor_pn_str            = "DME8821-EC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -2894,7 +2894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 66805001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2495759-5",
+		.vendor_pn_str            = "2495759-5",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -2914,7 +2914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 66805001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN9X0QE2C30-CU",
+		.vendor_pn_str            = "FCBN9X0QE2C30-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -2934,7 +2934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 66805001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8821-EC30-CR",
+		.vendor_pn_str            = "DME8821-EC30-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 3000,
@@ -2954,7 +2954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72814001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2499036-1",
+		.vendor_pn_str            = "2499036-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -2974,7 +2974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72814001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "LMQ8611-PC+",
+		.vendor_pn_str            = "LMQ8611-PC+",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -2994,7 +2994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72814001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FTCC8612E2PCM",
+		.vendor_pn_str            = "FTCC8612E2PCM",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3014,7 +3014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72815001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2499038-1",
+		.vendor_pn_str            = "2499038-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3034,7 +3034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72815001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "LMQ8811-PC+",
+		.vendor_pn_str            = "LMQ8811-PC+",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3054,7 +3054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 72815001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FTCD8613E2PCM-1A",
+		.vendor_pn_str            = "FTCD8613E2PCM-1A",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3074,7 +3074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 79382001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8621-QC05",
+		.vendor_pn_str            = "DMQ8621-QC05",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -3094,7 +3094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 79383001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8621-QC07",
+		.vendor_pn_str            = "DMQ8621-QC07",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -3114,7 +3114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80489001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2499037-1",
+		.vendor_pn_str            = "2499037-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3134,7 +3134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80489001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3154,7 +3154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80489001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3174,7 +3174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80490001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2499039-1",
+		.vendor_pn_str            = "2499039-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3194,7 +3194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80490001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3214,7 +3214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 82013001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2495759-1",
+		.vendor_pn_str            = "2495759-1",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -3234,7 +3234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 82013001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN9X0QE2C05-CU",
+		.vendor_pn_str            = "FCBN9X0QE2C05-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -3254,7 +3254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 82013001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8821-EC05-CR",
+		.vendor_pn_str            = "DME8821-EC05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 500,
@@ -3274,7 +3274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792700,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-D75",
+		.vendor_pn_str            = "L45593-K410-D75",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -3294,7 +3294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792700,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-1",
+		.vendor_pn_str            = "2370728-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 80,
@@ -3314,7 +3314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792701,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-D115",
+		.vendor_pn_str            = "L45593-K410-D115",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -3334,7 +3334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792701,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-2",
+		.vendor_pn_str            = "2370728-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 120,
@@ -3354,7 +3354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792702,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-D142",
+		.vendor_pn_str            = "L45593-K410-D142",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -3374,7 +3374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792702,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-3",
+		.vendor_pn_str            = "2370728-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 140,
@@ -3394,7 +3394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792703,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-D164",
+		.vendor_pn_str            = "L45593-K410-D164",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -3414,7 +3414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792703,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-4",
+		.vendor_pn_str            = "2370728-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 160,
@@ -3434,7 +3434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792704,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-C191",
+		.vendor_pn_str            = "L45593-K410-C191",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 190,
@@ -3454,7 +3454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792704,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-5",
+		.vendor_pn_str            = "2370728-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 190,
@@ -3474,7 +3474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792705,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-C213",
+		.vendor_pn_str            = "L45593-K410-C213",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 210,
@@ -3494,7 +3494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792705,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-6",
+		.vendor_pn_str            = "2370728-6",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 210,
@@ -3514,7 +3514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792706,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-C239",
+		.vendor_pn_str            = "L45593-K410-C239",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 229,
@@ -3534,7 +3534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792706,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-7",
+		.vendor_pn_str            = "2370728-7",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 229,
@@ -3554,7 +3554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792707,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-C262",
+		.vendor_pn_str            = "L45593-K410-C262",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 260,
@@ -3574,7 +3574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792707,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-8",
+		.vendor_pn_str            = "2370728-8",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 260,
@@ -3594,7 +3594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792708,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K410-C299",
+		.vendor_pn_str            = "L45593-K410-C299",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 290,
@@ -3614,7 +3614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101792708,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2370728-9",
+		.vendor_pn_str            = "2370728-9",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 290,
@@ -3634,7 +3634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793100,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-05",
+		.vendor_pn_str            = "7123-G11-05",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -3654,7 +3654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793100,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC05-CR",
+		.vendor_pn_str            = "DMQ8811A-EC05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -3674,7 +3674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793101,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-07",
+		.vendor_pn_str            = "7123-G11-07",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -3694,7 +3694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793101,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC07-CR",
+		.vendor_pn_str            = "DMQ8811A-EC07-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -3714,7 +3714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793102,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-10",
+		.vendor_pn_str            = "7123-G11-10",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -3734,7 +3734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793102,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC10-CR",
+		.vendor_pn_str            = "DMQ8811A-EC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -3754,7 +3754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793103,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-14",
+		.vendor_pn_str            = "7123-G11-14",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -3774,7 +3774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793103,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC14-CR",
+		.vendor_pn_str            = "DMQ8811A-EC14-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -3794,7 +3794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793104,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-19",
+		.vendor_pn_str            = "7123-G11-19",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -3814,7 +3814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793104,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC19-CR",
+		.vendor_pn_str            = "DMQ8811A-EC19-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -3834,7 +3834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793105,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-25",
+		.vendor_pn_str            = "7123-G11-25",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -3854,7 +3854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793105,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC25-CR",
+		.vendor_pn_str            = "DMQ8811A-EC25-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -3874,7 +3874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793106,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-35",
+		.vendor_pn_str            = "7123-G11-35",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -3894,7 +3894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793106,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC35-CR",
+		.vendor_pn_str            = "DMQ8811A-EC35-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -3914,7 +3914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793107,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-50",
+		.vendor_pn_str            = "7123-G11-50",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -3934,7 +3934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793107,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC50-CR",
+		.vendor_pn_str            = "DMQ8811A-EC50-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -3954,7 +3954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793108,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-75",
+		.vendor_pn_str            = "7123-G11-75",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -3974,7 +3974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793108,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-EC75-CR",
+		.vendor_pn_str            = "DMQ8811A-EC75-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -3994,7 +3994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793109,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G11-A0",
+		.vendor_pn_str            = "7123-G11-A0",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -4014,7 +4014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101793109,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811A-ECAO-CR",
+		.vendor_pn_str            = "DMQ8811A-ECAO-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -4034,7 +4034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798700,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN950QE1C04-CY",
+		.vendor_pn_str            = "FCBN950QE1C04-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -4054,7 +4054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798700,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811-DC04-CR",
+		.vendor_pn_str            = "DME8811-DC04-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -4074,7 +4074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798705,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -4094,7 +4094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798705,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811-DC10-CR",
+		.vendor_pn_str            = "DME8811-DC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -4114,7 +4114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101821100,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBNX50QE1C05-CU",
+		.vendor_pn_str            = "FCBNX50QE1C05-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 500,
@@ -4134,7 +4134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101821101,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBNX50QE1C07-CU",
+		.vendor_pn_str            = "FCBNX50QE1C07-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 700,
@@ -4154,7 +4154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101821102,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBNX50QE1C10-CU",
+		.vendor_pn_str            = "FCBNX50QE1C10-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_BIFURCATED,
 		.length_cm                = 1000,
@@ -4174,7 +4174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234300,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-D40",
+		.vendor_pn_str            = "L45593-K210-D40",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 40,
@@ -4194,7 +4194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234300,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "1-2333532-0",
+		.vendor_pn_str            = "1-2333532-0",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 40,
@@ -4214,7 +4214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234301,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-D75",
+		.vendor_pn_str            = "L45593-K210-D75",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -4234,7 +4234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234301,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-1",
+		.vendor_pn_str            = "2333532-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -4254,7 +4254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234302,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-D115",
+		.vendor_pn_str            = "L45593-K210-D115",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -4274,7 +4274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234302,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-2",
+		.vendor_pn_str            = "2333532-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -4294,7 +4294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234303,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-D142",
+		.vendor_pn_str            = "L45593-K210-D142",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -4314,7 +4314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234303,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-3",
+		.vendor_pn_str            = "2333532-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -4334,7 +4334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234304,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-D164",
+		.vendor_pn_str            = "L45593-K210-D164",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -4354,7 +4354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234304,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-4",
+		.vendor_pn_str            = "2333532-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -4374,7 +4374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234305,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-C191",
+		.vendor_pn_str            = "L45593-K210-C191",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 190,
@@ -4394,7 +4394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234305,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-5",
+		.vendor_pn_str            = "2333532-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 190,
@@ -4414,7 +4414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234306,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-C213",
+		.vendor_pn_str            = "L45593-K210-C213",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 210,
@@ -4434,7 +4434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234306,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-6",
+		.vendor_pn_str            = "2333532-6",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 210,
@@ -4454,7 +4454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234307,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-C239",
+		.vendor_pn_str            = "L45593-K210-C239",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 240,
@@ -4474,7 +4474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234307,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-7",
+		.vendor_pn_str            = "2333532-7",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 240,
@@ -4494,7 +4494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234308,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-C262",
+		.vendor_pn_str            = "L45593-K210-C262",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 260,
@@ -4514,7 +4514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234308,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-8",
+		.vendor_pn_str            = "2333532-8",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 260,
@@ -4534,7 +4534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234309,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K210-C299",
+		.vendor_pn_str            = "L45593-K210-C299",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 290,
@@ -4554,7 +4554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234309,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333532-9",
+		.vendor_pn_str            = "2333532-9",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 290,
@@ -4574,7 +4574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234600,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K310-D100",
+		.vendor_pn_str            = "L45593-K310-D100",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 100,
@@ -4594,7 +4594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234600,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333542-4",
+		.vendor_pn_str            = "2333542-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 100,
@@ -4614,7 +4614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234601,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K310-D150",
+		.vendor_pn_str            = "L45593-K310-D150",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -4634,7 +4634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234601,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333542-2",
+		.vendor_pn_str            = "2333542-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 150,
@@ -4654,7 +4654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234602,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K310-C200",
+		.vendor_pn_str            = "L45593-K310-C200",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 200,
@@ -4674,7 +4674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234602,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333542-1",
+		.vendor_pn_str            = "2333542-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 200,
@@ -4694,7 +4694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234603,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K310-C250",
+		.vendor_pn_str            = "L45593-K310-C250",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 250,
@@ -4714,7 +4714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234603,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333542-3",
+		.vendor_pn_str            = "2333542-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 250,
@@ -4734,7 +4734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234604,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-K310-C300",
+		.vendor_pn_str            = "L45593-K310-C300",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 300,
@@ -4754,7 +4754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102234604,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2333542-5",
+		.vendor_pn_str            = "2333542-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 300,
@@ -4774,7 +4774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253300,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-05",
+		.vendor_pn_str            = "7123-G12-05",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -4794,7 +4794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253300,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C05-CY",
+		.vendor_pn_str            = "FCBN850QE1C05-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -4814,7 +4814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253300,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC05-CR",
+		.vendor_pn_str            = "DMQ8811-EC05-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -4834,7 +4834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253301,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-07",
+		.vendor_pn_str            = "7123-G12-07",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -4854,7 +4854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253301,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C07-CY",
+		.vendor_pn_str            = "FCBN850QE1C07-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -4874,7 +4874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253301,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC07-CR",
+		.vendor_pn_str            = "DMQ8811-EC07-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -4894,7 +4894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253302,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-10",
+		.vendor_pn_str            = "7123-G12-10",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -4914,7 +4914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253302,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C10-CY",
+		.vendor_pn_str            = "FCBN850QE1C10-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -4934,7 +4934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253302,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC10-CR",
+		.vendor_pn_str            = "DMQ8811-EC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1000,
@@ -4954,7 +4954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253303,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-14",
+		.vendor_pn_str            = "7123-G12-14",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -4974,7 +4974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253303,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C14-CY",
+		.vendor_pn_str            = "FCBN850QE1C14-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -4994,7 +4994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253303,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC14-CR",
+		.vendor_pn_str            = "DMQ8811-EC14-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1400,
@@ -5014,7 +5014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253304,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-19",
+		.vendor_pn_str            = "7123-G12-19",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -5034,7 +5034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253304,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C19-CY",
+		.vendor_pn_str            = "FCBN850QE1C19-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -5054,7 +5054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253304,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC19-CR",
+		.vendor_pn_str            = "DMQ8811-EC19-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 1900,
@@ -5074,7 +5074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253305,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-25",
+		.vendor_pn_str            = "7123-G12-25",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -5094,7 +5094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253305,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C25-CY",
+		.vendor_pn_str            = "FCBN850QE1C25-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -5114,7 +5114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253305,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC25-CR",
+		.vendor_pn_str            = "DMQ8811-EC25-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 2500,
@@ -5134,7 +5134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253306,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-35",
+		.vendor_pn_str            = "7123-G12-35",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -5154,7 +5154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253306,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C35-CY",
+		.vendor_pn_str            = "FCBN850QE1C35-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -5174,7 +5174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253306,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC35-CR",
+		.vendor_pn_str            = "DMQ8811-EC35-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3500,
@@ -5194,7 +5194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253307,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-50",
+		.vendor_pn_str            = "7123-G12-50",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -5214,7 +5214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253307,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C50-CY",
+		.vendor_pn_str            = "FCBN850QE1C50-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -5234,7 +5234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253307,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC50-CR",
+		.vendor_pn_str            = "DMQ8811-EC50-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -5254,7 +5254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253308,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-75",
+		.vendor_pn_str            = "7123-G12-75",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -5274,7 +5274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253308,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1C75-CY",
+		.vendor_pn_str            = "FCBN850QE1C75-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -5294,7 +5294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253308,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-EC75-CR",
+		.vendor_pn_str            = "DMQ8811-EC75-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 7500,
@@ -5314,7 +5314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253309,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "7123-G12-A0",
+		.vendor_pn_str            = "7123-G12-A0",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -5334,7 +5334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253309,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "FCBN850QE1CX0-CY",
+		.vendor_pn_str            = "FCBN850QE1CX0-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -5354,7 +5354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102253309,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DMQ8811-ECA0-CR",
+		.vendor_pn_str            = "DMQ8811-ECA0-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -5374,7 +5374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102443300,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "8363-K2-2004",
+		.vendor_pn_str            = "8363-K2-2004",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -5394,7 +5394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102443300,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811A-EC04-CR",
+		.vendor_pn_str            = "DME8811A-EC04-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 400,
@@ -5414,7 +5414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102443305,
 		.vendor                   = SL_MEDIA_VENDOR_CLOUD_LIGHT,
-		.vendor_pn                = "8363-K2-2010",
+		.vendor_pn_str            = "8363-K2-2010",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -5434,7 +5434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 102443305,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "DME8811A-EC10-CR",
+		.vendor_pn_str            = "DME8811A-EC10-CR",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -5454,7 +5454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85091001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-L884-C80",
+		.vendor_pn_str            = "L45593-L884-C80",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -5474,7 +5474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85091001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -5494,7 +5494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85091001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-1",
+		.vendor_pn_str            = "2505170-1",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -5514,7 +5514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85092001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-L884-C100",
+		.vendor_pn_str            = "L45593-L884-C100",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -5534,7 +5534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85092001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -5554,7 +5554,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85092001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-2",
+		.vendor_pn_str            = "2505170-2",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -5574,7 +5574,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85093001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-L884-C120",
+		.vendor_pn_str            = "L45593-L884-C120",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -5594,7 +5594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85093001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -5614,7 +5614,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85093001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-3",
+		.vendor_pn_str            = "2505170-3",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -5634,7 +5634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85094001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-L884-C140",
+		.vendor_pn_str            = "L45593-L884-C140",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -5654,7 +5654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85094001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -5674,7 +5674,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85094001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-4",
+		.vendor_pn_str            = "2505170-4",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -5694,7 +5694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85095001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "L45593-L884-C160",
+		.vendor_pn_str            = "L45593-L884-C160",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5714,7 +5714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85095001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5734,7 +5734,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85095001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-5",
+		.vendor_pn_str            = "2505170-5",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5754,7 +5754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5774,7 +5774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5794,7 +5794,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-6",
+		.vendor_pn_str            = "2505170-6",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5814,7 +5814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -5834,7 +5834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -5854,7 +5854,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2505170-7",
+		.vendor_pn_str            = "2505170-7",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -5874,7 +5874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5894,7 +5894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5914,7 +5914,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5934,7 +5934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86997001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5954,7 +5954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86997001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5974,7 +5974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86998001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5994,7 +5994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86998001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -6014,7 +6014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86999001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -6034,7 +6034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86999001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -6054,7 +6054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87000001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -6074,7 +6074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87000001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -6094,7 +6094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87001001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -6114,7 +6114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87001001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -6134,7 +6134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87002001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -6154,7 +6154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87002001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -6174,7 +6174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87003001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -6194,7 +6194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87003001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -6214,7 +6214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87004001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -6234,7 +6234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87004001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -6254,7 +6254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87005001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -6274,7 +6274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87005001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -6294,7 +6294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87655001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6314,7 +6314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87655001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6334,7 +6334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87655001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2499365-1",
+		.vendor_pn_str            = "2499365-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6354,7 +6354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87656001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "2486895-1",
+		.vendor_pn_str            = "2486895-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6374,7 +6374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87656001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "2486895-1",
+		.vendor_pn_str            = "2486895-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6394,7 +6394,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87656001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2486895-1",
+		.vendor_pn_str            = "2486895-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6414,7 +6414,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87657001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6434,7 +6434,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87657001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6454,7 +6454,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87657001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "2506674-1",
+		.vendor_pn_str            = "2506674-1",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6474,7 +6474,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6494,7 +6494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6514,7 +6514,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn                = "?",
+		.vendor_pn_str            = "?",
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
