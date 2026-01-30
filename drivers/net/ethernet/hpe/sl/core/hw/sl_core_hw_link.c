@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -144,12 +144,12 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 	u64 down_cause_map;
 	u32 state;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "down callback (callback = 0x%p)",
-		core_link->link.callbacks.down);
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"down callback (callback = 0x%p)", core_link->link.callbacks.down);
 
 	spin_lock(&core_link->link.data_lock);
 	state          = core_link->link.state;
-	down_cause_map = core_link->link.last_down_cause_map;
+	down_cause_map = core_link->link.last_down_cause_map[core_link->link.last_down_entry_num];
 	info_map       = core_link->info_map;
 	spin_unlock(&core_link->link.data_lock);
 

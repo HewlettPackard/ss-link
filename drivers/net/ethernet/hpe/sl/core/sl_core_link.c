@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 
@@ -183,15 +183,15 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
-		core_link->link.tags.down            = tag;
-		core_link->link.callbacks.down       = callback;
-		core_link->link.state                = SL_CORE_LINK_STATE_GOING_DOWN;
-		core_link->link.last_down_cause_map |= down_cause_map;
+		core_link->link.tags.down      = tag;
+		core_link->link.callbacks.down = callback;
+		core_link->link.state          = SL_CORE_LINK_STATE_GOING_DOWN;
+		spin_unlock(&core_link->link.data_lock);
+		sl_core_data_link_last_down_cause_map_set(core_link, down_cause_map);
 		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
 			&(core_link->work[SL_CORE_WORK_LINK_DOWN])))
-			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
-				SL_CORE_WORK_LINK_DOWN);
-		spin_unlock(&core_link->link.data_lock);
+			sl_core_log_warn(core_link, LOG_NAME,
+					 "already queued (work_num = %u)", SL_CORE_WORK_LINK_DOWN);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		return 0;
 	default:
@@ -400,11 +400,11 @@ int sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking)
 	return 0;
 }
 
-void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
 					       u64 *down_cause_map, time64_t *down_time)
 {
 	sl_core_data_link_last_down_cause_map_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
-						   down_cause_map, down_time);
+						       entry_num, down_cause_map, down_time);
 }
 
 void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map)

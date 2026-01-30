@@ -63,7 +63,7 @@ function test_verify {
 
 		for link_num in "${sl_test_link_nums[@]}"; do
 
-			sysfs_down_cause=$(cat ${lgrp_sysfs}/${lgrp_num}/test_port/${link_num}/link/last_down_cause_map)
+			sysfs_down_cause=$(cat ${lgrp_sysfs}/${lgrp_num}/test_port/${link_num}/link/last_down/cause_map_0)
 
 			IFS=';' read -ra notifs <<< "${data}"
 			for notif in "${notifs[@]}"; do

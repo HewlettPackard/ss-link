@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021,2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021,2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LINK_H_
 #define _SL_CORE_LINK_H_
@@ -10,6 +10,7 @@
 #include <linux/hpe/sl/sl_link.h>
 #include <linux/hpe/sl/sl_lgrp.h>
 
+#include "sl_ctrl_link.h"
 #include "sl_ctrl_link_fec_priv.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link_an.h"
@@ -298,8 +299,9 @@ struct sl_core_link {
 		u64                                   last_up_fail_cause_map;
 		time64_t                              last_up_fail_time;
 		bool                                  is_last_down_new;
-		u64                                   last_down_cause_map;
-		time64_t                              last_down_time;
+		u8                                    last_down_entry_num;
+		u64                                   last_down_cause_map[SL_CTRL_LAST_DOWN_NUM_ENTRIES];
+		time64_t                              last_down_time[SL_CTRL_LAST_DOWN_NUM_ENTRIES];
 		struct {
 			void                         *up;
 			void                         *down;
@@ -471,9 +473,7 @@ int  sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool 
 int  sl_core_link_speed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *link_speed);
 int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
-void sl_core_link_last_down_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
-					       u64 down_cause_map);
-void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
 					       u64 *down_cause_map, time64_t *down_time);
 void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map);
 
@@ -490,6 +490,6 @@ bool sl_core_link_policy_is_use_supported_ss200_cable_set(struct sl_core_link *c
 bool sl_core_link_policy_is_ignore_media_errors_set(struct sl_core_link *core_link);
 
 struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,
-	struct sl_core_link_up_info *link_up_info);
+						      struct sl_core_link_up_info *link_up_info);
 
 #endif /* _SL_CORE_LINK_H_ */

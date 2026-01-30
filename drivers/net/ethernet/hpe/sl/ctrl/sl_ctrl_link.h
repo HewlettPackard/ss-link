@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LINK_H_
 #define _SL_CTRL_LINK_H_
@@ -36,6 +36,8 @@ struct sl_ctrl_link_fecl_kobj {
 	u8                   lane_num;
 	struct kobject       kobj;
 };
+
+#define SL_CTRL_LAST_DOWN_NUM_ENTRIES 10
 
 #define SL_CTRL_LINK_MAGIC     0x536c6c6b
 #define SL_CTRL_LINK_VER       1
@@ -81,6 +83,7 @@ struct sl_ctrl_link {
 
 	struct kobject              *parent_kobj;
 	struct kobject               kobj;
+	struct kobject               last_down_kobj;
 	struct kobject               policy_kobj;
 	struct kobject               config_kobj;
 	struct kobject               caps_kobj;
