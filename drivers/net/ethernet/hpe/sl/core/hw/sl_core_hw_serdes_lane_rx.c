@@ -12,6 +12,7 @@
 #include "hw/sl_core_hw_sbus.h"
 #include "hw/sl_core_hw_uc_ram.h"
 #include "data/sl_core_data_lgrp.h"
+#include "data/sl_core_data_link.h"
 #include "hw/sl_core_hw_serdes_addrs.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
@@ -146,12 +147,14 @@ int sl_core_hw_serdes_lane_up_rx_config(struct sl_core_link *core_link, u8 serde
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 			core_lgrp->core_ldev->serdes.addrs[SERDES_TLB_RX_DIG_LPBK_CONFIG],
 			0x0001, 0x0001); /* DIG_LPBK_EN */
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON);
 	} else {
 		sl_core_log_dbg(core_lgrp, LOG_NAME,
 			"lane up rx config loopback off (logical = %u)", serdes_lane_num);
 		SL_CORE_HW_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
 			core_lgrp->core_ldev->serdes.addrs[SERDES_TLB_RX_DIG_LPBK_CONFIG],
 			0x0000, 0x0001); /* DIG_LPBK_EN */
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON);
 	}
 
 	rtn = 0;

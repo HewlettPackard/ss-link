@@ -171,6 +171,7 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_SERDES_START,       /* SerDes is starting */
 	SL_CORE_INFO_MAP_SERDES_CHECK,       /* SerDes is being checked */
 	SL_CORE_INFO_MAP_SERDES_OK,          /* SerDes check is complete */
+	SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON, /* SerDes loopback is ON */
 
 	/* PCS */
 	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,    /* link is going down from a local fault interrupt */

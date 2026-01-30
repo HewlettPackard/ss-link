@@ -343,6 +343,7 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 	memset(&(core_link->serdes.core_serdes_settings), 0, sizeof(struct sl_core_serdes_settings));
 	memset(&(core_link->serdes.media_serdes_settings), 0, sizeof(struct sl_media_serdes_settings));
 
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON);
 	sl_core_hw_serdes_state_set(core_link, SL_CORE_HW_SERDES_STATE_DOWN);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_CHECK);
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_OK);
