@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -323,11 +323,13 @@ static void sl_core_hw_llr_config(struct sl_core_llr *core_llr)
 //---------------------------- SETUP
 
 void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
-	sl_core_llr_setup_callback_t callback, void *tag, u32 flags)
+			      sl_core_llr_setup_callback_t callback, void *tag, u32 flags)
 {
 	int rtn;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup cmd (core_llr = 0x%p)", core_llr);
+
+	init_completion(&core_llr->stop_complete);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_CONFIG);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETUP);
@@ -349,36 +351,13 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"setup cmd llr_flgs_disable failed [%d]", rtn);
+				       "setup cmd llr_flgs_disable failed [%d]", rtn);
 
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 	sl_core_hw_llr_config(core_llr);
 
 	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
-}
-
-static void sl_core_hw_llr_setup_fail(struct sl_core_llr *core_llr)
-{
-	u32 llr_state;
-
-	sl_core_log_dbg(core_llr, LOG_NAME, "setup fail");
-
-	spin_lock(&core_llr->data_lock);
-	llr_state = core_llr->state;
-	switch (llr_state) {
-	case SL_CORE_LLR_STATE_SETTING_UP:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup fail - canceling");
-		core_llr->state = SL_CORE_LLR_STATE_SETUP_CANCELING;
-		spin_unlock(&core_llr->data_lock);
-		sl_core_hw_llr_settingup_cancel_cmd(core_llr);
-		return;
-	default:
-		sl_core_log_err(core_llr, LOG_NAME, "setup fail - invalid state (link_state = %u %s)",
-				llr_state, sl_core_llr_state_str(llr_state));
-		spin_unlock(&core_llr->data_lock);
-		return;
-	}
 }
 
 void sl_core_hw_llr_setup_work(struct work_struct *work)
@@ -394,12 +373,13 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
 	if (rtn) {
 		sl_core_log_err(core_llr, LOG_NAME,
-				"setup work - llr_state_get failed [%d]", rtn);
+				"setup work llr_state_get failed [%d]", rtn);
 		return;
 	}
 
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "setup work - invalid state (link_state = %u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME,
+				      "setup work invalid state (link_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -411,9 +391,18 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 	rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-			"setup work llr_flgs_enable failed [%d]", rtn);
+				      "setup work llr_flgs_enable failed [%d]", rtn);
+		sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
+		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP_CANCELING);
+		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_SETTING_UP);
+		sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
+		sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_SETUP_LOOP_TIME);
+		cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
+		cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
+		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_SETUP_INTR_ENABLE);
-		sl_core_hw_llr_setup_fail(core_llr);
+		sl_core_hw_llr_setup_callback(core_llr);
+		complete_all(&core_llr->stop_complete);
 		return;
 	}
 
@@ -594,7 +583,6 @@ void sl_core_hw_llr_settingup_cancel_cmd(struct sl_core_llr *core_llr)
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
 			"settingup cancel cmd llr_flgs_disable failed [%d]", rtn);
 
-
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_LOOP_TIME_INTR]));
 	cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_SETUP_UNEXP_LOOP_TIME_INTR]));
 
@@ -607,19 +595,21 @@ void sl_core_hw_llr_settingup_cancel_cmd(struct sl_core_llr *core_llr)
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_CONFIGURED);
 
-	complete_all(&core_llr->stop_complete);
-
 	sl_core_hw_llr_setup_callback(core_llr);
+
+	complete_all(&core_llr->stop_complete);
 }
 
 //---------------------------- START
 
 void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
-	sl_core_llr_start_callback_t callback, void *tag, u32 flags)
+			      sl_core_llr_start_callback_t callback, void *tag, u32 flags)
 {
 	int rtn;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "start cmd");
+
+	init_completion(&core_llr->stop_complete);
 
 	sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_NONE);
 
@@ -636,31 +626,9 @@ void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"start cmd llr_flgs_disable failed [%d]", rtn);
+				       "start cmd llr_flgs_disable failed [%d]", rtn);
 
 	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[SL_CORE_WORK_LLR_START]));
-}
-
-static void sl_core_hw_llr_start_fail(struct sl_core_llr *core_llr)
-{
-	u32 llr_state;
-
-	spin_lock(&core_llr->data_lock);
-	llr_state = core_llr->state;
-	switch (llr_state) {
-	case SL_CORE_LLR_STATE_STARTING:
-		sl_core_log_dbg(core_llr, LOG_NAME, "start fail - canceling");
-		core_llr->state = SL_CORE_LLR_STATE_START_CANCELING;
-		clear_bit(SL_CORE_INFO_MAP_LLR_STARTING, (unsigned long *)&(core_llr->info_map));
-		spin_unlock(&core_llr->data_lock);
-		sl_core_hw_llr_starting_cancel_cmd(core_llr);
-		return;
-	default:
-		sl_core_log_err(core_llr, LOG_NAME, "start fail - invalid state (link_state = %u %s)",
-				llr_state, sl_core_llr_state_str(llr_state));
-		spin_unlock(&core_llr->data_lock);
-		return;
-	}
 }
 
 void sl_core_hw_llr_start_work(struct work_struct *work)
@@ -676,12 +644,13 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 	rtn = sl_core_data_llr_state_get(core_llr, &llr_state);
 	if (rtn) {
 		sl_core_log_err(core_llr, LOG_NAME,
-				"start work - llr_state_get failed [%d]", rtn);
+				"start work llr_state_get failed [%d]", rtn);
 		return;
 	}
 
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "start work - invalid state (link_state = %u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME,
+				      "start work invalid state (link_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -690,9 +659,16 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 	rtn = sl_core_hw_intr_llr_flgs_enable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-			"start work llr_flgs_enable failed [%d]", rtn);
+				      "start work llr_flgs_enable failed [%d]", rtn);
+		sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
+		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_START_CANCELING);
+		sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
+		sl_core_hw_intr_llr_flgs_disable(core_llr, SL_CORE_HW_INTR_LLR_START_INIT_COMPLETE);
+		cancel_work_sync(&(core_llr->work[SL_CORE_WORK_LLR_START_INIT_COMPLETE_INTR]));
+		sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
 		sl_core_data_llr_last_fail_cause_set(core_llr, SL_LLR_FAIL_CAUSE_START_INTR_ENABLE);
-		sl_core_hw_llr_start_fail(core_llr);
+		sl_core_hw_llr_start_callback(core_llr);
+		complete_all(&core_llr->stop_complete);
 		return;
 	}
 
@@ -841,9 +817,9 @@ void sl_core_hw_llr_starting_cancel_cmd(struct sl_core_llr *core_llr)
 
 	sl_core_data_llr_state_set(core_llr, SL_CORE_LLR_STATE_SETUP);
 
-	complete_all(&core_llr->stop_complete);
-
 	sl_core_hw_llr_start_callback(core_llr);
+
+	complete_all(&core_llr->stop_complete);
 }
 
 //---------------------------- STOP

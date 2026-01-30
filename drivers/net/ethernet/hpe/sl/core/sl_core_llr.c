@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -94,7 +94,7 @@ int sl_core_llr_policy_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 }
 
 int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-	sl_core_llr_setup_callback_t callback, void *tag, u32 flags)
+		      sl_core_llr_setup_callback_t callback, void *tag, u32 flags)
 {
 	int                 rtn;
 	u32                 llr_state;
@@ -104,9 +104,7 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "setup");
 
-	reinit_completion(&core_llr->stop_complete);
 	spin_lock(&core_llr->data_lock);
-
 	llr_state = core_llr->state;
 	switch (llr_state) {
 	case SL_CORE_LLR_STATE_SETUP:
@@ -127,15 +125,15 @@ int sl_core_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
-			"setup - invalid (llr_state = %u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+				"setup - invalid (llr_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return -EBADRQC;
 	}
 }
 
 int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
-	sl_core_llr_start_callback_t callback, void *tag, u32 flags)
+		      sl_core_llr_start_callback_t callback, void *tag, u32 flags)
 {
 	u32                 llr_state;
 	struct sl_core_llr *core_llr;
@@ -159,8 +157,8 @@ int sl_core_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num,
 		return 0;
 	default:
 		sl_core_log_err(core_llr, LOG_NAME,
-			"start - invalid (llr_state = %u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+				"start - invalid (llr_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return -EBADRQC;
 	}
