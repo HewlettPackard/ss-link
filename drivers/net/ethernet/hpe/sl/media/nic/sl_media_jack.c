@@ -108,9 +108,9 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
 		if (rtn) {
-			sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom format invalid");
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom format unsupported");
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_INVALID;
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
 			if (rtn)
@@ -131,16 +131,16 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 						media_attr.type, sl_media_type_str(media_attr.type),
 						media_attr.length_cm, media_attr.speeds_map);
 
-			media_jack->is_cable_not_supported = true;
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
+			media_jack->is_cable_unsupported = true;
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 		}
 
 		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type) &&
-		    !media_jack->is_cable_not_supported && !media_jack->is_supported_ss200_cable) {
-			if (!sl_media_eeprom_is_fw_version_valid(media_jack, &media_attr)) {
-				sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom fw version invalid");
-				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
+		    !media_jack->is_cable_unsupported && !media_jack->is_supported_ss200_cable) {
+			if (!sl_media_eeprom_is_fw_version_supported(media_jack, &media_attr)) {
+				sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom fw version unsupported");
+				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
 			/*
@@ -161,8 +161,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		media_attr.jack_type_info.qsfp.density = SL_MEDIA_QSFP_DENSITY_SINGLE;
 	}
 
-	if (media_jack->is_cable_not_supported)
-		flags |= SL_MEDIA_TYPE_NOT_SUPPORTED;
+	if (media_jack->is_cable_unsupported)
+		flags |= SL_MEDIA_TYPE_UNSUPPORTED;
 
 	if (media_attr.vendor == SL_MEDIA_VENDOR_MULTILANE)
 		flags |= SL_MEDIA_TYPE_LOOPBACK;
@@ -217,12 +217,14 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	}
 
 	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type)) {
-		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
+		if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) ==
+		    SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
-		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)
+		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) ==
+			 SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 		else
-			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID);
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED);
 	}
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);

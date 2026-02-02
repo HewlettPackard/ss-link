@@ -138,15 +138,15 @@ bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
 	return (state == SL_MEDIA_JACK_CABLE_ONLINE);
 }
 
-bool sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack)
+bool sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack)
 {
-	bool is_format_invalid;
+	bool is_format_unsupported;
 
 	spin_lock(&media_jack->data_lock);
-	is_format_invalid = media_jack->is_cable_format_invalid;
+	is_format_unsupported = media_jack->is_cable_format_unsupported;
 	spin_unlock(&media_jack->data_lock);
 
-	return is_format_invalid;
+	return is_format_unsupported;
 }
 
 u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack)
@@ -274,7 +274,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8
 		if ((media_lgrp->media_jack->host_interface_200_gaui != SL_MEDIA_SS1_HOST_INTERFACE_200GAUI_4_C2M) ||
 			(media_lgrp->media_jack->lane_count_200_gaui != 0x44) ||
 			(media_lgrp->media_jack->host_interface_400_gaui == 0)) {
-			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO;
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_CHECK;
 			spin_unlock(&media_lgrp->media_jack->data_lock);
 			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
 					 "downshift check failed - invalid host interface and/or lane count");
@@ -284,7 +284,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8
 		if (((media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS2_HOST_INTERFACE_400GAUI_4_S_C2M) &&
 			(media_lgrp->media_jack->host_interface_400_gaui != SL_MEDIA_SS1_HOST_INTERFACE_400GAUI_4_L_C2M)) ||
 			(media_lgrp->media_jack->lane_count_400_gaui != 0x44)) {
-			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO;
+			media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_CHECK;
 			spin_unlock(&media_lgrp->media_jack->data_lock);
 			sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME,
 					 "upshift check failed - invalid host interface and/or lane count");
@@ -309,8 +309,8 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable downshift");
 
-	if (media_lgrp->media_jack->is_cable_not_supported) {
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable not supported - shift not required");
+	if (media_lgrp->media_jack->is_cable_unsupported) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable unsupported - shift not required");
 		return 0;
 	}
 
@@ -338,15 +338,17 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
 		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_INVALID) {
-			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't downshift - cable firmware not supported");
+		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED) {
+			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME,
+					       "can't downshift - cable firmware unsupported");
 			return 0;
 		}
 	}
 
 	rtn = sl_media_data_jack_cable_downshift(media_lgrp->media_jack);
 	if (rtn) {
-		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED);
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
+						    SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_DOWNSHIFT);
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "data jack cable downshift failed [%d]", rtn);
 		return rtn;
 	}
@@ -368,8 +370,8 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable upshift");
 
-	if (media_lgrp->media_jack->is_cable_not_supported) {
-		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable not supported - shift not required");
+	if (media_lgrp->media_jack->is_cable_unsupported) {
+		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable unsupported - shift not required");
 		return 0;
 	}
 
@@ -397,15 +399,17 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
 		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_INVALID) {
-			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "can't upshift - cable firmware not supported");
+		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED) {
+			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME,
+					       "can't upshift - cable firmware unsupported");
 			return 0;
 		}
 	}
 
 	rtn = sl_media_data_jack_cable_upshift(media_lgrp->media_jack);
 	if (rtn) {
-		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED);
+		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
+						    SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_UPSHIFT);
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "data jack cable upshift failed [%d]", rtn);
 		return rtn;
 	}
@@ -446,10 +450,10 @@ void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_
 const char *sl_media_fault_cause_str(u32 fault_cause)
 {
 	switch (fault_cause) {
-	case SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID:
-		return "eeprom-format-invalid";
-	case SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID:
-		return "eeprom-vendor-invalid";
+	case SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED:
+		return "eeprom-format-unsupported";
+	case SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED:
+		return "eeprom-vendor-unsupported";
 	case SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO:
 		return "eeprom-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET:
@@ -833,7 +837,7 @@ int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struc
 	}
 
 	if (!sl_media_lgrp_is_signal_status_supported(ldev_num, lgrp_num)) {
-		sl_media_log_dbg(media_jack, LOG_NAME, "signal status not supported");
+		sl_media_log_dbg(media_jack, LOG_NAME, "signal status unsupported");
 		return -EBADRQC;
 	}
 
@@ -975,14 +979,14 @@ int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, u
 
 	for_each_set_bit(which, &error_map, sizeof(error_map) * BITS_PER_BYTE) {
 		switch (BIT(which)) {
-		case SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-not-supported ");
+		case SL_MEDIA_ERROR_CABLE_UNSUPPORTED:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-unsupported ");
 			break;
-		case SL_MEDIA_ERROR_CABLE_FORMAT_INVALID:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-format-invalid ");
+		case SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-format-unsupported ");
 			break;
-		case SL_MEDIA_ERROR_CABLE_FW_INVALID:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-fw-invalid ");
+		case SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-fw-unsupported ");
 			break;
 		case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
 			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-headshell-fault ");

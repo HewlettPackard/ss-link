@@ -96,7 +96,8 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 elif cell_value == "Molex":
                     f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_MOLEX" + ",\n")
                 else:
-                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_INVALID" + ",\n")
+                    print("Invalid vendor = %s", cell_value)
+                    sys.exit(1)
 
 		# vendor part num
                 cell_obj = df.cell(row = curr_row+1, column = 8)
@@ -121,7 +122,8 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 elif cell_value == "XCVR":
                     f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_POC" + ",\n")
                 else:
-                    f.write("\t\t.type                     = " + "SL_MEDIA_TYPE_INVALID" + ",\n")
+                    print("Invalid type = %s", cell_value)
+                    sys.exit(1)
 
                 cell_obj = df.cell(row = curr_row+1, column = 5) #read the shape
                 cell_value = str(cell_obj.value).strip() #remove whitespace
@@ -132,7 +134,8 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 elif cell_value == "Bifurcated (H)":
                     f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_BIFURCATED" + ",\n")
                 else:
-                    f.write("\t\t.shape                    = " + "SL_MEDIA_SHAPE_INVALID" + ",\n")
+                    print("Invalid shape = %s", cell_value)
+                    sys.exit(1)
 
                 cell_obj = df.cell(row = curr_row+1, column = 10) #read the length
                 length = str(cell_obj.value)
@@ -164,7 +167,8 @@ def cable_info_write(f, df, part_nums, sheet_name):
                 elif cell_value == "800Gb":
                     f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
                 else:
-                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_INVALID" + ",\n")
+                    print("Invalid speeds support = %s", cell_value)
+                    sys.exit(1)
 
                 cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
                 cell_value = str(cell_obj.value).strip() #remove whitespace

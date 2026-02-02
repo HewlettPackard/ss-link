@@ -18,7 +18,6 @@
  * These states reflect whether a physical module is inserted in
  * a jack or not. And if it is inserted, can it be talked to or not.
  */
-#define SL_MEDIA_JACK_CABLE_INVALID          0
 #define SL_MEDIA_JACK_CABLE_REMOVED          1
 #define SL_MEDIA_JACK_CABLE_INSERTED         2
 #define SL_MEDIA_JACK_CABLE_GOING_ONLINE     3
@@ -50,23 +49,25 @@
  * These states reflect the state of cable shifting for active cables.
  * For non-active cables, the cable shift state always reflects "invalid"
  */
-#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID             0
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED           1
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED         2
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE     3
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE   4
 #define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT   5
-#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO 6
-#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED              7
+#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_CHECK        6
+#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_UPSHIFT      7
+#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_DOWNSHIFT    8
+#define SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED          9
 
 /*
  * These states reflect the state of cable shifting in the hardware.
  * These states might be different than driver states since hardware
  * state can change while driver is not loaded
  */
-#define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID     0
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED   1
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED 2
+#define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN     3
+#define SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR          4
 
 #define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
 
@@ -169,8 +170,8 @@ struct sl_media_jack {
 	spinlock_t                      data_lock; /* data lock for jack object */
 	spinlock_t                      log_lock;  /* log lock for jack object  */
 
-	bool                            is_cable_not_supported;
-	bool                            is_cable_format_invalid;
+	bool                            is_cable_unsupported;
+	bool                            is_cable_format_unsupported;
 	bool                            is_supported_ss200_cable;
 	bool                            is_high_powered;
 	bool                            is_high_temp;
@@ -210,8 +211,8 @@ struct sl_media_jack {
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0
-#define SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID             BIT(0)
-#define SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID             BIT(1)
+#define SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED         BIT(0)
+#define SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED         BIT(1)
 #define SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO                    BIT(2)
 #define SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET                 BIT(3)
 #define SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT                   BIT(4)
@@ -244,7 +245,7 @@ bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
 u8                    sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
-bool                  sl_media_jack_is_cable_format_invalid(struct sl_media_jack *media_jack);
+bool                  sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack);
 
 u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack);
 u8 sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack);

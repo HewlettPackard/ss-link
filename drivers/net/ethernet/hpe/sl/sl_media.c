@@ -40,8 +40,10 @@ const char *sl_media_furcation_str(u32 furcation)
 		return "bifurcated";
 	case SL_MEDIA_FURCATION_X4:
 		return "quadfurcated";
-	default:
+	case SL_MEDIA_FURCATION_UNKNOWN:
 		return "unknown";
+	default:
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_furcation_str);
@@ -60,7 +62,7 @@ const char *sl_media_state_str(u8 state)
 	case SL_MEDIA_JACK_CABLE_ERROR:
 		return "error";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_state_str);
@@ -78,12 +80,16 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 		return "failed-fake-cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_SUPPORT:
 		return "failed-no-support";
-	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_INVALID_INFO:
-		return "failed-invalid-info";
-	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED:
-		return "failed";
-	default:
+	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_CHECK:
+		return "failed-check";
+	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_UPSHIFT:
+		return "failed-upshift";
+	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_DOWNSHIFT:
+		return "failed-downshift";
+	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED:
 		return "not-shifted";
+	default:
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_shift_state_str);
@@ -107,21 +113,26 @@ const char *sl_media_type_str(u32 type)
 		return "analog";
 	case SL_MEDIA_TYPE_DIGITAL:
 		return "digital";
+	case SL_MEDIA_TYPE_LOOPBACK:
+		return "loopback";
+	case SL_MEDIA_TYPE_UNSUPPORTED:
+		return "unsupported";
+	case SL_MEDIA_TYPE_UNKNOWN:
+		return "unknown";
+	case SL_MEDIA_TYPE_AOC:
+		return "AOC";
+	case SL_MEDIA_TYPE_POC:
+		return "POC";
+	case SL_MEDIA_TYPE_PEC:
+		return "PEC";
+	case SL_MEDIA_TYPE_AEC:
+		return "AEC";
+	case SL_MEDIA_TYPE_ACC:
+		return "ACC";
+	case SL_MEDIA_TYPE_BKP:
+		return "BKP";
 	default:
-		if (type == SL_MEDIA_TYPE_AOC)
-			return "AOC";
-		if (type == SL_MEDIA_TYPE_POC)
-			return "POC";
-		if (type == SL_MEDIA_TYPE_PEC)
-			return "PEC";
-		if (type == SL_MEDIA_TYPE_AEC)
-			return "AEC";
-		if (type == SL_MEDIA_TYPE_ACC)
-			return "ACC";
-		if (type == SL_MEDIA_TYPE_BKP)
-			return "BKP";
-		else
-			return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_type_str);
@@ -129,8 +140,8 @@ EXPORT_SYMBOL(sl_media_type_str);
 const char *sl_media_shape_str(u32 shape)
 {
 	switch (shape) {
-	case SL_MEDIA_SHAPE_INVALID:
-		return "invalid";
+	case SL_MEDIA_SHAPE_UNKNOWN:
+		return "unknown";
 	case SL_MEDIA_SHAPE_STRAIGHT:
 		return "straight";
 	case SL_MEDIA_SHAPE_SPLITTER:
@@ -138,7 +149,7 @@ const char *sl_media_shape_str(u32 shape)
 	case SL_MEDIA_SHAPE_BIFURCATED:
 		return "bifurcated(H)";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_shape_str);
@@ -146,8 +157,6 @@ EXPORT_SYMBOL(sl_media_shape_str);
 const char *sl_media_cable_end_str(u8 cable_end)
 {
 	switch (cable_end) {
-	case SL_MEDIA_CABLE_END_INVALID:
-		return "invalid";
 	case SL_MEDIA_CABLE_END_DD:
 		return "qsfp_dd";
 	case SL_MEDIA_CABLE_END_END1:
@@ -155,7 +164,7 @@ const char *sl_media_cable_end_str(u8 cable_end)
 	case SL_MEDIA_CABLE_END_END2:
 		return "qsfp_end2";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_end_str);
@@ -163,8 +172,8 @@ EXPORT_SYMBOL(sl_media_cable_end_str);
 const char *sl_media_vendor_str(u32 vendor)
 {
 	switch (vendor) {
-	case SL_MEDIA_VENDOR_INVALID:
-		return "invalid";
+	case SL_MEDIA_VENDOR_UNKNOWN:
+		return "unknown";
 	case SL_MEDIA_VENDOR_TE:
 		return "te";
 	case SL_MEDIA_VENDOR_HISENSE:
@@ -186,7 +195,7 @@ const char *sl_media_vendor_str(u32 vendor)
 	case SL_MEDIA_VENDOR_AMPHENOL:
 		return "amphenol";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_vendor_str);
@@ -211,7 +220,7 @@ const char *sl_media_speed_str(u32 speed)
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
 		return "cd50G";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_speed_str);
@@ -228,7 +237,7 @@ const char *sl_media_ber_str(u8 media_interface)
 	case 4:
 		return "<1E-6";
 	default:
-		return "undefined";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_ber_str);
@@ -254,7 +263,7 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 		case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 			return "BJ-100G";
 		default:
-			return "unknown";
+			return "invalid";
 		}
 	}
 
@@ -276,7 +285,7 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 		return "BJ-100G";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 
 }
@@ -296,7 +305,7 @@ const char *sl_media_info_str(u32 info)
 	case SL_MEDIA_INFO_SUPPORTED_SS200_CABLE:
 		return "supported-ss200-cable";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_info_str);
@@ -304,18 +313,20 @@ EXPORT_SYMBOL(sl_media_info_str);
 const char *sl_media_error_str(u32 error)
 {
 	switch (error) {
-	case SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED:
-		return "not-supported";
-	case SL_MEDIA_ERROR_CABLE_FORMAT_INVALID:
-		return "invalid-format";
-	case SL_MEDIA_ERROR_CABLE_FW_INVALID:
-		return "invalid-fw";
+	case SL_MEDIA_ERROR_CABLE_UNSUPPORTED:
+		return "unsupported";
+	case SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED:
+		return "unsupported-format";
+	case SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED:
+		return "unsupported-fw";
 	case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
 		return "headshell-fault";
 	case SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT:
 		return "temperature-thresh-default";
+	case SL_MEDIA_ERROR_TRYABLE:
+		return "tryable";
 	default:
-		return "unknown";
+		return "invalid";
 	}
 }
 EXPORT_SYMBOL(sl_media_error_str);
@@ -333,9 +344,12 @@ const char *sl_media_jack_type_str(u32 jack_type, u32 density)
 		return "qsfp";
 	case SL_MEDIA_JACK_TYPE_OSFP:
 		return "osfp";
-	default:
+	case SL_MEDIA_JACK_TYPE_UNKNOWN:
 		return "unknown";
+	case SL_MEDIA_JACK_TYPE_UNSUPPORTED:
+		return "unsupported";
+	default:
+		return "invalid";
 	}
-
 }
 EXPORT_SYMBOL(sl_media_jack_type_str);

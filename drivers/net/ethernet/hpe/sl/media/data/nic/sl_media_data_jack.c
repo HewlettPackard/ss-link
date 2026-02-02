@@ -161,7 +161,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME,
 					 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
-			return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+			return SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR;
 		}
 	}
 
@@ -179,8 +179,8 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED;
 	}
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is in invalid state");
-	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is in unknown shift state");
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN;
 }
 
 // FIXME: add media format choices as needed

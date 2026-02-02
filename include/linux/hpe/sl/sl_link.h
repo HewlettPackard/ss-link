@@ -131,7 +131,7 @@ struct sl_link_degrade_info {
 };
 
 #define SL_LINK_POLICY_OPT_KEEP_SERDES_UP            BIT(0) /* Keep serdes running when link is down                   */
-#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE     BIT(1) /* Try to bring the link up even if cable is not supported */
+#define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE     BIT(1) /* Try to bring the link up even if cable is unsupported   */
 #define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR        BIT(2) /* Try to bring the link up even if media has errors       */
 #define SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE BIT(3) /* Bring the link up with supported SS200 cables           */
 /* BIT 30 Reserved */

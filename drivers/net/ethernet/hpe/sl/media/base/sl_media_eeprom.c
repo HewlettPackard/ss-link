@@ -204,7 +204,7 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 				*type = SL_MEDIA_TYPE_ACC;
 			break;
 		default:
-			*type = SL_MEDIA_TYPE_NOT_SUPPORTED;
+			*type = SL_MEDIA_TYPE_UNSUPPORTED;
 		}
 	} else {
 		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
@@ -222,7 +222,7 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 			*type = SL_MEDIA_TYPE_AEC;
 			break;
 		default:
-			*type = SL_MEDIA_TYPE_NOT_SUPPORTED;
+			*type = SL_MEDIA_TYPE_UNSUPPORTED;
 		}
 	}
 
@@ -279,8 +279,8 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 
 	*vendor = 0;
 
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_INVALID);
-	sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom vendor get invalid");
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED);
+	sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom vendor get unsupported");
 
 	return 0;
 }
@@ -465,16 +465,16 @@ static void sl_media_eeprom_supported_flags_advertised_get(struct sl_media_jack 
 	spin_unlock(&media_jack->data_lock);
 }
 
-bool sl_media_eeprom_is_fw_version_valid(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
+bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "is fw version valid (type = 0x%X %s, shape = %u %s, end = %u %s, idx = %d)",
+			 "is fw version supported (type = 0x%X %s, shape = %u %s, end = %u %s, idx = %d)",
 			 media_attr->type, sl_media_type_str(media_attr->type),
 			 media_attr->shape, sl_media_shape_str(media_attr->shape),
 			 media_jack->cable_end, sl_media_cable_end_str(media_jack->cable_end),
 			 media_jack->cable_db_idx);
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "is fw version valid (fw_ver = %02X.%02X, db_fw_ver = %02X.%02X, db_split_fw_ver = %02X.%02X)",
+			 "is fw version supported (fw_ver = %02X.%02X, db_fw_ver = %02X.%02X, db_split_fw_ver = %02X.%02X)",
 			 media_attr->fw_ver[0], media_attr->fw_ver[1],
 			 cable_db[media_jack->cable_db_idx].fw_ver.major,
 			 cable_db[media_jack->cable_db_idx].fw_ver.minor,
@@ -502,15 +502,15 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 			 sl_media_shape_str(media_jack->cable_info[0].media_attr.shape),
 			 media_jack->cable_end,
 			 sl_media_cable_end_str(media_jack->cable_end),
-			 media_jack->is_cable_not_supported ? "no" : "yes");
+			 media_jack->is_cable_unsupported ? "no" : "yes");
 
 	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_jack->cable_info[0].media_attr.type)) {
 		snprintf(target_fw_str, target_fw_size, "invalid-type\n");
 		return;
 	}
 
-	if (media_jack->is_cable_not_supported) {
-		snprintf(target_fw_str, target_fw_size, "not-supported\n");
+	if (media_jack->is_cable_unsupported) {
+		snprintf(target_fw_str, target_fw_size, "unsupported\n");
 		return;
 	}
 
@@ -567,37 +567,37 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 #define REV_CMPL_OFFSET   1
 int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
 {
-    u8   identifier;
-    u8   revision;
-    bool is_sff8636;
-    bool is_cmis;
+	u8   identifier;
+	u8   revision;
+	bool is_sff8636;
+	bool is_cmis;
 
-    sl_media_log_dbg(media_jack, LOG_NAME, "format get");
+	sl_media_log_dbg(media_jack, LOG_NAME, "format get");
 
-    identifier = media_jack->eeprom_page0[IDENTIFIER_OFFSET];
-    revision   = media_jack->eeprom_page0[REV_CMPL_OFFSET];
+	identifier = media_jack->eeprom_page0[IDENTIFIER_OFFSET];
+	revision   = media_jack->eeprom_page0[REV_CMPL_OFFSET];
 
-    is_sff8636 = (identifier == 0x0D || identifier == 0x11) && (revision < 0x27);
-    is_cmis    = ((identifier == 0x18) || (identifier == 0x19) || (identifier >= 0x1E && identifier <= 0x25)) &&
-                  ((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
+	is_sff8636 = (identifier == 0x0D || identifier == 0x11) && (revision < 0x27);
+	is_cmis    = ((identifier == 0x18) || (identifier == 0x19) || (identifier >= 0x1E && identifier <= 0x25)) &&
+			((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
 
-    if (is_sff8636) {
-	*format = SL_MEDIA_MGMT_IF_SFF8636;
-	sl_media_log_dbg(media_jack, LOG_NAME, "format SFF8636 (id = 0x%X, rev = 0x%X)", identifier, revision);
-	return 0;
-    }
+	if (is_sff8636) {
+		*format = SL_MEDIA_MGMT_IF_SFF8636;
+		sl_media_log_dbg(media_jack, LOG_NAME, "format SFF8636 (id = 0x%X, rev = 0x%X)", identifier, revision);
+		return 0;
+	}
 
-    if (is_cmis) {
-	*format = SL_MEDIA_MGMT_IF_CMIS;
-	sl_media_log_dbg(media_jack, LOG_NAME, "format CMIS (id = 0x%X, rev = 0x%X)", identifier, revision);
-	return 0;
-    }
+	if (is_cmis) {
+		*format = SL_MEDIA_MGMT_IF_CMIS;
+		sl_media_log_dbg(media_jack, LOG_NAME, "format CMIS (id = 0x%X, rev = 0x%X)", identifier, revision);
+		return 0;
+	}
 
-    media_jack->is_cable_format_invalid = true;
-    sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_INVALID);
-    sl_media_log_err(media_jack, LOG_NAME, "invalid format (id = 0x%X, rev = 0x%X)", identifier, revision);
+	media_jack->is_cable_format_unsupported = true;
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED);
+	sl_media_log_err(media_jack, LOG_NAME, "unsupported format (id = 0x%X, rev = 0x%X)", identifier, revision);
 
-    return -EMEDIUMTYPE;
+	return -EMEDIUMTYPE;
 }
 
 
