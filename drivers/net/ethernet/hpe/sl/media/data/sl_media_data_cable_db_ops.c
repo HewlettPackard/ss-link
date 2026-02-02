@@ -77,7 +77,7 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		"serdes settings get (media_type = 0x%X %s, flags = 0x%X)",
 		media_type, sl_media_type_str(media_type), flags);
 
-	if (flags & SL_MEDIA_TYPE_NOT_SUPPORTED) {
+	if (flags & SL_MEDIA_TYPE_UNSUPPORTED) {
 		sl_media_log_warn(media_jack, LOG_NAME, "serdes setting get unsuppported cable");
 		if (media_type == SL_MEDIA_TYPE_AEC ||
 		    media_type == SL_MEDIA_TYPE_ACC ||

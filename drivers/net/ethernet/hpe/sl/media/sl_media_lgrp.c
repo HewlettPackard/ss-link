@@ -65,8 +65,8 @@ bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp)
 	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME,
 			 "media has error (media_attr.errors = 0x%X)", media_attr.errors);
 
-	return ((media_attr.errors & (SL_MEDIA_ERROR_CABLE_FORMAT_INVALID |
-				      SL_MEDIA_ERROR_CABLE_FW_INVALID)) != 0);
+	return ((media_attr.errors & (SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED |
+				      SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED)) != 0);
 }
 
 void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
@@ -143,7 +143,7 @@ u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)
 		vendor = media_lgrp->cable_info->stashed_media_attr.vendor;
 		break;
 	default:
-		vendor = SL_MEDIA_VENDOR_INVALID;
+		vendor = SL_MEDIA_VENDOR_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
@@ -180,7 +180,7 @@ u32 sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp)
 		type = media_lgrp->cable_info->stashed_media_attr.type;
 		break;
 	default:
-		type = SL_MEDIA_TYPE_INVALID;
+		type = SL_MEDIA_TYPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
@@ -200,7 +200,7 @@ u32 sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp)
 		shape = media_lgrp->cable_info->stashed_media_attr.shape;
 		break;
 	default:
-		shape = SL_MEDIA_SHAPE_INVALID;
+		shape = SL_MEDIA_SHAPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
@@ -296,7 +296,7 @@ u32 sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp)
 		jack_type = media_lgrp->cable_info->stashed_media_attr.jack_type;
 		break;
 	default:
-		jack_type = SL_MEDIA_JACK_TYPE_INVALID;
+		jack_type = SL_MEDIA_JACK_TYPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
@@ -316,7 +316,7 @@ u32 sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp)
 		density = media_lgrp->cable_info->stashed_media_attr.jack_type_info.qsfp.density;
 		break;
 	default:
-		density = SL_MEDIA_QSFP_DENSITY_INVALID;
+		density = SL_MEDIA_QSFP_DENSITY_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
@@ -336,22 +336,22 @@ u32 sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp)
 		furcation = media_lgrp->cable_info->stashed_media_attr.furcation;
 		break;
 	default:
-		furcation = SL_MEDIA_FURCATION_INVALID;
+		furcation = SL_MEDIA_FURCATION_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
 	return furcation;
 }
 
-bool sl_media_lgrp_is_cable_not_supported(struct sl_media_lgrp *media_lgrp)
+bool sl_media_lgrp_is_cable_unsupported(struct sl_media_lgrp *media_lgrp)
 {
-	bool not_supported;
+	bool unsupported;
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
-	not_supported = media_lgrp->media_jack->is_cable_not_supported;
+	unsupported = media_lgrp->media_jack->is_cable_unsupported;
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return not_supported;
+	return unsupported;
 }
 
 void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str)

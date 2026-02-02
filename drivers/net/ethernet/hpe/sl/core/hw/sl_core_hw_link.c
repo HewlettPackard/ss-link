@@ -175,9 +175,9 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
-	if (sl_media_lgrp_is_cable_not_supported(media_lgrp) &&
-		!sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
-		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable not supported and override not set");
+	if (sl_media_lgrp_is_cable_unsupported(media_lgrp) &&
+	    !sl_core_link_policy_is_use_unsupported_cable_set(core_link)) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media check cable unsupported and override not set");
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
@@ -476,7 +476,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G) ||
 		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G)  ||
 		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G))) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "link_up failed - speed not supported [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "link_up failed - speed unsupported [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)

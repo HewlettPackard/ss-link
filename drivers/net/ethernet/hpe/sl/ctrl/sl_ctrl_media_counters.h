@@ -10,8 +10,8 @@
 struct sl_media_jack;
 
 enum sl_ctrl_media_cause_counters {
-	MEDIA_CAUSE_EEPROM_FORMAT_INVALID,             /* media eeprom format is invalid                */
-	MEDIA_CAUSE_EEPROM_VENDOR_INVALID,             /* media eeprom vendor is invalid                */
+	MEDIA_CAUSE_EEPROM_FORMAT_UNSUPPORTED,         /* media eeprom format is unsupported            */
+	MEDIA_CAUSE_EEPROM_VENDOR_UNSUPPORTED,         /* media eeprom vendor is unsupported            */
 	MEDIA_CAUSE_EEPROM_JACK_IO,                    /* media eeprom jack io error                    */
 	MEDIA_CAUSE_ONLINE_STATUS_GET,                 /* media online status get error                 */
 	MEDIA_CAUSE_ONLINE_TIMEDOUT,                   /* media online timedout                         */

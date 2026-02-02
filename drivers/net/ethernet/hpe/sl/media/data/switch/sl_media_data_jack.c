@@ -551,7 +551,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		media_attr.jack_type = SL_MEDIA_JACK_TYPE_OSFP;
 		break;
 	default:
-		media_attr.jack_type = SL_MEDIA_JACK_TYPE_INVALID;
+		media_attr.jack_type = SL_MEDIA_JACK_TYPE_UNSUPPORTED;
 	}
 
 	if (media_attr.jack_type != SL_MEDIA_JACK_TYPE_BACKPLANE) {
@@ -589,7 +589,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
 		if (rtn) {
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_INVALID;
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 			if (ret)
@@ -609,16 +609,16 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 				rtn, media_attr.vendor, sl_media_vendor_str(media_attr.vendor),
 				media_attr.type, sl_media_type_str(media_attr.type),
 				media_attr.length_cm, media_attr.speeds_map);
-			media_jack->is_cable_not_supported = true;
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_NOT_SUPPORTED;
+			media_jack->is_cable_unsupported = true;
+			media_attr.errors |= SL_MEDIA_ERROR_CABLE_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 		}
 
 		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type) &&
-		    !media_jack->is_cable_not_supported && !media_jack->is_supported_ss200_cable) {
-			if (!sl_media_eeprom_is_fw_version_valid(media_jack, &media_attr)) {
-				sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom fw version invalid");
-				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_INVALID;
+		    !media_jack->is_cable_unsupported && !media_jack->is_supported_ss200_cable) {
+			if (!sl_media_eeprom_is_fw_version_supported(media_jack, &media_attr)) {
+				sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom fw version unsupported");
+				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
 			/*
@@ -660,8 +660,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		flags |= SL_MEDIA_TYPE_LOOPBACK;
 	if (media_attr.jack_type == SL_MEDIA_JACK_TYPE_BACKPLANE)
 		flags |= SL_MEDIA_TYPE_BACKPLANE;
-	if (media_jack->is_cable_not_supported)
-		flags |= SL_MEDIA_TYPE_NOT_SUPPORTED;
+	if (media_jack->is_cable_unsupported)
+		flags |= SL_MEDIA_TYPE_UNSUPPORTED;
 
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
 	if (rtn) {
@@ -721,7 +721,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		else if (sl_media_data_jack_cable_hw_shift_state_get(media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 		else
-			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_INVALID);
+			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED);
 	}
 
 	spin_lock(&media_jack->data_lock);
@@ -939,7 +939,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
-		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR;
 	}
 	memcpy(read_data_lower, i2c_data.data, sizeof(read_data_lower));
 
@@ -953,7 +953,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				 "SCS0 configuration - config lanes 5-8 - read failed [%d]", rtn);
-		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+		return SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR;
 	}
 	memcpy(read_data_upper, i2c_data.data, sizeof(read_data_upper));
 
@@ -979,8 +979,8 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED;
 	}
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is in invalid state");
-	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_INVALID;
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable is in unknown shift state");
+	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN;
 }
 
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)

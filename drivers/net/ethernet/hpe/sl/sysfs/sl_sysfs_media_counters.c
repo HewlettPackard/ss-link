@@ -13,7 +13,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
-static ssize_t cause_eeprom_format_invalid_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_eeprom_format_unsupported_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -22,17 +22,18 @@ static ssize_t cause_eeprom_format_invalid_show(struct kobject *kobj, struct kob
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_FORMAT_INVALID, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_FORMAT_UNSUPPORTED, &counter);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom format invalid show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom format unsupported show (counter = %u)",
+		   counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static ssize_t cause_eeprom_vendor_invalid_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_eeprom_vendor_unsupported_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -41,12 +42,13 @@ static ssize_t cause_eeprom_vendor_invalid_show(struct kobject *kobj, struct kob
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_VENDOR_INVALID, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_VENDOR_UNSUPPORTED, &counter);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom vendor invalid show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom vendor unsupported show (counter = %u)",
+		   counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -462,10 +464,10 @@ static ssize_t cause_high_temp_show(struct kobject *kobj, struct kobj_attribute 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static struct kobj_attribute media_cause_eeprom_format_invalid             =
-			     __ATTR_RO(cause_eeprom_format_invalid);
-static struct kobj_attribute media_cause_eeprom_vendor_invalid             =
-			     __ATTR_RO(cause_eeprom_vendor_invalid);
+static struct kobj_attribute media_cause_eeprom_format_unsupported         =
+			     __ATTR_RO(cause_eeprom_format_unsupported);
+static struct kobj_attribute media_cause_eeprom_vendor_unsupported         =
+			     __ATTR_RO(cause_eeprom_vendor_unsupported);
 static struct kobj_attribute media_cause_eeprom_jack_io                    = __ATTR_RO(cause_eeprom_jack_io);
 static struct kobj_attribute media_cause_online_status_get                 = __ATTR_RO(cause_online_status_get);
 static struct kobj_attribute media_cause_online_timedout                   = __ATTR_RO(cause_online_timedout);
@@ -494,8 +496,8 @@ static struct kobj_attribute media_cause_offline                           = __A
 static struct kobj_attribute media_cause_high_temp                         = __ATTR_RO(cause_high_temp);
 
 static struct attribute *media_counters_attrs[] = {
-	&media_cause_eeprom_format_invalid.attr,
-	&media_cause_eeprom_vendor_invalid.attr,
+	&media_cause_eeprom_format_unsupported.attr,
+	&media_cause_eeprom_vendor_unsupported.attr,
 	&media_cause_eeprom_jack_io.attr,
 	&media_cause_online_status_get.attr,
 	&media_cause_online_timedout.attr,

@@ -33,9 +33,9 @@ static int sl_core_hw_serdes_link_up_an_settings(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "link up an settings");
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-	if (sl_media_lgrp_is_cable_not_supported(media_lgrp))
+	if (sl_media_lgrp_is_cable_unsupported(media_lgrp))
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"cable not supported - using default serdes settings");
+			"cable unsupported - using default serdes settings");
 
 	sl_media_lgrp_media_serdes_settings_get(core_link->core_lgrp->core_ldev->num,
 					core_link->core_lgrp->num, &core_link->serdes.media_serdes_settings);
