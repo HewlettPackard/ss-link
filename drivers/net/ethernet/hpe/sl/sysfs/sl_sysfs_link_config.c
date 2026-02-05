@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -317,6 +317,27 @@ static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribut
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
 }
 
+static ssize_t pml_recovery_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	u32                  options;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
+
+	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "pml recovery show (options = 0x%X)", options);
+
+	if (is_flag_set(options, SL_LINK_CONFIG_OPT_PML_REC_ENABLE))
+		return scnprintf(buf, PAGE_SIZE, "enabled\n");
+
+	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+}
+
 static struct kobj_attribute link_up_timeout_ms    = __ATTR_RO(link_up_timeout_ms);
 static struct kobj_attribute link_up_tries_max_ms  = __ATTR_RO(link_up_tries_max);
 static struct kobj_attribute fec_up_settle_wait_ms = __ATTR_RO(fec_up_settle_wait_ms);
@@ -330,6 +351,7 @@ static struct kobj_attribute autoneg               = __ATTR_RO(autoneg);
 static struct kobj_attribute loopback              = __ATTR_RO(loopback);
 static struct kobj_attribute extended_reach_force  = __ATTR_RO(extended_reach_force);
 static struct kobj_attribute auto_lane_degrade     = __ATTR_RO(auto_lane_degrade);
+static struct kobj_attribute pml_recovery          = __ATTR_RO(pml_recovery);
 
 static struct attribute *link_config_attrs[] = {
 	&link_up_timeout_ms.attr,
@@ -345,6 +367,7 @@ static struct attribute *link_config_attrs[] = {
 	&loopback.attr,
 	&extended_reach_force.attr,
 	&auto_lane_degrade.attr,
+	&pml_recovery.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_config);

@@ -132,6 +132,11 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_DOWN]),
 		sl_core_hw_link_down_work);
 
+	/* ----- pml recovery ----- */
+
+	INIT_WORK(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]),
+		  sl_core_hw_link_pml_rec_poll_work);
+
 	/* ----- an ----- */
 
 	spin_lock_init(&(core_link->an.data_lock));
@@ -295,6 +300,7 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 }
 
 void sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -410,6 +416,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_400G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CK_400G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CK_400G;
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_CK_400G;
 		if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
@@ -432,6 +439,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_200G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CK_200G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CK_200G(core_link->num);
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_CK_200G(core_link->num);
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 8;
@@ -443,6 +451,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CK_100G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CK_100G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CK_100G(core_link->num);
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_CK_100G(core_link->num);
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 4;
@@ -454,6 +463,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_BS_200G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_BS_200G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_BS_200G;
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_BS_200G;
 		if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_FABRIC)) {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
@@ -479,6 +489,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CD_100G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CD_100G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CD_100G(core_link->num);
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_CD_100G(core_link->num);
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 4;
@@ -490,6 +501,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_CD_50G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_CD_50G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_CD_50G(core_link->num);
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_CD_50G(core_link->num);
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 2;
@@ -501,6 +513,7 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.speed                      = SL_LGRP_CONFIG_TECH_BJ_100G;
 		core_link->pcs.settings.pcs_mode                   = SL_CORE_HW_PCS_MODE_BJ_100G;
 		core_link->pcs.settings.rx_active_lanes            = SL_CORE_HW_ACTIVE_LANES_BJ_100G;
+		core_link->pcs.settings.rx_am_lock_lanes           = SL_CORE_HW_AM_LOCK_LANES_BJ_100G;
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
 		core_link->pcs.settings.tx_gearbox_credits         = 8;
@@ -1148,6 +1161,41 @@ int sl_core_data_link_degrade_is_recoverable_get(struct sl_core_link *core_link,
 	sl_core_log_dbg(core_link, LOG_NAME, "get (is_recoverable = %u)", *is_recoverable);
 
 	return 0;
+}
+
+void sl_core_data_link_pml_rec_attempts_get(struct sl_core_link *core_link, int *attempts)
+{
+	*attempts = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_ATTEMPTS]);
+}
+
+void sl_core_data_link_pml_rec_successes_get(struct sl_core_link *core_link, int *successes)
+{
+	*successes = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_SUCCESSES]);
+}
+
+void sl_core_data_link_pml_rec_link_fault_cause_get(struct sl_core_link *core_link, int *fault_cause)
+{
+	*fault_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_CAUSE]);
+}
+
+void sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link, int *down_cause)
+{
+	*down_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_CAUSE]);
+}
+
+void sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause)
+{
+	*fault_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
+}
+
+void sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause)
+{
+	*down_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+}
+
+void sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded)
+{
+	*rate_limit_exceeded = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
 }
 
 int sl_core_data_link_fec_up_settle_wait_ms_get(struct sl_core_link *core_link, u32 *fec_settle_wait_ms)

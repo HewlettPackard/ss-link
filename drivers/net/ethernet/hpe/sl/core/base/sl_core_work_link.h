@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_WORK_LINK_H_
 #define _SL_CORE_WORK_LINK_H_
@@ -32,6 +32,8 @@ enum {
 	SL_CORE_WORK_LINK_DOWN,
 
 	SL_CORE_WORK_LINK_LANE_DEGRADE_INTR,
+
+	SL_CORE_WORK_LINK_PML_REC_POLL,
 
 	SL_CORE_WORK_LINK_COUNT                         /* must be last */
 };

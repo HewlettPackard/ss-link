@@ -162,6 +162,8 @@
 #define SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(a)                           SL_CSR_GET(a, ss2_port_pml_sts_rx_pcs_subport, local_fault)
 #define SS2_PORT_PML_STS_RX_PCS_SUBPORT_HI_SER_GET(a)                                SL_CSR_GET(a, ss2_port_pml_sts_rx_pcs_subport, hi_ser)
 
+#define SS2_PORT_PML_STS_RX_PCS_AM_LOCK_AM_LOCK_GET(a)                               SL_CSR_GET(a, ss2_port_pml_sts_rx_pcs_am_lock, am_lock)
+
 #define SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_BASE_PAGE_GET(a)                   SL_CSR_GET(a, ss2_port_pml_sts_pcs_autoneg_base_page, lp_base_page)
 #define SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_ABILITY_GET(a)                     SL_CSR_GET(a, ss2_port_pml_sts_pcs_autoneg_base_page, lp_ability)
 #define SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_BASE_PAGE_GET(a)                      SL_CSR_GET(a, ss2_port_pml_sts_pcs_autoneg_base_page, base_page)

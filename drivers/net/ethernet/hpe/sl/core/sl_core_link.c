@@ -337,6 +337,43 @@ bool sl_core_link_is_degrade_state_active(struct sl_core_link *core_link)
 	return degrade_state == SL_LINK_DEGRADE_STATE_ACTIVE;
 }
 
+bool sl_core_link_config_is_enable_pml_recovery_set(struct sl_core_link *core_link)
+{
+	bool is_config_set;
+
+	spin_lock(&core_link->serdes.data_lock);
+	is_config_set = is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_PML_REC_ENABLE);
+	spin_unlock(&core_link->serdes.data_lock);
+
+	return is_config_set;
+}
+
+bool sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link)
+{
+	if (atomic_read(&core_link->pml_rec.pml_rec_running) == 1) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "pml recovery already running");
+		return true;
+	}
+
+	return false;
+}
+
+const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause)
+{
+	switch (down_cause) {
+	case PML_REC_DOWN_CAUSE_INVALID:
+		return "invalid";
+	case PML_REC_DOWN_CAUSE_LINK_DOWN:
+		return "link-down";
+	case PML_REC_DOWN_CAUSE_LOCAL_FAULT:
+		return "local-fault";
+	case PML_REC_DOWN_CAUSE_REMOTE_FAULT:
+		return "remote-fault";
+	default:
+		return "unknown";
+	}
+}
+
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy)
 {
 	struct sl_core_link *core_link;

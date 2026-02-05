@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_SYSFS_H_
 #define _SL_SYSFS_H_
@@ -44,8 +44,11 @@ void sl_sysfs_link_config_delete(struct sl_ctrl_link *ctrl_link);
 int  sl_sysfs_link_policy_create(struct sl_ctrl_link *ctrl_link);
 void sl_sysfs_link_policy_delete(struct sl_ctrl_link *ctrl_link);
 
-int sl_sysfs_link_degrade_create(struct sl_core_link *core_link, struct kobject *parent_kobj);
+int  sl_sysfs_link_degrade_create(struct sl_core_link *core_link, struct kobject *parent_kobj);
 void sl_sysfs_link_degrade_delete(struct sl_core_link *core_link);
+
+int  sl_sysfs_link_pml_rec_create(struct sl_core_link *core_link, struct kobject *parent_kobj);
+void sl_sysfs_link_pml_rec_delete(struct sl_core_link *core_link);
 
 int  sl_sysfs_link_fec_create(struct sl_ctrl_link *ctrl_link);
 void sl_sysfs_link_fec_delete(struct sl_ctrl_link *ctrl_link);

@@ -251,6 +251,10 @@ struct sl_core_link_config {
 	s32                                 fec_up_ucw_limit;
 	s32                                 fec_up_ccw_limit;
 
+	u32                                 pml_rec_timeout_ms;
+	u32                                 pml_rec_limit_max_duration_ms; /* Max Recovery time per rate limiter window */
+	u32                                 pml_rec_limit_window_size_ms;  /* Rate Limiter window */
+
 	u32                                 pause_map;
 	u32                                 hpe_map;
 
@@ -276,6 +280,11 @@ struct sl_core_link_fecl_kobj {
 	u8                   lane_num;
 	struct kobject       kobj;
 };
+
+#define PML_REC_DOWN_CAUSE_INVALID       0
+#define PML_REC_DOWN_CAUSE_LINK_DOWN     1
+#define PML_REC_DOWN_CAUSE_LOCAL_FAULT   2
+#define PML_REC_DOWN_CAUSE_REMOTE_FAULT  3
 
 #define SL_CORE_LINK_MAGIC 0x736c4C4E
 struct sl_core_link {
@@ -319,6 +328,18 @@ struct sl_core_link {
 		time64_t                              last_ucw_warn_limit_crossed_time;
 	} link;
 
+	struct kobject			     pml_rec_kobj;
+	struct {
+		struct sl_link_pml_rec_info  pml_rec_info;
+		atomic_t                     pml_rec_running;
+		atomic_t                     pml_rec_down_cause_remote_fault;
+		ktime_t                      pml_rec_window_start_time;
+		ktime_t                      pml_rec_attempt_start_time;
+		ktime_t                      pml_rec_attempts_total_time;
+		ktime_t                      pml_rec_poll_start_time;
+		u8                           pml_rec_last_down_cause;
+	} pml_rec;
+
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   link_state;
@@ -355,6 +376,7 @@ struct sl_core_link {
 			u8      rx_restart_lock_on_bad_cws;
 			u8      rx_restart_lock_on_bad_ams;
 			u8      rx_active_lanes;
+			u16     rx_am_lock_lanes;
 			u8      rs_mode;
 			u16     clock_period;
 			u8      mac_tx_credits;
@@ -467,6 +489,10 @@ int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_
 
 bool sl_core_link_config_is_enable_ald_set(struct sl_core_link *core_link);
 bool sl_core_link_is_degrade_state_active(struct sl_core_link *core_link);
+
+bool        sl_core_link_config_is_enable_pml_recovery_set(struct sl_core_link *core_link);
+bool        sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link);
+const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause);
 
 int  sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *is_canceled_or_timed_out);
 
