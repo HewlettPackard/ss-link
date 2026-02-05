@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_SETTINGS_H_
 #define _SL_CORE_HW_SETTINGS_H_
@@ -28,5 +28,13 @@
 #define SL_CORE_HW_ACTIVE_LANES_CK_400G                  0xF
 #define SL_CORE_HW_ACTIVE_LANES_CK_200G(_link_num)       (0x3 << ((_link_num) * 2))
 #define SL_CORE_HW_ACTIVE_LANES_CK_100G(_link_num)       (0x1 << (_link_num))
+
+#define SL_CORE_HW_AM_LOCK_LANES_BS_200G                 0xFF
+#define SL_CORE_HW_AM_LOCK_LANES_BJ_100G                 0xF
+#define SL_CORE_HW_AM_LOCK_LANES_CD_100G(_link_num)      (0xF << ((_link_num) * 4))
+#define SL_CORE_HW_AM_LOCK_LANES_CD_50G(_link_num)       (0x3 << ((_link_num) * 2))
+#define SL_CORE_HW_AM_LOCK_LANES_CK_400G                 0xFFFF
+#define SL_CORE_HW_AM_LOCK_LANES_CK_200G(_link_num)      (0xFF << ((_link_num) * 8))
+#define SL_CORE_HW_AM_LOCK_LANES_CK_100G(_link_num)      (0xF << ((_link_num) * 4))
 
 #endif /* _SL_CORE_HW_SETTINGS_H_ */

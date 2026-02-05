@@ -477,6 +477,14 @@ function print_link {
         local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
         local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
         local loopback=$(cat ${LINK_PATH}/config/loopback)
+        local pml_rec_config=$(cat ${LINK_PATH}/config/pml_recovery)
+        local pml_rec_attempts=$(cat ${LINK_PATH}/pml_recovery/pml_rec_attempts)
+        local pml_rec_successes=$(cat ${LINK_PATH}/pml_recovery/pml_rec_successes)
+        local pml_rec_local_fault_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_fault_cause)
+        local pml_rec_down_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_cause)
+        local pml_rec_local_fault_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_fault_failed_cause)
+        local pml_rec_down_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_failed_cause)
+        local pml_rec_rate_limit_exceeded=$(cat ${LINK_PATH}/pml_recovery/pml_rec_rate_limit_exceeded)
 	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
 	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
         local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
@@ -512,15 +520,23 @@ function print_link {
         printf "           | fec_monitor: period = ${fec_mon_period_ms}ms\n"
         printf "           |              ccw_warn_limit = ${fec_mon_ccw_warn_limit}, ucw_warn_limit = ${fec_mon_ucw_warn_limit}\n"
         printf "           |              ccw_down_limit = ${fec_mon_ccw_down_limit}, ucw_down_limit = ${fec_mon_ucw_down_limit}\n"
-        printf "    config | hpe     : ${hpe_map}\n"
-        printf "           | loopback: ${loopback}\n"
-        printf "           | pause   : ${pause_map}\n"
-        printf "           | autoneg : ${autoneg}\n"
-        printf "           |   pause_caps: ${caps_pause}\n"
-        printf "           |   tech_caps : ${caps_tech}\n"
-        printf "           |   fec_caps  : ${caps_fec}\n"
-        printf "           |   hpe_caps  : ${caps_hpe}\n"
+        printf "    config | hpe              : ${hpe_map}\n"
+        printf "           | autoneg          : ${autoneg}\n"
+        printf "           | loopback         : ${loopback}\n"
+        printf "           | pause            : ${pause_map}\n"
+        printf "           | pml_recovery     : ${pml_rec_config}\n"
         printf "           | auto_lane_degrade: ${degrade_config}\n"
+        printf "   autoneg | pause_caps: ${caps_pause}\n"
+        printf "           | tech_caps : ${caps_tech}\n"
+        printf "           | fec_caps  : ${caps_fec}\n"
+        printf "           | hpe_caps  : ${caps_hpe}\n"
+        printf "   pml_rec | attempts : ${pml_rec_attempts}\n"
+        printf "           | successes: ${pml_rec_successes}\n"
+        printf "           | rate_limit_exceeded     : ${pml_rec_rate_limit_exceeded}\n"
+        printf "           | link_down_cause         : ${pml_rec_down_cause}\n"
+        printf "           | link_down_failed_cause  : ${pml_rec_down_failed_cause}\n"
+        printf "           | local_fault_cause       : ${pml_rec_local_fault_cause}\n"
+        printf "           | local_fault_failed_cause: ${pml_rec_local_fault_failed_cause}\n"
 	printf "       ALD | state: ${degrade_state}, is_recoverable: ${is_recoverable}\n"
 	if [ "${degrade_state}" == "active" ] ; then
 		local rx_units="Gbps"

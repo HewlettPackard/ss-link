@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -354,6 +354,8 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "auto-lane-degrade";
 	case SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY:
 		return "auto-lane-degrade-recovery";
+	case SL_LGRP_NOTIF_PML_RECOVERY:
+		return "pml-recovery";
 	default:
 		return "unknown";
 	}

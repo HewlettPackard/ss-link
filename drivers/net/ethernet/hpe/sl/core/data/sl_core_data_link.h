@@ -76,4 +76,12 @@ int sl_core_data_link_degrade_tx_degrade_map_get(struct sl_core_link *core_link,
 int sl_core_data_link_degrade_rx_degrade_map_get(struct sl_core_link *core_link, u8 *rx_degrade_map);
 int sl_core_data_link_degrade_is_recoverable_get(struct sl_core_link *core_link, bool *is_recoverable);
 
+void sl_core_data_link_pml_rec_attempts_get(struct sl_core_link *core_link, int *attempts);
+void sl_core_data_link_pml_rec_successes_get(struct sl_core_link *core_link, int *successes);
+void sl_core_data_link_pml_rec_link_fault_cause_get(struct sl_core_link *core_link, int *fault_cause);
+void sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link, int *down_cause);
+void sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause);
+void sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause);
+void sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded);
+
 #endif /* _SL_CORE_DATA_LINK_H_ */

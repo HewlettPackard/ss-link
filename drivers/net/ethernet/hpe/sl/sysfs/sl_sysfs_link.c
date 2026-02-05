@@ -595,6 +595,16 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_link_pml_rec_create(core_link, &ctrl_link->kobj);
+	if (rtn) {
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME, "sl_sysfs_link_pml_rec_create failed [%d]", rtn);
+		sl_sysfs_link_policy_delete(ctrl_link);
+		sl_sysfs_link_config_delete(ctrl_link);
+		sl_sysfs_link_degrade_delete(core_link);
+		kobject_put(&ctrl_link->kobj);
+		return rtn;
+	}
+
 	rtn = sl_sysfs_link_fec_create(ctrl_link);
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -602,6 +612,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
 		sl_sysfs_link_degrade_delete(core_link);
+		sl_sysfs_link_pml_rec_delete(core_link);
 		kobject_put(&ctrl_link->kobj);
 		return rtn;
 	}
@@ -613,6 +624,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
 		sl_sysfs_link_degrade_delete(core_link);
+		sl_sysfs_link_pml_rec_delete(core_link);
 		sl_sysfs_link_fec_delete(ctrl_link);
 		kobject_put(&ctrl_link->kobj);
 		return rtn;
@@ -625,6 +637,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
 		sl_sysfs_link_degrade_delete(core_link);
+		sl_sysfs_link_pml_rec_delete(core_link);
 		sl_sysfs_link_fec_delete(ctrl_link);
 		sl_sysfs_link_caps_delete(ctrl_link);
 		kobject_put(&ctrl_link->kobj);
@@ -638,6 +651,7 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		sl_sysfs_link_policy_delete(ctrl_link);
 		sl_sysfs_link_config_delete(ctrl_link);
 		sl_sysfs_link_degrade_delete(core_link);
+		sl_sysfs_link_pml_rec_delete(core_link);
 		sl_sysfs_link_fec_delete(ctrl_link);
 		sl_sysfs_link_caps_delete(ctrl_link);
 		sl_sysfs_link_counters_delete(ctrl_link);
@@ -667,6 +681,7 @@ void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link)
 	sl_sysfs_link_policy_delete(ctrl_link);
 	sl_sysfs_link_config_delete(ctrl_link);
 	sl_sysfs_link_degrade_delete(core_link);
+	sl_sysfs_link_pml_rec_delete(core_link);
 	sl_sysfs_link_fec_delete(ctrl_link);
 	sl_sysfs_link_caps_delete(ctrl_link);
 	sl_sysfs_link_counters_delete(ctrl_link);

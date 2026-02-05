@@ -238,7 +238,12 @@ static void sl_core_hw_llr_capacity_set(struct sl_core_llr *core_llr)
 	}
 	sl_core_log_dbg(core_llr, LOG_NAME, "capacity set (data = %lld)", calc_data);
 
-	core_llr->settings.replay_ct_max    = 0xFE;
+	if (sl_core_link_config_is_enable_pml_recovery_set(sl_core_link_get(core_llr->core_lgrp->core_ldev->num,
+	    core_llr->core_lgrp->num, core_llr->num)))
+		core_llr->settings.replay_ct_max = 0xFF;
+	else
+		core_llr->settings.replay_ct_max = 0xFE;
+
 	core_llr->settings.replay_timer_max = (3 * llr_data.loop.average + 500);
 
 	if (core_llr->settings.replay_timer_max < 1000)

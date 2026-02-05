@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LGRP_H_
 #define _LINUX_SL_LGRP_H_
@@ -39,6 +39,7 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_LANE_DEGRADE          BIT(20)  /* auto lane degrade                  */
 #define SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY BIT(21)  /* auto lane degrade can be recovered */
 #define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP       BIT(22)  /* media/cable high temp detected     */
+#define SL_LGRP_NOTIF_PML_RECOVERY          BIT(23)  /* pml recovery                       */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -152,6 +153,7 @@ union sl_lgrp_notif_info {
 	struct sl_llr_data                        llr_data;
 	struct sl_media_attr                      media_attr;
 	struct sl_link_degrade_info               degrade_info;
+	struct sl_link_pml_rec_info               pml_rec_info;
 	bool                                      is_degrade_recoverable;
 	int                                       error;
 	u64                                       cause_map;

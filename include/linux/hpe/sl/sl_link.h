@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LINK_H_
 #define _LINUX_SL_LINK_H_
 
 #include <linux/bitops.h>
 #include <linux/kobject.h>
+#include <linux/atomic.h>
 
 struct sl_lgrp;
 struct sl_link;
@@ -82,6 +83,10 @@ struct sl_link_config {
 	s32 fec_up_ucw_limit;
 	s32 fec_up_ccw_limit;
 
+	u32 pml_rec_timeout_ms;
+	u32 pml_rec_rl_max_duration_ms;
+	u32 pml_rec_rl_window_size_ms;
+
 	u32 pause_map;
 	u32 hpe_map;
 
@@ -95,6 +100,7 @@ struct sl_link_config {
 #define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE      BIT(4)
 #define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(5) /* Enable Auto Lane Degrade */
 #define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(6) /* Disable LOS/LOL link up fail cause */
+#define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(7)
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 
@@ -128,6 +134,28 @@ struct sl_link_degrade_info {
 	bool is_tx_degrade;
 	bool is_rx_degrade;
 	bool is_recoverable; /* whether we can recover from ALD via bouncing the link */
+};
+
+enum sl_link_pml_rec_counters {
+	SL_LINK_PML_REC_ATTEMPTS,
+	SL_LINK_PML_REC_SUCCESSES,
+	SL_LINK_PML_REC_LINK_LOCAL_FAULT_CAUSE,
+	SL_LINK_PML_REC_LINK_DOWN_CAUSE,
+	SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE,
+	SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE,
+	SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED,
+
+	SL_LINK_PML_REC_NUM_COUNTERS,
+};
+
+#define SL_LINK_PML_REC_MAGIC 0x013309a9
+#define SL_LINK_PML_REC_VER   1
+struct sl_link_pml_rec_info {
+	u32      magic;
+	u32      size;
+	u32      ver;
+
+	atomic_t pml_rec_counters[SL_LINK_PML_REC_NUM_COUNTERS];
 };
 
 #define SL_LINK_POLICY_OPT_KEEP_SERDES_UP            BIT(0) /* Keep serdes running when link is down                   */

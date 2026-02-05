@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
@@ -347,15 +347,18 @@ static int sl_ctrl_link_config_set_cmd(struct sl_ctrl_link *ctrl_link, struct sl
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "config set cmd");
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  link_up_timeout    = %ums", link_config->link_up_timeout_ms);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  link_up_tries_max  = %d",   link_config->link_up_tries_max);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_settle_wait = %dms", link_config->fec_up_settle_wait_ms);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_check_wait  = %dms", link_config->fec_up_check_wait_ms);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_ucw_limit   = %d",   link_config->fec_up_ucw_limit);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_ccw_limit   = %d",   link_config->fec_up_ccw_limit);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  pause_map          = 0x%X", link_config->pause_map);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  hpe_map            = 0x%X", link_config->hpe_map);
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  options            = 0x%X", link_config->options);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  link_up_timeout         = %ums", link_config->link_up_timeout_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  link_up_tries_max       = %d",   link_config->link_up_tries_max);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_settle_wait      = %dms", link_config->fec_up_settle_wait_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_check_wait       = %dms", link_config->fec_up_check_wait_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_ucw_limit        = %d",   link_config->fec_up_ucw_limit);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  fec_up_ccw_limit        = %d",   link_config->fec_up_ccw_limit);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  pml_rec_timeout         = %ums", link_config->pml_rec_timeout_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  pml_rec_rl_max_duration = %ums", link_config->pml_rec_rl_max_duration_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  pml_rec_rl_window_size  = %ums", link_config->pml_rec_rl_window_size_ms);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  pause_map               = 0x%X", link_config->pause_map);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  hpe_map                 = 0x%X", link_config->hpe_map);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "  options                 = 0x%X", link_config->options);
 
 	/* Check if the configuration is locked. If we are performing an admin operation, then we can ignore the
 	 * lock bit and continue to write the config.
@@ -391,6 +394,11 @@ static int sl_ctrl_link_config_set_cmd(struct sl_ctrl_link *ctrl_link, struct sl
 	core_link_config.fec_up_check_wait_ms  = link_config->fec_up_check_wait_ms;
 	core_link_config.fec_up_ucw_limit      = link_config->fec_up_ucw_limit;
 	core_link_config.fec_up_ccw_limit      = link_config->fec_up_ccw_limit;
+
+	/* pml recovery config */
+	core_link_config.pml_rec_timeout_ms            = link_config->pml_rec_timeout_ms;
+	core_link_config.pml_rec_limit_max_duration_ms = link_config->pml_rec_rl_max_duration_ms;
+	core_link_config.pml_rec_limit_window_size_ms  = link_config->pml_rec_rl_window_size_ms;
 
 	/* maps */
 	core_link_config.hpe_map   = link_config->hpe_map;

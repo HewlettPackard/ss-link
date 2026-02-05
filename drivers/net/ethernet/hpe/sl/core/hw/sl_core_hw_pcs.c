@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -288,6 +288,53 @@ void sl_core_hw_pcs_stop(struct sl_core_link *core_link)
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
 
 	sl_core_flush64(core_link, SS2_PORT_PML_CFG_PCS_SUBPORT(core_link->num));
+}
+
+void sl_core_hw_pcs_toggle(struct sl_core_link *core_link)
+{
+	u64 data64;
+	u32 port;
+
+	port = core_link->core_lgrp->num;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "toggle (port = %u)", port);
+
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), &data64);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 0);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
+
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), &data64);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_SUBPORT_ENABLE_LOCK_UPDATE(data64, 1);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS_SUBPORT(core_link->num), data64);
+
+	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
+}
+
+bool sl_core_hw_pcs_is_pml_rec_success(struct sl_core_link *core_link)
+{
+	u64  data64;
+	u32  port;
+	bool is_am_locked;
+
+	port = core_link->core_lgrp->num;
+
+	sl_core_read64(core_link, SS2_PORT_PML_STS_RX_PCS_AM_LOCK, &data64);
+	is_am_locked = (SS2_PORT_PML_STS_RX_PCS_AM_LOCK_AM_LOCK_GET(data64) == core_link->pcs.settings.rx_am_lock_lanes);
+
+	sl_core_read64(core_link, SS2_PORT_PML_STS_RX_PCS_SUBPORT(core_link->num), &data64);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			 "is pml rec success (port = %u, aligned = %s, locked = %s, fault = %s, local_fault = %s)",
+			 port,
+			 (SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) == 1) ? "yes" : "no",
+			 is_am_locked ? "yes" : "no",
+			 (SS2_PORT_PML_STS_RX_PCS_SUBPORT_FAULT_GET(data64) == 1) ? "yes" : "no",
+			 (SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(data64) == 1) ? "yes" : "no");
+
+	return ((SS2_PORT_PML_STS_RX_PCS_SUBPORT_ALIGN_STATUS_GET(data64) == 1) &&
+		(is_am_locked)                                                  &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_FAULT_GET(data64) == 0)        &&
+		(SS2_PORT_PML_STS_RX_PCS_SUBPORT_LOCAL_FAULT_GET(data64) == 0));
 }
 
 bool sl_core_hw_pcs_is_ok(struct sl_core_link *core_link)

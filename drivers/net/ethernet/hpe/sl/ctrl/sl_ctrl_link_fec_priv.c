@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/string.h>
 #include <linux/spinlock.h>
@@ -377,7 +377,7 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 {
 	int                                  rtn;
 	struct sl_ctrl_link                 *ctrl_link;
-	s32                                  period;
+	u32                                  period;
 	bool                                 stop;
 	struct sl_core_link_fec_cw_cntrs     cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs   lane_cntrs;
@@ -393,6 +393,12 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 	if (!period) {
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor period zero");
 		return;
+	}
+
+	if (sl_core_link_is_pml_recovery_running(sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+	    ctrl_link->ctrl_lgrp->num, ctrl_link->num))) {
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "fec monitor skipped due to pml recovery running");
+		goto start_mon;
 	}
 
 	spin_lock(&ctrl_link->fec_mon_timer_lock);
