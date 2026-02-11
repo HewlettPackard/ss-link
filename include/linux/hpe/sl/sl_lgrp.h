@@ -39,7 +39,8 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_LANE_DEGRADE          BIT(20)  /* auto lane degrade                  */
 #define SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY BIT(21)  /* auto lane degrade can be recovered */
 #define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP       BIT(22)  /* media/cable high temp detected     */
-#define SL_LGRP_NOTIF_PML_RECOVERY          BIT(23)  /* pml recovery                       */
+#define SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP    BIT(23)  /* media/cable high temp not detected */
+#define SL_LGRP_NOTIF_PML_RECOVERY          BIT(24)  /* pml recovery                       */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 
@@ -59,8 +60,9 @@ struct sl_lgrp_config;
 				SL_LGRP_NOTIF_LLR_ERROR)
 
 #define SL_LGRP_NOTIF_MEDIA    (SL_LGRP_NOTIF_MEDIA_PRESENT     | \
-				SL_LGRP_NOTIF_MEDIA_NOT_PRESENT | \
-				SL_LGRP_NOTIF_MEDIA_HIGH_TEMP   | \
+				SL_LGRP_NOTIF_MEDIA_NOT_PRESENT  | \
+				SL_LGRP_NOTIF_MEDIA_HIGH_TEMP    | \
+				SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP | \
 				SL_LGRP_NOTIF_MEDIA_ERROR)
 
 #define SL_LGRP_NOTIF_AN       (SL_LGRP_NOTIF_AN_DATA    | \

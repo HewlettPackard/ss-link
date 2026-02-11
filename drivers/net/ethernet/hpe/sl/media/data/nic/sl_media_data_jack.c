@@ -411,7 +411,7 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	if (!core_link)
 		return;
 
-	if (sl_media_data_jack_cable_is_high_temp(media_jack)) {
+	if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 		sl_media_io_led_set(media_jack, LED_ON_YEL);
 		return;
 	}

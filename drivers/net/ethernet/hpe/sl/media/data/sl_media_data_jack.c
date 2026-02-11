@@ -239,19 +239,27 @@ void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lg
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
-bool sl_media_data_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u8 temperature_state)
 {
-	bool is_high_temp;
 
 	spin_lock(&media_jack->data_lock);
-	is_high_temp = media_jack->is_high_temp;
+	media_jack->temperature_state = temperature_state;
 	spin_unlock(&media_jack->data_lock);
 
-	sl_media_log_dbg(media_jack, LOG_NAME,
-		"data jack cable is high temp (%s)",
-		(media_jack->is_high_temp) ? "yes" : "no");
+	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state set (state = %u)", media_jack->temperature_state);
+}
 
-	return is_high_temp;
+u8 sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack)
+{
+	u8 temperature_state;
+
+	spin_lock(&media_jack->data_lock);
+	temperature_state = media_jack->temperature_state;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "temp state get (state= %u)", media_jack->temperature_state);
+
+	return temperature_state;
 }
 
 void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value)
