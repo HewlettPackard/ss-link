@@ -122,11 +122,25 @@ void sl_media_lgrp_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool val
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "high temp client ready set (%s)",
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "high temp client ready set (value = %s)",
 			 value ? "true" : "false");
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	media_lgrp->cable_info->high_temp_client_ready = value;
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+}
+
+void sl_media_lgrp_no_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "no high temp client ready set (value = %s)",
+			 value ? "true" : "false");
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	media_lgrp->cable_info->no_high_temp_client_ready = value;
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 

@@ -72,7 +72,7 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	sl_core_hw_serdes_link_down(core_link);
 
-	if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack))
+	if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT)
 		sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
 
 	/* resetting the link resets the LLR which is needed to reset ordered sets */
@@ -157,6 +157,38 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 	rtn = core_link->link.callbacks.down(core_link->link.tags.down, state, down_cause_map, info_map);
 	if (rtn != 0)
 		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
+}
+
+static bool sl_core_hw_link_media_is_high_temp(struct sl_core_link *core_link)
+{
+	int                   rtn;
+	struct sl_media_lgrp *media_lgrp;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "media is high temp (link = 0x%p)", core_link);
+
+	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+
+	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+			 SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
+						       core_link->core_lgrp->num)) {
+			if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) ==
+			    SL_MEDIA_JACK_TEMP_STATE_HOT) {
+				sl_core_log_warn_trace(core_link, LOG_NAME,
+						       "media high temp detected (jack_num = %u)",
+						       media_lgrp->media_jack->physical_num);
+				sl_core_data_link_last_up_fail_cause_map_set(core_link,
+									     SL_LINK_DOWN_CAUSE_HIGH_TEMP_LINK_UP_MAP);
+				rtn = sl_core_link_up_fail(core_link);
+				if (rtn)
+					sl_core_log_err_trace(core_link, LOG_NAME,
+							      "media is high temp link_up_fail failed [%d]", rtn);
+				return -EINVAL;
+			}
+		}
+	}
+
+	return 0;
 }
 
 static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
@@ -657,11 +689,8 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 	struct sl_core_link_up_info         link_up_info;
 	u32                                 link_state;
-	struct sl_media_lgrp               *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
-
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn == -EAGAIN) {
@@ -747,13 +776,11 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		spin_unlock(&core_link->link.data_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
-		sl_media_jack_cable_is_high_temp_clr(media_lgrp->media_jack);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME, "up success - invalid state (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
 		spin_unlock(&core_link->link.data_lock);
-		sl_media_jack_cable_is_high_temp_clr(media_lgrp->media_jack);
 		return;
 	};
 }
@@ -784,6 +811,9 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 				      link_state, sl_core_link_state_str(link_state));
 		return;
 	}
+
+	if (sl_core_hw_link_media_is_high_temp(core_link))
+		return;
 
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {
@@ -1534,7 +1564,8 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-			if (sl_media_jack_cable_is_high_temp(media_lgrp->media_jack)) {
+			if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) ==
+			    SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 						       "fault intr work high cable temp detected");
 				sl_core_data_link_last_down_cause_map_set(core_link,

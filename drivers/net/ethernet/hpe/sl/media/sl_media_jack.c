@@ -501,9 +501,21 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 	}
 }
 
-bool sl_media_jack_cable_is_high_temp(struct sl_media_jack *media_jack)
+const char *sl_media_temp_state_str(u32 temperature_state)
 {
-	return sl_media_data_jack_cable_is_high_temp(media_jack);
+	switch (temperature_state) {
+	case SL_MEDIA_JACK_TEMP_STATE_COLD:
+		return "cold";
+	case SL_MEDIA_JACK_TEMP_STATE_HOT:
+		return "hot";
+	default:
+		return "unknown";
+	}
+}
+
+u8 sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack)
+{
+	return sl_media_data_jack_cable_temp_state_get(media_jack);
 }
 
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)

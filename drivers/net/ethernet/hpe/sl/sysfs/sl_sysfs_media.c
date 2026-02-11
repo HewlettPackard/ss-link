@@ -121,11 +121,11 @@ static ssize_t high_temperature_threshold_celsius_show(struct kobject *kobj, str
 	return scnprintf(buf, PAGE_SIZE, "%u\n", temp_threshold);
 }
 
-static ssize_t is_high_temperature_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t temperature_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	bool                  is_high_temp;
+	u8                    temperature_state;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp   = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -139,13 +139,13 @@ static ssize_t is_high_temperature_show(struct kobject *kobj, struct kobj_attrib
 	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
 		return scnprintf(buf, PAGE_SIZE, "not-active\n");
 
-	is_high_temp = sl_media_jack_cable_is_high_temp(media_lgrp->media_jack);
+	temperature_state = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack);
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "is high_temperature show (media_lgrp = 0x%p, is_high_temp = %s)",
-		   media_lgrp, is_high_temp ? "yes" : "no");
+		   "temperature state show (media_lgrp = 0x%p, temperature_state = %u %s)",
+		   media_lgrp, temperature_state, sl_media_temp_state_str(temperature_state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_temp ? "yes" : "no");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_temp_state_str(temperature_state));
 }
 
 static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -815,7 +815,7 @@ static struct kobj_attribute media_state                              = __ATTR_R
 static struct kobj_attribute media_jack_power_state                   = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_temperature_celsius                = __ATTR_RO(temperature_celsius);
 static struct kobj_attribute media_high_temperature_threshold_celsius = __ATTR_RO(high_temperature_threshold_celsius);
-static struct kobj_attribute media_is_high_temperature                = __ATTR_RO(is_high_temperature);
+static struct kobj_attribute media_temperature_state                  = __ATTR_RO(temperature_state);
 static struct kobj_attribute media_vendor                             = __ATTR_RO(vendor);
 static struct kobj_attribute media_vendor_part_num                    = __ATTR_RO(vendor_part_num);
 static struct kobj_attribute media_type                               = __ATTR_RO(type);
@@ -851,7 +851,7 @@ static struct attribute *media_attrs[] = {
 	&media_jack_power_state.attr,
 	&media_temperature_celsius.attr,
 	&media_high_temperature_threshold_celsius.attr,
-	&media_is_high_temperature.attr,
+	&media_temperature_state.attr,
 	&media_vendor.attr,
 	&media_vendor_part_num.attr,
 	&media_type.attr,

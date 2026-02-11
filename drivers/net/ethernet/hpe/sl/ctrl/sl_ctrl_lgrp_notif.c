@@ -92,17 +92,29 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	if (types & SL_LGRP_NOTIF_MEDIA_NOT_PRESENT)
 		sl_media_lgrp_real_cable_if_not_present_send(ldev_num, lgrp_num);
 
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
 	if (types & SL_LGRP_NOTIF_MEDIA_HIGH_TEMP) {
 		sl_media_lgrp_high_temp_client_ready_set(ldev_num, lgrp_num, true);
 
 		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
-			media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 			if (media_lgrp) {
-				if (sl_media_jack_cable_is_high_temp_set(media_lgrp->media_jack)) {
+				if (sl_media_jack_cable_high_temp_hw_check(media_lgrp->media_jack)) {
 					sl_media_jack_fault_cause_set(media_lgrp->media_jack,
 								      SL_MEDIA_FAULT_CAUSE_HIGH_TEMP);
 					sl_media_jack_cable_high_temp_notif_send(media_lgrp->media_jack);
 				}
+			}
+		}
+	}
+
+	if (types & SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP) {
+		sl_media_lgrp_no_high_temp_client_ready_set(ldev_num, lgrp_num, true);
+
+		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+			if (media_lgrp) {
+				if (!sl_media_jack_cable_high_temp_hw_check(media_lgrp->media_jack))
+					sl_media_jack_cable_no_high_temp_notif_send(media_lgrp->media_jack);
 			}
 		}
 	}
@@ -142,6 +154,9 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 			sl_media_lgrp_high_temp_client_ready_set(ldev_num, lgrp_num, false);
 			sl_media_jack_cable_high_temp_notif_sent_set(media_lgrp->media_jack,
 								     &media_lgrp->media_jack->cable_info[i], false);
+			sl_media_lgrp_no_high_temp_client_ready_set(ldev_num, lgrp_num, false);
+			sl_media_jack_cable_no_high_temp_notif_sent_set(media_lgrp->media_jack,
+									&media_lgrp->media_jack->cable_info[i], false);
 		}
 	}
 

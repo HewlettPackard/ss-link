@@ -126,6 +126,7 @@ static void sl_media_data_jack_event_remove(u8 physical_jack_num)
 	for (i = 0; i < media_jack->port_count; ++i) {
 		sl_media_data_jack_media_attr_clr(media_jack, &media_jack->cable_info[i]);
 		sl_media_data_jack_cable_high_temp_notif_sent_set(media_jack, &media_jack->cable_info[i], false);
+		sl_media_data_jack_cable_no_high_temp_notif_sent_set(media_jack, &media_jack->cable_info[i], false);
 	}
 
 	spin_lock(&media_jack->data_lock);
@@ -724,9 +725,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED);
 	}
 
-	spin_lock(&media_jack->data_lock);
-	media_jack->is_high_temp = false;
-	spin_unlock(&media_jack->data_lock);
+	sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_COLD);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
 
@@ -1221,7 +1220,7 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
-	if (sl_media_data_jack_cable_is_high_temp(media_jack)) {
+	if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 		sl_media_io_led_set(media_jack, LED_ON_AMBER);
 		return;
 	}
@@ -1315,14 +1314,18 @@ static int sl_media_data_jack_cable_high_temp_link_down(struct sl_media_jack *me
 		    !sl_media_data_jack_cable_is_high_temp_notif_sent(media_jack, &media_jack->cable_info[i])) {
 			rtn = sl_ctrl_lgrp_notif_enqueue(sl_ctrl_lgrp_get(ldev_num, lgrp_num),
 							 SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_HIGH_TEMP, NULL, 0);
-			if (rtn)
+			if (rtn) {
 				sl_media_log_warn_trace(media_jack, LOG_NAME,
 							"cable high temp notif send enqueue failed [%d]",
 							rtn);
-			else
+			} else {
 				sl_media_data_jack_cable_high_temp_notif_sent_set(media_jack,
 										  &media_jack->cable_info[i],
 										  true);
+				sl_media_data_jack_cable_no_high_temp_notif_sent_set(media_jack,
+										     &media_jack->cable_info[i],
+										     false);
+			}
 		}
 
 		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
@@ -1369,8 +1372,48 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 			continue;
 		}
 
-		if (!sl_media_data_jack_cable_is_high_temp_set(media_jack))
+		if (!sl_media_data_jack_cable_high_temp_hw_check(media_jack)) {
+			if (sl_media_data_jack_cable_temp_state_get(media_jack) ==
+			    SL_MEDIA_JACK_TEMP_STATE_COLD) {
+				sl_media_data_jack_cable_no_high_temp_notif_send(media_jack);
+				continue;
+			}
+
+			sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_COLD);
+
+			sl_media_log_info(media_jack, LOG_NAME,
+					  "cable high temperature alert cleared (temperature = %dc, threshold = %dc)",
+					  media_jack->temperature_value, media_jack->temperature_threshold);
+
+			rtn = sl_media_jack_cable_high_power_set(media_jack->media_ldev->num, media_jack->num);
+			if (rtn) {
+				sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
+				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+
+				spin_lock(&media_jack->data_lock);
+				media_jack->cable_info[0].media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
+				spin_unlock(&media_jack->data_lock);
+
+				rtn = sl_media_jack_cable_attr_set(media_jack, media_jack->media_ldev->num,
+								   &media_jack->cable_info[0].media_attr);
+				if (rtn)
+					sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			}
+
+			sl_media_data_jack_cable_no_high_temp_notif_send(media_jack);
 			continue;
+		}
+
+		if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+			sl_media_data_jack_cable_high_temp_notif_send(media_jack);
+			continue;
+		}
+
+		sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_HOT);
+
+		sl_media_log_warn(media_jack, LOG_NAME,
+				  "cable high temperature alert (temperature = %dc, threshold = %dc)",
+				  media_jack->temperature_value, media_jack->temperature_threshold);
 
 		rtn = sl_media_data_jack_cable_high_temp_link_down(media_jack);
 		if (rtn)
@@ -1391,32 +1434,35 @@ bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *me
 	is_client_ready = cable_info->high_temp_client_ready;
 	spin_unlock(&media_jack->data_lock);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp client ready (%s)", is_client_ready ? "yes" : "no");
+	sl_media_log_dbg(media_jack, LOG_NAME, "is high temp client ready (ready = %s)", is_client_ready ?
+			 "yes" : "no");
+
+	return is_client_ready;
+}
+
+bool sl_media_data_jack_cable_is_no_high_temp_client_ready(struct sl_media_jack *media_jack,
+							   struct sl_media_lgrp_cable_info *cable_info)
+{
+	bool is_client_ready;
+
+	spin_lock(&media_jack->data_lock);
+	is_client_ready = cable_info->no_high_temp_client_ready;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "is no high temp client ready (ready = %s)", is_client_ready ?
+			 "yes" : "no");
 
 	return is_client_ready;
 }
 
 #define TEMPERATURE_CELSIUS_SLOPE 10
-bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
+bool sl_media_data_jack_cable_high_temp_hw_check(struct sl_media_jack *media_jack)
 {
 	int rtn;
 	u8  current_temp;
 	int prev_temp;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp set");
-
-	/* If "is_high_temp" flag set, it indicates high temperature was detected before and the action
-	 * has been taken. If the notification was not sent previously, it re-tries to send it.
-	 * Returning false in this case short-circuits the flow, signaling the caller that no further
-	 * action is required.
-	 */
-	spin_lock(&media_jack->data_lock);
-	if (media_jack->is_high_temp) {
-		spin_unlock(&media_jack->data_lock);
-		sl_media_data_jack_cable_high_temp_notif_send(media_jack);
-		return false;
-	}
-	spin_unlock(&media_jack->data_lock);
+	sl_media_log_dbg(media_jack, LOG_NAME, "high temp hw check");
 
 	rtn = sl_media_data_jack_temp_value_get(media_jack, &current_temp);
 	if (rtn) {
@@ -1426,7 +1472,7 @@ bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
 	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "cable is high temp set (temperature = 0x%X, threshold = 0x%X)",
+			 "high temp hw check (temperature = 0x%X, threshold = 0x%X)",
 			 current_temp, media_jack->temperature_threshold);
 
 	prev_temp = media_jack->temperature_value;
@@ -1444,26 +1490,10 @@ bool sl_media_data_jack_cable_is_high_temp_set(struct sl_media_jack *media_jack)
 	}
 
 out:
-	if (current_temp > media_jack->temperature_threshold) {
-		spin_lock(&media_jack->data_lock);
-		media_jack->is_high_temp = true;
-		sl_media_log_warn(media_jack, LOG_NAME,
-				  "cable high temperature alert (temperature = %dc, threshold = %dc)",
-				  current_temp, media_jack->temperature_threshold);
-		spin_unlock(&media_jack->data_lock);
+	if (current_temp > media_jack->temperature_threshold)
 		return true;
-	}
 
 	return false;
-}
-
-void sl_media_data_jack_cable_is_high_temp_clr(struct sl_media_jack *media_jack)
-{
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp clr");
-
-	spin_lock(&media_jack->data_lock);
-	media_jack->is_high_temp = false;
-	spin_unlock(&media_jack->data_lock);
 }
 
 bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *media_jack,
@@ -1475,7 +1505,21 @@ bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *medi
 	is_notif_sent = cable_info->high_temp_notif_sent;
 	spin_unlock(&media_jack->data_lock);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable is high temp notif sent (%s)", is_notif_sent ? "yes" : "no");
+	sl_media_log_dbg(media_jack, LOG_NAME, "is high temp notif sent (sent = %s)", is_notif_sent ? "yes" : "no");
+
+	return is_notif_sent;
+}
+
+bool sl_media_data_jack_cable_is_no_high_temp_notif_sent(struct sl_media_jack *media_jack,
+							 struct sl_media_lgrp_cable_info *cable_info)
+{
+	bool is_notif_sent;
+
+	spin_lock(&media_jack->data_lock);
+	is_notif_sent = cable_info->no_high_temp_notif_sent;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "is no high temp notif sent (sent = %s)", is_notif_sent ? "yes" : "no");
 
 	return is_notif_sent;
 }
@@ -1529,14 +1573,49 @@ void sl_media_data_jack_cable_high_temp_notif_send(struct sl_media_jack *media_j
 			rtn = sl_ctrl_lgrp_notif_enqueue(sl_ctrl_lgrp_get(ldev_num, lgrp_num),
 							 SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_HIGH_TEMP,
 							 NULL, 0);
-			if (rtn)
+			if (rtn) {
 				sl_media_log_warn_trace(media_jack, LOG_NAME,
 							"cable high temp notif send enqueue failed [%d]",
 							rtn);
-			else
+			} else {
 				sl_media_data_jack_cable_high_temp_notif_sent_set(media_jack,
 										  &media_jack->cable_info[i],
 										  true);
+				sl_media_data_jack_cable_no_high_temp_notif_sent_set(media_jack,
+										     &media_jack->cable_info[i],
+										     false);
+			}
+		}
+	}
+}
+
+void sl_media_data_jack_cable_no_high_temp_notif_send(struct sl_media_jack *media_jack)
+{
+	u8  i;
+	u8  ldev_num;
+	u8  lgrp_num;
+	int rtn;
+
+	for (i = 0; i < media_jack->port_count; ++i) {
+		ldev_num = media_jack->cable_info[i].ldev_num;
+		lgrp_num = media_jack->cable_info[i].lgrp_num;
+		if (sl_media_data_jack_cable_is_no_high_temp_client_ready(media_jack, &media_jack->cable_info[i]) &&
+		    !sl_media_data_jack_cable_is_no_high_temp_notif_sent(media_jack, &media_jack->cable_info[i])) {
+			rtn = sl_ctrl_lgrp_notif_enqueue(sl_ctrl_lgrp_get(ldev_num, lgrp_num),
+							 SL_LGRP_NOTIF_NO_LINK, SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP,
+							 NULL, 0);
+			if (rtn) {
+				sl_media_log_warn_trace(media_jack, LOG_NAME,
+							"no high temp notif send enqueue failed [%d]",
+							rtn);
+			} else {
+				sl_media_data_jack_cable_no_high_temp_notif_sent_set(media_jack,
+										     &media_jack->cable_info[i],
+										     true);
+				sl_media_data_jack_cable_high_temp_notif_sent_set(media_jack,
+										  &media_jack->cable_info[i],
+										  false);
+			}
 		}
 	}
 }
@@ -1544,10 +1623,21 @@ void sl_media_data_jack_cable_high_temp_notif_send(struct sl_media_jack *media_j
 void sl_media_data_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
 						       struct sl_media_lgrp_cable_info *cable_info, bool value)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp notif sent set (%s)", value ? "true" : "false");
+	sl_media_log_dbg(media_jack, LOG_NAME, "high temp notif sent set (value = %s)", value ? "true" : "false");
 
 	spin_lock(&media_jack->data_lock);
 	cable_info->high_temp_notif_sent = value;
+	spin_unlock(&media_jack->data_lock);
+}
+
+void sl_media_data_jack_cable_no_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
+							  struct sl_media_lgrp_cable_info *cable_info, bool value)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "no high temp notif sent set (value = %s)", value ?
+			 "true" : "false");
+
+	spin_lock(&media_jack->data_lock);
+	cable_info->no_high_temp_notif_sent = value;
 	spin_unlock(&media_jack->data_lock);
 }
 
