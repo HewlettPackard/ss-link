@@ -110,6 +110,8 @@ function sl_test_sw_load_modules
 {
         sl_test_debug_log "${FUNCNAME}"
 
+	depmod -a
+
         modules=(sl roscore rossw rosnic sl-test)
 
         for module in ${modules[@]}; do
