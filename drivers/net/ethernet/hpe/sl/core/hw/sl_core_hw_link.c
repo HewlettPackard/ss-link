@@ -259,7 +259,7 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 
 	sl_core_data_link_is_last_down_new_set(core_link, true);
-	sl_core_data_link_last_up_fail_cause_map_clr(core_link);
+	sl_core_data_link_is_last_up_fail_new_set(core_link, true);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 		"up cmd (link = 0x%p, callback = 0x%p, flags = 0x%X)",
@@ -763,17 +763,16 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		set_bit(SL_CORE_INFO_MAP_LINK_UP, (unsigned long *)&(core_link->info_map));
 
 		core_link->link.state                  = SL_CORE_LINK_STATE_UP;
-		core_link->link.last_up_fail_cause_map = SL_LINK_DOWN_CAUSE_NONE;
-		core_link->link.last_up_fail_time      = 0;
 
 		link_up_info.state                     = core_link->link.state;
-		link_up_info.cause_map                 = core_link->link.last_up_fail_cause_map;
 		link_up_info.info_map                  = core_link->info_map;
 		link_up_info.speed                     = core_link->pcs.settings.speed;
 		link_up_info.fec_mode                  = core_link->fec.settings.mode;
 		link_up_info.fec_type                  = core_link->fec.settings.type;
 
 		spin_unlock(&core_link->link.data_lock);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NONE);
+		link_up_info.cause_map                 = sl_core_data_link_last_up_fail_cause_map_get(core_link);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
 		return;
@@ -996,9 +995,9 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up timeout work - going down");
-		core_link->link.state                   = SL_CORE_LINK_STATE_TIMEOUT;
-		core_link->link.last_up_fail_cause_map |= SL_LINK_DOWN_CAUSE_TIMEOUT_MAP;
+		core_link->link.state = SL_CORE_LINK_STATE_TIMEOUT;
 		spin_unlock(&core_link->link.data_lock);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_TIMEOUT_MAP);
 		break;
 	default:
 		sl_core_log_err(core_link, LOG_NAME, "up timeout work - invalid state (link_state = %u %s)",

@@ -710,76 +710,6 @@ u64 sl_core_data_link_info_map_get(struct sl_core_link *core_link)
 	return info_map;
 }
 
-void sl_core_data_link_last_up_fail_cause_map_clr(struct sl_core_link *core_link)
-{
-	spin_lock(&core_link->link.data_lock);
-	core_link->link.last_up_fail_cause_map = 0;
-	core_link->link.last_up_fail_time      = 0;
-	spin_unlock(&core_link->link.data_lock);
-
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause map clr");
-}
-
-void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
-{
-	int  rtn;
-	bool is_canceled_or_timed_out;
-
-	rtn = sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "last_up_fail_cause_map_set sl_core_link_is_canceled_or_timed_out failed [%d]",
-				      rtn);
-		return;
-	}
-
-	if (is_canceled_or_timed_out) {
-		sl_core_log_dbg(core_link, LOG_NAME,
-				"last_up_fail_cause_map_set ignoring (up_fail_cause_map = 0x%llX)",
-				up_fail_cause_map);
-		return;
-	}
-
-	spin_lock(&core_link->link.data_lock);
-	core_link->link.last_up_fail_cause_map |= up_fail_cause_map;
-	core_link->link.last_up_fail_time       = ktime_get_real_seconds();
-	spin_unlock(&core_link->link.data_lock);
-
-	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
-							core_link->core_lgrp->num, core_link->num),
-				       up_fail_cause_map);
-
-	sl_core_log_dbg(core_link, LOG_NAME,
-			"last up fail cause set (cause_map = 0x%llX)", up_fail_cause_map);
-}
-
-void sl_core_data_link_last_up_fail_info_get(struct sl_core_link *core_link, u64 *up_fail_cause_map,
-	time64_t *up_fail_time)
-{
-	spin_lock(&core_link->link.data_lock);
-	*up_fail_cause_map = core_link->link.last_up_fail_cause_map;
-	*up_fail_time      = core_link->link.last_up_fail_time;
-	spin_unlock(&core_link->link.data_lock);
-
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (cause_map = 0x%llX)", *up_fail_cause_map);
-}
-
-u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
-{
-	u64 up_fail_cause_map;
-
-	spin_lock(&core_link->link.data_lock);
-	up_fail_cause_map = core_link->link.last_up_fail_cause_map;
-	spin_unlock(&core_link->link.data_lock);
-
-	sl_core_log_dbg(core_link, LOG_NAME,
-		"last up fail cause get (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
-
-	return up_fail_cause_map;
-}
-
 void sl_core_data_link_is_last_down_new_set(struct sl_core_link *core_link, bool is_last_down_new)
 {
 	spin_lock(&core_link->link.data_lock);
@@ -855,6 +785,83 @@ u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
 			"last down cause map get (down_cause_map = 0x%llX)", down_cause_map);
 
 	return down_cause_map;
+}
+
+void sl_core_data_link_is_last_up_fail_new_set(struct sl_core_link *core_link, bool is_last_up_fail_new)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.is_last_up_fail_new = is_last_up_fail_new;
+	spin_unlock(&core_link->link.data_lock);
+}
+
+void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link, u64 up_fail_cause_map)
+{
+	spin_lock(&core_link->link.data_lock);
+
+	if (core_link->link.is_last_up_fail_new) {
+		core_link->link.last_up_fail_entry_num++;
+		if (core_link->link.last_up_fail_entry_num >= SL_CTRL_LAST_UP_FAIL_NUM_ENTRIES)
+			core_link->link.last_up_fail_entry_num = 0;
+
+		core_link->link.last_up_fail_cause_map[core_link->link.last_up_fail_entry_num] = up_fail_cause_map;
+		core_link->link.last_up_fail_time[core_link->link.last_up_fail_entry_num]      = ktime_get_real_seconds();
+
+		core_link->link.is_last_up_fail_new = false;
+	} else {
+		core_link->link.last_up_fail_cause_map[core_link->link.last_up_fail_entry_num] |= up_fail_cause_map;
+		core_link->link.last_up_fail_time[core_link->link.last_up_fail_entry_num]       = ktime_get_real_seconds();
+	}
+
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+							core_link->core_lgrp->num, core_link->num), up_fail_cause_map);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last up_fail cause map set (num = %u, up_fail_cause_map = 0x%llX)",
+			core_link->link.last_up_fail_entry_num, up_fail_cause_map);
+}
+
+void sl_core_data_link_last_up_fail_cause_map_info_get(struct sl_core_link *core_link,
+						       u8                   entry_num,
+						       u64                 *up_fail_cause_map,
+						       time64_t            *up_fail_time)
+{
+	u8 actual_entry_num;
+
+	spin_lock(&core_link->link.data_lock);
+
+	if (entry_num > core_link->link.last_up_fail_entry_num)
+		actual_entry_num = SL_CTRL_LAST_UP_FAIL_NUM_ENTRIES - (entry_num - core_link->link.last_up_fail_entry_num);
+	else
+		actual_entry_num = core_link->link.last_up_fail_entry_num - entry_num;
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last up_fail cause map info get (entry_num = %u, last_up_fail_num = %u, actual_num = %u",
+			entry_num, core_link->link.last_up_fail_entry_num, actual_entry_num);
+
+	*up_fail_cause_map = core_link->link.last_up_fail_cause_map[actual_entry_num];
+	*up_fail_time      = core_link->link.last_up_fail_time[actual_entry_num];
+
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last up_fail cause map info get (up_fail_cause_map = 0x%llX, up_fail_time = %lld %ptTt %ptTd)",
+			*up_fail_cause_map, *up_fail_time, up_fail_time, up_fail_time);
+}
+
+u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
+{
+	u64 up_fail_cause_map;
+
+	spin_lock(&core_link->link.data_lock);
+	up_fail_cause_map = core_link->link.last_up_fail_cause_map[core_link->link.last_up_fail_entry_num];
+	spin_unlock(&core_link->link.data_lock);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last up_fail cause map get (up_fail_cause_map = 0x%llX)", up_fail_cause_map);
+
+	return up_fail_cause_map;
 }
 
 void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)

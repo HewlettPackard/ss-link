@@ -305,12 +305,14 @@ struct sl_core_link {
 	struct {
 		spinlock_t                            data_lock;
 		u32                                   state;
-		u64                                   last_up_fail_cause_map;
-		time64_t                              last_up_fail_time;
 		bool                                  is_last_down_new;
 		u8                                    last_down_entry_num;
 		u64                                   last_down_cause_map[SL_CTRL_LAST_DOWN_NUM_ENTRIES];
 		time64_t                              last_down_time[SL_CTRL_LAST_DOWN_NUM_ENTRIES];
+		bool                                  is_last_up_fail_new;
+		u8                                    last_up_fail_entry_num;
+		u64                                   last_up_fail_cause_map[SL_CTRL_LAST_UP_FAIL_NUM_ENTRIES];
+		time64_t                              last_up_fail_time[SL_CTRL_LAST_UP_FAIL_NUM_ENTRIES];
 		struct {
 			void                         *up;
 			void                         *down;
@@ -502,6 +504,8 @@ int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 
 void sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
 					       u64 *down_cause_map, time64_t *down_time);
+void sl_core_link_last_up_fail_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
+					          u64 *up_fail_cause_map, time64_t *up_fail_time);
 void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map);
 
 void sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,

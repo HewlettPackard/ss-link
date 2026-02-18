@@ -58,62 +58,6 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_config_tech_str(speed));
 }
 
-static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_ctrl_link *ctrl_link;
-	u32                  state;
-	u64                  up_fail_cause_map;
-	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
-
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
-
-	up_fail_cause_map = sl_ctrl_link_last_up_fail_cause_map_get(ctrl_link);
-
-	sl_link_down_cause_map_with_info_str(up_fail_cause_map, cause_str, sizeof(cause_str));
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail cause show (cause_map = 0x%llX %s)",
-		up_fail_cause_map, cause_str);
-
-	if (up_fail_cause_map == SL_LINK_DOWN_CAUSE_NONE) {
-		sl_ctrl_link_state_get_cmd(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-		ctrl_link->num, &state);
-		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no-fail\n");
-		else
-			return scnprintf(buf, PAGE_SIZE, "no-record\n");
-	}
-
-	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
-}
-
-static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_ctrl_link *ctrl_link;
-	u32                  state;
-	u64                  up_fail_cause_map;
-	time64_t             up_fail_time;
-
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
-
-	sl_ctrl_link_last_up_fail_cause_info_get(ctrl_link, &up_fail_cause_map, &up_fail_time);
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"last up fail time show (cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
-		up_fail_cause_map, up_fail_time, &up_fail_time, &up_fail_time);
-
-	if (up_fail_cause_map == SL_LINK_DOWN_CAUSE_NONE) {
-		sl_ctrl_link_state_get_cmd(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-		ctrl_link->num, &state);
-		if (state == SL_LINK_STATE_UP)
-			return scnprintf(buf, PAGE_SIZE, "no-fail\n");
-		else
-			return scnprintf(buf, PAGE_SIZE, "no-record\n");
-	}
-
-	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
-}
-
 static ssize_t ccw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -372,8 +316,6 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
-static struct kobj_attribute link_last_up_fail_cause_map           = __ATTR_RO(last_up_fail_cause_map);
-static struct kobj_attribute link_last_up_fail_time                = __ATTR_RO(last_up_fail_time);
 static struct kobj_attribute link_ccw_warn_limit_crossed           = __ATTR_RO(ccw_warn_limit_crossed);
 static struct kobj_attribute link_ccw_warn_limit_last_crossed_time = __ATTR_RO(ccw_warn_limit_last_crossed_time);
 static struct kobj_attribute link_ucw_warn_limit_crossed           = __ATTR_RO(ucw_warn_limit_crossed);
@@ -390,8 +332,6 @@ static struct kobj_attribute link_info_map                         = __ATTR_RO(i
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
 	&link_speed.attr,
-	&link_last_up_fail_cause_map.attr,
-	&link_last_up_fail_time.attr,
 	&link_ccw_warn_limit_crossed.attr,
 	&link_ccw_warn_limit_last_crossed_time.attr,
 	&link_ucw_warn_limit_crossed.attr,
@@ -523,6 +463,138 @@ static struct kobj_type last_down = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = last_down_groups,
 };
+
+static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+{
+	struct sl_ctrl_link *ctrl_link;
+	struct sl_core_link *core_link;
+	u64                  up_fail_cause_map;
+	time64_t             up_fail_time;
+	char                 cause_str[SL_LINK_UP_FAIL_CAUSE_STR_SIZE];
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, last_up_fail_kobj);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+
+	sl_core_link_last_up_fail_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+						     ctrl_link->num, num, &up_fail_cause_map, &up_fail_time);
+
+	sl_link_down_cause_map_with_info_str(up_fail_cause_map, cause_str, sizeof(cause_str));
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "last up_fail cause show (num = %u, cause_map = 0x%llX %s)",
+		   num, up_fail_cause_map, cause_str);
+
+	return scnprintf(buf, PAGE_SIZE, "%s\n", cause_str);
+}
+
+#define link_last_up_fail_cause_map(_num)                                                                                    \
+	static inline ssize_t up_fail_cause_map_##_num##_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf) \
+	{                                                                                                                    \
+		return last_up_fail_cause_map_show(kobj, kattr, buf, (_num));                                                \
+	}                                                                                                                    \
+	static struct kobj_attribute link_last_up_fail_cause_map_##_num = __ATTR_RO(up_fail_cause_map_##_num)
+
+link_last_up_fail_cause_map(0);
+link_last_up_fail_cause_map(1);
+link_last_up_fail_cause_map(2);
+link_last_up_fail_cause_map(3);
+link_last_up_fail_cause_map(4);
+link_last_up_fail_cause_map(5);
+link_last_up_fail_cause_map(6);
+link_last_up_fail_cause_map(7);
+link_last_up_fail_cause_map(8);
+link_last_up_fail_cause_map(9);
+
+static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)
+{
+	struct sl_ctrl_link *ctrl_link;
+	struct sl_core_link *core_link;
+	u64                  up_fail_cause_map;
+	time64_t             up_fail_time;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, last_up_fail_kobj);
+	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+
+	sl_core_link_last_up_fail_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+						     ctrl_link->num, num, &up_fail_cause_map, &up_fail_time);
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "last up_fail time show (num = %u, cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
+		   num, up_fail_cause_map, up_fail_time, &up_fail_time, &up_fail_time);
+
+	if (up_fail_cause_map == SL_LINK_DOWN_CAUSE_NONE)
+		return scnprintf(buf, PAGE_SIZE, "none\n");
+
+	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
+}
+
+#define link_last_up_fail_time(_num)                                                                                    \
+	static inline ssize_t up_fail_time_##_num##_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf) \
+	{                                                                                                               \
+		return last_up_fail_time_show(kobj, kattr, buf, (_num));                                                \
+	}                                                                                                               \
+	static struct kobj_attribute link_last_up_fail_time_##_num = __ATTR_RO(up_fail_time_##_num)
+
+link_last_up_fail_time(0);
+link_last_up_fail_time(1);
+link_last_up_fail_time(2);
+link_last_up_fail_time(3);
+link_last_up_fail_time(4);
+link_last_up_fail_time(5);
+link_last_up_fail_time(6);
+link_last_up_fail_time(7);
+link_last_up_fail_time(8);
+link_last_up_fail_time(9);
+
+static struct attribute *last_up_fail_attrs[] = {
+	&link_last_up_fail_cause_map_0.attr,
+	&link_last_up_fail_time_0.attr,
+	&link_last_up_fail_cause_map_1.attr,
+	&link_last_up_fail_time_1.attr,
+	&link_last_up_fail_cause_map_2.attr,
+	&link_last_up_fail_time_2.attr,
+	&link_last_up_fail_cause_map_3.attr,
+	&link_last_up_fail_time_3.attr,
+	&link_last_up_fail_cause_map_4.attr,
+	&link_last_up_fail_time_4.attr,
+	&link_last_up_fail_cause_map_5.attr,
+	&link_last_up_fail_time_5.attr,
+	&link_last_up_fail_cause_map_6.attr,
+	&link_last_up_fail_time_6.attr,
+	&link_last_up_fail_cause_map_7.attr,
+	&link_last_up_fail_time_7.attr,
+	&link_last_up_fail_cause_map_8.attr,
+	&link_last_up_fail_time_8.attr,
+	&link_last_up_fail_cause_map_9.attr,
+	&link_last_up_fail_time_9.attr,
+	NULL,
+};
+ATTRIBUTE_GROUPS(last_up_fail);
+
+static struct kobj_type last_up_fail = {
+	.sysfs_ops      = &kobj_sysfs_ops,
+	.default_groups = last_up_fail_groups,
+};
+
+static int sl_sysfs_link_last_up_fail_create(struct sl_ctrl_link *ctrl_link)
+{
+	int rtn;
+
+	rtn = kobject_init_and_add(&ctrl_link->last_up_fail_kobj,
+				   &last_up_fail, &ctrl_link->kobj, "last_up_fail");
+	if (rtn) {
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
+			   "last up_fail create kobject_init_and_add failed [%d]", rtn);
+		kobject_put(&ctrl_link->last_up_fail_kobj);
+		return rtn;
+	}
+
+	return 0;
+}
+
+static void sl_sysfs_link_last_up_fail_delete(struct sl_ctrl_link *ctrl_link)
+{
+	kobject_put(&ctrl_link->last_up_fail_kobj);
+}
 
 static int sl_sysfs_link_last_down_create(struct sl_ctrl_link *ctrl_link)
 {
@@ -659,6 +731,22 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_link_last_up_fail_create(ctrl_link);
+	if (rtn) {
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
+			   "sl_sysfs_link_last_up_fail_create failed [%d]", rtn);
+		sl_sysfs_link_policy_delete(ctrl_link);
+		sl_sysfs_link_config_delete(ctrl_link);
+		sl_sysfs_link_degrade_delete(core_link);
+		sl_sysfs_link_pml_rec_delete(core_link);
+		sl_sysfs_link_fec_delete(ctrl_link);
+		sl_sysfs_link_caps_delete(ctrl_link);
+		sl_sysfs_link_counters_delete(ctrl_link);
+		sl_sysfs_link_last_down_delete(ctrl_link);
+		kobject_put(&ctrl_link->kobj);
+		return rtn;
+	}
+
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link create (link_kobj = 0x%p)", &ctrl_link->kobj);
@@ -686,5 +774,6 @@ void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link)
 	sl_sysfs_link_caps_delete(ctrl_link);
 	sl_sysfs_link_counters_delete(ctrl_link);
 	sl_sysfs_link_last_down_delete(ctrl_link);
+	sl_sysfs_link_last_up_fail_delete(ctrl_link);
 	kobject_put(&ctrl_link->kobj);
 }
