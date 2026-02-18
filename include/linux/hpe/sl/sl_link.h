@@ -208,6 +208,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_ORIGIN_LINK_UP          BIT(63) /* link down before reaching up         */
 
 #define SL_LINK_DOWN_CAUSE_STR_SIZE     128
+#define SL_LINK_UP_FAIL_CAUSE_STR_SIZE  128
 #define SL_LINK_DOWN_CAUSE_STR_SIZE_MIN 4
 
 struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *sysfs_parent);

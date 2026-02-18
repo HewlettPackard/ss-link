@@ -463,8 +463,6 @@ function print_link {
         local link_up_tries_max=$(cat ${LINK_PATH}/config/link_up_tries_max)
         local an_fail_cause=$(cat ${LINK_PATH}/last_autoneg_fail_cause)
         local an_fail_time=$(cat ${LINK_PATH}/last_autoneg_fail_time)
-        local up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail_cause_map)
-        local up_fail_time=$(cat ${LINK_PATH}/last_up_fail_time)
         local keep_serdes_up=$(cat ${LINK_PATH}/policies/keep_serdes_up)
         local use_unsupported_cable=$(cat ${LINK_PATH}/policies/use_unsupported_cable)
         local use_supported_ss200_cable=$(cat ${LINK_PATH}/policies/use_supported_ss200_cable)
@@ -503,8 +501,7 @@ function print_link {
         print_link_state
 
         printf "           | link_up_timeout: ${link_up_timeout}ms (max tries = ${link_up_tries_max})\n"
-        printf "    causes | last_up_fail     : [${up_fail_time}] ${up_fail_cause_map}\n"
-        printf "           | last_autoneg_fail: [${an_fail_time}] ${an_fail_cause}\n"
+        printf "    causes | last_autoneg_fail: [${an_fail_time}] ${an_fail_cause}\n"
         down_cause_map=$(cat ${LINK_PATH}/last_down/cause_map_0)
         down_time=$(cat ${LINK_PATH}/last_down/time_0)
         printf "           | last_down       0: [${down_time}] ${down_cause_map}\n"
@@ -512,6 +509,14 @@ function print_link {
                 down_cause_map=$(cat ${LINK_PATH}/last_down/cause_map_${entry_num})
                 down_time=$(cat ${LINK_PATH}/last_down/time_${entry_num})
                 printf "           |                 ${entry_num}: [${down_time}] ${down_cause_map}\n"
+        done
+        up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail/cause_map_0)
+        up_fail_time=$(cat ${LINK_PATH}/last_up_fail/time_0)
+        printf "           | last_up_fail    0: [${up_fail_time}] ${up_fail_cause_map}\n"
+        for entry_num in {1..9} ; do
+                up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail/up_fail_cause_map_${entry_num})
+                up_fail_time=$(cat ${LINK_PATH}/last_up_fail/up_fail_time_${entry_num})
+                printf "           |                 ${entry_num}: [${up_fail_time}] ${up_fail_cause_map}\n"
         done
         printf "  policies | keep_serdes_up           : ${keep_serdes_up}\n"
         printf "           | use_unsupported_cable    : ${use_unsupported_cable}\n"
