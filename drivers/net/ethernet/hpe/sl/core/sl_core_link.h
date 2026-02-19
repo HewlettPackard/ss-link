@@ -332,6 +332,7 @@ struct sl_core_link {
 	struct {
 		struct sl_link_pml_rec_info  pml_rec_info;
 		atomic_t                     pml_rec_running;
+		atomic_t                     pml_rec_rate_limit_exceeded;
 		atomic_t                     pml_rec_down_cause_remote_fault;
 		ktime_t                      pml_rec_window_start_time;
 		ktime_t                      pml_rec_attempt_start_time;

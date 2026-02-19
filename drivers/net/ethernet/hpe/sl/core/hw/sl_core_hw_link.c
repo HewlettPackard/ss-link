@@ -1052,6 +1052,7 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
 	/* Check media */
 	if (!sl_core_hw_link_is_media_present(core_link))
@@ -1150,6 +1151,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
 	/* Check signal before turning the link off */
 	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
@@ -1246,6 +1248,7 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
 	/* Check signal before turning the link off */
 	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
@@ -1332,6 +1335,7 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]);
+	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
@@ -1738,6 +1742,7 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 
 			atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
+			atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 1);
 
 			sl_core_hw_link_pml_rec_fail(core_link);
 
@@ -1870,10 +1875,17 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	current_time = ktime_get();
 	if (sl_core_hw_link_is_pml_rec_window_valid(core_link, current_time)) {
 		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) > core_link->config.pml_rec_limit_max_duration_ms) {
+			if (atomic_read(&core_link->pml_rec.pml_rec_rate_limit_exceeded) == 0) {
+				atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 1);
+				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
+			}
+
 			sl_core_log_err_trace(core_link, LOG_NAME, "fault intr work - rate limit exceeded for this window");
 			goto link_down;
 		}
 	}
+
+	atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 0);
 
 	if (local_fault) {
 		if (atomic_read(&core_link->pml_rec.pml_rec_down_cause_remote_fault) == 1) {
