@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=11
+MINOR=12
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -23,6 +23,7 @@ function usage {
         echo "    fec      = print fec info for the target"
         echo "    cable    = print cable info for the target"
         echo "    counters = print counters for a link target (requires #:#:#)"
+        echo "    show_db  = print supported cable database"
         echo "    use_test = use the \"test_port\" directory"
         exit;
 }
@@ -62,6 +63,9 @@ elif [ "$#" -eq 2 ] ; then
                 use_test )
                         option=use_test
                         PORT_DIR_SYSFS=test_port
+                        ;;
+                show_db  )
+                        option=show_db
                         ;;
                 * )
                         usage
@@ -119,6 +123,71 @@ function print_ldev {
         echo "-------------------------------------------------------------------------------------------"
         printf " %-19s SL %-19s %45s\n" "${cmd} v${MAJOR}.${MINOR}" "${ver}" "hash: ${hash}"
         echo "-----------+-------------------------------------------------------------------------------"
+}
+
+function print_supported_db {
+        local sc_path="${LDEV_PATH}/supported_cables"
+
+        if [ ! -d "${sc_path}" ] ; then
+                return
+        fi
+
+        local fmt="%-7s  %-12s  %-30s  %-9s\n"
+        local lead="%-10s | "
+
+        printf "${lead}" "cable_db"
+        printf "${fmt}" "type" "vendor" "part_num" "length_cm"
+        printf "${lead}" ""
+        printf "%s\n" "----------------------------------------------------------------"
+
+        shopt -s nullglob
+
+        for type_dir in "${sc_path}"/* ; do
+                [ -d "${type_dir}" ] || continue
+                local type_name
+                type_name=$(basename "${type_dir}")
+                local type_printed=0
+
+                for vendor_dir in "${type_dir}"/* ; do
+                        [ -d "${vendor_dir}" ] || continue
+                        local vendor
+                        vendor=$(basename "${vendor_dir}")
+                        local vendor_printed=0
+
+                        for part_dir in "${vendor_dir}"/* ; do
+                                [ -d "${part_dir}" ] || continue
+                                local base part_num length
+                                base=$(basename "${part_dir}")
+
+                                part_num="${base}"
+                                if [ -f "${part_dir}/length_cm" ] ; then
+                                        length=$(cat "${part_dir}/length_cm")
+                                else
+                                        length="?"
+                                fi
+
+                                local type_col=""
+                                local vendor_col=""
+
+                                if [ ${type_printed} -eq 0 ] ; then
+                                        type_col="${type_name}"
+                                fi
+
+                                if [ ${vendor_printed} -eq 0 ] ; then
+                                        vendor_col="${vendor}"
+                                fi
+
+                                printf "${lead}" ""
+                                printf "${fmt}" "${type_col}" "${vendor_col}" "${part_num}" "${length}"
+
+                                type_printed=1
+                                vendor_printed=1
+
+                        done
+                done
+        done
+
+        shopt -u nullglob
 }
 
 function print_jack_state {
@@ -901,6 +970,13 @@ case $option in
                         print_llr_state
                         print_llr_counters
                         print_llr_cause_counters
+                fi
+                exit
+                ;;
+         show_db )
+                if [ ${num_args} -ge 1 ] ; then
+                        print_ldev
+                        print_supported_db
                 fi
                 exit
                 ;;
