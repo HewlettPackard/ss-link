@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/bitops.h>
@@ -115,14 +115,12 @@ const char *sl_core_link_state_str(enum sl_core_link_state link_state)
 		return "configured";
 	case SL_CORE_LINK_STATE_DOWN:
 		return "down";
+	case SL_CORE_LINK_STATE_AN:
+		return "an";
 	case SL_CORE_LINK_STATE_GOING_UP:
 		return "going-up";
 	case SL_CORE_LINK_STATE_UP:
 		return "up";
-	case SL_CORE_LINK_STATE_AN:
-		return "an";
-	case SL_CORE_LINK_STATE_RECOVERING:
-		return "recovering";
 	case SL_CORE_LINK_STATE_CANCELING:
 		return "canceling";
 	case SL_CORE_LINK_STATE_GOING_DOWN:

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021,2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LINK_H_
 #define _SL_CORE_LINK_H_
@@ -464,7 +464,6 @@ enum sl_core_link_state {
 	SL_CORE_LINK_STATE_AN,
 	SL_CORE_LINK_STATE_GOING_UP,
 	SL_CORE_LINK_STATE_UP,
-	SL_CORE_LINK_STATE_RECOVERING, // FIXME: need to implement this
 	SL_CORE_LINK_STATE_CANCELING,
 	SL_CORE_LINK_STATE_GOING_DOWN,
 	SL_CORE_LINK_STATE_TIMEOUT,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -613,7 +613,8 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 	sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"set state = %s", sl_core_link_state_str(link_state));
+			"set (link_state = %u %s)",
+			link_state, sl_core_link_state_str(link_state));
 }
 
 int sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state)
@@ -623,7 +624,8 @@ int sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state)
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-			"get (link_state = %u %s)", *link_state, sl_link_state_str(*link_state));
+			"get (link_state = %u %s)",
+			*link_state, sl_core_link_state_str(*link_state));
 
 	return 0;
 }

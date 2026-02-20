@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -314,12 +314,12 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "link-up";
 	case SL_LGRP_NOTIF_LINK_UP_FAIL:
 		return "link-up-fail";
+	case SL_LGRP_NOTIF_LINK_DOWN:
+		return "link-down";
 	case SL_LGRP_NOTIF_LINK_ASYNC_DOWN:
 		return "link-async-down";
 	case SL_LGRP_NOTIF_LINK_ERROR:
 		return "link-error";
-	case SL_LGRP_NOTIF_LINK_DOWN:
-		return "link-down";
 	case SL_LGRP_NOTIF_LINK_UCW_WARN:
 		return "link-ucw-warn";
 	case SL_LGRP_NOTIF_LINK_CCW_WARN:
@@ -340,10 +340,6 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "media-present";
 	case SL_LGRP_NOTIF_MEDIA_NOT_PRESENT:
 		return "media-not-present";
-	case SL_LGRP_NOTIF_MEDIA_HIGH_TEMP:
-		return "media-high-temp";
-	case SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP:
-		return "media-no-high-temp";
 	case SL_LGRP_NOTIF_MEDIA_ERROR:
 		return "media-error";
 	case SL_LGRP_NOTIF_AN_DATA:
@@ -356,8 +352,14 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "auto-lane-degrade";
 	case SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY:
 		return "auto-lane-degrade-recovery";
+	case SL_LGRP_NOTIF_MEDIA_HIGH_TEMP:
+		return "media-high-temp";
+	case SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP:
+		return "media-no-high-temp";
 	case SL_LGRP_NOTIF_PML_RECOVERY:
 		return "pml-recovery";
+	case SL_LGRP_NOTIF_LINK_DOWN_REQ:
+		return "link-down-request";
 	default:
 		return "unknown";
 	}

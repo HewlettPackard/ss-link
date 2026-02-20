@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/kernel.h>
@@ -1333,7 +1333,7 @@ static int sl_media_data_jack_cable_high_temp_link_down(struct sl_media_jack *me
 			if (!ctrl_link)
 				continue;
 
-			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
+			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP, true);
 			if (rtn)
 				sl_media_log_err_trace(media_jack, LOG_NAME,
 						       "cable high temp link down async_down failed [%d]", rtn);

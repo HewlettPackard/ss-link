@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LINK_PRIV_H_
 #define _SL_CTRL_LINK_PRIV_H_
@@ -22,11 +22,11 @@ u32 sl_ctrl_link_state_get(struct sl_ctrl_link *ctrl_link);
 
 void sl_ctrl_link_up_callback_work(struct work_struct *work);
 int  sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num);
-int  sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap);
+int  sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map);
 int  sl_ctrl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u32 result);
 int  sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *core_link_up_info);
 int  sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map);
-int  sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map);
+int  sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down);
 
 void sl_ctrl_link_up_clock_start(struct sl_ctrl_link *ctrl_link);
 void sl_ctrl_link_up_clock_reset(struct sl_ctrl_link *ctrl_link);

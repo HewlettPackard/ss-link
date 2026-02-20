@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LGRP_H_
 #define _LINUX_SL_LGRP_H_
@@ -41,6 +41,7 @@ struct sl_lgrp_config;
 #define SL_LGRP_NOTIF_MEDIA_HIGH_TEMP       BIT(22)  /* media/cable high temp detected     */
 #define SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP    BIT(23)  /* media/cable high temp not detected */
 #define SL_LGRP_NOTIF_PML_RECOVERY          BIT(24)  /* pml recovery                       */
+#define SL_LGRP_NOTIF_LINK_DOWN_REQ         BIT(25)  /* link down request                  */
 
 #define SL_LGRP_NOTIF_NO_LINK 0xFF
 

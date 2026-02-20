@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -52,7 +52,7 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		"speed show (state = %u %s, speed = 0x%X %s)",
 		state, sl_link_state_str(state), speed, sl_lgrp_config_tech_str(speed));
 
-	if (state != SL_LINK_STATE_UP)
+	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_lgrp_config_tech_str(speed));
@@ -166,7 +166,7 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (state != SL_LINK_STATE_UP)
+	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
@@ -194,7 +194,7 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (state != SL_LINK_STATE_UP)
+	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
@@ -222,7 +222,7 @@ static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *katt
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	if (state != SL_LINK_STATE_UP)
+	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
