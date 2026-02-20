@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/err.h>
@@ -320,6 +320,8 @@ const char *sl_link_state_str(u32 state)
 		return "starting";
 	case SL_LINK_STATE_UP:
 		return "up";
+	case SL_LINK_STATE_UP_DOWN_REQ:
+		return "up-requested-down";
 	case SL_LINK_STATE_STOPPING:
 		return "stopping";
 	default:
@@ -388,10 +390,12 @@ const char *sl_link_policy_opt_str(u32 option)
 		return "keep-serdes-up";
 	case SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE:
 		return "use-unsupported-cable";
-	case SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE:
-		return "use-supported-ss200-cable";
 	case SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR:
 		return "ignore-media-error";
+	case SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE:
+		return "use-supported-ss200-cable";
+	case SL_LINK_POLICY_OPT_LINK_DOWN_REQ:
+		return "link-down-request";
 	default:
 		return "unknown";
 	}

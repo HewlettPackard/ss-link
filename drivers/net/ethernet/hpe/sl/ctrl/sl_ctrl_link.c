@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
@@ -235,6 +235,7 @@ static void sl_ctrl_link_release(struct kref *kref)
 		sl_ctrl_link_down_wait(ctrl_link);
 		break;
 	case SL_LINK_STATE_UP:
+	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release stopping");
 		spin_unlock(&ctrl_link->data_lock);
@@ -470,6 +471,7 @@ int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_LINK_STATE_INVALID:
 	case SL_LINK_STATE_STOPPING:
 	case SL_LINK_STATE_UP:
+	case SL_LINK_STATE_UP_DOWN_REQ:
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "config - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
@@ -549,7 +551,7 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		goto out;
 	}
 
-	if (link_state != SL_LINK_STATE_UP) {
+	if ((link_state != SL_LINK_STATE_UP) && (link_state != SL_LINK_STATE_UP_DOWN_REQ)) {
 		sl_core_log_dbg(ctrl_link, LOG_NAME, "link_policy_set not up (link_state = %u %s)", link_state,
 		  sl_core_link_state_str(link_state));
 		rtn = 0;
@@ -713,6 +715,11 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		spin_unlock(&ctrl_link->data_lock);
 		rtn = -EALREADY;
 		goto out;
+	case SL_LINK_STATE_UP_DOWN_REQ:
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - already up down requested");
+		spin_unlock(&ctrl_link->data_lock);
+		rtn = -EALREADY;
+		goto out;
 	case SL_LINK_STATE_STOPPING:
 	case SL_LINK_STATE_INVALID:
 	default:
@@ -769,6 +776,7 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		rtn = 0;
 		goto out;
 	case SL_LINK_STATE_UP:
+	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - stopping");
 		spin_unlock(&ctrl_link->data_lock);
@@ -887,6 +895,7 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_CANCEL_CMD);
 		fallthrough;
 	case SL_LINK_STATE_UP:
+	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset - stopping");
 		spin_unlock(&ctrl_link->data_lock);

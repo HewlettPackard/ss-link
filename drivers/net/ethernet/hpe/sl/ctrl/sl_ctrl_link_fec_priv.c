@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/string.h>
 #include <linux/spinlock.h>
@@ -312,10 +312,10 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			"UCW exceeded down limit (UCW = %llu, CCW = %llu, ucw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ucw_chance);
 		ctrl_link->fec_ucw_chance = 0;
-		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_UCW_MAP);
+		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_UCW_MAP, false);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-				"data check ctrl_link_async_down failed [%d]", rtn);
+					      "data check UCW ctrl_link_async_down failed [%d]", rtn);
 			return rtn;
 		}
 		return -EIO;
@@ -326,9 +326,10 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			"CCW exceeded down limit (UCW = %llu, CCW = %llu, ccw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ccw_chance);
 		ctrl_link->fec_ccw_chance = 0;
-		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_CCW_MAP);
+		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_CCW_MAP, false);
 		if (rtn) {
-			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "link_down_and_notify failed [%d]", rtn);
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "data check CCW ctrl_link_async_down failed [%d]", rtn);
 			return rtn;
 		}
 		return -EIO;

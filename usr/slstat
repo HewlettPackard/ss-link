@@ -604,26 +604,27 @@ function print_link {
         printf "           | tech_caps : ${caps_tech}\n"
         printf "           | fec_caps  : ${caps_fec}\n"
         printf "           | hpe_caps  : ${caps_hpe}\n"
-        printf "   pml_rec | attempts : ${pml_rec_attempts}\n"
+        printf "  recovery | attempts : ${pml_rec_attempts}\n"
         printf "           | successes: ${pml_rec_successes}\n"
         printf "           | rate_limit_exceeded     : ${pml_rec_rate_limit_exceeded}\n"
         printf "           | link_down_cause         : ${pml_rec_down_cause}\n"
         printf "           | link_down_failed_cause  : ${pml_rec_down_failed_cause}\n"
         printf "           | local_fault_cause       : ${pml_rec_local_fault_cause}\n"
         printf "           | local_fault_failed_cause: ${pml_rec_local_fault_failed_cause}\n"
-	printf "       ALD | state: ${degrade_state}, is_recoverable: ${is_recoverable}\n"
+	printf "   degrade | state: ${degrade_state}\n"
+	printf "           | is_recoverable: ${is_recoverable}\n"
 	if [ "${degrade_state}" == "active" ] ; then
 		local rx_units="Gbps"
 	else
 		local rx_units=""
 	fi
-        printf "           |   is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
+        printf "           | is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
 	if [ "${degrade_state}" == "active" ] ; then
 		local tx_units="Gbps"
 	else
 		local tx_units=""
 	fi
-        printf "           |   is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
+        printf "           | is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
 }
 
 function print_mac {

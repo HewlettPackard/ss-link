@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 
@@ -181,7 +181,6 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		spin_unlock(&core_link->link.data_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
-	case SL_CORE_LINK_STATE_RECOVERING:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.tags.down      = tag;
 		core_link->link.callbacks.down = callback;

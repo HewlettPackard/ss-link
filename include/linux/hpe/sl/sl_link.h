@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_LINK_H_
 #define _LINUX_SL_LINK_H_
@@ -19,6 +19,7 @@ enum sl_link_state {
 	SL_LINK_STATE_AN,
 	SL_LINK_STATE_STARTING,
 	SL_LINK_STATE_UP,
+	SL_LINK_STATE_UP_DOWN_REQ,
 	SL_LINK_STATE_STOPPING,
 };
 
@@ -162,6 +163,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE     BIT(1) /* Try to bring the link up even if cable is unsupported   */
 #define SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR        BIT(2) /* Try to bring the link up even if media has errors       */
 #define SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE BIT(3) /* Bring the link up with supported SS200 cables           */
+#define SL_LINK_POLICY_OPT_LINK_DOWN_REQ             BIT(4) /* Request link down from client                           */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 

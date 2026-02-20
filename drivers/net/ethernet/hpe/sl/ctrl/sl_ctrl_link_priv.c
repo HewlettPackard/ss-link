@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 
@@ -134,6 +134,21 @@ static int sl_ctrl_link_down_notif_send(struct sl_ctrl_link *ctrl_link, u64 caus
 		SL_LGRP_NOTIF_LINK_DOWN, &info, info_map);
 }
 
+static int sl_ctrl_link_down_req_notif_send(struct sl_ctrl_link *ctrl_link, u64 cause_map, u64 info_map)
+{
+	union sl_lgrp_notif_info info;
+	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+
+	info.cause_map = cause_map;
+
+	sl_link_down_cause_map_with_info_str(cause_map, cause_str, sizeof(cause_str));
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"link_down_req_notif_send (core_cause_map = 0x%llX %s)", cause_map, cause_str);
+
+	return sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
+					  SL_LGRP_NOTIF_LINK_DOWN_REQ, &info, info_map);
+}
+
 void sl_ctrl_link_up_clock_start(struct sl_ctrl_link *ctrl_link)
 {
 	spin_lock(&ctrl_link->up_clock.lock);
@@ -208,6 +223,7 @@ static void sl_ctrl_link_state_stopping_set(struct sl_ctrl_link *ctrl_link)
 		return;
 	case SL_LINK_STATE_STARTING:
 	case SL_LINK_STATE_UP:
+	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "stopping set - stopping");
 		spin_unlock(&ctrl_link->data_lock);
@@ -426,7 +442,7 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_imap)
+int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map)
 {
 	struct sl_ctrl_link      *ctrl_link;
 	char                      core_imap_str[SL_LINK_INFO_STRLEN];
@@ -437,11 +453,11 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 
 	SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_FAULT_ASYNC);
 
-	sl_core_info_map_str(core_imap, core_imap_str, sizeof(core_imap_str));
+	sl_core_info_map_str(core_info_map, core_imap_str, sizeof(core_imap_str));
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"fault callback (core_state = %u %s, core_cause_map = 0x%llX, core_imap = %s (0x%llx))",
-		core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_imap);
+			"fault callback (core_state = %u %s, core_cause_map = 0x%llX, core_info_map = %s (0x%llx))",
+			core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_info_map);
 
 	sl_ctrl_link_up_clock_reset(ctrl_link);
 
@@ -456,16 +472,16 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
 
-		rtn = sl_ctrl_async_link_down_notif_send(ctrl_link, core_cause_map, core_imap);
+		rtn = sl_ctrl_async_link_down_notif_send(ctrl_link, core_cause_map, core_info_map);
 		if (rtn)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-				"fault callback async_link_down_notif_send failed [%d]", rtn);
+					       "fault callback async_link_down_notif_send failed [%d]", rtn);
 
 		return 0;
 
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-			"fault callback invalid (core_state = %u)", core_state);
+				"fault callback invalid (core_state = %u)", core_state);
 
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
@@ -474,10 +490,10 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 
 		info.error = -EBADRQC;
 		rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
-			SL_LGRP_NOTIF_LINK_ERROR, &info, core_imap);
+						 SL_LGRP_NOTIF_LINK_ERROR, &info, core_info_map);
 		if (rtn)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-				"fault callback ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+					       "fault callback ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 
 		return 0;
 	}
@@ -614,54 +630,70 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 	}
 }
 
-int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map)
+int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down)
 {
-	int                  rtn;
-	u32                  link_state;
-	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	int  rtn;
+	u32  link_state;
+	char cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
 
 	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-			"async_down kref_get_unless_zero failed (ctrl_link = 0x%p)", ctrl_link);
+				"async_down kref_get_unless_zero failed (ctrl_link = 0x%p)", ctrl_link);
 		return -EBADRQC;
 	}
 
 	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
 
 	sl_ctrl_link_up_clock_reset(ctrl_link);
 
 	spin_lock(&ctrl_link->data_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
+	case SL_LINK_STATE_UP_DOWN_REQ:
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already requested");
+		return 0;
 	case SL_LINK_STATE_UP:
+		if (!force_down && (ctrl_link->policy.options & SL_LINK_POLICY_OPT_LINK_DOWN_REQ)) {
+			ctrl_link->state = SL_LINK_STATE_UP_DOWN_REQ;
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down request link down");
+			spin_unlock(&ctrl_link->data_lock);
+			rtn = sl_ctrl_link_down_req_notif_send(ctrl_link, down_cause_map, 0); // FIXME: info_map?
+			if (rtn)
+				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+						       "async_down ctrl_link_down_req_notif_send failed [%d]",
+						       rtn);
+			return 0;
+		}
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down - stopping");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down stopping");
 		spin_unlock(&ctrl_link->data_lock);
-		rtn = sl_core_link_down(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num,
-			sl_ctrl_link_async_down_callback, ctrl_link, down_cause_map);
+		rtn = sl_core_link_down(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+					ctrl_link->num, sl_ctrl_link_async_down_callback, ctrl_link,
+					down_cause_map);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-				"core_link_down failed [%d]", rtn);
+					      "async_down core_link_down failed [%d]", rtn);
 			sl_ctrl_link_put(ctrl_link);
 			return rtn;
 		}
 		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_DOWN:
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down - already down");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already down");
 		spin_unlock(&ctrl_link->data_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_STOPPING:
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down - already stopping");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already stopping");
 		spin_unlock(&ctrl_link->data_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	default:
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down - invalid state (link_state = %u %s)",
-			link_state, sl_link_state_str(link_state));
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down invalid state (link_state = %u %s)",
+				link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctrl_link->data_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return -EBADRQC;
