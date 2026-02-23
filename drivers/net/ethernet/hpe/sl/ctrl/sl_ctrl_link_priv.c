@@ -654,6 +654,7 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 	switch (link_state) {
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already requested");
+		spin_unlock(&ctrl_link->data_lock);
 		return 0;
 	case SL_LINK_STATE_UP:
 		if (!force_down && (ctrl_link->policy.options & SL_LINK_POLICY_OPT_LINK_DOWN_REQ)) {
