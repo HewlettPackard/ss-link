@@ -1054,22 +1054,20 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
 	/* Check media */
-	if (!sl_core_hw_link_is_media_present(core_link))
+	if (sl_core_hw_link_is_media_present(core_link)) {
+		/* Check signal before turning the link off */
+		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "up timeout work - media signal get failed [%d]", rtn);
+		else
+			sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	} else {
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
-
-	/* Check signal before turning the link off */
-	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
-	if (rtn)
-		sl_core_log_err_trace(core_link, LOG_NAME, "up timeout work - media signal get failed [%d]", rtn);
-	else
-		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	}
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
-
-	if (!sl_core_hw_link_is_media_present(core_link))
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
@@ -1152,19 +1150,21 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
-	/* Check signal before turning the link off */
-	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
-	if (rtn)
-		sl_core_log_err_trace(core_link, LOG_NAME, "up cancel work - media signal get failed [%d]", rtn);
-	else
-		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	/* Check media */
+	if (sl_core_hw_link_is_media_present(core_link)) {
+		/* Check signal before turning the link off */
+		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "up timeout work - media signal get failed [%d]", rtn);
+		else
+			sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	} else {
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
+	}
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
-
-	if (!sl_core_hw_link_is_media_present(core_link))
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
@@ -1249,19 +1249,21 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
 
-	/* Check signal before turning the link off */
-	rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
-	if (rtn)
-		sl_core_log_err_trace(core_link, LOG_NAME, "up fail work - media signal get failed [%d]", rtn);
-	else
-		sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	/* Check media */
+	if (sl_core_hw_link_is_media_present(core_link)) {
+		/* Check signal before turning the link off */
+		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "up timeout work - media signal get failed [%d]", rtn);
+		else
+			sl_core_hw_link_last_up_fail_cause_map_set_from_signal(core_link, &media_signal);
+	} else {
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
+	}
 
 	/* stop hardware */
 	sl_core_hw_an_stop(core_link);
 	sl_core_hw_link_off(core_link);
-
-	if (!sl_core_hw_link_is_media_present(core_link))
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
 
