@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=12
+MINOR=13
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -579,8 +579,8 @@ function print_link {
                 down_time=$(cat ${LINK_PATH}/last_down/time_${entry_num})
                 printf "           |                 ${entry_num}: [${down_time}] ${down_cause_map}\n"
         done
-        up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail/cause_map_0)
-        up_fail_time=$(cat ${LINK_PATH}/last_up_fail/time_0)
+        up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail/up_fail_cause_map_0)
+        up_fail_time=$(cat ${LINK_PATH}/last_up_fail/up_fail_time_0)
         printf "           | last_up_fail    0: [${up_fail_time}] ${up_fail_cause_map}\n"
         for entry_num in {1..9} ; do
                 up_fail_cause_map=$(cat ${LINK_PATH}/last_up_fail/up_fail_cause_map_${entry_num})
