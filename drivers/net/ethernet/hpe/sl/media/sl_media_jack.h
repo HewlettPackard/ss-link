@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_JACK_H_
 #define _SL_MEDIA_JACK_H_
@@ -247,29 +247,29 @@ int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jac
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
 struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
 void                  sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state);
-u8                    sl_media_jack_state_get(struct sl_media_jack *media_jack);
-u8                    sl_media_jack_cable_end_get(struct sl_media_jack *media_jack);
+int                   sl_media_jack_state_get(struct sl_media_jack *media_jack, u8 *state);
+int                   sl_media_jack_cable_end_get(struct sl_media_jack *media_jack, u8 *cable_end);
 bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_jack);
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
-u8                    sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack);
+int                   sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack, u8 *cable_shift_state);
 bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack);
 
-u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack);
-u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack);
+int sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack, u8 *host_interface_200_gaui);
+int sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack, u8 *appsel_num_200_gaui);
+int sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack, u8 *lane_count_200_gaui);
+int sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack, u8 *host_interface_400_gaui);
+int sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack, u8 *appsel_num_400_gaui);
+int sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack, u8 *lane_count_400_gaui);
 
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause);
-void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
-	time64_t *fault_time);
+int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
+				   time64_t *fault_time);
 
-u8   sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack);
+int  sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
 bool sl_media_jack_cable_high_temp_hw_check(struct sl_media_jack *media_jack);

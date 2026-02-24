@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -21,13 +21,16 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
 	u32                              state;
+	int				 rtn;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
-	state     = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);
+	rtn	  = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state tx show (asic_lane_num = %u, state = %u %s)",
@@ -41,13 +44,16 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
 	u32                              state;
+	int				 rtn;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
-	state     = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num);
+	rtn	  = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state rx show (asic_lane_num = %u, state = %u %s)",

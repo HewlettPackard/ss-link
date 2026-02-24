@@ -134,15 +134,15 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
-void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+int sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				s64 *attempt_time, s64 *total_time, s64 *up_time);
-void sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
+int sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
 
 int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);
 
 int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);
 
-void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time);
+int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time);
 
 u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count);
 

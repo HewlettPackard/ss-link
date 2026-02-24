@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -91,9 +91,9 @@ int sl_core_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 }
 
-void sl_core_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
+int sl_core_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
 {
-	sl_core_data_link_an_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num), fail_cause, fail_time);
+	return sl_core_data_link_an_fail_cause_get(sl_core_link_get(ldev_num, lgrp_num, link_num), fail_cause, fail_time);
 }
 
 u32 sl_core_link_an_retry_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num)

@@ -336,17 +336,20 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	}
 
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(ucw_warn_limit, &fec_info)) {
-		sl_core_link_ucw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-			ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
+		rtn = sl_core_link_ucw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+							      ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
+		if(rtn)
+			sl_core_log_warn_trace(ctrl_link, LOG_NAME, "ucw_warn_limit_crossed_get failed [%d]", rtn);
+
 		if (!is_limit_crossed) {
 			sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				"UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-				fec_info.ucw, fec_info.ccw);
+					 "UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+					 fec_info.ucw, fec_info.ccw);
 			rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
-				SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
+							 SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
 			if (rtn)
 				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-					"data check ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+						       "data check ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 		}
 		sl_core_link_ucw_warn_limit_crossed_set(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 			ctrl_link->ctrl_lgrp->num, ctrl_link->num, true);
@@ -354,17 +357,20 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	}
 
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
-		sl_core_link_ccw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-			ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
+		rtn = sl_core_link_ccw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+							      ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
+		if(rtn)
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "ccw_warn_limit_crossed_get failed [%d]", rtn);
+
 		if (!is_limit_crossed) {
 			sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				"CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-				fec_info.ucw, fec_info.ccw);
+					 "CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+					 fec_info.ucw, fec_info.ccw);
 			rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
-				  SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
+							 SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
 			if (rtn)
 				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-					"data check ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+						       "data check ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 		}
 		sl_core_link_ccw_warn_limit_crossed_set(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 			ctrl_link->ctrl_lgrp->num, ctrl_link->num, true);

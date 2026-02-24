@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -144,27 +144,25 @@ void sl_media_lgrp_no_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool 
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
-u32 sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp, u32 *vendor)
 {
-	u32 vendor;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		vendor = media_lgrp->cable_info->media_attr.vendor;
+		*vendor = media_lgrp->cable_info->media_attr.vendor;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		vendor = media_lgrp->cable_info->stashed_media_attr.vendor;
+		*vendor = media_lgrp->cable_info->stashed_media_attr.vendor;
 		break;
 	default:
-		vendor = SL_MEDIA_VENDOR_UNKNOWN;
+		*vendor = SL_MEDIA_VENDOR_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return vendor;
+	return 0;
 }
 
-void sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str)
+int sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
@@ -179,89 +177,83 @@ void sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *ven
 		vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
 }
 
-u32 sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp, u32 *type)
 {
-	u32 type;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		type = media_lgrp->cable_info->media_attr.type;
+		*type = media_lgrp->cable_info->media_attr.type;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		type = media_lgrp->cable_info->stashed_media_attr.type;
+		*type = media_lgrp->cable_info->stashed_media_attr.type;
 		break;
 	default:
-		type = SL_MEDIA_TYPE_UNKNOWN;
+		*type = SL_MEDIA_TYPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return type;
+	return 0;
 }
 
-u32 sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp, u32 *shape)
 {
-	u32 shape;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		shape = media_lgrp->cable_info->media_attr.shape;
+		*shape = media_lgrp->cable_info->media_attr.shape;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		shape = media_lgrp->cable_info->stashed_media_attr.shape;
+		*shape = media_lgrp->cable_info->stashed_media_attr.shape;
 		break;
 	default:
-		shape = SL_MEDIA_SHAPE_UNKNOWN;
+		*shape = SL_MEDIA_SHAPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return shape;
+	return 0;
 }
 
-u32 sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp, u32 *length_cm)
 {
-	u32 length_cm;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		length_cm = media_lgrp->cable_info->media_attr.length_cm;
+		*length_cm = media_lgrp->cable_info->media_attr.length_cm;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		length_cm = media_lgrp->cable_info->stashed_media_attr.length_cm;
+		*length_cm = media_lgrp->cable_info->stashed_media_attr.length_cm;
 		break;
 	default:
-		length_cm = 0;
+		*length_cm = 0;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return length_cm;
+	return 0;
 }
 
-u32 sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp, u32 *max_speed)
 {
-	u32 max_speed;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		max_speed = media_lgrp->cable_info->media_attr.max_speed;
+		*max_speed = media_lgrp->cable_info->media_attr.max_speed;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		max_speed = media_lgrp->cable_info->stashed_media_attr.max_speed;
+		*max_speed = media_lgrp->cable_info->stashed_media_attr.max_speed;
 		break;
 	default:
-		max_speed = 0;
+		*max_speed = 0;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return max_speed;
+	return 0;
 }
 
-void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str)
+int sl_media_lgrp_serial_num_str_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
@@ -278,9 +270,11 @@ void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial
 		serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
 }
 
-void sl_media_lgrp_hpe_pn_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str)
+int sl_media_lgrp_hpe_pn_str_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
@@ -295,66 +289,62 @@ void sl_media_lgrp_hpe_pn_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str
 		hpe_pn_str[SL_MEDIA_HPE_PN_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
 }
 
-u32 sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp, u32 *jack_type)
 {
-	u32 jack_type;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		jack_type = media_lgrp->cable_info->media_attr.jack_type;
+		*jack_type = media_lgrp->cable_info->media_attr.jack_type;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		jack_type = media_lgrp->cable_info->stashed_media_attr.jack_type;
+		*jack_type = media_lgrp->cable_info->stashed_media_attr.jack_type;
 		break;
 	default:
-		jack_type = SL_MEDIA_JACK_TYPE_UNKNOWN;
+		*jack_type = SL_MEDIA_JACK_TYPE_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return jack_type;
+	return 0;
 }
 
-u32 sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp, u32 *density)
 {
-	u32 density;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		density = media_lgrp->cable_info->media_attr.jack_type_info.qsfp.density;
+		*density = media_lgrp->cable_info->media_attr.jack_type_info.qsfp.density;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		density = media_lgrp->cable_info->stashed_media_attr.jack_type_info.qsfp.density;
+		*density = media_lgrp->cable_info->stashed_media_attr.jack_type_info.qsfp.density;
 		break;
 	default:
-		density = SL_MEDIA_QSFP_DENSITY_UNKNOWN;
+		*density = SL_MEDIA_QSFP_DENSITY_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return density;
+	return 0;
 }
 
-u32 sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp)
+int sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp, u32 *furcation)
 {
-	u32 furcation;
-
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		furcation = media_lgrp->cable_info->media_attr.furcation;
+		*furcation = media_lgrp->cable_info->media_attr.furcation;
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		furcation = media_lgrp->cable_info->stashed_media_attr.furcation;
+		*furcation = media_lgrp->cable_info->stashed_media_attr.furcation;
 		break;
 	default:
-		furcation = SL_MEDIA_FURCATION_UNKNOWN;
+		*furcation = SL_MEDIA_FURCATION_UNKNOWN;
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 
-	return furcation;
+	return 0;
 }
 
 bool sl_media_lgrp_is_cable_unsupported(struct sl_media_lgrp *media_lgrp)
@@ -368,7 +358,7 @@ bool sl_media_lgrp_is_cable_unsupported(struct sl_media_lgrp *media_lgrp)
 	return unsupported;
 }
 
-void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str)
+int sl_media_lgrp_date_code_str_get(struct sl_media_lgrp *media_lgrp, char *date_code_str)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
@@ -383,9 +373,11 @@ void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_co
 		date_code_str[SL_MEDIA_DATE_CODE_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
 }
 
-void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver)
+int sl_media_lgrp_fw_ver_str_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver)
 {
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
@@ -399,6 +391,8 @@ void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver)
 		memset(fw_ver, 0, SL_MEDIA_FIRMWARE_VERSION_SIZE);
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	return 0;
 }
 
 bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num)

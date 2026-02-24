@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -19,13 +19,17 @@ static ssize_t rx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 {
 	struct sl_ctrl_mac *ctrl_mac;
 	u32                 state;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
 
-	sl_ctrl_mac_rx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num, ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
+	rtn = sl_ctrl_mac_rx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
+				       ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
-		"rx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
+		   "rx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
 }
@@ -34,13 +38,17 @@ static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 {
 	struct sl_ctrl_mac *ctrl_mac;
 	u32                 state;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
 
-	sl_ctrl_mac_tx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num, ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
+	rtn = sl_ctrl_mac_tx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
+				       ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
-		"tx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
+		   "tx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
 }
@@ -55,17 +63,17 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
 
 	rtn = sl_ctrl_mac_info_map_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &info_map);
+				       ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &info_map);
 	if (rtn) {
 		sl_log_err(ctrl_mac, LOG_BLOCK, LOG_NAME,
-			"info map show sl_ctrl_mac_info_map_get failed [%d]", rtn);
+			   "info map show sl_ctrl_mac_info_map_get failed [%d]", rtn);
 		return scnprintf(buf, PAGE_SIZE, "no-mac\n");
 	}
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
-		"info map show (info_map = 0x%llX %s)", info_map, info_map_str);
+		   "info map show (info_map = 0x%llX %s)", info_map, info_map_str);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
 }
@@ -103,7 +111,7 @@ int sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac)
 	rtn = kobject_init_and_add(&ctrl_mac->kobj, &mac_info, ctrl_mac->parent_kobj, "mac");
 	if (rtn) {
 		sl_log_err(ctrl_mac, LOG_BLOCK, LOG_NAME,
-			"mac create kobject_init_and_add failed [%d]", rtn);
+			   "mac create kobject_init_and_add failed [%d]", rtn);
 		kobject_put(&ctrl_mac->kobj);
 		return rtn;
 	}
@@ -116,7 +124,7 @@ int sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac)
 	}
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
-		"mac create (mac_kobj = 0x%p)", &ctrl_mac->kobj);
+		   "mac create (mac_kobj = 0x%p)", &ctrl_mac->kobj);
 
 	return 0;
 }

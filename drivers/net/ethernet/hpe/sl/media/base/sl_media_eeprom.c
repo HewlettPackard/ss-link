@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/errno.h>
@@ -470,7 +470,7 @@ bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, s
 		(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.minor)));
 }
 
-void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
+int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "target fw ver get (idx = %u, type = 0x%X %s, shape = %u %s, end = %u %s, supported = %s)",
@@ -485,17 +485,17 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 
 	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_jack->cable_info[0].media_attr.type)) {
 		snprintf(target_fw_str, target_fw_size, "invalid-type\n");
-		return;
+		return 0;
 	}
 
 	if (media_jack->is_cable_unsupported) {
 		snprintf(target_fw_str, target_fw_size, "unsupported\n");
-		return;
+		return 0;
 	}
 
 	if (media_jack->is_supported_ss200_cable) {
 		snprintf(target_fw_str, target_fw_size, "ss200-cable\n");
-		return;
+		return 0;
 	}
 
 	if (media_jack->cable_info[0].media_attr.shape == SL_MEDIA_SHAPE_SPLITTER &&
@@ -503,12 +503,14 @@ void sl_media_eeprom_target_fw_ver_get(struct sl_media_jack *media_jack, char *t
 		snprintf(target_fw_str, target_fw_size, "%02X.%02X\n",
 			 cable_db[media_jack->cable_db_idx].fw_ver.split_major,
 			 cable_db[media_jack->cable_db_idx].fw_ver.split_minor);
-		return;
+		return 0;
 	}
 
 	snprintf(target_fw_str, target_fw_size, "%02X.%02X\n",
 		 cable_db[media_jack->cable_db_idx].fw_ver.major,
 		 cable_db[media_jack->cable_db_idx].fw_ver.minor);
+
+	return 0;
 }
 
 void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
@@ -581,13 +583,11 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
 
 
 #define MEDIA_INTERFACE_CODE_OFFSET 87
-u8 sl_media_eeprom_media_interface_get(struct sl_media_jack *media_jack)
+int sl_media_eeprom_media_interface_get(struct sl_media_jack *media_jack, u8 *media_interface)
 {
-	u8 media_interface;
-
 	spin_lock(&media_jack->data_lock);
-	media_interface = media_jack->eeprom_page0[MEDIA_INTERFACE_CODE_OFFSET];
+	*media_interface = media_jack->eeprom_page0[MEDIA_INTERFACE_CODE_OFFSET];
 	spin_unlock(&media_jack->data_lock);
 
-	return media_interface;
+	return 0;
 }

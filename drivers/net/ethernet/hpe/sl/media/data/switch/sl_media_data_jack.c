@@ -467,6 +467,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	struct sl_media_attr    media_attr;
 	u8                      count;
 	u8                      value;
+	u8			state;
 	struct xcvr_i2c_data    i2c_data;
 	struct xcvr_jack_data   jack_data;
 	struct xcvr_status_data status_data;
@@ -479,7 +480,11 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 
 	count = 0;
 	while (sl_media_data_jack_cable_is_going_online(media_jack)) {
-		if (sl_media_jack_state_get(media_jack) == SL_MEDIA_JACK_CABLE_REMOVED) {
+		rtn = sl_media_jack_state_get(media_jack, &state);
+		if (rtn)
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
+
+		if (state == SL_MEDIA_JACK_CABLE_REMOVED) {
 			sl_media_log_dbg(media_jack, LOG_NAME,
 				"cable removed while waiting for online");
 			return 0;
@@ -1217,15 +1222,24 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	u8                    lgrp_num;
 	u8                    max_links;
 	u8                    i;
+	u8		      state;
+	u8		      temperature_state;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
-	if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+	rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
+	if(rtn)
+		sl_media_log_warn_trace(media_jack, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 		sl_media_io_led_set(media_jack, LED_ON_AMBER);
 		return;
 	}
+	rtn = sl_media_jack_state_get(media_jack, &state);
+	if (rtn)
+		sl_media_log_warn_trace(media_jack, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
 
-	switch (sl_media_jack_state_get(media_jack)) {
+	switch (state) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
 		sl_media_io_led_set(media_jack, LED_OFF);
 		return;
@@ -1349,6 +1363,7 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 	struct sl_media_jack *media_jack;
 	struct sl_media_ldev *media_ldev;
 	struct delayed_work  *delayed_work_ptr;
+	u8		     temperature_state;
 
 	delayed_work_ptr  = container_of(work, struct delayed_work, work);
 	media_ldev = container_of(delayed_work_ptr, struct sl_media_ldev,
@@ -1373,8 +1388,11 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 		}
 
 		if (!sl_media_data_jack_cable_high_temp_hw_check(media_jack)) {
-			if (sl_media_data_jack_cable_temp_state_get(media_jack) ==
-			    SL_MEDIA_JACK_TEMP_STATE_COLD) {
+			rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
+			if(rtn)
+				sl_media_log_warn_trace(media_jack, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+			if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_COLD) {
 				sl_media_data_jack_cable_no_high_temp_notif_send(media_jack);
 				continue;
 			}
@@ -1404,7 +1422,11 @@ static void sl_media_data_jack_cable_monitor_high_temp_delayed_work(struct work_
 			continue;
 		}
 
-		if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+		rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
+		if(rtn)
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+		if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 			sl_media_data_jack_cable_high_temp_notif_send(media_jack);
 			continue;
 		}

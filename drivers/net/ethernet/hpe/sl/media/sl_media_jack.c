@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -72,26 +72,22 @@ void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 jack_state)
 	sl_media_data_jack_led_set(media_jack);
 }
 
-u8 sl_media_jack_state_get(struct sl_media_jack *media_jack)
+int sl_media_jack_state_get(struct sl_media_jack *media_jack, u8 *state)
 {
-	u8 state;
-
 	spin_lock(&media_jack->data_lock);
-	state = media_jack->state;
+	*state = media_jack->state;
 	spin_unlock(&media_jack->data_lock);
 
-	return state;
+	return 0;
 }
 
-u8 sl_media_jack_cable_end_get(struct sl_media_jack *media_jack)
+int sl_media_jack_cable_end_get(struct sl_media_jack *media_jack, u8 *cable_end)
 {
-	u8 cable_end;
-
 	spin_lock(&media_jack->data_lock);
-	cable_end = media_jack->cable_end;
+	*cable_end = media_jack->cable_end;
 	spin_unlock(&media_jack->data_lock);
 
-	return cable_end;
+	return 0;
 }
 
 bool sl_media_jack_is_high_powered(struct sl_media_jack *media_jack)
@@ -114,17 +110,15 @@ void sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 st
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state set = %u", media_jack->cable_shift_state);
 }
 
-u8 sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack)
+int sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack, u8 *cable_shift_state)
 {
-	u8 cable_shift_state;
-
 	spin_lock(&media_jack->data_lock);
-	cable_shift_state = media_jack->cable_shift_state;
+	*cable_shift_state = media_jack->cable_shift_state;
 	spin_unlock(&media_jack->data_lock);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state get = %u", cable_shift_state);
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable shift state get = %u", *cable_shift_state);
 
-	return cable_shift_state;
+	return 0;
 }
 
 bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
@@ -149,70 +143,58 @@ bool sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack)
 	return is_format_unsupported;
 }
 
-u8 sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack, u8 *host_interface_200_gaui)
 {
-	u8 host_interface_200_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	host_interface_200_gaui = media_jack->host_interface_200_gaui;
+	*host_interface_200_gaui = media_jack->host_interface_200_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return host_interface_200_gaui;
+	return 0;
 }
 
-u8 sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_200g_appsel_num_get(struct sl_media_jack *media_jack, u8 *appsel_num_200_gaui)
 {
-	u8 appsel_num_200_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	appsel_num_200_gaui = media_jack->appsel_num_200_gaui;
+	*appsel_num_200_gaui = media_jack->appsel_num_200_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return appsel_num_200_gaui;
+	return 0;
 }
 
-u8 sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_200g_lane_count_get(struct sl_media_jack *media_jack, u8 *lane_count_200_gaui)
 {
-	u8 lane_count_200_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	lane_count_200_gaui = media_jack->lane_count_200_gaui;
+	*lane_count_200_gaui = media_jack->lane_count_200_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return lane_count_200_gaui;
+	return 0;
 }
 
-u8 sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *media_jack, u8 *host_interface_400_gaui)
 {
-	u8 host_interface_400_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	host_interface_400_gaui = media_jack->host_interface_400_gaui;
+	*host_interface_400_gaui = media_jack->host_interface_400_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return host_interface_400_gaui;
+	return 0;
 }
 
-u8 sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack, u8 *appsel_num_400_gaui)
 {
-	u8 appsel_num_400_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	appsel_num_400_gaui = media_jack->appsel_num_400_gaui;
+	*appsel_num_400_gaui = media_jack->appsel_num_400_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return appsel_num_400_gaui;
+	return 0;
 }
 
-u8 sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack)
+int sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack, u8 *lane_count_400_gaui)
 {
-	u8 lane_count_400_gaui;
-
 	spin_lock(&media_jack->data_lock);
-	lane_count_400_gaui = media_jack->lane_count_400_gaui;
+	*lane_count_400_gaui = media_jack->lane_count_400_gaui;
 	spin_unlock(&media_jack->data_lock);
 
-	return lane_count_400_gaui;
+	return 0;
 }
 
 #define SL_MEDIA_HIGH_POWER_WAIT_TIME 10000
@@ -435,8 +417,8 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 		sl_media_fault_cause_str(fault_cause));
 }
 
-void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
-	time64_t *fault_time)
+int sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
+				  time64_t *fault_time)
 {
 	spin_lock(&media_jack->data_lock);
 	*fault_cause = media_jack->fault_cause;
@@ -445,6 +427,8 @@ void sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable fault cause get (cause = %u %s)", *fault_cause,
 		sl_media_fault_cause_str(*fault_cause));
+
+	return 0;
 }
 
 const char *sl_media_fault_cause_str(u32 fault_cause)
@@ -513,9 +497,9 @@ const char *sl_media_temp_state_str(u32 temperature_state)
 	}
 }
 
-u8 sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack)
+int sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state)
 {
-	return sl_media_data_jack_cable_temp_state_get(media_jack);
+	return sl_media_data_jack_cable_temp_state_get(media_jack, temperature_state);
 }
 
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
