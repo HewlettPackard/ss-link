@@ -249,17 +249,15 @@ void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u
 	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state set (state = %u)", media_jack->temperature_state);
 }
 
-u8 sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state)
 {
-	u8 temperature_state;
-
 	spin_lock(&media_jack->data_lock);
-	temperature_state = media_jack->temperature_state;
+	*temperature_state = media_jack->temperature_state;
 	spin_unlock(&media_jack->data_lock);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp state get (state= %u)", media_jack->temperature_state);
 
-	return temperature_state;
+	return 0;
 }
 
 void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value)

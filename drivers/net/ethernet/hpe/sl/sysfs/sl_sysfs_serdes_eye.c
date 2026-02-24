@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -9,6 +9,7 @@
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_core_lgrp.h"
+#include "sl_core_link.h"
 #include "sl_sysfs_serdes_eye.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -19,11 +20,17 @@ static ssize_t value_upper_show(struct kobject *kobj, struct kobj_attribute *kat
 	int                              rtn;
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 	u8                               eye_upper;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -45,11 +52,17 @@ static ssize_t value_lower_show(struct kobject *kobj, struct kobj_attribute *kat
 	int                              rtn;
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 	u8                               eye_lower;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -70,10 +83,16 @@ static ssize_t limit_high_show(struct kobject *kobj, struct kobj_attribute *katt
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -89,10 +108,16 @@ static ssize_t limit_low_show(struct kobject *kobj, struct kobj_attribute *kattr
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 

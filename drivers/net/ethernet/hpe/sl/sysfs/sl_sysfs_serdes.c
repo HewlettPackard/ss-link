@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -42,9 +42,6 @@ static ssize_t hw_rev_1_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	struct sl_core_lgrp *core_lgrp;
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
-	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-group\n");
-
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
@@ -61,9 +58,6 @@ static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	struct sl_core_lgrp *core_lgrp;
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
-	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-group\n");
-
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
@@ -80,9 +74,6 @@ static ssize_t hw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 	struct sl_core_lgrp *core_lgrp;
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
-	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-group\n");
-
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
@@ -99,9 +90,6 @@ static ssize_t fw_signature_show(struct kobject *kobj, struct kobj_attribute *ka
 	struct sl_core_lgrp *core_lgrp;
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
-	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-group\n");
-
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
@@ -118,9 +106,6 @@ static ssize_t fw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 	struct sl_core_lgrp *core_lgrp;
 
 	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, serdes_kobj);
-	if (!ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-group\n");
-
 	core_lgrp = sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,

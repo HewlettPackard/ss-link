@@ -747,7 +747,7 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 			core_link->link.last_down_entry_num, down_cause_map);
 }
 
-void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link,
+int sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link,
 						    u8                   entry_num,
 						    u64                 *down_cause_map,
 						    time64_t            *down_time)
@@ -773,6 +773,8 @@ void sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_li
 	sl_core_log_dbg(core_link, LOG_NAME,
 			"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
 			*down_cause_map, *down_time, down_time, down_time);
+
+	return 0;
 }
 
 u64 sl_core_data_link_last_down_cause_map_get(struct sl_core_link *core_link)
@@ -824,7 +826,7 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 			core_link->link.last_up_fail_entry_num, up_fail_cause_map);
 }
 
-void sl_core_data_link_last_up_fail_cause_map_info_get(struct sl_core_link *core_link,
+int sl_core_data_link_last_up_fail_cause_map_info_get(struct sl_core_link *core_link,
 						       u8                   entry_num,
 						       u64                 *up_fail_cause_map,
 						       time64_t            *up_fail_time)
@@ -850,6 +852,8 @@ void sl_core_data_link_last_up_fail_cause_map_info_get(struct sl_core_link *core
 	sl_core_log_dbg(core_link, LOG_NAME,
 			"last up_fail cause map info get (up_fail_cause_map = 0x%llX, up_fail_time = %lld %ptTt %ptTd)",
 			*up_fail_cause_map, *up_fail_time, up_fail_time, up_fail_time);
+
+	return 0;
 }
 
 u64 sl_core_data_link_last_up_fail_cause_map_get(struct sl_core_link *core_link)
@@ -878,8 +882,8 @@ void sl_core_data_link_ccw_warn_limit_crossed_set(struct sl_core_link *core_link
 		core_link->link.is_ccw_warn_limit_crossed ? "yes":"no");
 }
 
-void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
-	time64_t *limit_crossed_time)
+int sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+						 time64_t *limit_crossed_time)
 {
 	spin_lock(&core_link->link.data_lock);
 	*is_limit_crossed = core_link->link.is_ccw_warn_limit_crossed;
@@ -887,8 +891,10 @@ void sl_core_data_link_ccw_warn_limit_crossed_get(struct sl_core_link *core_link
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ccw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
-		*is_limit_crossed ? "yes":"no");
+			"ccw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
+			*is_limit_crossed ? "yes":"no");
+
+	return 0;
 }
 
 void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link, bool is_limit_crossed)
@@ -903,8 +909,8 @@ void sl_core_data_link_ucw_warn_limit_crossed_set(struct sl_core_link *core_link
 		core_link->link.is_ucw_warn_limit_crossed ? "yes":"no");
 }
 
-void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
-	time64_t *limit_crossed_time)
+int sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link, bool *is_limit_crossed,
+						 time64_t *limit_crossed_time)
 {
 	spin_lock(&core_link->link.data_lock);
 	*is_limit_crossed = core_link->link.is_ucw_warn_limit_crossed;
@@ -912,8 +918,10 @@ void sl_core_data_link_ucw_warn_limit_crossed_get(struct sl_core_link *core_link
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"ucw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
-		*is_limit_crossed ? "yes":"no");
+			"ucw warn limit crossed get (is_limit_crossed = %d %s)", *is_limit_crossed,
+			*is_limit_crossed ? "yes":"no");
+
+	return 0;
 }
 
 u32 sl_core_data_link_fec_mode_get(struct sl_core_link *core_link)
@@ -968,7 +976,7 @@ void sl_core_data_link_an_lp_caps_state_set(struct sl_core_link *core_link, u32 
 		lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
 }
 
-void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time)
+int sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fail_cause, time64_t *fail_time)
 {
 	unsigned long irq_flags;
 
@@ -978,7 +986,9 @@ void sl_core_data_link_an_fail_cause_get(struct sl_core_link *core_link, u32 *fa
 	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "an fail cause get (fail_cause = %u %s)",
-		*fail_cause, sl_core_link_an_fail_cause_str(*fail_cause));
+			*fail_cause, sl_core_link_an_fail_cause_str(*fail_cause));
+
+	return 0;
 }
 
 void sl_core_data_link_an_fail_cause_set(struct sl_core_link *core_link, u32 fail_cause)
@@ -1172,39 +1182,53 @@ int sl_core_data_link_degrade_is_recoverable_get(struct sl_core_link *core_link,
 	return 0;
 }
 
-void sl_core_data_link_pml_rec_attempts_get(struct sl_core_link *core_link, int *attempts)
+int sl_core_data_link_pml_rec_attempts_get(struct sl_core_link *core_link, int *attempts)
 {
 	*attempts = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_ATTEMPTS]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_successes_get(struct sl_core_link *core_link, int *successes)
+int sl_core_data_link_pml_rec_successes_get(struct sl_core_link *core_link, int *successes)
 {
 	*successes = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_SUCCESSES]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_link_fault_cause_get(struct sl_core_link *core_link, int *fault_cause)
+int sl_core_data_link_pml_rec_link_fault_cause_get(struct sl_core_link *core_link, int *fault_cause)
 {
 	*fault_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_CAUSE]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link, int *down_cause)
+int sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link, int *down_cause)
 {
 	*down_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_CAUSE]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause)
+int sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause)
 {
 	*fault_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause)
+int sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause)
 {
 	*down_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+
+	return 0;
 }
 
-void sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded)
+int sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded)
 {
 	*rate_limit_exceeded = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
+
+	return 0;
 }
 
 int sl_core_data_link_fec_up_settle_wait_ms_get(struct sl_core_link *core_link, u32 *fec_settle_wait_ms)

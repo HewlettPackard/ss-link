@@ -52,7 +52,7 @@ int  sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack);
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack);
 void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 jack_state);
 
-u8   sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack);
+int  sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
 void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u8 temperature_state);
 bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *media_jack,
 							struct sl_media_lgrp_cable_info *cable_info);

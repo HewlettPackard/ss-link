@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/atomic.h>
@@ -43,9 +43,11 @@ int sl_ctrl_mac_counters_init(struct sl_ctrl_mac *ctrl_mac)
 	return 0;
 }
 
-int sl_ctrl_mac_counter_get(struct sl_ctrl_mac *ctrl_mac, u32 counter)
+int sl_ctrl_mac_counter_get(struct sl_ctrl_mac *ctrl_mac, u32 counter, int *count)
 {
-	return atomic_read(&ctrl_mac->counters[counter].count);
+	*count = atomic_read(&ctrl_mac->counters[counter].count);
+
+	return 0;
 }
 
 void sl_ctrl_mac_counters_del(struct sl_ctrl_mac *ctrl_mac)

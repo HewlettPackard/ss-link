@@ -934,7 +934,7 @@ out:
 	return rtn;
 }
 
-void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+int sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 				s64 *attempt_time, s64 *total_time, s64 *up_time)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -942,15 +942,15 @@ void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
-			"clocks get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return;
+				"clocks get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
 	}
 
 	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "clocks get link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
-		return;
+				ctrl_link);
+		return -EBADRQC;
 	}
 
 	spin_lock(&ctrl_link->up_clock.lock);
@@ -973,28 +973,30 @@ void sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	spin_unlock(&ctrl_link->up_clock.lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"clocks get (attempt_time = %lld, total_time = %lld)", *attempt_time, *total_time);
+			"clocks get (attempt_time = %lld, total_time = %lld)", *attempt_time, *total_time);
 
 	if (sl_ctrl_link_put(ctrl_link))
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "clocks get - link removed (link = 0x%p)", ctrl_link);
+
+	return 0;
 }
 
-void sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attempt_count)
+int sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attempt_count)
 {
 	struct sl_ctrl_link *ctrl_link;
 
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
-			"count get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return;
+				"count get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
 	}
 
 	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "count get link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
-		return;
+				ctrl_link);
+		return -EBADRQC;
 	}
 
 	spin_lock(&ctrl_link->up_clock.lock);
@@ -1005,6 +1007,8 @@ void sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attem
 
 	if (sl_ctrl_link_put(ctrl_link))
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "count get - link removed (link = 0x%p)", ctrl_link);
+
+	return 0;
 }
 
 int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state)
@@ -1061,19 +1065,19 @@ int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32
 	return 0;
 }
 
-void sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
+int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
 {
 	struct sl_ctrl_link *ctrl_link;
 
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
-			"an fail cause get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return;
+				"an fail cause get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
 	}
 
-	sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
+	return sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
 }
 
 u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count)

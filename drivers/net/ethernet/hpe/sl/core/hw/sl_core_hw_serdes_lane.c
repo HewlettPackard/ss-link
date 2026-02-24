@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -997,19 +997,17 @@ void sl_core_hw_serdes_tx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic
 	spin_unlock(&core_lgrp->data_lock);
 }
 
-u32 sl_core_hw_serdes_tx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
+int sl_core_hw_serdes_tx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 *state)
 {
-	u32 state;
-
 	spin_lock(&core_lgrp->data_lock);
-	state = core_lgrp->serdes.lane_state[asic_lane_num].tx;
+	*state = core_lgrp->serdes.lane_state[asic_lane_num].tx;
 	spin_unlock(&core_lgrp->data_lock);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"tx lane state get (asic_lane_num = %u, state = %u %s)",
-		asic_lane_num, state, sl_core_serdes_lane_state_str(state));
+		asic_lane_num, *state, sl_core_serdes_lane_state_str(*state));
 
-	return state;
+	return 0;
 }
 
 void sl_core_hw_serdes_rx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 state)
@@ -1023,19 +1021,17 @@ void sl_core_hw_serdes_rx_lane_state_set(struct sl_core_lgrp *core_lgrp, u8 asic
 	spin_unlock(&core_lgrp->data_lock);
 }
 
-u32 sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num)
+int sl_core_hw_serdes_rx_lane_state_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, u32 *state)
 {
-	u32 state;
-
 	spin_lock(&core_lgrp->data_lock);
-	state = core_lgrp->serdes.lane_state[asic_lane_num].rx;
+	*state = core_lgrp->serdes.lane_state[asic_lane_num].rx;
 	spin_unlock(&core_lgrp->data_lock);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME,
 		"rx lane state get (asic_lane_num = %u, state = %u %s)",
-		asic_lane_num, state, sl_core_serdes_lane_state_str(state));
+		asic_lane_num, *state, sl_core_serdes_lane_state_str(*state));
 
-	return state;
+	return 0;
 }
 
 int sl_core_hw_serdes_tx_lane_is_lol(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, bool *is_tx_lol)

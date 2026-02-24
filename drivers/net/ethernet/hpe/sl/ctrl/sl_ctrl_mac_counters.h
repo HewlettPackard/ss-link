@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_MAC_COUNTERS_H_
 #define _SL_CTRL_MAC_COUNTERS_H_
@@ -38,6 +38,6 @@ struct sl_ctrl_mac_counter {
 
 int  sl_ctrl_mac_counters_init(struct sl_ctrl_mac *ctrl_mac);
 void sl_ctrl_mac_counters_del(struct sl_ctrl_mac *ctrl_mac);
-int  sl_ctrl_mac_counter_get(struct sl_ctrl_mac *ctrl_mac, u32 counter);
+int  sl_ctrl_mac_counter_get(struct sl_ctrl_mac *ctrl_mac, u32 counter, int *count);
 
 #endif /* _SL_CTRL_MAC_COUNTERS_H_ */

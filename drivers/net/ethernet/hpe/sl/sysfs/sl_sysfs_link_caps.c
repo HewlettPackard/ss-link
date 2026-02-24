@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -23,11 +23,12 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	char                 output[80];
 	u32                  tech_map;
 	u32                  link_state;
+	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -36,10 +37,12 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	tech_map = core_lgrp->link_caps[core_link->num].tech_map;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"tech map show (link = 0x%p, map = 0x%X)", core_link, tech_map);
+		   "tech map show (link = 0x%p, map = 0x%X)", core_link, tech_map);
 
-	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if ((tech_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -84,11 +87,12 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	char                 output[20];
 	u32                  pause_map;
 	u32                  link_state;
+	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -97,10 +101,12 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	pause_map = core_lgrp->link_caps[core_link->num].pause_map;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"pause map show (link = 0x%p, map = 0x%X)", core_link, pause_map);
+		   "pause map show (link = 0x%p, map = 0x%X)", core_link, pause_map);
 
-	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if ((pause_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -130,11 +136,12 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	char                 output[20];
 	u32                  fec_map;
 	u32                  link_state;
+	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -143,10 +150,12 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	fec_map = core_lgrp->link_caps[core_link->num].fec_map;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"fec map show (link = 0x%p, map = 0x%X)", core_link, fec_map);
+		   "fec map show (link = 0x%p, map = 0x%X)", core_link, fec_map);
 
-	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if ((fec_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
@@ -176,11 +185,12 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	char                 output[80];
 	u32                  hpe_map;
 	u32                  link_state;
+	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, caps_kobj);
 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num);
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
 		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
@@ -189,10 +199,12 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	hpe_map = core_lgrp->link_caps[core_link->num].hpe_map;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		"hpe map show (link = 0x%p, map = 0x%X)", core_link, hpe_map);
+		   "hpe map show (link = 0x%p, map = 0x%X)", core_link, hpe_map);
 
-	sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-		ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
+				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if ((hpe_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/umh.h>
@@ -104,6 +104,8 @@ int sl_core_hw_serdes_link_up_an(struct sl_core_link *core_link)
 static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 {
 	struct sl_media_lgrp *media_lgrp;
+	u8 		      cable_shift_state;
+	int 		      rtn;
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
@@ -158,7 +160,11 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_ER;
 
 	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
-	if (sl_media_jack_cable_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED)
+	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_shift_state);
+	if(rtn)
+		sl_core_log_warn_trace(core_link, LOG_NAME, "cable_shift_state_get failed [%d]", rtn);
+
+	if (cable_shift_state == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED)
 		core_link->serdes.core_serdes_settings.scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_SET;
 	else
 		core_link->serdes.core_serdes_settings.scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_NOTSET;

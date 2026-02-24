@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -25,15 +25,18 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    state;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	state = sl_media_jack_state_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_state_get(media_lgrp->media_jack, &state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"state show (media_lgrp = 0x%p, state = %u %s)",
-		media_lgrp, state, sl_media_state_str(state));
+		   "state show (media_lgrp = 0x%p, state = %u %s)",
+		   media_lgrp, state, sl_media_state_str(state));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_state_str(state));
 }
@@ -126,6 +129,7 @@ static ssize_t temperature_state_show(struct kobject *kobj, struct kobj_attribut
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    temperature_state;
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp   = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -139,7 +143,9 @@ static ssize_t temperature_state_show(struct kobject *kobj, struct kobj_attribut
 	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
 		return scnprintf(buf, PAGE_SIZE, "not-active\n");
 
-	temperature_state = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack);
+	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "temperature state show (media_lgrp = 0x%p, temperature_state = %u %s)",
@@ -153,6 +159,7 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   vendor;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -163,7 +170,9 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	vendor = sl_media_lgrp_vendor_get(media_lgrp);
+	rtn = sl_media_lgrp_vendor_get(media_lgrp, &vendor);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"vendor show (media_lgrp = 0x%p, vendor = %u %s)", media_lgrp, vendor, sl_media_vendor_str(vendor));
@@ -176,6 +185,7 @@ static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute 
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	char                  vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -186,7 +196,9 @@ static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute 
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_lgrp_vendor_pn_str_get(media_lgrp, vendor_pn_str);
+	rtn = sl_media_lgrp_vendor_pn_str_get(media_lgrp, vendor_pn_str);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "vendor part num show (media_lgrp = 0x%p, vendor_pn_str = %s)",
@@ -200,6 +212,7 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   type;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -210,7 +223,9 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	type = sl_media_lgrp_type_get(media_lgrp);
+	rtn = sl_media_lgrp_type_get(media_lgrp, &type);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"type show (media_lgrp = 0x%p, type = %u %s)", media_lgrp, type, sl_media_type_str(type));
@@ -223,6 +238,7 @@ static ssize_t shape_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   shape;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -233,7 +249,9 @@ static ssize_t shape_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	shape = sl_media_lgrp_shape_get(media_lgrp);
+	rtn = sl_media_lgrp_shape_get(media_lgrp, &shape);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"shape show (media_lgrp = 0x%p, shape = %u %s)", media_lgrp, shape, sl_media_shape_str(shape));
@@ -246,6 +264,7 @@ static ssize_t cable_end_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    cable_end;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -256,7 +275,9 @@ static ssize_t cable_end_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	cable_end = sl_media_jack_cable_end_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_cable_end_get(media_lgrp->media_jack, &cable_end);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"cable_end show (media_lgrp = 0x%p, cable_end = %u %s)",
@@ -270,6 +291,7 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   length_cm;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -280,7 +302,9 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	length_cm = sl_media_lgrp_length_get(media_lgrp);
+	rtn = sl_media_lgrp_length_get(media_lgrp, &length_cm);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "length_cm show (media_lgrp = 0x%p, length_cm = %u)",
 		media_lgrp, length_cm);
@@ -293,6 +317,7 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   max_speed;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -303,7 +328,9 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	max_speed = sl_media_lgrp_max_speed_get(media_lgrp);
+	rtn = sl_media_lgrp_max_speed_get(media_lgrp, &max_speed);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "max speed show (media_lgrp = 0x%p, max_speed = %u %s)",
@@ -317,6 +344,7 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	char                  serial_num_str[SL_MEDIA_SERIAL_NUM_SIZE];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -327,10 +355,12 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_lgrp_serial_num_get(media_lgrp, serial_num_str);
+	rtn = sl_media_lgrp_serial_num_str_get(media_lgrp, serial_num_str);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "serial num show (media_lgrp = 0x%p, serial_num = %s)",
-		media_lgrp, serial_num_str);
+		   media_lgrp, serial_num_str);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", serial_num_str);
 }
@@ -340,6 +370,7 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	char                  hpe_pn_str[SL_MEDIA_HPE_PN_SIZE];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -350,7 +381,9 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_lgrp_hpe_pn_get(media_lgrp, hpe_pn_str);
+	rtn = sl_media_lgrp_hpe_pn_str_get(media_lgrp, hpe_pn_str);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "hpe part num show (media_lgrp = 0x%p, hpe_pn = %s)",
 		media_lgrp, hpe_pn_str);
@@ -379,6 +412,7 @@ static ssize_t jack_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   density;
 	u32                   jack_type;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -389,8 +423,13 @@ static ssize_t jack_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	jack_type = sl_media_lgrp_jack_type_get(media_lgrp);
-	density = sl_media_lgrp_jack_type_qsfp_density_get(media_lgrp);
+	rtn = sl_media_lgrp_jack_type_get(media_lgrp, &jack_type);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	rtn = sl_media_lgrp_jack_type_qsfp_density_get(media_lgrp, &density);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "jack type show (media_lgrp = 0x%p, jack_type = %u %s)",
 		media_lgrp, jack_type, sl_media_jack_type_str(jack_type, density));
@@ -403,6 +442,7 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   furcation;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -413,7 +453,9 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	furcation = sl_media_lgrp_furcation_get(media_lgrp);
+	rtn = sl_media_lgrp_furcation_get(media_lgrp, &furcation);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "furcation show (media_lgrp = 0x%p, furcation = %u %s)",
 		media_lgrp, furcation, sl_media_furcation_str(furcation));
@@ -450,6 +492,7 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	char                  date_code_str[SL_MEDIA_DATE_CODE_SIZE];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -460,7 +503,9 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_lgrp_date_code_get(media_lgrp, date_code_str);
+	rtn = sl_media_lgrp_date_code_str_get(media_lgrp, date_code_str);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "date code show (media_lgrp = 0x%p, date_code = %s)",
 		media_lgrp, date_code_str);
@@ -473,6 +518,7 @@ static ssize_t firmware_version_hex_show(struct kobject *kobj, struct kobj_attri
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    fw_ver[SL_MEDIA_FIRMWARE_VERSION_SIZE];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -483,7 +529,9 @@ static ssize_t firmware_version_hex_show(struct kobject *kobj, struct kobj_attri
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_lgrp_fw_ver_get(media_lgrp, fw_ver);
+	rtn = sl_media_lgrp_fw_ver_str_get(media_lgrp, fw_ver);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"firmware version hex show (media_lgrp = 0x%p, firmware_version_hex = %02X.%02X)",
@@ -497,6 +545,7 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    target_fw_ver_str[25];
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -507,7 +556,9 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	sl_media_eeprom_target_fw_ver_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
+	rtn = sl_media_eeprom_target_fw_ver_str_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"target firmware version hex show (media_lgrp = 0x%p, target_firmware_version_hex = %s)",
@@ -521,6 +572,7 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    cable_shift_state;
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -531,7 +583,9 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	cable_shift_state = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_shift_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"cable_shift state show (media_lgrp = 0x%p, cable_shift_state = %u %s)",
@@ -545,6 +599,7 @@ static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struc
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    host_interface;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -555,7 +610,9 @@ static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struc
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	host_interface = sl_media_jack_active_cable_200g_host_interface_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_200g_host_interface_get(media_lgrp->media_jack, &host_interface);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 200g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
@@ -569,6 +626,7 @@ static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct ko
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    lane_count;
+	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -579,7 +637,9 @@ static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct ko
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	lane_count = sl_media_jack_active_cable_200g_lane_count_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_200g_lane_count_get(media_lgrp->media_jack, &lane_count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 200g lane coiunt show (media_lgrp = 0x%p, lane_count = 0x%X)",
@@ -593,6 +653,7 @@ static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct ko
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    appsel_num;
+	int rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -603,7 +664,9 @@ static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct ko
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	appsel_num = sl_media_jack_active_cable_200g_appsel_num_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_200g_appsel_num_get(media_lgrp->media_jack, &appsel_num);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 200g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
@@ -616,6 +679,7 @@ static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struc
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    host_interface;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -626,7 +690,9 @@ static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struc
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	host_interface = sl_media_jack_active_cable_400g_host_interface_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_400g_host_interface_get(media_lgrp->media_jack, &host_interface);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 400g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
@@ -640,6 +706,7 @@ static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct ko
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    lane_count;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -650,7 +717,9 @@ static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct ko
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	lane_count = sl_media_jack_active_cable_400g_lane_count_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_400g_lane_count_get(media_lgrp->media_jack, &lane_count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 400g lane count show (media_lgrp = 0x%p, lane_count = 0x%X)",
@@ -664,6 +733,7 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    appsel_num;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -674,7 +744,9 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	appsel_num = sl_media_jack_active_cable_400g_appsel_num_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_active_cable_400g_appsel_num_get(media_lgrp->media_jack, &appsel_num);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 400g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
@@ -688,15 +760,18 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   fault_cause;
 	time64_t              fault_time;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+	if(rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"last_fault cause show (cause = %u %s)", fault_cause,
-		sl_media_fault_cause_str(fault_cause));
+		   "last_fault cause show (cause = %u %s)", fault_cause,
+		   sl_media_fault_cause_str(fault_cause));
 
 	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
 		return scnprintf(buf, PAGE_SIZE, "no-fault\n");
@@ -710,11 +785,14 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u32                   fault_cause;
 	time64_t              fault_time;
+	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+	if(rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"last fault time show (cause = %u %s, time = %lld %ptTt %ptTd)",
@@ -791,11 +869,9 @@ static ssize_t error_info_show(struct kobject *kobj, struct kobj_attribute *katt
 	int                   rtn;
 	u32                   error_map;
 	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	char                  error_str[SL_MEDIA_JACK_ATTR_ERR_STR_SIZE];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
 	rtn = sl_media_jack_attr_error_map_get(media_lgrp->media_jack, &error_map);
 	if (rtn)
@@ -896,6 +972,7 @@ static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *
 	struct sl_ctrl_lgrp                *ctrl_lgrp;
 	u32                                 speed;
 	u32                                 type;
+	int				    rtn;
 
 	speed_kobj = container_of(kobj, struct sl_media_lgrp_speed_kobject, kobj);
 
@@ -907,7 +984,9 @@ static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	type = sl_media_lgrp_type_get(speed_kobj->media_lgrp);
+	rtn = sl_media_lgrp_type_get(speed_kobj->media_lgrp, &type);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	speed = speed_kobj->speed;
 
@@ -924,6 +1003,7 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 	struct sl_ctrl_lgrp                *ctrl_lgrp;
 	u8                                  media_interface;
 	u32                                 type;
+	int				    rtn;
 
 	speed_kobj = container_of(kobj, struct sl_media_lgrp_speed_kobject, kobj);
 
@@ -935,18 +1015,23 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	type = sl_media_lgrp_type_get(speed_kobj->media_lgrp);
+	rtn = sl_media_lgrp_type_get(speed_kobj->media_lgrp, &type);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
 	if (type == SL_MEDIA_TYPE_PEC || type == SL_MEDIA_TYPE_BKP) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-			"projected_ber show (media_lgrp = 0x%p, projected_ber = 0)", speed_kobj->media_lgrp);
+			   "projected_ber show (media_lgrp = 0x%p, projected_ber = 0)", speed_kobj->media_lgrp);
 		return scnprintf(buf, PAGE_SIZE, "0\n");
 	}
 
-	media_interface = sl_media_eeprom_media_interface_get(speed_kobj->media_lgrp->media_jack);
+	rtn = sl_media_eeprom_media_interface_get(speed_kobj->media_lgrp->media_jack, &media_interface);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"projected_ber show (media_lgrp = 0x%p, projected_ber = %s)",
-		speed_kobj->media_lgrp, sl_media_ber_str(media_interface));
+		   "projected_ber show (media_lgrp = 0x%p, projected_ber = %s)",
+		   speed_kobj->media_lgrp, sl_media_ber_str(media_interface));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_ber_str(media_interface));
 }
@@ -1017,7 +1102,10 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 	/*
 	 * This if condition will be false for nic here
 	 */
-	state = sl_media_jack_state_get(media_lgrp->media_jack);
+	rtn = sl_media_jack_state_get(media_lgrp->media_jack, &state);
+	if (rtn)
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
+
 	if (state == SL_MEDIA_JACK_CABLE_ONLINE) {
 		/*
 		 * kobj cleanup in the callee function

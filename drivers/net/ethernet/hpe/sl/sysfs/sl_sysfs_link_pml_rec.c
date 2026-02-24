@@ -16,10 +16,13 @@ static ssize_t pml_rec_attempts_show(struct kobject *kobj, struct kobj_attribute
 {
 	struct sl_core_link *core_link;
 	int                  attempts;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_attempts_get(core_link, &attempts);
+	rtn = sl_core_data_link_pml_rec_attempts_get(core_link, &attempts);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec attempts show (attempts = %d)", attempts);
 
@@ -30,10 +33,13 @@ static ssize_t pml_rec_successes_show(struct kobject *kobj, struct kobj_attribut
 {
 	struct sl_core_link *core_link;
 	int                  successes;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_successes_get(core_link, &successes);
+	rtn = sl_core_data_link_pml_rec_successes_get(core_link, &successes);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec successes show (successes = %d)", successes);
 
@@ -44,10 +50,13 @@ static ssize_t pml_rec_link_fault_cause_show(struct kobject *kobj, struct kobj_a
 {
 	struct sl_core_link *core_link;
 	int                  link_fault_cause;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_link_fault_cause_get(core_link, &link_fault_cause);
+	rtn = sl_core_data_link_pml_rec_link_fault_cause_get(core_link, &link_fault_cause);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_cause show (link_fault_cause = %d)", link_fault_cause);
 
@@ -58,10 +67,13 @@ static ssize_t pml_rec_link_down_cause_show(struct kobject *kobj, struct kobj_at
 {
 	struct sl_core_link *core_link;
 	int                  link_down_cause;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_link_down_cause_get(core_link, &link_down_cause);
+	rtn = sl_core_data_link_pml_rec_link_down_cause_get(core_link, &link_down_cause);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_cause = %d)", link_down_cause);
 
@@ -72,10 +84,13 @@ static ssize_t pml_rec_link_fault_failed_cause_show(struct kobject *kobj, struct
 {
 	struct sl_core_link *core_link;
 	int                  link_fault_failed_cause;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_link_fault_failed_cause_get(core_link, &link_fault_failed_cause);
+	rtn = sl_core_data_link_pml_rec_link_fault_failed_cause_get(core_link, &link_fault_failed_cause);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_failed_cause show (link_fault_failed_cause = %d)",
 			link_fault_failed_cause);
@@ -87,10 +102,13 @@ static ssize_t pml_rec_link_down_failed_cause_show(struct kobject *kobj, struct 
 {
 	struct sl_core_link *core_link;
 	int                  link_down_failed_cause;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_link_down_failed_cause_get(core_link, &link_down_failed_cause);
+	rtn = sl_core_data_link_pml_rec_link_down_failed_cause_get(core_link, &link_down_failed_cause);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_failed_cause = %d)",
 			link_down_failed_cause);
@@ -102,10 +120,13 @@ static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kob
 {
 	struct sl_core_link *core_link;
 	int                  rate_limit_exceeded;
+	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
 
-	sl_core_data_link_pml_rec_rate_limit_exceeded_get(core_link, &rate_limit_exceeded);
+	rtn = sl_core_data_link_pml_rec_rate_limit_exceeded_get(core_link, &rate_limit_exceeded);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec rate_limit_exceeded show (rate_limit_exceeded = %d)",
 			rate_limit_exceeded);

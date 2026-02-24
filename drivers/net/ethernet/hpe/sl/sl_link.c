@@ -282,8 +282,13 @@ int sl_link_clocks_get(struct sl_link *link, u32 *up_count, s64 *up_time, s64 *t
 		return rtn;
 	}
 
-	sl_ctrl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time, &up);
-	sl_ctrl_link_up_count_get(link->ldev_num, link->lgrp_num, link->num, up_count);
+	rtn = sl_ctrl_link_up_clocks_get(link->ldev_num, link->lgrp_num, link->num, up_time, total_time, &up);
+	if (rtn)
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "link_up_clocks_get failed [%d]", rtn);
+
+	rtn = sl_ctrl_link_up_count_get(link->ldev_num, link->lgrp_num, link->num, up_count);
+	if (rtn)
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "link_up_count_get failed [%d]", rtn);
 
 	return 0;
 }

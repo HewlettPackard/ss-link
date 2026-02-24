@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -14,211 +14,256 @@
 static ssize_t mac_tx_start_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_CMD);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_CMD, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start cmd show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_tx_started_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STARTED);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STARTED, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx started show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx started show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_tx_start_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_FAIL);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_FAIL, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start fail show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_tx_stop_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_CMD);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_CMD, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop cmd show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_tx_stopped_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOPPED);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOPPED, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stopped show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stopped show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_tx_stop_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_FAIL);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_FAIL, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop fail show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_start_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_CMD);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_CMD, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start cmd show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_started_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STARTED);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STARTED, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx started show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx started show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_start_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_FAIL);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_FAIL, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start fail show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_stop_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_CMD);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_CMD, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop cmd show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_stopped_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOPPED);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOPPED, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stopped show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stopped show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_rx_stop_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_FAIL);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_FAIL, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop fail show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_reset_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_CMD);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_CMD, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset cmd show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset cmd show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_reset_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static ssize_t mac_reset_fail_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
-	u32                 counter;
+	u32                 count;
+	int		    rtn;
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, counters_kobj);
 
-	counter = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_FAIL);
+	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_FAIL, &count);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset fail show (counter = %u)", counter);
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset fail show (count = %u)", count);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+	return scnprintf(buf, PAGE_SIZE, "%u\n", count);
 }
 
 static struct kobj_attribute mac_tx_start_cmd  = __ATTR_RO(mac_tx_start_cmd);

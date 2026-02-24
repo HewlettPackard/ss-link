@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_LGRP_H_
 #define _SL_MEDIA_LGRP_H_
@@ -75,20 +75,20 @@ bool sl_media_lgrp_media_type_is_active(u8 ldev_num, u8 lgrp_num);
 void sl_media_lgrp_media_serdes_settings_get(u8 ldev_num, u8 lgrp_num,
 					     struct sl_media_serdes_settings *media_serdes_settings);
 
-u32  sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp);
-void sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str);
-u32  sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp);
-u32  sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp);
-u32  sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp);
-u32  sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp);
-void sl_media_lgrp_serial_num_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str);
-void sl_media_lgrp_hpe_pn_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str);
-u32  sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp);
-u32  sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp);
-u32  sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp);
+int  sl_media_lgrp_vendor_get(struct sl_media_lgrp *media_lgrp, u32 *vendor);
+int  sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vendor_pn_str);
+int  sl_media_lgrp_type_get(struct sl_media_lgrp *media_lgrp, u32 *type);
+int  sl_media_lgrp_shape_get(struct sl_media_lgrp *media_lgrp, u32 *shape);
+int  sl_media_lgrp_length_get(struct sl_media_lgrp *media_lgrp, u32 *length_cm);
+int  sl_media_lgrp_max_speed_get(struct sl_media_lgrp *media_lgrp, u32 *max_speed);
+int  sl_media_lgrp_serial_num_str_get(struct sl_media_lgrp *media_lgrp, char *serial_num_str);
+int  sl_media_lgrp_hpe_pn_str_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_str);
+int  sl_media_lgrp_jack_type_get(struct sl_media_lgrp *media_lgrp, u32 *jack_type);
+int  sl_media_lgrp_jack_type_qsfp_density_get(struct sl_media_lgrp *media_lgrp, u32 *density);
+int  sl_media_lgrp_furcation_get(struct sl_media_lgrp *media_lgrp, u32 *furcation);
 bool sl_media_lgrp_is_cable_unsupported(struct sl_media_lgrp *media_lgrp);
-void sl_media_lgrp_date_code_get(struct sl_media_lgrp *media_lgrp, char *date_code_str);
-void sl_media_lgrp_fw_ver_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver);
+int  sl_media_lgrp_date_code_str_get(struct sl_media_lgrp *media_lgrp, char *date_code_str);
+int  sl_media_lgrp_fw_ver_str_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver);
 
 bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num);
 

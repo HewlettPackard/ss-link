@@ -40,8 +40,8 @@ void sl_ctrl_link_state_set(struct sl_ctrl_link *ctrl_link, u32 link_state);
 bool sl_ctrl_link_is_canceled(struct sl_ctrl_link *ctrl_link);
 void sl_ctrl_link_is_canceled_set(struct sl_ctrl_link *ctrl_link, bool canceled);
 
-u64  sl_ctrl_link_last_up_fail_cause_map_get(struct sl_ctrl_link *ctrl_link);
-void sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64 *last_up_fail_cause_map,
+int  sl_ctrl_link_last_up_fail_cause_map_get(struct sl_ctrl_link *ctrl_link, u64 *last_up_fail_cause_map);
+int  sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64 *last_up_fail_cause_map,
 	time64_t *last_up_fail_time);
 
 #endif /* _SL_CTRL_LINK_PRIV_H_ */

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/kobject.h>
@@ -21,11 +21,17 @@ static ssize_t tx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 	u8                               tx_source;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -40,11 +46,17 @@ static ssize_t rx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
 	struct sl_core_lgrp             *core_lgrp;
+	struct sl_core_link             *core_link;
 	u8                               rx_source;
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
 		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+
+	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
+				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
+	if (!core_link)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 

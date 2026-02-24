@@ -404,6 +404,8 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
+	u8		     state;
+	u8		     temperature_state;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
@@ -411,7 +413,11 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	if (!core_link)
 		return;
 
-	if (sl_media_data_jack_cable_temp_state_get(media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+	rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
+	if(rtn)
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 		sl_media_io_led_set(media_jack, LED_ON_YEL);
 		return;
 	}
@@ -424,7 +430,11 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 		return;
 	}
 
-	switch (sl_media_jack_state_get(media_jack)) {
+	rtn = sl_media_jack_state_get(media_jack, &state);
+	if (rtn)
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
+
+	switch (state) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
 		sl_media_io_led_set(media_jack, LED_OFF);
 		return;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -42,6 +42,8 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	u64                   rx_state;
 	u64                   tx_state;
 	struct sl_media_lgrp *media_lgrp;
+	u8 		      temperature_state;
+	int 		      rtn;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link off");
 
@@ -72,7 +74,11 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	sl_core_hw_serdes_link_down(core_link);
 
-	if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT)
+	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+	if (rtn)
+		sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT)
 		sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
 
 	/* resetting the link resets the LLR which is needed to reset ordered sets */
@@ -163,6 +169,7 @@ static bool sl_core_hw_link_media_is_high_temp(struct sl_core_link *core_link)
 {
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
+	u8 		      temperature_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "media is high temp (link = 0x%p)", core_link);
 
@@ -172,8 +179,12 @@ static bool sl_core_hw_link_media_is_high_temp(struct sl_core_link *core_link)
 			 SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
 		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
-			if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) ==
-			    SL_MEDIA_JACK_TEMP_STATE_HOT) {
+
+			rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+			if (rtn)
+				sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+			if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 						       "media high temp detected (jack_num = %u)",
 						       media_lgrp->media_jack->physical_num);
@@ -1534,6 +1545,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 	struct sl_media_lgrp               *media_lgrp;
 	u32                                 link_state;
+	u8				    temperature_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fault link down");
 
@@ -1569,8 +1581,11 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-			if (sl_media_jack_cable_temp_state_get(media_lgrp->media_jack) ==
-			    SL_MEDIA_JACK_TEMP_STATE_HOT) {
+			rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+			if (rtn)
+				sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+
+			if (temperature_state ==   SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 						       "fault intr work high cable temp detected");
 				sl_core_data_link_last_down_cause_map_set(core_link,
