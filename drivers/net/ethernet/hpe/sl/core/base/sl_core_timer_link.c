@@ -10,6 +10,7 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
+#include "sl_platform.h"
 #include "base/sl_core_timer_link.h"
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
@@ -90,7 +91,7 @@ void sl_core_timer_link_timeout(struct timer_list *timer)
 	struct sl_core_timer_link_info *info;
 	struct sl_core_link            *core_link;
 
-	info = from_timer(info, timer, timer);
+	info = timer_container_of(info, timer, timer);
 	core_link = info->data.link;
 
 	sl_core_log_dbg(core_link, LOG_NAME,
@@ -106,5 +107,5 @@ void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
 		"end %s (core_link = 0x%p, timer_num = %u)",
 		core_link->timers[timer_num].data.log, core_link, timer_num);
 
-	del_timer_sync(&(core_link->timers[timer_num].timer));
+	timer_delete_sync(&(core_link->timers[timer_num].timer));
 }
