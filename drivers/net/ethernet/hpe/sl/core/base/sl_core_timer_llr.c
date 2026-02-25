@@ -7,6 +7,7 @@
 
 #include "sl_core_str.h"
 #include "sl_core_llr.h"
+#include "sl_platform.h"
 #include "base/sl_core_timer_llr.h"
 #include "base/sl_core_work_llr.h"
 #include "base/sl_core_log.h"
@@ -63,7 +64,7 @@ void sl_core_timer_llr_timeout(struct timer_list *timer)
 	struct sl_core_timer_llr_info *info;
 	struct sl_core_llr            *core_llr;
 
-	info = from_timer(info, timer, timer);
+	info = timer_container_of(info, timer, timer);
 	core_llr = info->data.core_llr;
 
 	sl_core_log_dbg(core_llr, LOG_NAME,
@@ -80,5 +81,5 @@ void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num)
 		"end %s (core_llr = 0x%p, timer_num = %u)",
 		core_llr->timers[timer_num].data.log, core_llr, timer_num);
 
-	del_timer_sync(&(core_llr->timers[timer_num].timer));
+	timer_delete_sync(&(core_llr->timers[timer_num].timer));
 }

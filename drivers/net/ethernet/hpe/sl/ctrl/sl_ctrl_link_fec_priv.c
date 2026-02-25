@@ -16,6 +16,7 @@
 #include "sl_ctrl_link_fec.h"
 #include "sl_ctrl_link_fec_priv.h"
 #include "sl_core_link.h"
+#include "sl_platform.h"
 
 #define SL_CTRL_LINK_UCW_LIMIT_MAX_CHANCES 2
 #define SL_CTRL_LINK_CCW_LIMIT_MAX_CHANCES 2
@@ -460,7 +461,7 @@ void sl_ctrl_link_fec_mon_timer(struct timer_list *timer)
 {
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = from_timer(ctrl_link, timer, fec_mon_timer);
+	ctrl_link = timer_container_of(ctrl_link, timer, fec_mon_timer);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor timer");
 
@@ -485,7 +486,7 @@ void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link)
 		return;
 	}
 
-	del_timer_sync(&ctrl_link->fec_mon_timer);
+	timer_delete_sync(&ctrl_link->fec_mon_timer);
 }
 
 #define SL_CTRL_LINK_FEC_LIMIT_25   25781250000ULL
