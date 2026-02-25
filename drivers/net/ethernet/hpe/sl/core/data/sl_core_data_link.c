@@ -639,15 +639,14 @@ int sl_core_data_link_speed_get(struct sl_core_link *core_link, u32 *link_speed)
 	*link_speed = core_link->pcs.settings.speed;
 	spin_unlock(&core_link->link.data_lock);
 
-	if (state != SL_CORE_LINK_STATE_UP) {
-		sl_core_log_err(core_link, LOG_NAME,
-				"get speed failed (state = %u %s)",
-				state, sl_core_link_state_str(state));
+	if ((state != SL_CORE_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ)) {
+		sl_core_log_warn_trace(core_link, LOG_NAME,
+				       "get speed no link (state = %u %s)",
+				       state, sl_core_link_state_str(state));
 		return -ENOLINK;
 	}
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-			"get speed = %u", *link_speed);
+	sl_core_log_dbg(core_link, LOG_NAME, "get speed = %u", *link_speed);
 
 	return 0;
 }

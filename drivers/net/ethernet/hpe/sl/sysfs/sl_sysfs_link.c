@@ -51,6 +51,8 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	rtn = sl_core_link_speed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &speed);
+	if (rtn == -ENOLINK)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
