@@ -12,8 +12,8 @@ from openpyxl import load_workbook
 # Defines:  sources must match sheets within the xlsm file exactly
 infile = "SlingshotCableCompatibilityMatrix.xlsm"
 outfile = "sl_media_data_cable_db.h"
-source1 = "S1 S2 Cable List (8.29.25)"
-source2 = "OSFP Cable List (8.29.25)"
+source1 = "S1 S2 Cable List 11.24.25"
+source2 = "OSFP Cable List 11.05.25"
 
 # count the rows
 def rows_count(df):
@@ -265,7 +265,7 @@ print("Total number of valid OSFP cables =", str(len(OSFP_HP_PN)))
 # write the header file
 file1 = open(outfile, "w")
 file1.write("/* SPDX-License-Identifier: GPL-2.0 */\n")
-file1.write("/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */\n\n")
+file1.write("/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */\n\n")
 file1.write("/* This file is auto-generated through script and should not be modified */\n")
 file1.write("/* source1 = ")
 file1.write(source1)
