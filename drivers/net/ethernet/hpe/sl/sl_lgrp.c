@@ -342,6 +342,12 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "media-not-present";
 	case SL_LGRP_NOTIF_MEDIA_ERROR:
 		return "media-error";
+	case SL_LGRP_NOTIF_MEDIA_HOT:
+		return "media-hot";
+	case SL_LGRP_NOTIF_MEDIA_COLD:
+		return "media-cold";
+	case SL_LGRP_NOTIF_MEDIA_WARM:
+		return "media-warm";
 	case SL_LGRP_NOTIF_AN_DATA:
 		return "an-data";
 	case SL_LGRP_NOTIF_AN_TIMEOUT:
@@ -352,10 +358,6 @@ const char *sl_lgrp_notif_str(u32 notif)
 		return "auto-lane-degrade";
 	case SL_LGRP_NOTIF_LANE_DEGRADE_RECOVERY:
 		return "auto-lane-degrade-recovery";
-	case SL_LGRP_NOTIF_MEDIA_HIGH_TEMP:
-		return "media-high-temp";
-	case SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP:
-		return "media-no-high-temp";
 	case SL_LGRP_NOTIF_PML_RECOVERY:
 		return "pml-recovery";
 	case SL_LGRP_NOTIF_LINK_DOWN_REQ:

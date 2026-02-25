@@ -69,14 +69,16 @@
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN     3
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR          4
 
-#define SL_MEDIA_JACK_CABLE_HIGH_TEMP_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
+#define SL_MEDIA_JACK_CABLE_HOT_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
 
 #define SL_MEDIA_JACK_ATTR_ERR_STR_SIZE 128
 
 enum sl_media_jack_temp_state {
 	SL_MEDIA_JACK_TEMP_STATE_INIT = 0,
 	SL_MEDIA_JACK_TEMP_STATE_COLD,
+	SL_MEDIA_JACK_TEMP_STATE_WARM,
 	SL_MEDIA_JACK_TEMP_STATE_HOT,
+	SL_MEDIA_JACK_TEMP_STATE_UNKNOWN,
 };
 
 enum sl_media_jack_dp_state {
@@ -151,10 +153,12 @@ struct sl_media_lgrp_cable_info {
 	int                  real_cable_status;
 	int                  fake_cable_status;
 
-	bool                 high_temp_client_ready;
-	bool                 high_temp_notif_sent;
-	bool                 no_high_temp_client_ready;
-	bool                 no_high_temp_notif_sent;
+	bool                 hot_client_ready;
+	bool                 hot_notif_sent;
+	bool                 warm_client_ready;
+	bool                 warm_notif_sent;
+	bool                 cold_client_ready;
+	bool                 cold_notif_sent;
 };
 
 #define SL_MEDIA_EEPROM_PAGE_SIZE 256
@@ -212,8 +216,9 @@ struct sl_media_jack {
 	u16                             asic_port[4];
 	u32                             status;
 
-	int                             temperature_value;
-	int                             temperature_threshold;
+	int                             temperature_value_c;
+	int                             temperature_warn_limit_c;
+	int                             temperature_down_limit_c;
 
 	struct sl_ctrl_media_counter   *cause_counters;
 };
@@ -241,7 +246,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET   BIT(19)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(21)
-#define SL_MEDIA_FAULT_CAUSE_HIGH_TEMP                         BIT(22)
+#define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(22)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -271,17 +276,21 @@ int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_
 
 int  sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
-int  sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold);
-bool sl_media_jack_cable_high_temp_hw_check(struct sl_media_jack *media_jack);
-void sl_media_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack);
-void sl_media_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-						  struct sl_media_lgrp_cable_info *cable_info, bool value);
-void sl_media_jack_cable_no_high_temp_notif_send(struct sl_media_jack *media_jack);
-void sl_media_jack_cable_no_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-						     struct sl_media_lgrp_cable_info *cable_info, bool value);
+int  sl_media_jack_cable_temp_warn_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_warn_limit_c);
+int  sl_media_jack_cable_temp_down_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_down_limit_c);
+int  sl_media_jack_cable_temp_hw_check(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_hot_notif_send(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_warm_notif_send(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_cold_notif_send(struct sl_media_jack *media_jack);
+void sl_media_jack_cable_hot_notif_sent_set(struct sl_media_jack *media_jack,
+					    struct sl_media_lgrp_cable_info *cable_info, bool value);
+void sl_media_jack_cable_warm_notif_sent_set(struct sl_media_jack *media_jack,
+					     struct sl_media_lgrp_cable_info *cable_info, bool value);
+void sl_media_jack_cable_cold_notif_sent_set(struct sl_media_jack *media_jack,
+					     struct sl_media_lgrp_cable_info *cable_info, bool value);
 
 const char *sl_media_fault_cause_str(u32 fault_cause);
-const char *sl_media_temp_state_str(u32 temperature_state);
+const char *sl_media_temp_state_str(u8 temperature_state);
 
 int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 

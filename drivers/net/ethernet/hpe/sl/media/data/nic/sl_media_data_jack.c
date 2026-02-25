@@ -376,12 +376,35 @@ int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp
 	return 0;
 }
 
-int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold)
+int sl_media_data_jack_cable_temp_warn_limit_get(struct sl_media_jack *media_jack, u8 *temp_warn_limit_c)
 {
 	int rtn;
 	u8  data;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable high temp threshold get");
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable temp warn limit get");
+
+	if (!sl_media_lgrp_media_type_is_active(media_jack->cable_info[0].ldev_num,
+						media_jack->cable_info[0].lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not active cable");
+		return -EBADRQC;
+	}
+
+	rtn = sl_media_io_read8(media_jack, 2, 132, &data);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable temp warn limit read failed [%d]", rtn);
+		return -EIO;
+	}
+
+	*temp_warn_limit_c = data;
+	return 0;
+}
+
+int sl_media_data_jack_cable_temp_down_limit_get(struct sl_media_jack *media_jack, u8 *temp_down_limit_c)
+{
+	int rtn;
+	u8  data;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable temp down limit get");
 
 	if (!sl_media_lgrp_media_type_is_active(media_jack->cable_info[0].ldev_num,
 						media_jack->cable_info[0].lgrp_num)) {
@@ -391,11 +414,11 @@ int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media
 
 	rtn = sl_media_io_read8(media_jack, 2, 128, &data);
 	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "cable high temp threshold read failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable temp down limit read failed [%d]", rtn);
 		return -EIO;
 	}
 
-	*temp_threshold = data;
+	*temp_down_limit_c = data;
 	return 0;
 }
 
@@ -466,10 +489,10 @@ static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
 	return physical_jack_num - 1;
 }
 
-void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev)
+void sl_media_data_jack_cable_temp_monitor_start(struct sl_media_ldev *media_ldev)
 {
 }
 
-void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev)
+void sl_media_data_jack_cable_temp_monitor_stop(struct sl_media_ldev *media_ldev)
 {
 }

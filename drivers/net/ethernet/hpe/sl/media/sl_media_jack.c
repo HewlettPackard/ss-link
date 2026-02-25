@@ -408,7 +408,7 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 	media_jack->fault_time  = ktime_get_real_seconds();
 	spin_unlock(&media_jack->data_lock);
 
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HIGH_TEMP)
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HOT)
 		sl_media_data_jack_led_set(media_jack);
 
 	sl_ctrl_media_cause_counter_inc(media_jack, fault_cause);
@@ -478,18 +478,20 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "shift-state-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
 		return "offline";
-	case SL_MEDIA_FAULT_CAUSE_HIGH_TEMP:
-		return "high-temp";
+	case SL_MEDIA_FAULT_CAUSE_HOT:
+		return "hot";
 	default:
 		return "unknown";
 	}
 }
 
-const char *sl_media_temp_state_str(u32 temperature_state)
+const char *sl_media_temp_state_str(u8 temperature_state)
 {
 	switch (temperature_state) {
 	case SL_MEDIA_JACK_TEMP_STATE_COLD:
 		return "cold";
+	case SL_MEDIA_JACK_TEMP_STATE_WARM:
+		return "warm";
 	case SL_MEDIA_JACK_TEMP_STATE_HOT:
 		return "hot";
 	default:
@@ -507,10 +509,16 @@ int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
 	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
 }
 
-int sl_media_jack_cable_high_temp_threshold_get(u8 ldev_num, u8 lgrp_num, u8 *temp_threshold)
+int sl_media_jack_cable_temp_warn_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_warn_limit_c)
 {
-	return sl_media_data_jack_cable_high_temp_threshold_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack,
-								temp_threshold);
+	return sl_media_data_jack_cable_temp_warn_limit_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack,
+								temp_warn_limit_c);
+}
+
+int sl_media_jack_cable_temp_down_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_down_limit_c)
+{
+	return sl_media_data_jack_cable_temp_down_limit_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack,
+							     temp_down_limit_c);
 }
 
 int sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack)
@@ -987,8 +995,11 @@ int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, u
 		case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
 			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-headshell-fault ");
 			break;
-		case SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-threshold-default ");
+		case SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-down-limit-default ");
+			break;
+		case SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT:
+			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-warn-limit-default ");
 			break;
 		case SL_MEDIA_ERROR_TRYABLE:
 			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "tryable ");

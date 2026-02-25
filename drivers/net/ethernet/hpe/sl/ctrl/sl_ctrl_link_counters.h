@@ -55,7 +55,7 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_SERDES_QUALITY,    /* link up serdes quality problems      */
 	LINK_CAUSE_NO_MEDIA,          /* no media present                     */
 	LINK_CAUSE_CCW,               /* link up or fec mon CCW limit crossed */
-	LINK_CAUSE_HIGH_TEMP,         /* active cable too hot                 */
+	LINK_CAUSE_MEDIA_HOT,         /* active cable too hot                 */
 	LINK_CAUSE_INTR_REGISTER,     /* link up interrupt register failure   */
 	LINK_CAUSE_MEDIA_ERROR,       /* media has errors                     */
 	LINK_CAUSE_UP_CANCELED,       /* link up canceled, link down          */

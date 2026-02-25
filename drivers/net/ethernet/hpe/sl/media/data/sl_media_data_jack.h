@@ -54,23 +54,33 @@ void sl_media_data_jack_headshell_led_set(struct sl_media_jack *media_jack, u8 j
 
 int  sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
 void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u8 temperature_state);
-bool sl_media_data_jack_cable_is_high_temp_client_ready(struct sl_media_jack *media_jack,
-							struct sl_media_lgrp_cable_info *cable_info);
-bool sl_media_data_jack_cable_high_temp_hw_check(struct sl_media_jack *media_jack);
-bool sl_media_data_jack_cable_is_high_temp_notif_sent(struct sl_media_jack *media_jack,
-						      struct sl_media_lgrp_cable_info *cable_info);
-bool sl_media_data_jack_cable_is_no_high_temp_notif_sent(struct sl_media_jack *media_jack,
-							 struct sl_media_lgrp_cable_info *cable_info);
+int  sl_media_data_jack_cable_temp_hw_check(struct sl_media_jack *media_jack);
+bool sl_media_data_jack_cable_is_hot_client_ready(struct sl_media_jack *media_jack,
+						  struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_hot_notif_sent(struct sl_media_jack *media_jack,
+						struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_warm_client_ready(struct sl_media_jack *media_jack,
+						   struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_warm_notif_sent(struct sl_media_jack *media_jack,
+						 struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_cold_client_ready(struct sl_media_jack *media_jack,
+						   struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_cable_is_cold_notif_sent(struct sl_media_jack *media_jack,
+						 struct sl_media_lgrp_cable_info *cable_info);
 int  sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp);
-int  sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold);
-void sl_media_data_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack);
-void sl_media_data_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-						       struct sl_media_lgrp_cable_info *cable_info, bool value);
-void sl_media_data_jack_cable_no_high_temp_notif_send(struct sl_media_jack *media_jack);
-void sl_media_data_jack_cable_no_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-							  struct sl_media_lgrp_cable_info *cable_info, bool value);
-void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev);
-void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev);
+int  sl_media_data_jack_cable_temp_warn_limit_get(struct sl_media_jack *media_jack, u8 *temp_warn_limit_c);
+int  sl_media_data_jack_cable_temp_down_limit_get(struct sl_media_jack *media_jack, u8 *temp_down_limit_c);
+void sl_media_data_jack_cable_hot_notif_send(struct sl_media_jack *media_jack);
+void sl_media_data_jack_cable_warm_notif_send(struct sl_media_jack *media_jack);
+void sl_media_data_jack_cable_cold_notif_send(struct sl_media_jack *media_jack);
+void sl_media_data_jack_cable_hot_notif_sent_set(struct sl_media_jack *media_jack,
+						 struct sl_media_lgrp_cable_info *cable_info, bool value);
+void sl_media_data_jack_cable_warm_notif_sent_set(struct sl_media_jack *media_jack,
+						  struct sl_media_lgrp_cable_info *cable_info, bool value);
+void sl_media_data_jack_cable_cold_notif_sent_set(struct sl_media_jack *media_jack,
+						  struct sl_media_lgrp_cable_info *cable_info, bool value);
+void sl_media_data_jack_cable_temp_monitor_start(struct sl_media_ldev *media_ldev);
+void sl_media_data_jack_cable_temp_monitor_stop(struct sl_media_ldev *media_ldev);
 
 #define SL_MEDIA_JACK_HEADSHELL_BUSY 1
 #define SL_MEDIA_JACK_HEADSHELL_IDLE 0

@@ -321,8 +321,10 @@ const char *sl_media_error_str(u32 error)
 		return "unsupported-fw";
 	case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
 		return "headshell-fault";
-	case SL_MEDIA_ERROR_TEMP_THRESH_DEFAULT:
-		return "temperature-thresh-default";
+	case SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT:
+		return "temperature-down-limit-default";
+	case SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT:
+		return "temperature-warn-limit-default";
 	case SL_MEDIA_ERROR_TRYABLE:
 		return "tryable";
 	default:

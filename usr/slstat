@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=13
+MINOR=14
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -204,13 +204,14 @@ function print_jack_state {
        	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
 
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
-		local temp=$(cat ${LGRP_PATH}/media/temperature_celsius)
+		local temp_c=$(cat ${LGRP_PATH}/media/temperature_celsius)
 		local temp_state=$(cat ${LGRP_PATH}/media/temperature_state)
-		local high_temp_threshold=$(cat ${LGRP_PATH}/media/high_temperature_threshold_celsius)
-		if [ "${temp}" == "unsupported-format" ] || [ "${temp}" == "no-cable" ] || [ "${temp}" == "not-active" ] || [ "${temp}" == "io-error" ] ; then
-			printf "           | temperature: ${temp}\n"
+		local temp_warn_limit_c=$(cat ${LGRP_PATH}/media/temperature_warn_limit_celsius)
+		local temp_down_limit_c=$(cat ${LGRP_PATH}/media/temperature_down_limit_celsius)
+		if [ "${temp_c}" == "unsupported-format" ] || [ "${temp_c}" == "no-cable" ] || [ "${temp_c}" == "not-active" ] || [ "${temp_c}" == "io-error" ] ; then
+			printf "           | temperature: ${temp_c}\n"
 		else
-			printf "           | temperature: ${temp}c (state = ${temp_state}, threshold: ${high_temp_threshold}c)\n"
+			printf "           | temperature: ${temp_c}c (state = ${temp_state}, warn_limit: ${temp_warn_limit_c}c, down_limit: ${temp_down_limit_c}c)\n"
 		fi
 	fi
 }

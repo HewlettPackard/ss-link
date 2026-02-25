@@ -762,7 +762,7 @@ static ssize_t cause_ccw_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static ssize_t cause_high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
 	u32                  counter;
@@ -770,11 +770,11 @@ static ssize_t cause_high_temp_show(struct kobject *kobj, struct kobj_attribute 
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_HIGH_TEMP, &counter);
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_HOT, &counter);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause high temp show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause hot show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -1327,7 +1327,7 @@ static struct kobj_attribute link_cause_serdes_signal     = __ATTR_RO(cause_serd
 static struct kobj_attribute link_cause_serdes_quality    = __ATTR_RO(cause_serdes_quality);
 static struct kobj_attribute link_cause_no_media          = __ATTR_RO(cause_no_media);
 static struct kobj_attribute link_cause_ccw               = __ATTR_RO(cause_ccw);
-static struct kobj_attribute link_cause_high_temp         = __ATTR_RO(cause_high_temp);
+static struct kobj_attribute link_cause_hot               = __ATTR_RO(cause_hot);
 static struct kobj_attribute link_cause_intr_register     = __ATTR_RO(cause_intr_register);
 static struct kobj_attribute link_cause_media_error       = __ATTR_RO(cause_media_error);
 static struct kobj_attribute link_cause_up_canceled       = __ATTR_RO(cause_up_canceled);
@@ -1409,7 +1409,7 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_serdes_quality.attr,
 	&link_cause_no_media.attr,
 	&link_cause_ccw.attr,
-	&link_cause_high_temp.attr,
+	&link_cause_hot.attr,
 	&link_cause_intr_register.attr,
 	&link_cause_media_error.attr,
 	&link_cause_up_canceled.attr,

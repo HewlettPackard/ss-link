@@ -32,7 +32,7 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET,   /* media shift up jack io high power ser error   */
 	MEDIA_CAUSE_SHIFT_STATE_JACK_IO,               /* media shift state jack io error               */
 	MEDIA_CAUSE_OFFLINE,                           /* media is offline                              */
-	MEDIA_CAUSE_HIGH_TEMP,                         /* media high temperature detected               */
+	MEDIA_CAUSE_HOT,                               /* media hot detected                            */
 	SL_CTRL_MEDIA_CAUSE_COUNTERS_COUNT
 };
 

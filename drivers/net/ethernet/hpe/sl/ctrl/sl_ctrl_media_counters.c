@@ -45,7 +45,7 @@ int sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack)
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_SHIFT_STATE_JACK_IO);
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_OFFLINE);
-	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_HIGH_TEMP);
+	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_HOT);
 
 	return 0;
 }
@@ -141,8 +141,8 @@ void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned 
 		case SL_MEDIA_FAULT_CAUSE_OFFLINE:
 			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_OFFLINE);
 			break;
-		case SL_MEDIA_FAULT_CAUSE_HIGH_TEMP:
-			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_HIGH_TEMP);
+		case SL_MEDIA_FAULT_CAUSE_HOT:
+			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_HOT);
 			break;
 		default:
 			sl_ctrl_log_warn_trace(media_jack, LOG_NAME,

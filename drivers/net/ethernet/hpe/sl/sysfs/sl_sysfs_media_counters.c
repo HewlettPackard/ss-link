@@ -445,7 +445,7 @@ static ssize_t cause_offline_show(struct kobject *kobj, struct kobj_attribute *k
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
-static ssize_t cause_high_temp_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -454,12 +454,12 @@ static ssize_t cause_high_temp_show(struct kobject *kobj, struct kobj_attribute 
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_HIGH_TEMP, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_HOT, &counter);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause high temp show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause hot show (counter = %u)", counter);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
@@ -493,7 +493,7 @@ static struct kobj_attribute media_cause_shift_up_jack_io_high_power_set   =
 static struct kobj_attribute media_cause_shift_state_jack_io               =
 			     __ATTR_RO(cause_shift_state_jack_io);
 static struct kobj_attribute media_cause_offline                           = __ATTR_RO(cause_offline);
-static struct kobj_attribute media_cause_high_temp                         = __ATTR_RO(cause_high_temp);
+static struct kobj_attribute media_cause_hot                               = __ATTR_RO(cause_hot);
 
 static struct attribute *media_counters_attrs[] = {
 	&media_cause_eeprom_format_unsupported.attr,
@@ -518,7 +518,7 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_shift_up_jack_io_high_power_set.attr,
 	&media_cause_shift_state_jack_io.attr,
 	&media_cause_offline.attr,
-	&media_cause_high_temp.attr,
+	&media_cause_hot.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media_counters);

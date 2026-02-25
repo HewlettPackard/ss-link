@@ -257,25 +257,34 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	return 0;
 }
 
-bool sl_media_jack_cable_high_temp_hw_check(struct sl_media_jack *media_jack)
+int sl_media_jack_cable_temp_hw_check(struct sl_media_jack *media_jack)
 {
-	return false;
+	return SL_MEDIA_JACK_TEMP_STATE_COLD;
 }
 
-void sl_media_jack_cable_high_temp_notif_send(struct sl_media_jack *media_jack)
-{
-}
-
-void sl_media_jack_cable_no_high_temp_notif_send(struct sl_media_jack *media_jack)
+void sl_media_jack_cable_hot_notif_send(struct sl_media_jack *media_jack)
 {
 }
 
-void sl_media_jack_cable_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-						  struct sl_media_lgrp_cable_info *cable_info, bool value)
+void sl_media_jack_cable_warm_notif_send(struct sl_media_jack *media_jack)
 {
 }
 
-void sl_media_jack_cable_no_high_temp_notif_sent_set(struct sl_media_jack *media_jack,
-						     struct sl_media_lgrp_cable_info *cable_info, bool value)
+void sl_media_jack_cable_cold_notif_send(struct sl_media_jack *media_jack)
+{
+}
+
+void sl_media_jack_cable_hot_notif_sent_set(struct sl_media_jack *media_jack,
+					    struct sl_media_lgrp_cable_info *cable_info, bool value)
+{
+}
+
+void sl_media_jack_cable_warm_notif_sent_set(struct sl_media_jack *media_jack,
+					     struct sl_media_lgrp_cable_info *cable_info, bool value)
+{
+}
+
+void sl_media_jack_cable_cold_notif_sent_set(struct sl_media_jack *media_jack,
+					     struct sl_media_lgrp_cable_info *cable_info, bool value)
 {
 }

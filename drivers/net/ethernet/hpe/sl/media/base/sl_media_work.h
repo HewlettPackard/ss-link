@@ -5,7 +5,7 @@
 #define _SL_MEDIA_WORK_H_
 
 enum {
-	SL_MEDIA_WORK_CABLE_MON_HIGH_TEMP = 0,
+	SL_MEDIA_WORK_CABLE_MON_TEMP = 0,
 
 	SL_MEDIA_WORK_COUNT      /* must be last */
 };
