@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include "sl_core_link.h"
 #include "sl_core_str.h"
