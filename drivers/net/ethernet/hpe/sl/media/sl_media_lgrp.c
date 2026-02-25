@@ -100,7 +100,7 @@ void sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num)
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if present send");
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "real cable if present send");
 
 	sl_media_data_jack_cable_if_present_send(media_lgrp);
 }
@@ -111,36 +111,121 @@ void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num)
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "media lgrp real cable if not present send");
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "real cable if not present send");
 
 	sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 }
 
-void sl_media_lgrp_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
+void sl_media_lgrp_cable_hot_send(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "cable hot send");
+
+	if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_lgrp_hot_client_ready_set(ldev_num, lgrp_num, true);
+		if (sl_media_jack_cable_temp_hw_check(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+			sl_media_jack_fault_cause_set(media_lgrp->media_jack, SL_MEDIA_FAULT_CAUSE_HOT);
+			sl_media_jack_cable_hot_notif_send(media_lgrp->media_jack);
+		}
+	}
+}
+
+void sl_media_lgrp_cable_warm_send(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "cable warm send");
+
+	if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_lgrp_warm_client_ready_set(ldev_num, lgrp_num, true);
+		if (sl_media_jack_cable_temp_hw_check(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_WARM)
+			sl_media_jack_cable_warm_notif_send(media_lgrp->media_jack);
+	}
+}
+
+void sl_media_lgrp_cable_cold_send(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "cable cold send");
+
+	if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_lgrp_cold_client_ready_set(ldev_num, lgrp_num, true);
+		if (sl_media_jack_cable_temp_hw_check(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_COLD)
+			sl_media_jack_cable_cold_notif_send(media_lgrp->media_jack);
+	}
+}
+
+void sl_media_lgrp_cable_temp_flags_clr(u8 ldev_num, u8 lgrp_num)
+{
+	u8                   i;
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "cable temp flags clr");
+
+	for (i = 0; i < media_lgrp->media_jack->port_count; ++i) {
+		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+			sl_media_lgrp_hot_client_ready_set(ldev_num, lgrp_num, false);
+			sl_media_jack_cable_hot_notif_sent_set(media_lgrp->media_jack,
+							       &media_lgrp->media_jack->cable_info[i], false);
+			sl_media_lgrp_warm_client_ready_set(ldev_num, lgrp_num, false);
+			sl_media_jack_cable_warm_notif_sent_set(media_lgrp->media_jack,
+								&media_lgrp->media_jack->cable_info[i], false);
+			sl_media_lgrp_cold_client_ready_set(ldev_num, lgrp_num, false);
+			sl_media_jack_cable_cold_notif_sent_set(media_lgrp->media_jack,
+								&media_lgrp->media_jack->cable_info[i], false);
+		}
+	}
+}
+
+void sl_media_lgrp_hot_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
 {
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "high temp client ready set (value = %s)",
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "hot client ready set (value = %s)",
 			 value ? "true" : "false");
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
-	media_lgrp->cable_info->high_temp_client_ready = value;
+	media_lgrp->cable_info->hot_client_ready = value;
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
-void sl_media_lgrp_no_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
+void sl_media_lgrp_warm_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
 {
 	struct sl_media_lgrp *media_lgrp;
 
 	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
 
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "no high temp client ready set (value = %s)",
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "warm client ready set (value = %s)",
 			 value ? "true" : "false");
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
-	media_lgrp->cable_info->no_high_temp_client_ready = value;
+	media_lgrp->cable_info->warm_client_ready = value;
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+}
+
+void sl_media_lgrp_cold_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "cold client ready set (value = %s)",
+			 value ? "true" : "false");
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	media_lgrp->cable_info->cold_client_ready = value;
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 

@@ -6,8 +6,6 @@
 
 #include <linux/types.h>
 
-#define SL_MEDIA_HIGH_TEMP_MONITOR_TIME_MS 15000
-
 struct sl_media_ldev;
 struct sl_uc_ops;
 struct sl_uc_accessor;

@@ -56,8 +56,13 @@ void sl_media_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_
 
 void sl_media_lgrp_real_cable_if_present_send(u8 ldev_num, u8 lgrp_num);
 void sl_media_lgrp_real_cable_if_not_present_send(u8 ldev_num, u8 lgrp_num);
-void sl_media_lgrp_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value);
-void sl_media_lgrp_no_high_temp_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value);
+void sl_media_lgrp_cable_hot_send(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_cable_warm_send(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_cable_cold_send(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_cable_temp_flags_clr(u8 ldev_num, u8 lgrp_num);
+void sl_media_lgrp_hot_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value);
+void sl_media_lgrp_warm_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value);
+void sl_media_lgrp_cold_client_ready_set(u8 ldev_num, u8 lgrp_num, bool value);
 
 void sl_media_lgrp_media_attr_get(u8 ldev_num, u8 lgrp_num, struct sl_media_attr *media_attr);
 bool sl_media_lgrp_media_has_error(struct sl_media_lgrp *media_lgrp);

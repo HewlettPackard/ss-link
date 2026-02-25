@@ -64,7 +64,7 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	media_ldevs[ldev_num] = media_ldev;
 	spin_unlock(&media_ldevs_lock);
 
-	sl_media_data_jack_cable_high_temp_monitor_start(media_ldev);
+	sl_media_data_jack_cable_temp_monitor_start(media_ldev);
 
 	return 0;
 }
@@ -81,7 +81,7 @@ void sl_media_data_ldev_del(u8 ldev_num)
 		return;
 	}
 
-	sl_media_data_jack_cable_high_temp_monitor_stop(media_ldev);
+	sl_media_data_jack_cable_temp_monitor_stop(media_ldev);
 
 	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = NULL;

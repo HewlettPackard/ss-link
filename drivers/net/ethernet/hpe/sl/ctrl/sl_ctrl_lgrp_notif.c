@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/delay.h>
@@ -33,7 +33,6 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 {
 	int                   rtn;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	struct sl_media_lgrp *media_lgrp;
 	u8                    reg_idx;
 	u8                    counter;
 
@@ -92,32 +91,14 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	if (types & SL_LGRP_NOTIF_MEDIA_NOT_PRESENT)
 		sl_media_lgrp_real_cable_if_not_present_send(ldev_num, lgrp_num);
 
-	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
+	if (types & SL_LGRP_NOTIF_MEDIA_HOT)
+		sl_media_lgrp_cable_hot_send(ldev_num, lgrp_num);
 
-	if (types & SL_LGRP_NOTIF_MEDIA_HIGH_TEMP) {
-		sl_media_lgrp_high_temp_client_ready_set(ldev_num, lgrp_num, true);
+	if (types & SL_LGRP_NOTIF_MEDIA_WARM)
+		sl_media_lgrp_cable_warm_send(ldev_num, lgrp_num);
 
-		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
-			if (media_lgrp) {
-				if (sl_media_jack_cable_high_temp_hw_check(media_lgrp->media_jack)) {
-					sl_media_jack_fault_cause_set(media_lgrp->media_jack,
-								      SL_MEDIA_FAULT_CAUSE_HIGH_TEMP);
-					sl_media_jack_cable_high_temp_notif_send(media_lgrp->media_jack);
-				}
-			}
-		}
-	}
-
-	if (types & SL_LGRP_NOTIF_MEDIA_NO_HIGH_TEMP) {
-		sl_media_lgrp_no_high_temp_client_ready_set(ldev_num, lgrp_num, true);
-
-		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
-			if (media_lgrp) {
-				if (!sl_media_jack_cable_high_temp_hw_check(media_lgrp->media_jack))
-					sl_media_jack_cable_no_high_temp_notif_send(media_lgrp->media_jack);
-			}
-		}
-	}
+	if (types & SL_LGRP_NOTIF_MEDIA_COLD)
+		sl_media_lgrp_cable_cold_send(ldev_num, lgrp_num);
 
 	rtn = 0;
 out:
@@ -132,10 +113,8 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 {
 	int                   rtn;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	struct sl_media_lgrp *media_lgrp;
 	u8                    reg_idx;
 	u8                    counter;
-	u8                    i;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
@@ -148,17 +127,7 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 		return -EBADRQC;
 	}
 
-	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
-	if (media_lgrp) {
-		for (i = 0; i < media_lgrp->media_jack->port_count; ++i) {
-			sl_media_lgrp_high_temp_client_ready_set(ldev_num, lgrp_num, false);
-			sl_media_jack_cable_high_temp_notif_sent_set(media_lgrp->media_jack,
-								     &media_lgrp->media_jack->cable_info[i], false);
-			sl_media_lgrp_no_high_temp_client_ready_set(ldev_num, lgrp_num, false);
-			sl_media_jack_cable_no_high_temp_notif_sent_set(media_lgrp->media_jack,
-									&media_lgrp->media_jack->cable_info[i], false);
-		}
-	}
+	sl_media_lgrp_cable_temp_flags_clr(ldev_num, lgrp_num);
 
 	counter = 0;
 	while (sl_ctrl_lgrp_notif_list_state_get(ctrl_lgrp) == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {

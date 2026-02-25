@@ -73,16 +73,22 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
 }
 
-int sl_media_data_jack_cable_high_temp_threshold_get(struct sl_media_jack *media_jack, u8 *temp_threshold)
+int sl_media_data_jack_cable_temp_warn_limit_get(struct sl_media_jack *media_jack, u8 *temp_warn_limit_c)
 {
-	*temp_threshold = 80;
+	*temp_warn_limit_c = 65;
 	return 0;
 }
 
-void sl_media_data_jack_cable_high_temp_monitor_start(struct sl_media_ldev *media_ldev)
+int sl_media_data_jack_cable_temp_down_limit_get(struct sl_media_jack *media_jack, u8 *temp_down_limit_c)
+{
+	*temp_down_limit_c = 80;
+	return 0;
+}
+
+void sl_media_data_jack_cable_temp_monitor_start(struct sl_media_ldev *media_ldev)
 {
 }
 
-void sl_media_data_jack_cable_high_temp_monitor_stop(struct sl_media_ldev *media_ldev)
+void sl_media_data_jack_cable_temp_monitor_stop(struct sl_media_ldev *media_ldev)
 {
 }

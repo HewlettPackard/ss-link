@@ -165,43 +165,6 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
 }
 
-static bool sl_core_hw_link_media_is_high_temp(struct sl_core_link *core_link)
-{
-	int                   rtn;
-	struct sl_media_lgrp *media_lgrp;
-	u8 		      temperature_state;
-
-	sl_core_log_dbg(core_link, LOG_NAME, "media is high temp (link = 0x%p)", core_link);
-
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-
-	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-			 SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
-						       core_link->core_lgrp->num)) {
-
-			rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
-			if (rtn)
-				sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
-
-			if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
-				sl_core_log_warn_trace(core_link, LOG_NAME,
-						       "media high temp detected (jack_num = %u)",
-						       media_lgrp->media_jack->physical_num);
-				sl_core_data_link_last_up_fail_cause_map_set(core_link,
-									     SL_LINK_DOWN_CAUSE_HIGH_TEMP_LINK_UP_MAP);
-				rtn = sl_core_link_up_fail(core_link);
-				if (rtn)
-					sl_core_log_err_trace(core_link, LOG_NAME,
-							      "media is high temp link_up_fail failed [%d]", rtn);
-				return -EINVAL;
-			}
-		}
-	}
-
-	return 0;
-}
-
 static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -797,11 +760,13 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 
 void sl_core_hw_link_up_check_work(struct work_struct *work)
 {
-	int                  rtn;
-	u32                  port;
-	u64                  data64;
-	struct sl_core_link *core_link;
-	u32                  link_state;
+	int                   rtn;
+	u8                    temperature_state;
+	u32                   port;
+	u32                   link_state;
+	u64                   data64;
+	struct sl_core_link  *core_link;
+	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CHECK]);
 
@@ -822,8 +787,27 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 		return;
 	}
 
-	if (sl_core_hw_link_media_is_high_temp(core_link))
-		return;
+	if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num) &&
+	    !is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+			 SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+
+		rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+		if (rtn) {
+			sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+		} else if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+			sl_core_log_warn_trace(core_link, LOG_NAME, "media hot detected (jack_num = %u)",
+					media_lgrp->media_jack->physical_num);
+
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								SL_LINK_DOWN_CAUSE_MEDIA_HOT_LINK_UP_MAP);
+			rtn = sl_core_link_up_fail(core_link);
+			if (rtn)
+				sl_core_log_warn_trace(core_link, LOG_NAME,
+						       "media hot link_up_fail failed [%d]", rtn);
+			return;
+		}
+	}
 
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {
@@ -1552,7 +1536,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "fault intr work link up disable failed [%d]", rtn);
+				       "fault link down link up disable failed [%d]", rtn);
 
 	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
 	    (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
@@ -1560,13 +1544,13 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 						 sl_core_hw_intr_hdlr);
 		if (rtn != 0)
 			sl_core_log_warn(core_link, LOG_NAME,
-					 "fault intr work lane degrade unregister failed [%d]", rtn);
+					 "fault link down lane degrade unregister failed [%d]", rtn);
 	}
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "fault intr work hw_fec_data_get failed [%d]", rtn);
+				       "fault link down hw_fec_data_get failed [%d]", rtn);
 	else
 		sl_ctrl_link_fec_down_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 						  core_link->core_lgrp->num, core_link->num),
@@ -1587,9 +1571,9 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 
 			if (temperature_state ==   SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
-						       "fault intr work high cable temp detected");
+						       "fault link down cable hot detected");
 				sl_core_data_link_last_down_cause_map_set(core_link,
-									  SL_LINK_DOWN_CAUSE_HIGH_TEMP_FAULT_MAP);
+									  SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP);
 				sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
 			}
 		}
@@ -1598,7 +1582,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	rtn = sl_core_data_link_state_get(core_link, &link_state);
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "fault intr work - failed to get link state [%d]", rtn);
+				      "fault link down failed to get link state [%d]", rtn);
 		link_state = SL_CORE_LINK_STATE_INVALID;
 	}
 	rtn = core_link->config.fault_callback(core_link->link.tags.up, link_state,
@@ -1606,7 +1590,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 					       sl_core_data_link_info_map_get(core_link));
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "fault intr work callback failed [%d]", rtn);
+				       "fault link down callback failed [%d]", rtn);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 }

@@ -85,8 +85,9 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	media_jack->lane_data.cache.cached = false;
 	media_jack->lane_data.read_state   = SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE;
 
-	media_jack->temperature_value     = -1;
-	media_jack->temperature_threshold = -1;
+	media_jack->temperature_value_c      = -1;
+	media_jack->temperature_down_limit_c = -1;
+	media_jack->temperature_warn_limit_c = -1;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "new (jack = 0x%p)", media_jack);
 
@@ -244,7 +245,8 @@ int sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8
 	*temperature_state = media_jack->temperature_state;
 	spin_unlock(&media_jack->data_lock);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "temp state get (state= %u)", media_jack->temperature_state);
+	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state get (state = %u %s)",
+			 *temperature_state, sl_media_temp_state_str(*temperature_state));
 
 	return 0;
 }

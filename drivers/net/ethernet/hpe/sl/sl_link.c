@@ -515,8 +515,8 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_CCW:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
 			break;
-		case SL_LINK_DOWN_CAUSE_HIGH_TEMP:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "high-temp ");
+		case SL_LINK_DOWN_CAUSE_MEDIA_HOT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-hot ");
 			break;
 		case SL_LINK_DOWN_CAUSE_INTR_REGISTER:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "interrupt-reg ");
