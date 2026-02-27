@@ -1634,7 +1634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54439001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN8X0QE2C05-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1694,7 +1694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54440001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN8X0QE2C100-C", /* manually truuncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -1754,7 +1754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54442001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN8X0QE2C50-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -1874,7 +1874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54444001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN8X0QE2C30-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3000,
@@ -2234,7 +2234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54458001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN8X0QE2C07-CU",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -4074,7 +4074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798705,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "FCBN950QE1C10-CY", /* manually fixed typo in spreadsheet */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
