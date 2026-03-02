@@ -45,12 +45,11 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	for (indexer = 0; indexer < ARRAY_SIZE(cable_db); ++indexer) {
 		if (cable_db[indexer].hpe_pn == media_attr->hpe_pn &&
 		    cable_db[indexer].vendor == media_attr->vendor &&
-		    strcmp(cable_db[indexer].vendor_pn_str, media_attr->vendor_pn_str) == 0 &&
-		    cable_db[indexer].type == media_attr->type) {
-			media_attr->shape = cable_db[indexer].shape;
-			media_attr->max_speed = cable_db[indexer].max_speed;
+		    cable_db[indexer].type   == media_attr->type) {
+			media_attr->shape                    = cable_db[indexer].shape;
+			media_attr->max_speed                = cable_db[indexer].max_speed;
 			media_jack->is_supported_ss200_cable = cable_db[indexer].is_supported_ss200_cable;
-			media_jack->cable_db_idx = indexer;
+			media_jack->cable_db_idx             = indexer;
 			return 0;
 		}
 	}
