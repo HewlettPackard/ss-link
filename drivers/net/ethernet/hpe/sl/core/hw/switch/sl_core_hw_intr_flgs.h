@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_INTR_FLGS_H_
 #define _SL_CORE_HW_INTR_FLGS_H_

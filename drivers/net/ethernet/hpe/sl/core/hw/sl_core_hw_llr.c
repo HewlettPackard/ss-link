@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -17,6 +17,7 @@
 #include "data/sl_core_data_llr.h"
 #include "hw/sl_core_hw_io.h"
 #include "hw/sl_core_hw_llr.h"
+#include "hw/sl_core_hw_pcs.h"
 
 #define SL_CORE_LLR_BYTES_PER_FRAME    9216ULL
 #define SL_CORE_LLR_NUM_FRAMES         2ULL
@@ -148,13 +149,19 @@ static void sl_core_hw_llr_on(struct sl_core_llr *core_llr)
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_RX_PCS, &data64);
 	/* NOTE: these need to match the restart_lock settings on the link */
-	if (sl_core_link_config_is_enable_ald_set(core_link))
+	if (sl_core_link_config_is_enable_ald_set(core_link)) {
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 0);
-	else
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 0);
+	} else {
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
-
-	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
+	}
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_RX_PCS, data64);
+
+	if (sl_core_link_config_is_enable_ald_set(core_link))
+		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 1);
+	else
+		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 0);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LLR_MODE_UPDATE(data64, 2); /* ON */

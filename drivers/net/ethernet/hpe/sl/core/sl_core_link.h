@@ -47,10 +47,6 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_INTR_ENABLE       | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP (         \
-		SL_LINK_DOWN_CAUSE_INTR_REGISTER     | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
-		SL_LINK_DOWN_RETRYABLE)
 #define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP (       \
 		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
@@ -376,8 +372,6 @@ struct sl_core_link {
 			u8      tx_cdc_ready_level;
 			u8      tx_en_pk_bw_limiter;
 			u8      tx_gearbox_credits;
-			u8      rx_restart_lock_on_bad_cws;
-			u8      rx_restart_lock_on_bad_ams;
 			u8      rx_active_lanes;
 			u16     rx_am_lock_lanes;
 			u8      rs_mode;

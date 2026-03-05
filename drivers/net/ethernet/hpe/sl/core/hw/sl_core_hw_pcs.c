@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -70,17 +70,21 @@ void sl_core_hw_pcs_config(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level);
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_TX_PCS, data64);
 
+	if (sl_core_link_config_is_enable_ald_set(core_link))
+		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 1);
+	else
+		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 0);
+
 	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
 	data64 = SS2_PORT_PML_CFG_RX_PCS_CW_GAP_544_UPDATE(data64,
 		core_link->pcs.settings.cw_gap);
-
-	if (sl_core_link_config_is_enable_ald_set(core_link))
+	if (sl_core_link_config_is_enable_ald_set(core_link)) {
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 0);
-	else
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 0);
+	} else {
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
-
-	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64,
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
+	}
 	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
 	lanes &= ~core_link->pcs.settings.rx_active_lanes;
 	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
@@ -147,6 +151,7 @@ void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_TX_PCS, &data64);
 		data64 = SS2_PORT_PML_CFG_TX_PCS_ALLOW_AUTO_DEGRADE_UPDATE(data64, 1);
 		sl_core_write64(core_link, SS2_PORT_PML_CFG_TX_PCS, data64);
+
 		sl_core_flush64(core_link, SS2_PORT_PML_CFG_TX_PCS);
 
 		sl_core_log_dbg(core_link, LOG_NAME, "auto lane degrade is enabled (port = %u)", port);
@@ -162,14 +167,19 @@ out:
 		spin_unlock(&core_link->data_lock);
 
 		sl_core_log_err_trace(core_link, LOG_NAME, "enable auto lane degrade failed (port = %u)", port);
+
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_PCS, &data64);
 		data64 = SS2_PORT_PML_CFG_PCS_ENABLE_AUTO_LANE_DEGRADE_UPDATE(data64, 0);
 		sl_core_write64(core_link, SS2_PORT_PML_CFG_PCS, data64);
 
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
 		sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
+
 		sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);
+
+		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 0);
 	}
 }
 
@@ -271,7 +281,6 @@ void sl_core_hw_pcs_stop(struct sl_core_link *core_link)
 	lanes = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_GET(data64);
 	lanes &= ~core_link->pcs.settings.rx_active_lanes;
 	data64 = SS2_PORT_PML_CFG_RX_PCS_ACTIVE_LANES_UPDATE(data64, lanes);
-	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
 	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
 
 	sl_core_flush64(core_link, SS2_PORT_PML_CFG_RX_PCS);

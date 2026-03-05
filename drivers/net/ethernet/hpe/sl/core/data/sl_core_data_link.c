@@ -27,6 +27,7 @@
 #include "sl_core_hw_intr_flgs.h"
 #include "hw/sl_core_hw_settings.h"
 #include "hw/sl_core_hw_llr.h"
+#include "hw/sl_core_hw_io.h"
 
 /* 0x01002510 (hni_pcs_corrected_cw)
  * 0x01002618 (hni_pcs_corrected_cw_bin_14)
@@ -237,6 +238,16 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return rtn;
 	}
 
+	if (link_num == 0) {
+		rtn = sl_core_hw_intr_register(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
+					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
+		if (rtn != 0) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "intr register degrade failed [%d]", rtn);
+			kfree(core_link);
+			return rtn;
+		}
+	}
+
 	sl_core_hw_llr_link_init(core_link);
 
 	if (core_ldev->ops.dmac_alloc) {
@@ -421,15 +432,11 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 			core_link->pcs.settings.tx_gearbox_credits         = 12;
-			core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 			core_link->pcs.settings.cw_gap                     = 6;
 		} else {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 			core_link->pcs.settings.tx_gearbox_credits         = 8;
-			core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 			core_link->pcs.settings.cw_gap                     = 6;
 		}
 		if (sl_core_link_config_is_enable_ald_set(core_link))
@@ -443,8 +450,6 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 8;
-		core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 		core_link->pcs.settings.cw_gap                     = 6;
 	}
 	if (SL_LGRP_CONFIG_TECH_CK_100G & link_caps->tech_map) {
@@ -455,8 +460,6 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 4;
-		core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 		core_link->pcs.settings.cw_gap                     = 16;
 	}
 	if (SL_LGRP_CONFIG_TECH_BS_200G & link_caps->tech_map) {
@@ -468,15 +471,11 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
 			core_link->pcs.settings.tx_gearbox_credits         = 12;
-			core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 			core_link->pcs.settings.cw_gap                     = 6;
 		} else {
 			core_link->pcs.settings.tx_cdc_ready_level         = 8;
 			core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
 			core_link->pcs.settings.tx_gearbox_credits         = 8;
-			core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-			core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 			if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_R1))
 				core_link->pcs.settings.cw_gap             = 24;
 			else
@@ -493,8 +492,6 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 4;
-		core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 		core_link->pcs.settings.cw_gap                     = 6;
 	}
 	if (SL_LGRP_CONFIG_TECH_CD_50G & link_caps->tech_map) {
@@ -505,8 +502,6 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 1;
 		core_link->pcs.settings.tx_gearbox_credits         = 2;
-		core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 		core_link->pcs.settings.cw_gap                     = 12;
 	}
 	if (SL_LGRP_CONFIG_TECH_BJ_100G & link_caps->tech_map) {
@@ -517,8 +512,6 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 		core_link->pcs.settings.tx_cdc_ready_level         = 8;
 		core_link->pcs.settings.tx_en_pk_bw_limiter        = 0;
 		core_link->pcs.settings.tx_gearbox_credits         = 8;
-		core_link->pcs.settings.rx_restart_lock_on_bad_cws = 0;
-		core_link->pcs.settings.rx_restart_lock_on_bad_ams = 1;
 		core_link->pcs.settings.cw_gap                     = 6;
 	}
 

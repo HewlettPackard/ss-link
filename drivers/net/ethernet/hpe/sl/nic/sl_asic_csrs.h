@@ -191,6 +191,9 @@
 
 #define SS2_PORT_PML_ERR_INFO_PCS_TX_DP_TX_CDC_UNDERRUN_UPDATE(a, b)                 SL_CSR_UPDATE(a, b, ss2_port_pml_err_info_pcs_tx_dp, tx_cdc_underrun)
 
+#define SS2_PORT_PML_ERR_FLG_WORD1_PCS_TX_DEGRADE_FAILURE_GET(a)                     SL_CSR_WORD_GET(a, ss2_port_pml_err_flg, pcs_tx_degrade_failure, 1)
+#define SS2_PORT_PML_ERR_FLG_WORD1_PCS_RX_DEGRADE_FAILURE_GET(a)                     SL_CSR_WORD_GET(a, ss2_port_pml_err_flg, pcs_rx_degrade_failure, 1)
+
 #define SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_0_GET(a)                        SL_CSR_WORD_GET(a, ss2_port_pml_err_flg, llr_replay_at_max_0, 1)
 #define SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_1_GET(a)                        SL_CSR_WORD_GET(a, ss2_port_pml_err_flg, llr_replay_at_max_1, 1)
 #define SS2_PORT_PML_ERR_FLG_WORD1_LLR_REPLAY_AT_MAX_2_GET(a)                        SL_CSR_WORD_GET(a, ss2_port_pml_err_flg, llr_replay_at_max_2, 1)

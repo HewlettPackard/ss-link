@@ -459,23 +459,6 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_serdes_link_down(core_link);
 
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-		(core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-		rtn = sl_core_hw_intr_register(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
-		if (rtn != 0) {
-			sl_core_log_err(core_link, LOG_NAME,
-				"up work - lane degrade register failed [%d]", rtn);
-
-			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_REGISTER_MAP);
-			rtn = sl_core_link_up_fail(core_link);
-			if (rtn)
-				sl_core_log_warn_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
-
-			return;
-		}
-	}
-
 	sl_core_hw_pcs_config(core_link);
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
@@ -550,8 +533,8 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_pcs_rx_start(core_link);
 
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-		(core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
+	if ((core_link->num == 0) && (sl_core_link_config_is_enable_ald_set(core_link)) &&
+	    (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
 		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
@@ -1029,24 +1012,17 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-					    sl_core_hw_intr_hdlr);
-	   if (rtn != 0)
-		   sl_core_log_warn(core_link, LOG_NAME,
-				   "up timeout - lane degrade unregister failed [%d]", rtn);
-	}
+	if (core_link->num == 0)
+		sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
-	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	if (core_link->num == 0)
+		cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
@@ -1125,16 +1101,8 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-					    sl_core_hw_intr_hdlr);
-	   if (rtn != 0)
-		   sl_core_log_warn(core_link, LOG_NAME,
-				   "up cancel - lane degrade unregister failed [%d]", rtn);
-	}
+	if (core_link->num == 0)
+		sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
 	/* Cancel work queued from interrupt */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
@@ -1142,8 +1110,9 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
-	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	if (core_link->num == 0)
+		cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
@@ -1224,16 +1193,8 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-					    sl_core_hw_intr_hdlr);
-	   if (rtn != 0)
-		   sl_core_log_warn(core_link, LOG_NAME,
-				   "up fail - lane degrade unregister failed [%d]", rtn);
-	}
+	if (core_link->num == 0)
+		sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 
 	/* Cancel work queued from interrupt */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_UP_INTR]));
@@ -1241,8 +1202,9 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
-	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	if (core_link->num == 0)
+		cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
@@ -1312,26 +1274,20 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"down work link fault disable failed [%d]", rtn);
-	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-	if (rtn != 0)
-		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"down work lane degrade disable failed [%d]", rtn);
-
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-	   (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-	   rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-					    sl_core_hw_intr_hdlr);
-	   if (rtn != 0)
-		   sl_core_log_warn(core_link, LOG_NAME,
-				   "down - lane degrade unregister failed [%d]", rtn);
+	if (core_link->num == 0) {
+		rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
+		if (rtn != 0)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "down work lane degrade disable failed [%d]", rtn);
 	}
 
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_HIGH_SER_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_MAX_STARVATION_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LLR_STARVED_INTR]);
 	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]);
-	cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]);
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	if (core_link->num == 0)
+		cancel_work_sync(&core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]);
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	if (rtn)
@@ -1537,14 +1493,11 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 				       "fault link down link up disable failed [%d]", rtn);
-
-	if ((sl_core_link_config_is_enable_ald_set(core_link)) &&
-	    (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-		rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].flgs,
-						 sl_core_hw_intr_hdlr);
+	if (core_link->num == 0) {
+		rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 		if (rtn != 0)
-			sl_core_log_warn(core_link, LOG_NAME,
-					 "fault link down lane degrade unregister failed [%d]", rtn);
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "fault link down lane degrade disable failed [%d]", rtn);
 	}
 
 	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
@@ -1567,7 +1520,8 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 			rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
 			if (rtn)
-				sl_core_log_warn_trace(core_link, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
+				sl_core_log_warn_trace(core_link, LOG_NAME,
+						       "link down cable_temp_state_get failed [%d]", rtn);
 
 			if (temperature_state ==   SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
@@ -1990,7 +1944,9 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]);
 	port      = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "lane degrade intr work (port = %u)", port);
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"lane degrade intr work (port = %u, source = 0x%016llX)",
+			port, core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].source[1]);
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_DEGRADED);
 

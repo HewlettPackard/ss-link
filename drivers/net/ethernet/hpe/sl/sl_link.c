@@ -470,15 +470,6 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_CANCELED:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "canceled ");
 			break;
-		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SS200_CABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ss200-cable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-speed ");
-			break;
 		case SL_LINK_DOWN_CAUSE_COMMAND:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
 			break;
@@ -526,6 +517,12 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 			break;
 		case SL_LINK_DOWN_CAUSE_UP_CANCELED:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-canceled ");
+			break;
+		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-speed ");
+			break;
+		case SL_LINK_DOWN_CAUSE_SS200_CABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ss200-cable ");
 			break;
 		case SL_LINK_DOWN_CAUSE_TX_LOL:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "tx-lol ");
