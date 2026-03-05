@@ -29,6 +29,7 @@ $(SL_NAME)-$(SL_BUILD_SWITCH) += \
 	core/hw/switch/sl_core_hw_llr.o             \
 	core/hw/switch/sl_core_hw_an.o              \
 	core/hw/switch/sl_core_hw_mac.o             \
+	core/hw/switch/sl_core_hw_pcs.o             \
 	core/data/switch/sl_core_data_link.o        \
 	core/data/switch/sl_core_data_mac.o
 
@@ -45,6 +46,7 @@ $(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \
 	core/hw/switch/sl_core_hw_llr.o             \
 	core/hw/switch/sl_core_hw_an.o              \
 	core/hw/switch/sl_core_hw_mac.o             \
+	core/hw/switch/sl_core_hw_pcs.o             \
 	core/data/switch/sl_core_data_link.o        \
 	core/data/switch/sl_core_data_mac.o
 
@@ -61,6 +63,7 @@ $(SL_NAME)-$(SL_BUILD_NIC) += \
 	core/hw/nic/sl_core_hw_llr.o               \
 	core/hw/nic/sl_core_hw_an.o                \
 	core/hw/nic/sl_core_hw_mac.o               \
+	core/hw/nic/sl_core_hw_pcs.o               \
 	core/data/nic/sl_core_data_link.o          \
 	core/data/nic/sl_core_data_mac.o
 
