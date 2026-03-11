@@ -142,59 +142,93 @@ static int sl_media_eeprom_furcation_get(struct sl_media_jack *media_jack, u32 *
 	// FIXME: get correct answer from eeporm apsel table
 }
 
-#define CONNECTOR_TYPE_OFFSET 203
-#define POC_TYPE_SR8          0x28
-#define POC_TYPE_SR4          0x0C
-static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack)
+#define CMIS_CONNECTOR_TYPE_OFFSET    203
+#define CMIS_CONNECTOR_POC_SR8        0x28
+#define CMIS_CONNECTOR_POC_SR4        0x0C
+#define SFF8436_CONNECTOR_TYPE_OFFSET 130
+#define SFF_CONNECTOR_AOC             0x23
+static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack, u8 format)
 {
-	u8 connector_type;
+	if (format == SL_MEDIA_MGMT_IF_CMIS) {
+		switch (media_jack->eeprom_page0[CMIS_CONNECTOR_TYPE_OFFSET]) {
+		case CMIS_CONNECTOR_POC_SR8:
+		case CMIS_CONNECTOR_POC_SR4:
+			return true;
+		default:
+			return false;
+		}
+	}
 
-	connector_type = media_jack->eeprom_page0[CONNECTOR_TYPE_OFFSET];
-
-	if (connector_type == POC_TYPE_SR8 || connector_type == POC_TYPE_SR4)
+	/* SFF */
+	switch (media_jack->eeprom_page0[SFF8436_CONNECTOR_TYPE_OFFSET]) {
+	case SFF_CONNECTOR_AOC:
+		return false;
+	default:
 		return true;
-
-	return false;
+	}
 }
 
 #define CMIS_TYPE_OFFSET    212
-#define SFF8436_TYPE_OFFSET 147
 #define CMIS_MEDIA_AOC      0x00
 #define CMIS_MEDIA_PEC      0x0A
 #define CMIS_MEDIA_AEC      0x0C
 #define CMIS_MEDIA_ACC      0x0F
+#define SFF8436_TYPE_OFFSET 147
+#define SFF_MEDIA_AOC       0x00
+#define SFF_MEDIA_PEC       0xA0
+#define SFF_MEDIA_AEC       0xC0
 static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format, u32 vendor, u32 *type)
 {
 	u8 media;
 
-	if (format == SL_MEDIA_MGMT_IF_CMIS)
+	if (format == SL_MEDIA_MGMT_IF_CMIS) {
 		media = media_jack->eeprom_page0[CMIS_TYPE_OFFSET];
-	else
-		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
-
-	switch (media) {
-	case CMIS_MEDIA_AOC:
-		if (sl_media_eeprom_is_type_poc(media_jack))
-			*type = SL_MEDIA_TYPE_POC;
-		else
-			*type = SL_MEDIA_TYPE_AOC;
-		break;
-	case CMIS_MEDIA_PEC:
-		*type = SL_MEDIA_TYPE_PEC;
-		break;
-	case CMIS_MEDIA_AEC:
-		*type = SL_MEDIA_TYPE_AEC;
-		break;
-	case CMIS_MEDIA_ACC:
-		/* compensate for Molex type programming issue */
-		if (vendor == SL_MEDIA_VENDOR_MOLEX)
+		switch (media) {
+		case CMIS_MEDIA_AOC:
+			if (sl_media_eeprom_is_type_poc(media_jack, format))
+				*type = SL_MEDIA_TYPE_POC;
+			else
+				*type = SL_MEDIA_TYPE_AOC;
+			break;
+		case CMIS_MEDIA_PEC:
+			*type = SL_MEDIA_TYPE_PEC;
+			break;
+		case CMIS_MEDIA_AEC:
 			*type = SL_MEDIA_TYPE_AEC;
-		else
-			*type = SL_MEDIA_TYPE_ACC;
-		break;
-	default:
-		*type = SL_MEDIA_TYPE_INVALID;
+			break;
+		case CMIS_MEDIA_ACC:
+			/* compensate for Molex type programming issue */
+			if (vendor == SL_MEDIA_VENDOR_MOLEX)
+				*type = SL_MEDIA_TYPE_AEC;
+			else
+				*type = SL_MEDIA_TYPE_ACC;
+			break;
+		default:
+			*type = SL_MEDIA_TYPE_NOT_SUPPORTED;
+		}
+	} else {
+		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
+		switch (media) {
+		case SFF_MEDIA_AOC:
+			if (sl_media_eeprom_is_type_poc(media_jack, format))
+				*type = SL_MEDIA_TYPE_POC;
+			else
+				*type = SL_MEDIA_TYPE_AOC;
+			break;
+		case SFF_MEDIA_PEC:
+			*type = SL_MEDIA_TYPE_PEC;
+			break;
+		case SFF_MEDIA_AEC:
+			*type = SL_MEDIA_TYPE_AEC;
+			break;
+		default:
+			*type = SL_MEDIA_TYPE_NOT_SUPPORTED;
+		}
 	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "type get (media = 0x%X, type = 0x%X)",
+			 media, *type);
 
 	return 0;
 }
