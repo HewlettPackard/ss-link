@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -464,6 +464,25 @@ static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t cause_warm_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   counter;
+	u32                   rtn;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
+
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_WARM, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause warm show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static struct kobj_attribute media_cause_eeprom_format_unsupported         =
 			     __ATTR_RO(cause_eeprom_format_unsupported);
 static struct kobj_attribute media_cause_eeprom_vendor_unsupported         =
@@ -494,6 +513,7 @@ static struct kobj_attribute media_cause_shift_state_jack_io               =
 			     __ATTR_RO(cause_shift_state_jack_io);
 static struct kobj_attribute media_cause_offline                           = __ATTR_RO(cause_offline);
 static struct kobj_attribute media_cause_hot                               = __ATTR_RO(cause_hot);
+static struct kobj_attribute media_cause_warm                              = __ATTR_RO(cause_warm);
 
 static struct attribute *media_counters_attrs[] = {
 	&media_cause_eeprom_format_unsupported.attr,
@@ -519,6 +539,7 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_shift_state_jack_io.attr,
 	&media_cause_offline.attr,
 	&media_cause_hot.attr,
+	&media_cause_warm.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media_counters);

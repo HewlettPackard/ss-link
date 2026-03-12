@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/atomic.h>
@@ -143,6 +143,9 @@ void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned 
 			break;
 		case SL_MEDIA_FAULT_CAUSE_HOT:
 			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_HOT);
+			break;
+		case SL_MEDIA_FAULT_CAUSE_WARM:
+			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_WARM);
 			break;
 		default:
 			sl_ctrl_log_warn_trace(media_jack, LOG_NAME,

@@ -240,10 +240,21 @@ void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lg
 	spin_unlock(&media_lgrp->media_jack->data_lock);
 }
 
+void sl_media_data_jack_cable_temp_state_init(struct sl_media_jack *media_jack)
+{
+	spin_lock(&media_jack->data_lock);
+	media_jack->temperature_prev_state = SL_MEDIA_JACK_TEMP_STATE_COLD;
+	media_jack->temperature_state = SL_MEDIA_JACK_TEMP_STATE_COLD;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state init (prev_state = %u, state = %u)",
+			 media_jack->temperature_prev_state, media_jack->temperature_state);
+}
+
 void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u8 temperature_state)
 {
-
 	spin_lock(&media_jack->data_lock);
+	media_jack->temperature_prev_state = media_jack->temperature_state;
 	media_jack->temperature_state = temperature_state;
 	spin_unlock(&media_jack->data_lock);
 
@@ -258,6 +269,18 @@ int sl_media_data_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state get (state = %u %s)",
 			 *temperature_state, sl_media_temp_state_str(*temperature_state));
+
+	return 0;
+}
+
+int  sl_media_data_jack_cable_temp_prev_state_get(struct sl_media_jack *media_jack, u8 *temperature_prev_state)
+{
+	spin_lock(&media_jack->data_lock);
+	*temperature_prev_state = media_jack->temperature_prev_state;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "temperature prev state get (state = %u %s)",
+			 *temperature_prev_state, sl_media_temp_state_str(*temperature_prev_state));
 
 	return 0;
 }

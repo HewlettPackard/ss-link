@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_MEDIA_COUNTERS_H_
 #define _SL_CTRL_MEDIA_COUNTERS_H_
@@ -33,6 +33,7 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_SHIFT_STATE_JACK_IO,               /* media shift state jack io error               */
 	MEDIA_CAUSE_OFFLINE,                           /* media is offline                              */
 	MEDIA_CAUSE_HOT,                               /* media hot detected                            */
+	MEDIA_CAUSE_WARM,                              /* media warm detected                           */
 	SL_CTRL_MEDIA_CAUSE_COUNTERS_COUNT
 };
 

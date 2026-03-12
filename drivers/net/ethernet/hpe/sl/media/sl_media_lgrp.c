@@ -143,8 +143,9 @@ void sl_media_lgrp_cable_warm_send(u8 ldev_num, u8 lgrp_num)
 
 	if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
 		sl_media_lgrp_warm_client_ready_set(ldev_num, lgrp_num, true);
-		if (sl_media_jack_cable_temp_hw_check(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_WARM)
+		if (sl_media_jack_cable_temp_hw_check(media_lgrp->media_jack) == SL_MEDIA_JACK_TEMP_STATE_WARM) {
 			sl_media_jack_cable_warm_notif_send(media_lgrp->media_jack);
+		}
 	}
 }
 

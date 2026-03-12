@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -779,6 +779,23 @@ static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr
 	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
 }
 
+static ssize_t cause_warm_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_WARM, &counter);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause warm show (counter = %u)", counter);
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", counter);
+}
+
 static ssize_t cause_intr_register_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -1328,6 +1345,7 @@ static struct kobj_attribute link_cause_serdes_quality    = __ATTR_RO(cause_serd
 static struct kobj_attribute link_cause_no_media          = __ATTR_RO(cause_no_media);
 static struct kobj_attribute link_cause_ccw               = __ATTR_RO(cause_ccw);
 static struct kobj_attribute link_cause_hot               = __ATTR_RO(cause_hot);
+static struct kobj_attribute link_cause_warm              = __ATTR_RO(cause_warm);
 static struct kobj_attribute link_cause_intr_register     = __ATTR_RO(cause_intr_register);
 static struct kobj_attribute link_cause_media_error       = __ATTR_RO(cause_media_error);
 static struct kobj_attribute link_cause_up_canceled       = __ATTR_RO(cause_up_canceled);
@@ -1410,6 +1428,7 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_no_media.attr,
 	&link_cause_ccw.attr,
 	&link_cause_hot.attr,
+	&link_cause_warm.attr,
 	&link_cause_intr_register.attr,
 	&link_cause_media_error.attr,
 	&link_cause_up_canceled.attr,

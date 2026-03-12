@@ -194,16 +194,17 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_SERDES_QUALITY    BIT(22) /* link up serdes quality problems      */
 #define SL_LINK_DOWN_CAUSE_NO_MEDIA          BIT(23) /* no media present                     */
 #define SL_LINK_DOWN_CAUSE_CCW               BIT(24) /* link up or fec mon CCW limit crossed */
-#define SL_LINK_DOWN_CAUSE_MEDIA_HOT         BIT(25) /* active cable too hot                 */
-#define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(26) /* link up interrupt register failure   */
-#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(27) /* media has errors                     */
-#define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(28) /* link up canceled, link down          */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(29) /* unsupported speed                    */
-#define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(30) /* SS200 cable                          */
-#define SL_LINK_DOWN_CAUSE_TX_LOL            BIT(31) /* TX Loss of Lock                      */
-#define SL_LINK_DOWN_CAUSE_RX_LOL            BIT(32) /* RX Loss of Lock                      */
-#define SL_LINK_DOWN_CAUSE_TX_LOS            BIT(33) /* TX Loss of Signal                    */
-#define SL_LINK_DOWN_CAUSE_RX_LOS            BIT(34) /* RX Loss of Signal                    */
+#define SL_LINK_DOWN_CAUSE_MEDIA_HOT         BIT(25) /* active cable hot                     */
+#define SL_LINK_DOWN_CAUSE_MEDIA_WARM        BIT(26) /* active cable warm                    */
+#define SL_LINK_DOWN_CAUSE_INTR_REGISTER     BIT(27) /* link up interrupt register failure   */
+#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR       BIT(28) /* media has errors                     */
+#define SL_LINK_DOWN_CAUSE_UP_CANCELED       BIT(29) /* link up canceled, link down          */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED BIT(30) /* unsupported speed                    */
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE       BIT(31) /* SS200 cable                          */
+#define SL_LINK_DOWN_CAUSE_TX_LOL            BIT(32) /* TX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_RX_LOL            BIT(33) /* RX Loss of Lock                      */
+#define SL_LINK_DOWN_CAUSE_TX_LOS            BIT(34) /* TX Loss of Signal                    */
+#define SL_LINK_DOWN_CAUSE_RX_LOS            BIT(35) /* RX Loss of Signal                    */
 
 #define SL_LINK_DOWN_RETRYABLE               BIT(61) /* client retry possible                */
 #define SL_LINK_DOWN_ORIGIN_ASYNC            BIT(62) /* link down cause was asynchronous     */

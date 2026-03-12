@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LINK_COUNTERS_H_
 #define _SL_CTRL_LINK_COUNTERS_H_
@@ -55,7 +55,8 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_SERDES_QUALITY,    /* link up serdes quality problems      */
 	LINK_CAUSE_NO_MEDIA,          /* no media present                     */
 	LINK_CAUSE_CCW,               /* link up or fec mon CCW limit crossed */
-	LINK_CAUSE_MEDIA_HOT,         /* active cable too hot                 */
+	LINK_CAUSE_MEDIA_HOT,         /* active cable hot                     */
+	LINK_CAUSE_MEDIA_WARM,        /* active cable warm                    */
 	LINK_CAUSE_INTR_REGISTER,     /* link up interrupt register failure   */
 	LINK_CAUSE_MEDIA_ERROR,       /* media has errors                     */
 	LINK_CAUSE_UP_CANCELED,       /* link up canceled, link down          */
