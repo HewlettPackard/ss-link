@@ -187,6 +187,7 @@ struct sl_media_jack {
 	bool                            is_supported_ss200_cable;
 	bool                            is_high_powered;
 	u8                              temperature_state;
+	u8                              temperature_prev_state;
 	unsigned long                   cable_high_power_wait_time_end;
 	u32                             fault_cause;
 	time64_t                        fault_time;
@@ -247,6 +248,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(21)
 #define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(22)
+#define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(23)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -275,6 +277,7 @@ int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_
 				   time64_t *fault_time);
 
 int  sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
+int  sl_media_jack_cable_temp_prev_state_get(struct sl_media_jack *media_jack, u8 *temperature_prev_state);
 int  sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp);
 int  sl_media_jack_cable_temp_warn_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_warn_limit_c);
 int  sl_media_jack_cable_temp_down_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_down_limit_c);

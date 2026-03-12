@@ -408,6 +408,9 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 	media_jack->fault_time  = ktime_get_real_seconds();
 	spin_unlock(&media_jack->data_lock);
 
+	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
+		return;
+
 	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HOT)
 		sl_media_data_jack_led_set(media_jack);
 
@@ -480,6 +483,8 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "offline";
 	case SL_MEDIA_FAULT_CAUSE_HOT:
 		return "hot";
+	case SL_MEDIA_FAULT_CAUSE_WARM:
+		return "warm";
 	default:
 		return "unknown";
 	}
@@ -502,6 +507,11 @@ const char *sl_media_temp_state_str(u8 temperature_state)
 int sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state)
 {
 	return sl_media_data_jack_cable_temp_state_get(media_jack, temperature_state);
+}
+
+int sl_media_jack_cable_temp_prev_state_get(struct sl_media_jack *media_jack, u8 *temperature_prev_state)
+{
+	return sl_media_data_jack_cable_temp_prev_state_get(media_jack, temperature_prev_state);
 }
 
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)

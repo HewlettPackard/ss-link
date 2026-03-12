@@ -748,6 +748,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 {
 	int                   rtn;
 	u8                    temperature_state;
+	u8                    temperature_prev_state;
 	u32                   port;
 	u32                   link_state;
 	u64                   data64;
@@ -755,6 +756,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 	struct sl_media_lgrp *media_lgrp;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CHECK]);
+	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	port = core_link->core_lgrp->num;
 
@@ -775,30 +777,56 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 		return;
 	}
 
-	if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num) &&
-	    !is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-			 SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+	if (!sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num) ||
+	    is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
+			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
+		goto out;
 
-		rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+	if (rtn) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up check work cable_temp_state_get failed [%d]", rtn);
+		goto out;
+	}
+
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up check work media hot detected (jack_num = %u)",
+				       media_lgrp->media_jack->physical_num);
+
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_MEDIA_HOT_LINK_UP_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "up check work media hot link_up_fail failed [%d]", rtn);
+		return;
+	}
+
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_WARM) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up check work media warm detected (jack_num = %u)",
+				       media_lgrp->media_jack->physical_num);
+
+		rtn  = sl_media_jack_cable_temp_prev_state_get(media_lgrp->media_jack, &temperature_prev_state);
 		if (rtn) {
 			sl_core_log_warn_trace(core_link, LOG_NAME,
-					       "up check work cable_temp_state_get failed [%d]", rtn);
-		} else if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-					       "up check work media hot detected (jack_num = %u)",
-					       media_lgrp->media_jack->physical_num);
+					       "up check work cable_temp_prev_state_get failed [%d]", rtn);
+			goto out;
+		}
+
+		if (temperature_prev_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 			sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+			sl_media_jack_fault_cause_set(media_lgrp->media_jack, SL_MEDIA_FAULT_CAUSE_WARM);
 			sl_core_data_link_last_up_fail_cause_map_set(core_link,
-								     SL_LINK_DOWN_CAUSE_MEDIA_HOT_LINK_UP_MAP);
+								     SL_LINK_DOWN_CAUSE_MEDIA_WARM_LINK_UP_MAP);
 			rtn = sl_core_link_up_fail(core_link);
 			if (rtn)
 				sl_core_log_warn_trace(core_link, LOG_NAME,
-						       "up check work media hot link_up_fail failed [%d]", rtn);
+						       "up check work media warm link_up_fail failed [%d]", rtn);
 			return;
 		}
 	}
 
+out:
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {
 		sl_core_log_warn_trace(core_link, LOG_NAME, "up check work pcs is not ok");
@@ -826,6 +854,8 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 	}
 
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+
+	sl_media_jack_fault_cause_set(media_lgrp->media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 
 	sl_core_hw_link_up_success(core_link);
 }

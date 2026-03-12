@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/delay.h>
 
@@ -401,23 +401,13 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
-	u8		     state;
-	u8		     temperature_state;
+	u8                   state;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
 	core_link = sl_core_link_get(media_jack->cable_info[0].ldev_num, media_jack->cable_info[0].lgrp_num, 0);
 	if (!core_link)
 		return;
-
-	rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
-	if(rtn)
-		sl_media_log_err_trace(media_jack, LOG_NAME, "cable_temp_state_get failed [%d]", rtn);
-
-	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
-		sl_media_io_led_set(media_jack, LED_ON_YEL);
-		return;
-	}
 
 	/* hardcoding 0 since only one link*/
 	rtn = sl_core_link_state_get(media_jack->cable_info[0].ldev_num,

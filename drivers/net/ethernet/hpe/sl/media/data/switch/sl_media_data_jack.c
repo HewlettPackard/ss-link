@@ -767,7 +767,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED);
 	}
 
-	sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_COLD);
+	sl_media_data_jack_cable_temp_state_init(media_jack);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
 
@@ -1355,8 +1355,6 @@ static int sl_media_data_jack_cable_hot_link_down(struct sl_media_jack *media_ja
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable hot link down");
 
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HOT);
-
 	for (i = 0; i < media_jack->port_count; ++i) {
 		ldev_num = media_jack->cable_info[i].ldev_num;
 		lgrp_num = media_jack->cable_info[i].lgrp_num;
@@ -1444,6 +1442,7 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 					  "cable cold alert (temperature = %dc, down_limit = %dc)",
 					  media_jack->temperature_value_c, media_jack->temperature_down_limit_c);
 
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 			sl_media_data_jack_cable_cold_notif_send(media_jack);
 			sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_COLD);
 			continue;
@@ -1474,6 +1473,7 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 					  "cable hot alert (temperature = %dc, limit = %dc)",
 					  media_jack->temperature_value_c, media_jack->temperature_down_limit_c);
 
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HOT);
 			sl_media_data_jack_cable_hot_notif_send(media_jack);
 			sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_HOT);
 

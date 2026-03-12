@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 
@@ -107,6 +107,7 @@ int sl_ctrl_link_cause_counters_init(struct sl_ctrl_link *ctrl_link)
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_NO_MEDIA);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_CCW);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_MEDIA_HOT);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_MEDIA_WARM);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_INTR_REGISTER);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_MEDIA_ERROR);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_UP_CANCELED);
@@ -265,6 +266,9 @@ void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_ma
 			break;
 		case SL_LINK_DOWN_CAUSE_MEDIA_HOT:
 			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_MEDIA_HOT);
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_WARM:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_MEDIA_WARM);
 			break;
 		case SL_LINK_DOWN_CAUSE_INTR_REGISTER:
 			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_INTR_REGISTER);
