@@ -810,6 +810,7 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
 #define DATA_PATH_UPPER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE | DATA_PATH_ID)
 #define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
+// FIXME: add media format choices as needed
 int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 {
 	int                  rtn;
@@ -1024,6 +1025,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN;
 }
 
+// FIXME: add media format choices as needed
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 {
 	int                  rtn;
@@ -1199,17 +1201,29 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define SL_MEDIA_CMIS_POWER_UP_PAGE 0x00
+#define SL_MEDIA_POWER_UP_PAGE      0x00
 #define SL_MEDIA_CMIS_POWER_UP_ADDR 0x1a
 #define SL_MEDIA_CMIS_POWER_UP_DATA 0x00
+#define SL_MEDIA_SFF_POWER_UP_ADDR  0x5D
+#define SL_MEDIA_SFF_POWER_UP_DATA  0x0D
 int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
 {
 	int rtn;
+	u8  addr;
+	u8  data;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "high power set");
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		addr = SL_MEDIA_CMIS_POWER_UP_ADDR;
+		data = SL_MEDIA_CMIS_POWER_UP_DATA;
+	} else {
+		addr = SL_MEDIA_SFF_POWER_UP_ADDR;
+		data = SL_MEDIA_SFF_POWER_UP_DATA;
+	}
 
-	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_UP_PAGE,
-	      SL_MEDIA_CMIS_POWER_UP_ADDR, SL_MEDIA_CMIS_POWER_UP_DATA);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "high power set (addr = 0x%X, data = 0x%X)", addr, data);
+
+	rtn = sl_media_io_write8(media_jack, SL_MEDIA_POWER_UP_PAGE, addr, data);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
 		return -EIO;
@@ -1220,17 +1234,29 @@ int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define SL_MEDIA_CMIS_POWER_DOWN_PAGE 0x00
+#define SL_MEDIA_POWER_DOWN_PAGE      0x00
 #define SL_MEDIA_CMIS_POWER_DOWN_ADDR 0x1a
 #define SL_MEDIA_CMIS_POWER_DOWN_DATA 0x10
+#define SL_MEDIA_SFF_POWER_DOWN_ADDR  0x5D
+#define SL_MEDIA_SFF_POWER_DOWN_DATA  0x00
 int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 {
 	int rtn;
+	u8  addr;
+	u8  data;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "low power set");
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		addr = SL_MEDIA_CMIS_POWER_DOWN_ADDR;
+		data = SL_MEDIA_CMIS_POWER_DOWN_DATA;
+	} else {
+		addr = SL_MEDIA_SFF_POWER_DOWN_ADDR;
+		data = SL_MEDIA_SFF_POWER_DOWN_DATA;
+	}
 
-	rtn = sl_media_io_write8(media_jack, SL_MEDIA_CMIS_POWER_DOWN_PAGE,
-	      SL_MEDIA_CMIS_POWER_DOWN_ADDR, SL_MEDIA_CMIS_POWER_DOWN_DATA);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "low power set (addr = 0x%X, data = 0x%X)", addr, data);
+
+	rtn = sl_media_io_write8(media_jack, SL_MEDIA_POWER_DOWN_PAGE, addr, data);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "write8 failed [%d]", rtn);
 		return -EIO;

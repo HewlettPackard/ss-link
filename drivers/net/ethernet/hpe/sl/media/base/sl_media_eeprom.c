@@ -227,8 +227,8 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "type get (media = 0x%X, type = 0x%X)",
-			 media, *type);
+			 "type get (media = 0x%X, type = 0x%X %s)",
+			 media, *type, sl_media_type_str(*type));
 
 	return 0;
 }
@@ -318,7 +318,7 @@ static int sl_media_eeprom_vendor_pn_str_get(struct sl_media_jack *media_jack, u
 	return 0;
 }
 
-#define HPE_PN_OFFSET 228
+#define HPE_PN_OFFSET 229
 static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe_pn, char *hpe_pn_str)
 {
 	const char *pn_ptr;
@@ -326,7 +326,7 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 	int         counter;
 
 	counter = 0;
-	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE; ++i) {
+	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
 		if (is_valid_char(media_jack->eeprom_page0[HPE_PN_OFFSET + i])) {
 			hpe_pn_str[counter] = media_jack->eeprom_page0[HPE_PN_OFFSET + i];
 			counter++;
@@ -336,7 +336,7 @@ static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe
 
 	pn_ptr = &(media_jack->eeprom_page0[HPE_PN_OFFSET]);
 	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
-		if (pn_ptr[i] < 48 || pn_ptr[i] > 57) /* if the PN character is not numeric, ignore it*/
+		if (pn_ptr[i] < 48 || pn_ptr[i] > 57) /* if the PN character is not numeric, ignore it */
 			continue;
 		*hpe_pn = *hpe_pn * 10 + (pn_ptr[i] - '0');
 	}

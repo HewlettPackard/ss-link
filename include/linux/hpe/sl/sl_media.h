@@ -126,7 +126,7 @@ struct sl_media_qsfp {
 };
 
 #define SL_MEDIA_SERIAL_NUM_SIZE                 17
-#define SL_MEDIA_HPE_PN_SIZE                     13
+#define SL_MEDIA_HPE_PN_SIZE                     10
 #define SL_MEDIA_DATE_CODE_SIZE                  9
 #define SL_MEDIA_FIRMWARE_VERSION_SIZE           2
 #define SL_MEDIA_VENDOR_PN_SIZE                  17

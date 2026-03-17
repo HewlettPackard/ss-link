@@ -26,6 +26,7 @@ int  sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *media_attr);
 void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info);
+bool sl_media_data_jack_media_is_format_cmis(struct sl_media_jack *media_jack);
 
 void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp);
 void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lgrp);

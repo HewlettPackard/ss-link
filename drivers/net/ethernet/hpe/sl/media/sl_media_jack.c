@@ -851,7 +851,7 @@ int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struc
 	}
 
 	if (!sl_media_lgrp_is_signal_status_supported(ldev_num, lgrp_num)) {
-		sl_media_log_err(media_jack, LOG_NAME, "signal status unsupported");
+		sl_media_log_dbg(media_jack, LOG_NAME, "signal status unsupported");
 		return -EBADRQC;
 	}
 
