@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
+# Copyright 2023-2026 Hewlett Packard Enterprise Development LP
 
 include ../../../../../config.mak
 
 MOD_NAME ?= $(SL_TEST_NAME)
 SL_MOD_DIR  ?= sshot
 
-.PHONY: all default modules clean stage_install stage_uninstall
+.PHONY: all default modules clean fw_clean stage_install stage_uninstall
 
 INSTALL        := install -p
 TOUCH          := touch
