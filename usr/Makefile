@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
+# Copyright 2023-2026 Hewlett Packard Enterprise Development LP
 
-.PHONY: default all
+.PHONY: default all fw_clean
 
 MAKECMDGOALS ?= all
 

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP
+# Copyright 2023-2026 Hewlett Packard Enterprise Development LP
 
 include ../../config.mak
+
+.PHONY: default all test fw_clean
 
 BINNAME  := sl_test_file_write
 CC        = $(CROSS_COMPILE)gcc
