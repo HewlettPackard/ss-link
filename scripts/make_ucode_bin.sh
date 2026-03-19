@@ -43,10 +43,9 @@ do
 	##echo ">>$CLEAN_HEX<<"
 
 	## write
-	LIST=($(echo "$CLEAN_HEX" | tr ' ' '\n'))
-	for x in "${!LIST[@]}" ; do
-		echo -ne "\\x${LIST[x]}" >> $OUTFILE
-	done
+	for x in $CLEAN_HEX ; do
+		echo -ne "\\x${x}"
+	done >> $OUTFILE
 
 	## forward progress indicator
 	count=$((count + 1))
