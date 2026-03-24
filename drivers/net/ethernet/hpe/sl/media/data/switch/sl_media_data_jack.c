@@ -735,6 +735,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		if (rtn) {
 			media_jack->temperature_down_limit_c = TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT;
 			media_attr.errors |= SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT;
+			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			sl_media_log_dbg(media_jack, LOG_NAME, "media error cable temp down limit (0x%x)",
 					 media_attr.errors);
 		} else {
@@ -745,6 +746,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		if (rtn) {
 			media_jack->temperature_warn_limit_c = TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT;
 			media_attr.errors |= SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT;
+			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			sl_media_log_dbg(media_jack, LOG_NAME, "media error cable temp warn limit (0x%x)",
 					 media_attr.errors);
 		} else {
