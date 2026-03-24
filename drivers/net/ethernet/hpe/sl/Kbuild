@@ -166,6 +166,13 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_link_fec_up.o        \
 	sysfs/sl_sysfs_link_fec_down.o      \
 	sysfs/sl_sysfs_link_counters.o      \
+	sysfs/sl_sysfs_pmi.o                \
+	sysfs/sl_sysfs_pmi_rd.o             \
+	sysfs/sl_sysfs_pmi_wr.o             \
+	sysfs/sl_sysfs_sbus.o               \
+	sysfs/sl_sysfs_sbus_rd.o            \
+	sysfs/sl_sysfs_sbus_wr.o            \
+	sysfs/sl_sysfs_sbus_rst.o           \
 	sysfs/sl_sysfs_serdes.o             \
 	sysfs/sl_sysfs_serdes_settings.o    \
 	sysfs/sl_sysfs_serdes_eye.o         \
