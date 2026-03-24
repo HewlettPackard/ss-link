@@ -32,6 +32,15 @@ KCPPFLAGS      += -I$(MDIR)/../../../../../include
 
 ifdef PLATFORM_NIC
 KCPPFLAGS      += -I$(MDIR)/../../../../../../cassini-headers/install/include
+KNL_REL        := $(KERNELRELEASE)
+ifeq ($(strip $(KNL_REL)),)
+ifneq ($(wildcard $(KDIR)/include/config/kernel.release),)
+KNL_REL        := $(strip $(shell cat $(KDIR)/include/config/kernel.release))
+endif
+ifeq ($(strip $(KNL_REL)),)
+KNL_REL        := $(shell uname -r)
+endif
+endif
 endif # PLATFORM_NIC
 
 ifdef PLATFORM_SWITCH
@@ -84,6 +93,7 @@ all: stage_install
 
 clean:
 	$(MAKE) $(KNL_BUILD_ARGS) $@
+	rm -f modules.livepatch
 
 modules:
 	$(MAKE) $(KNL_BUILD_ARGS) $@
@@ -116,15 +126,33 @@ stage_install: modules fw
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin $(STAGING_DIR)/lib/firmware
 
 stage_uninstall:
-	$(RM) $(patsubst %,$(STAGING_DIR)/usr/include/linux/hpe/sl/%,$(UNINSTALL_LINUX_HDRS))
-	$(RM) $(KNL_MOD_DIR)/sshot/$(MOD_NAME).ko
-	$(RM) $(KNL_MOD_DIR)/module.symvers.sl
-	$(RM) $(STAGING_DIR)/lib/modules/$(KNL_TARGET)/sshot/$(MOD_NAME).ko
-	$(RM) $(STAGING_DIR)/usr/bin/slstat
-	$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin
-	$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin
-	if [ -f $(KNL_MOD_DIR)/modules.order ] ; then \
-		$(SED) -i '/$(MOD_NAME).ko/d' $(KNL_MOD_DIR)/modules.order ; \
+	if [ -d "$(STAGING_DIR)" ]; then \
+		for hdr in $(UNINSTALL_LINUX_HDRS); do \
+			$(RM) $(STAGING_DIR)/usr/include/linux/hpe/sl/$$hdr; \
+		done; \
+		$(RM) $(STAGING_DIR)/usr/bin/slstat; \
+		$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin; \
+		$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin; \
+		if [ -d "$(STAGING_DIR)/lib/modules" ]; then \
+			find "$(STAGING_DIR)/lib/modules" -type f \
+			\( -name "$(MOD_NAME).ko*" -o -name "modules.*" -o -name "module.symvers.sl" \) \
+			-delete; \
+			find "$(STAGING_DIR)/lib/modules" -mindepth 1 -type d -empty -delete; \
+		fi; \
+		rmdir $(STAGING_DIR)/usr/include/linux/hpe/sl; \
+		rmdir $(STAGING_DIR)/usr/include/linux/hpe; \
+		rmdir $(STAGING_DIR)/usr/include/linux; \
+		rmdir $(STAGING_DIR)/usr/include; \
+		rmdir $(STAGING_DIR)/usr/lib/modules-load.d; \
+		rmdir $(STAGING_DIR)/usr/lib; \
+		rmdir $(STAGING_DIR)/lib/udev/rules.d; \
+		rmdir $(STAGING_DIR)/lib/udev; \
+		rmdir $(STAGING_DIR)/usr/bin; \
+		rmdir $(STAGING_DIR)/usr; \
+		rmdir $(STAGING_DIR)/lib/firmware; \
+		rmdir $(STAGING_DIR)/lib/modules; \
+		rmdir $(STAGING_DIR)/lib; \
+		rmdir $(STAGING_DIR); \
 	fi
 
 # last line

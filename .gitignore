@@ -23,6 +23,7 @@ staging_dir
 .cmd_file*
 .vscode/
 *.bin
+modules.livepatch
 
 usr/sl_test_lgrp_notifs_read/sl_test_lgrp_notifs_read
 usr/sl_test_file_write/sl_test_file_write
