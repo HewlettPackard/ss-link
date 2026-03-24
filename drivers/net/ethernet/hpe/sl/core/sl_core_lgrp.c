@@ -246,3 +246,246 @@ int sl_core_lgrp_rx_lane_is_los(u8 ldev_num, u8 lgrp_num, u8 asic_lane_num, bool
 {
 	return sl_core_hw_serdes_rx_lane_is_los(sl_core_lgrp_get(ldev_num, lgrp_num), asic_lane_num, is_rx_los);
 }
+
+int sl_core_lgrp_pmi_rd_addr_get(struct sl_core_lgrp *core_lgrp, u16 *addr)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*addr = core_lgrp->pmi.rd.addr;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_rd_data_get(struct sl_core_lgrp *core_lgrp, u16 *data)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*data = core_lgrp->pmi.rd.data;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_rd_dev_id_get(struct sl_core_lgrp *core_lgrp, u8 *dev_id)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*dev_id = core_lgrp->pmi.rd.dev_id;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_rd_lane_get(struct sl_core_lgrp *core_lgrp, u8 *lane)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*lane = core_lgrp->pmi.rd.lane;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_rd_pll_get(struct sl_core_lgrp *core_lgrp, u8 *pll)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*pll = core_lgrp->pmi.rd.pll;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_rd_result_get(struct sl_core_lgrp *core_lgrp, int *result)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*result = core_lgrp->pmi.rd.result;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_addr_get(struct sl_core_lgrp *core_lgrp, u16 *addr)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*addr = core_lgrp->pmi.wr.addr;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_data_get(struct sl_core_lgrp *core_lgrp, u16 *data)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*data = core_lgrp->pmi.wr.data;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_mask_get(struct sl_core_lgrp *core_lgrp, u16 *mask)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*mask = core_lgrp->pmi.wr.mask;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_dev_id_get(struct sl_core_lgrp *core_lgrp, u8 *dev_id)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*dev_id = core_lgrp->pmi.wr.dev_id;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_lane_get(struct sl_core_lgrp *core_lgrp, u8 *lane)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*lane = core_lgrp->pmi.wr.lane;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_pll_get(struct sl_core_lgrp *core_lgrp, u8 *pll)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*pll = core_lgrp->pmi.wr.pll;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_pmi_wr_result_get(struct sl_core_lgrp *core_lgrp, int *result)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*result = core_lgrp->pmi.wr.result;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*dev_addr = core_lgrp->sbus.rd.dev_addr;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_data_get(struct sl_core_lgrp *core_lgrp, u32 *data)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*data = core_lgrp->sbus.rd.data;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_mask_get(struct sl_core_lgrp *core_lgrp, u32 *mask)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*mask = core_lgrp->sbus.rd.mask;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_reg_get(struct sl_core_lgrp *core_lgrp, u8 *reg)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*reg = core_lgrp->sbus.rd.reg;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_lsb_get(struct sl_core_lgrp *core_lgrp, u8 *lsb)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*lsb = core_lgrp->sbus.rd.lsb;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rd_result_get(struct sl_core_lgrp *core_lgrp, int *result)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*result = core_lgrp->sbus.rd.result;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*dev_addr = core_lgrp->sbus.wr.dev_addr;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_data_get(struct sl_core_lgrp *core_lgrp, u32 *data)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*data = core_lgrp->sbus.wr.data;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_mask_get(struct sl_core_lgrp *core_lgrp, u32 *mask)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*mask = core_lgrp->sbus.wr.mask;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_reg_get(struct sl_core_lgrp *core_lgrp, u8 *reg)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*reg = core_lgrp->sbus.wr.reg;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_lsb_get(struct sl_core_lgrp *core_lgrp, u8 *lsb)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*lsb = core_lgrp->sbus.wr.lsb;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_wr_result_get(struct sl_core_lgrp *core_lgrp, int *result)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*result = core_lgrp->sbus.wr.result;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rst_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*dev_addr = core_lgrp->sbus.rst.dev_addr;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_sbus_rst_result_get(struct sl_core_lgrp *core_lgrp, int *result)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*result = core_lgrp->sbus.rst.result;
+	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}

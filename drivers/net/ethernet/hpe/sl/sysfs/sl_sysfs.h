@@ -35,6 +35,27 @@ int  sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp);
 void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
 int  sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num);
 
+int  sl_sysfs_pmi_create(struct sl_ctrl_lgrp *ctrl_lgrp);
+void sl_sysfs_pmi_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_pmi_rd_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj);
+void sl_sysfs_pmi_rd_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_pmi_wr_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj);
+void sl_sysfs_pmi_wr_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_sbus_create(struct sl_ctrl_lgrp *ctrl_lgrp);
+void sl_sysfs_sbus_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_sbus_rd_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj);
+void sl_sysfs_sbus_rd_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_sbus_wr_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj);
+void sl_sysfs_sbus_wr_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
+int  sl_sysfs_sbus_rst_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj);
+void sl_sysfs_sbus_rst_delete(struct sl_ctrl_lgrp *ctrl_lgrp);
+
 int  sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link);
 void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link);
 
