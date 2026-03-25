@@ -42,8 +42,8 @@ struct sl_link_caps {
 #define SL_LINK_CONFIG_PAUSE_MASK (SL_LINK_CONFIG_PAUSE_ASYM | \
 				   SL_LINK_CONFIG_PAUSE_SYM)
 
-#define SL_LINK_CONFIG_HPE_LINKTRAIN     BIT(18)
-#define SL_LINK_CONFIG_HPE_PRECODING     BIT(17)
+#define SL_LINK_CONFIG_HPE_LINKTRAIN     BIT(18)  /* link train              */
+#define SL_LINK_CONFIG_HPE_PRECODING     BIT(17)  /* precoding               */
 #define SL_LINK_CONFIG_HPE_PCAL          BIT(16)  /* progressive calibration */
 /* SWITCH versions */
 #define SL_LINK_CONFIG_HPE_R3            BIT(10)
@@ -94,14 +94,14 @@ struct sl_link_config {
 	u32 options;
 };
 
-#define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE            BIT(0)
-#define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE BIT(1)
-#define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE BIT(2)
-#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE    BIT(3)
-#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE      BIT(4)
-#define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(5) /* Enable Auto Lane Degrade */
-#define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(6) /* Disable LOS/LOL link up fail cause */
-#define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(7)
+#define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE            BIT(0) /* Autoneg                     */
+#define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE BIT(1) /* Continuous autoneg attempts */
+#define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE BIT(2) /* Headshell loopback          */
+#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE    BIT(3) /* Remote loopback             */
+#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE      BIT(4) /* Force extended reach        */
+#define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(5) /* Auto Lane Degrade           */
+#define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(6) /* Hide los and lol reporting  */
+#define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(7) /* PML Recovery                */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 
@@ -174,7 +174,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_LF                BIT(2)  /* link local fault                     */
 #define SL_LINK_DOWN_CAUSE_RF                BIT(3)  /* link remote fault                    */
 #define SL_LINK_DOWN_CAUSE_DOWN              BIT(4)  /* link down fault                      */
-#define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(5)  /* link up tries exhaused               */
+#define SL_LINK_DOWN_CAUSE_UP_TRIES          BIT(5)  /* link up tries exhausted              */
 #define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   BIT(6)  /* lp_caps autoneg no match             */
 #define SL_LINK_DOWN_CAUSE_AUTONEG           BIT(7)  /* autoneg failure                      */
 #define SL_LINK_DOWN_CAUSE_CONFIG            BIT(8)  /* link up bad config                   */
