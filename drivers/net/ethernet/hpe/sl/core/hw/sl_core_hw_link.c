@@ -1806,6 +1806,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	bool                 is_canceled_or_timed_out;
 	u32                  link_state;
 	ktime_t              current_time;
+	u64                  rx_lanes;
+	u64                  tx_lanes;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_FAULT_INTR]);
 	port      = core_link->core_lgrp->num;
@@ -1871,12 +1873,28 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 			"fault intr work (llr_replay = 0x%llX, local = 0x%llX, remote = 0x%llX, down = 0x%llX)",
 			llr_replay_max, local_fault, remote_fault, link_down);
 
-	if (llr_replay_max)
+	if (llr_replay_max) {
+		sl_core_log_dbg(core_link, LOG_NAME, "fault intr work LLR replay max");
 		goto link_down;
+	}
 
-	if (!sl_core_link_config_is_enable_pml_recovery_set(core_link) ||
-	    sl_core_link_is_pml_recovery_running(core_link))
+	if (!sl_core_link_config_is_enable_pml_recovery_set(core_link)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "fault intr work PML recovery not set");
 		goto link_down;
+	}
+
+	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
+	rx_lanes = SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_RX_PLS_AVAILABLE_GET(data64);
+	tx_lanes = SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_LP_PLS_AVAILABLE_GET(data64);
+	if ((rx_lanes != 0xF) || (tx_lanes != 0xF)) {
+		sl_core_log_warn(core_link, LOG_NAME, "PML recovery during link degrade not allowed");
+		goto link_down;
+	}
+
+	if (sl_core_link_is_pml_recovery_running(core_link)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "fault intr work PML recovery running already");
+		goto link_down;
+	}
 
 	current_time = ktime_get();
 	if (sl_core_hw_link_is_pml_rec_window_valid(core_link, current_time)) {
