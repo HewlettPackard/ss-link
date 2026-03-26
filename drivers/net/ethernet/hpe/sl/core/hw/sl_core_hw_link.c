@@ -1613,8 +1613,6 @@ static void sl_core_hw_link_pml_rec_success(struct sl_core_link *core_link)
 	struct sl_ctrl_lgrp     *ctrl_lgrp;
 	union sl_lgrp_notif_info info;
 	int                      rtn;
-	bool                     is_canceled_or_timed_out;
-	u32                      link_state;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
@@ -1623,18 +1621,16 @@ static void sl_core_hw_link_pml_rec_success(struct sl_core_link *core_link)
 	info.pml_rec_info = core_link->pml_rec.pml_rec_info;
 	rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_lgrp, core_link->num, SL_LGRP_NOTIF_PML_RECOVERY, &info, 0);
 	if (rtn)
-		sl_media_log_warn_trace(core_link, LOG_NAME,
-					"pml recovery success work ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME,
+				       "pml recovery success work ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 
-	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT) == -EALREADY) {
-	       sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
-		if (is_canceled_or_timed_out)
-			return;
-		sl_core_data_link_state_get(core_link, &link_state);
-		if (link_state == SL_CORE_LINK_STATE_GOING_DOWN)
-			return;
-		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	}
+	msleep(200);
+	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
+
+	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
+	if (rtn)
+		sl_core_log_warn_trace(core_link, LOG_NAME,
+				       "pml recovery success work intr flgs enable failed [%d]", rtn);
 }
 
 static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
@@ -1803,8 +1799,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	u64                  data64;
 	u64                  replay_ct_max;
 	u32                  port;
-	bool                 is_canceled_or_timed_out;
-	u32                  link_state;
+	int                  rtn;
 	ktime_t              current_time;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_FAULT_INTR]);
@@ -1921,16 +1916,14 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	} else if (remote_fault) {
 		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_REMOTE_FAULT;
 		atomic_set(&core_link->pml_rec.pml_rec_down_cause_remote_fault, 1);
-		while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT) == -EALREADY) {
-		       sl_core_link_is_canceled_or_timed_out(core_link, &is_canceled_or_timed_out);
-			if (is_canceled_or_timed_out)
-				return;
-			sl_core_data_link_state_get(core_link, &link_state);
-			if (link_state == SL_CORE_LINK_STATE_GOING_DOWN)
-				return;
-			usleep_range(10000, 12000);
-			sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-		}
+
+		msleep(200);
+		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
+
+		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "fault intr work intr flgs enable failed [%d]", rtn);
 		return;
 	}
 
