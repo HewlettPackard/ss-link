@@ -124,6 +124,12 @@ void sl_ctrl_llr_cause_counter_inc(struct sl_core_llr *core_llr, unsigned long c
 		case SL_LLR_FAIL_CAUSE_START_TIMEOUT:
 			SL_CTRL_LLR_CAUSE_COUNTER_INC(ctrl_llr, LLR_CAUSE_START_TIMEOUT);
 			break;
+		case SL_LLR_FAIL_CAUSE_COMMAND:
+			SL_CTRL_LLR_CAUSE_COUNTER_INC(ctrl_llr, LLR_CAUSE_COMMAND);
+			break;
+		case SL_LLR_FAIL_CAUSE_CANCELED:
+			SL_CTRL_LLR_CAUSE_COUNTER_INC(ctrl_llr, LLR_CAUSE_CANCELED);
+			break;
 		default:
 			sl_ctrl_log_warn_trace(ctrl_llr, LOG_NAME,
 					       "cause_counter_inc unknown cause (bit = %lu)", which);
