@@ -297,6 +297,10 @@ void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_ma
 		case SL_LINK_DOWN_CAUSE_RX_LOS:
 			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_RX_LOS);
 			break;
+		case SL_LINK_DOWN_RETRYABLE:
+		case SL_LINK_DOWN_ORIGIN_ASYNC:
+		case SL_LINK_DOWN_ORIGIN_LINK_UP:
+			break;
 		default:
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
 					       "cause_counter_inc unknown cause (bit = %lu)", which);
