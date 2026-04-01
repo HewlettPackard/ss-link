@@ -23,6 +23,8 @@ struct sl_core_mac {
 
 	spinlock_t                       data_lock;
 	u64                              info_map;
+	int                              tx_last_start_result;
+	int                              rx_last_start_result;
 
 	struct {
 		u8      tx_ifg_adj;
@@ -48,10 +50,12 @@ struct sl_core_mac *sl_core_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_tx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state);
+int sl_core_mac_tx_last_start_result_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, int *last_start_result);
 
 int sl_core_mac_rx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_core_mac_rx_state_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, u32 *state);
+int sl_core_mac_rx_last_start_result_get(u8 ldev_num, u8 lgrp_num, u8 mac_num, int *last_start_result);
 
 u64 sl_core_mac_info_map_get(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 
