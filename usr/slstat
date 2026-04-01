@@ -268,11 +268,14 @@ function print_mac_state {
                 return
         fi
 
-        local state_tx=$(cat ${MAC_PATH}/tx_state)
-        local state_rx=$(cat ${MAC_PATH}/rx_state)
+        local tx_state=$(cat ${MAC_PATH}/tx_state)
+        local rx_state=$(cat ${MAC_PATH}/rx_state)
+        local tx_last_start_result=$(cat ${MAC_PATH}/tx_last_start_result)
+        local rx_last_start_result=$(cat ${MAC_PATH}/rx_last_start_result)
         local info_map=$(cat ${MAC_PATH}/info_map)
 
-        printf "mac%d       | state: tx ${state_tx}, rx ${state_rx}\n" ${LINK}
+        printf "mac%d       | state: tx ${tx_state}, rx ${rx_state}\n" ${LINK}
+        printf "           | last_start_result: tx = ${tx_last_start_result}, rx = ${rx_last_start_result}\n" ${LINK}
         printf "           | info_map: ${info_map}\n"
 }
 

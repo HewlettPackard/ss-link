@@ -34,6 +34,26 @@ static ssize_t rx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
 }
 
+static ssize_t rx_last_start_result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_mac *ctrl_mac;
+	int                 last_start_result;
+	int                 rtn;
+
+	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
+
+	rtn = sl_core_mac_rx_last_start_result_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
+						   ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &last_start_result);
+
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
+		   "rx last start result show (mac = 0x%p, last_start_result = %d)", ctrl_mac, last_start_result);
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", last_start_result);
+}
+
 static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
@@ -51,6 +71,26 @@ static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		   "tx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
+}
+
+static ssize_t tx_last_start_result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_mac *ctrl_mac;
+	int                 last_start_result;
+	int                 rtn;
+
+	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
+
+	rtn = sl_core_mac_tx_last_start_result_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
+						   ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &last_start_result);
+
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
+		   "tx last start result show (mac = 0x%p, last_start_result = %d)", ctrl_mac, last_start_result);
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", last_start_result);
 }
 
 static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -80,13 +120,17 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 // FIXME: add other mac info here
 
-static struct kobj_attribute rx_state = __ATTR_RO(rx_state);
-static struct kobj_attribute tx_state = __ATTR_RO(tx_state);
-static struct kobj_attribute info_map = __ATTR_RO(info_map);
+static struct kobj_attribute rx_state             = __ATTR_RO(rx_state);
+static struct kobj_attribute rx_last_start_result = __ATTR_RO(rx_last_start_result);
+static struct kobj_attribute tx_state             = __ATTR_RO(tx_state);
+static struct kobj_attribute tx_last_start_result = __ATTR_RO(tx_last_start_result);
+static struct kobj_attribute info_map             = __ATTR_RO(info_map);
 
 static struct attribute *mac_attrs[] = {
 	&rx_state.attr,
+	&rx_last_start_result.attr,
 	&tx_state.attr,
+	&tx_last_start_result.attr,
 	&info_map.attr,
 	NULL
 };
