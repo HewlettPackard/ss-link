@@ -97,6 +97,29 @@ struct sl_core_lgrp {
 		} rst;
 	} sbus;
 
+	struct {
+		struct {
+			u8              dev_addr;
+			u16             addr;
+			u16             data;
+			u16             mask;
+			u8              dev_id;
+			u8              lane;
+			u8              pll;
+			int             result;
+		} rd;
+		struct {
+			u8              dev_addr;
+			u16             addr;
+			u16             data;
+			u16             mask;
+			u8              dev_id;
+			u8              lane;
+			u8              pll;
+			int             result;
+		} wr;
+	} sbus_pmi;
+
 	// FIXME: for now only enable at the lgrp level
 	bool err_trace_enable;
 	bool warn_trace_enable;
@@ -164,5 +187,23 @@ int sl_core_lgrp_sbus_wr_result_get(struct sl_core_lgrp *core_lgrp, int *result)
 
 int sl_core_lgrp_sbus_rst_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr);
 int sl_core_lgrp_sbus_rst_result_get(struct sl_core_lgrp *core_lgrp, int *result);
+
+int sl_core_lgrp_sbus_pmi_rd_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr);
+int sl_core_lgrp_sbus_pmi_rd_addr_get(struct sl_core_lgrp *core_lgrp, u16 *addr);
+int sl_core_lgrp_sbus_pmi_rd_data_get(struct sl_core_lgrp *core_lgrp, u16 *data);
+int sl_core_lgrp_sbus_pmi_rd_mask_get(struct sl_core_lgrp *core_lgrp, u16 *mask);
+int sl_core_lgrp_sbus_pmi_rd_dev_id_get(struct sl_core_lgrp *core_lgrp, u8 *dev_id);
+int sl_core_lgrp_sbus_pmi_rd_lane_get(struct sl_core_lgrp *core_lgrp, u8 *lane);
+int sl_core_lgrp_sbus_pmi_rd_pll_get(struct sl_core_lgrp *core_lgrp, u8 *pll);
+int sl_core_lgrp_sbus_pmi_rd_result_get(struct sl_core_lgrp *core_lgrp, int *result);
+
+int sl_core_lgrp_sbus_pmi_wr_dev_addr_get(struct sl_core_lgrp *core_lgrp, u8 *dev_addr);
+int sl_core_lgrp_sbus_pmi_wr_addr_get(struct sl_core_lgrp *core_lgrp, u16 *addr);
+int sl_core_lgrp_sbus_pmi_wr_data_get(struct sl_core_lgrp *core_lgrp, u16 *data);
+int sl_core_lgrp_sbus_pmi_wr_mask_get(struct sl_core_lgrp *core_lgrp, u16 *mask);
+int sl_core_lgrp_sbus_pmi_wr_dev_id_get(struct sl_core_lgrp *core_lgrp, u8 *dev_id);
+int sl_core_lgrp_sbus_pmi_wr_lane_get(struct sl_core_lgrp *core_lgrp, u8 *lane);
+int sl_core_lgrp_sbus_pmi_wr_pll_get(struct sl_core_lgrp *core_lgrp, u8 *pll);
+int sl_core_lgrp_sbus_pmi_wr_result_get(struct sl_core_lgrp *core_lgrp, int *result);
 
 #endif /* _SL_CORE_LGRP_H_ */

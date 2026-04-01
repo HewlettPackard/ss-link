@@ -63,6 +63,12 @@ int sl_sysfs_lgrp_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return -ENOMEM;
 	}
 
+	rtn = sl_sysfs_sbus_pmi_create(ctrl_lgrp);
+	if (rtn) {
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi create failed [%d]", rtn);
+		return -ENOMEM;
+	}
+
 	return 0;
 }
 
@@ -73,6 +79,7 @@ void sl_sysfs_lgrp_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 	if (!ctrl_lgrp->parent_kobj)
 		return;
 
+	sl_sysfs_sbus_pmi_delete(ctrl_lgrp);
 	sl_sysfs_sbus_delete(ctrl_lgrp);
 	sl_sysfs_pmi_delete(ctrl_lgrp);
 	sl_sysfs_media_delete(ctrl_lgrp);
