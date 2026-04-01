@@ -25,7 +25,7 @@ struct sl_lgrp_serdes_lane_kobj {
 };
 
 #define SL_CTRL_LGRP_MAGIC 0x5c677270
-#define SL_CTRL_LGRP_VER   2
+#define SL_CTRL_LGRP_VER   3
 struct sl_ctrl_lgrp {
 	u32                              magic;
 	u32                              ver;
@@ -52,6 +52,9 @@ struct sl_ctrl_lgrp {
 	struct kobject                   sbus_rd_kobj;
 	struct kobject                   sbus_wr_kobj;
 	struct kobject                   sbus_rst_kobj;
+	struct kobject                   sbus_pmi_kobj;
+	struct kobject                   sbus_pmi_rd_kobj;
+	struct kobject                   sbus_pmi_wr_kobj;
 	struct kobject                   policy_kobj;
 	struct kobject                   config_kobj;
 	struct kobject                   serdes_kobj;

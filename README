@@ -91,6 +91,9 @@ Tools:
        option: (omitted option will print all available info for target)
          state    = print state for the target
          link     = print all link info for the target
+         pmi      = print pmi info for the target
+         sbus     = print sbus info for the target
+         sbus_pmi = print sbus_pmi info for the target
          serdes   = print all serdes info for the target
          cable    = print cable info for the target
          counters = print counters for a link target (requires #:#:#)

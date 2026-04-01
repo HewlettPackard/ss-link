@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=15
+MINOR=16
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -21,6 +21,7 @@ function usage {
         echo "    llr      = print llr info for the target"
         echo "    pmi      = print pmi info for the target"
         echo "    sbus     = print sbus info for the target"
+        echo "    sbus_pmi = print sbus_pmi info for the target"
         echo "    serdes   = print serdes info for the target"
         echo "    fec      = print fec info for the target"
         echo "    cable    = print cable info for the target"
@@ -55,6 +56,9 @@ elif [ "$#" -eq 2 ] ; then
                         ;;
                 sbus )
                         option=sbus
+                        ;;
+                sbus_pmi )
+                        option=sbus_pmi
                         ;;
                 serdes )
                         option=serdes
@@ -721,6 +725,33 @@ function print_sbus {
         printf "           | rst: dev_addr = ${rst_dev_addr}, result = ${rst_result}\n"
 }
 
+function print_sbus_pmi {
+        if [ ! -e ${LGRP_PATH}/sbus_pmi ] ; then
+                return
+        fi
+
+        local rd_dev_addr=$(cat ${LGRP_PATH}/sbus_pmi/rd/dev_addr)
+        local rd_addr=$(cat ${LGRP_PATH}/sbus_pmi/rd/addr)
+        local rd_data=$(cat ${LGRP_PATH}/sbus_pmi/rd/data)
+        local rd_mask=$(cat ${LGRP_PATH}/sbus_pmi/rd/mask)
+        local rd_dev_id=$(cat ${LGRP_PATH}/sbus_pmi/rd/dev_id)
+        local rd_lane=$(cat ${LGRP_PATH}/sbus_pmi/rd/lane)
+        local rd_pll=$(cat ${LGRP_PATH}/sbus_pmi/rd/pll)
+        local rd_result=$(cat ${LGRP_PATH}/sbus_pmi/rd/result)
+
+        local wr_dev_addr=$(cat ${LGRP_PATH}/sbus_pmi/wr/dev_addr)
+        local wr_addr=$(cat ${LGRP_PATH}/sbus_pmi/wr/addr)
+        local wr_data=$(cat ${LGRP_PATH}/sbus_pmi/wr/data)
+        local wr_mask=$(cat ${LGRP_PATH}/sbus_pmi/wr/mask)
+        local wr_dev_id=$(cat ${LGRP_PATH}/sbus_pmi/wr/dev_id)
+        local wr_lane=$(cat ${LGRP_PATH}/sbus_pmi/wr/lane)
+        local wr_pll=$(cat ${LGRP_PATH}/sbus_pmi/wr/pll)
+        local wr_result=$(cat ${LGRP_PATH}/sbus_pmi/wr/result)
+
+        printf "sbus_pmi   | rd: dev_addr = ${rd_dev_addr}, addr = ${rd_addr}, data = ${rd_data}, mask = ${rd_mask}, dev_id = ${rd_dev_id}, lane = ${rd_lane}, pll = ${rd_pll}, result = ${rd_result}\n"
+        printf "           | wr: dev_addr = ${wr_dev_addr}, addr = ${wr_addr}, data = ${wr_data}, mask = ${wr_mask}, dev_id = ${wr_dev_id}, lane = ${wr_lane}, pll = ${wr_pll}, result = ${wr_result}\n"
+}
+
 function print_serdes {
         if [ ! -e ${LGRP_PATH}/serdes ] ; then
                 return
@@ -1010,6 +1041,12 @@ case $option in
                 if [ ${num_args} -ge 3 ] ; then
                         print_ldev
                         print_sbus
+		fi
+		;;
+        sbus_pmi )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_ldev
+                        print_sbus_pmi
 		fi
 		;;
         serdes )
