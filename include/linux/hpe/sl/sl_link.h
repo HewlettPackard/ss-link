@@ -85,8 +85,8 @@ struct sl_link_config {
 	s32 fec_up_ccw_limit;
 
 	u32 pml_rec_timeout_ms;
-	u32 pml_rec_rl_max_duration_ms;
-	u32 pml_rec_rl_window_size_ms;
+	u32 pml_rec_rate_limit_max_time_ms;
+	u32 pml_rec_rate_limit_window_size_ms;
 
 	u32 pause_map;
 	u32 hpe_map;

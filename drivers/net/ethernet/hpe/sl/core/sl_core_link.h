@@ -252,8 +252,8 @@ struct sl_core_link_config {
 	s32                                 fec_up_ccw_limit;
 
 	u32                                 pml_rec_timeout_ms;
-	u32                                 pml_rec_limit_max_duration_ms; /* Max Recovery time per rate limiter window */
-	u32                                 pml_rec_limit_window_size_ms;  /* Rate Limiter window */
+	u32                                 pml_rec_rate_limit_max_time_ms;     /* Max Recovery time per window */
+	u32                                 pml_rec_rate_limit_window_size_ms;  /* Rate Limiter window */
 
 	u32                                 pause_map;
 	u32                                 hpe_map;

@@ -1602,7 +1602,7 @@ static bool sl_core_hw_link_is_pml_rec_window_valid(struct sl_core_link *core_li
 	sl_core_log_dbg(core_link, LOG_NAME, "is pml rec window valid");
 
 	if (ktime_ms_delta(current_time, core_link->pml_rec.pml_rec_window_start_time) >
-	    core_link->config.pml_rec_limit_window_size_ms)
+	    core_link->config.pml_rec_rate_limit_window_size_ms)
 		return false;
 
 	return true;
@@ -1734,8 +1734,9 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 			return;
 		}
 
-		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) > core_link->config.pml_rec_limit_max_duration_ms) {
-		    sl_core_log_err_trace(core_link, LOG_NAME, "pml rec poll work rate limit exceeded");
+		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) >
+		    core_link->config.pml_rec_rate_limit_max_time_ms) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "pml recovery rate limit exceeded");
 
 			if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT)
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
@@ -1890,7 +1891,8 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	current_time = ktime_get();
 	if (sl_core_hw_link_is_pml_rec_window_valid(core_link, current_time)) {
-		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) > core_link->config.pml_rec_limit_max_duration_ms) {
+		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) >
+		    core_link->config.pml_rec_rate_limit_max_time_ms) {
 			if (atomic_read(&core_link->pml_rec.pml_rec_rate_limit_exceeded) == 0) {
 				atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 1);
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
