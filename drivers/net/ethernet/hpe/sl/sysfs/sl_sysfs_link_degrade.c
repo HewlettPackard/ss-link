@@ -16,9 +16,17 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 	int                  degrade_state;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	rtn = sl_core_data_link_degrade_state_get(core_link, &degrade_state);
 	if (rtn)
@@ -35,8 +43,16 @@ static ssize_t is_rx_degraded_show(struct kobject *kobj, struct kobj_attribute *
 	int                  rtn;
 	struct sl_core_link *core_link;
 	bool                 is_rx_degraded;
+	u32                  link_state;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	rtn = sl_core_data_link_is_rx_degrade_get(core_link, &is_rx_degraded);
 	if (rtn)
@@ -52,21 +68,29 @@ static ssize_t rx_degrade_map_show(struct kobject *kobj, struct kobj_attribute *
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 	u8                   rx_degrade_map;
 	bool                 is_rx_degraded;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_is_rx_degrade_get(core_link, &is_rx_degraded);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if (!is_rx_degraded)
-		return scnprintf(buf, PAGE_SIZE, "no\n");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_degrade_rx_degrade_map_get(core_link, &rx_degrade_map);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "inactive");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
@@ -80,21 +104,29 @@ static ssize_t rx_link_speed_gbps_show(struct kobject *kobj, struct kobj_attribu
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 	u16                  link_speed;
 	bool                 is_rx_degraded;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_is_rx_degrade_get(core_link, &is_rx_degraded);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if (!is_rx_degraded)
-		return scnprintf(buf, PAGE_SIZE, "no\n");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_degrade_rx_link_speed_get(core_link, &link_speed);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "inactive");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
@@ -109,8 +141,16 @@ static ssize_t is_tx_degraded_show(struct kobject *kobj, struct kobj_attribute *
 	int                  rtn;
 	struct sl_core_link *core_link;
 	bool                 is_tx_degraded;
+	u32                  link_state;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
 
 	rtn = sl_core_data_link_is_tx_degrade_get(core_link, &is_tx_degraded);
 	if (rtn)
@@ -126,21 +166,29 @@ static ssize_t tx_degrade_map_show(struct kobject *kobj, struct kobj_attribute *
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 	u8                   tx_degrade_map;
 	bool                 is_tx_degraded;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_is_tx_degrade_get(core_link, &is_tx_degraded);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if (!is_tx_degraded)
-		return scnprintf(buf, PAGE_SIZE, "no\n");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_degrade_tx_degrade_map_get(core_link, &tx_degrade_map);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "inactive");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
@@ -154,21 +202,29 @@ static ssize_t tx_link_speed_gbps_show(struct kobject *kobj, struct kobj_attribu
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
 	u16                  link_speed;
 	bool                 is_tx_degraded;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
+
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_is_tx_degrade_get(core_link, &is_tx_degraded);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	if (!is_tx_degraded)
-		return scnprintf(buf, PAGE_SIZE, "no\n");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 
 	rtn = sl_core_data_link_degrade_tx_link_speed_get(core_link, &link_speed);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "inactive");
+		return scnprintf(buf, PAGE_SIZE, "--\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
@@ -182,13 +238,34 @@ static ssize_t is_recoverable_show(struct kobject *kobj, struct kobj_attribute *
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
+	u32                  link_state;
+	bool                 is_tx_degraded;
+	bool                 is_rx_degraded;
 	bool                 is_recoverable;
 
 	core_link = container_of(kobj, struct sl_core_link, degrade_kobj);
 
+	rtn = sl_core_data_link_state_get(core_link, &link_state);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (link_state != SL_CORE_LINK_STATE_UP)
+		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+
+	rtn = sl_core_data_link_is_tx_degrade_get(core_link, &is_tx_degraded);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	rtn = sl_core_data_link_is_rx_degrade_get(core_link, &is_rx_degraded);
+	if (rtn)
+		return scnprintf(buf, PAGE_SIZE, "error\n");
+
+	if (!is_rx_degraded && !is_tx_degraded)
+		return scnprintf(buf, PAGE_SIZE, "--\n");
+
 	rtn = sl_core_data_link_degrade_is_recoverable_get(core_link, &is_recoverable);
 	if (rtn == -EBADRQC)
-		return scnprintf(buf, PAGE_SIZE, "%s\n", "inactive");
+		return scnprintf(buf, PAGE_SIZE, "inactive\n");
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 

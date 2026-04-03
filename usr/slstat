@@ -539,6 +539,36 @@ function print_lgrp {
         printf "           | r1_partner : ${r1_partner}\n"
 }
 
+function print_ald_state {
+        if [ ! -e ${LINK_PATH} ] ; then
+                return
+        fi
+
+	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
+        local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
+        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_degrade_map)
+        local rx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/rx_link_speed_gbps)
+        local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
+        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_degrade_map)
+        local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
+	local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
+
+	printf "   degrade | state: ${degrade_state}\n"
+	printf "           | is_recoverable: ${is_recoverable}\n"
+	if [ "${degrade_state}" == "active" ] ; then
+		local rx_units="Gbps"
+	else
+		local rx_units=""
+	fi
+        printf "           | is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
+	if [ "${degrade_state}" == "active" ] ; then
+		local tx_units="Gbps"
+	else
+		local tx_units=""
+	fi
+        printf "           | is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
+}
+
 function print_link {
         if [ ! -e ${LINK_PATH} ] ; then
                 return
@@ -569,13 +599,6 @@ function print_link {
         local pml_rec_down_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_failed_cause)
         local pml_rec_rate_limit_exceeded=$(cat ${LINK_PATH}/pml_recovery/pml_rec_rate_limit_exceeded)
 	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
-	local degrade_state=$(cat ${LINK_PATH}/auto_lane_degrade/state)
-        local is_rx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_rx_degraded)
-        local rx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/rx_degrade_map)
-        local rx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/rx_link_speed_gbps)
-        local is_tx_degraded=$(cat ${LINK_PATH}/auto_lane_degrade/is_tx_degraded)
-        local tx_degrade_lane_map=$(cat ${LINK_PATH}/auto_lane_degrade/tx_degrade_map)
-        local tx_degrade_link_speed=$(cat ${LINK_PATH}/auto_lane_degrade/tx_link_speed_gbps)
 	local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
         local fec_mon_ccw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_down_limit)
         local fec_mon_ccw_warn_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_warn_limit)
@@ -627,20 +650,8 @@ function print_link {
         printf "           | link_down_failed_cause  : ${pml_rec_down_failed_cause}\n"
         printf "           | local_fault_cause       : ${pml_rec_local_fault_cause}\n"
         printf "           | local_fault_failed_cause: ${pml_rec_local_fault_failed_cause}\n"
-	printf "   degrade | state: ${degrade_state}\n"
-	printf "           | is_recoverable: ${is_recoverable}\n"
-	if [ "${degrade_state}" == "active" ] ; then
-		local rx_units="Gbps"
-	else
-		local rx_units=""
-	fi
-        printf "           | is_rx_degraded: ${is_rx_degraded} (lane_map = ${rx_degrade_lane_map}, speed = ${rx_degrade_link_speed}${rx_units})\n"
-	if [ "${degrade_state}" == "active" ] ; then
-		local tx_units="Gbps"
-	else
-		local tx_units=""
-	fi
-        printf "           | is_tx_degraded: ${is_tx_degraded} (lane_map = ${tx_degrade_lane_map}, speed = ${tx_degrade_link_speed}${tx_units})\n"
+
+	print_ald_state
 }
 
 function print_mac {
@@ -1002,6 +1013,7 @@ case $option in
                 fi
                 if [ ${num_args} -ge 3 ] ; then
                         print_link_state
+			print_ald_state
                         print_mac_state
                         print_llr_state
                 fi
