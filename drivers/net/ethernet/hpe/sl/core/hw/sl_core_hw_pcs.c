@@ -107,7 +107,7 @@ void sl_core_hw_pcs_config(struct sl_core_link *core_link)
 /* Max number of Physical Lanes available on Tx/Rx */
 #define MAX_PLS_AVAILABLE 0xF
 
-void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
+int sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
 {
 	u64           data64;
 	u32           port;
@@ -123,22 +123,22 @@ void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
 	if (SS2_PORT_PML_CFG_PCS_ENABLE_AUTO_LANE_DEGRADE_GET(data64)) {
 		timeout = jiffies + usecs_to_jiffies(HM_RECV_TIMEOUT_US);
 		do {
-		    sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
-		    if (time_after(jiffies, timeout)) {
-		        sl_core_log_err(core_link, LOG_NAME, "%u: timeout for rx pls available", port);
-		        err = -ETIMEDOUT;
-		        goto out;
-		    }
+			sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
+			if (time_after(jiffies, timeout)) {
+				sl_core_log_err_trace(core_link, LOG_NAME, "enable ald timeout for rx pls available");
+				err = -ETIMEDOUT;
+				goto out;
+			}
 		} while (SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_RX_PLS_AVAILABLE_GET(data64) != MAX_PLS_AVAILABLE);
 
 		timeout = jiffies + usecs_to_jiffies(HM_RECV_TIMEOUT_US);
 		do {
-		    sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
-		    if (time_after(jiffies, timeout)) {
-		        sl_core_log_err(core_link, LOG_NAME, "%u: timeout for lp pls available", port);
-		        err = -ETIMEDOUT;
-		        goto out;
-		    }
+			sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_LANE_DEGRADE, &data64);
+			if (time_after(jiffies, timeout)) {
+				sl_core_log_err_trace(core_link, LOG_NAME, "enable ald timeout for lp pls available");
+				err = -ETIMEDOUT;
+				goto out;
+			}
 		} while (SS2_PORT_PML_STS_PCS_LANE_DEGRADE_WORD0_LP_PLS_AVAILABLE_GET(data64) != MAX_PLS_AVAILABLE);
 
 		/*
@@ -154,19 +154,11 @@ void sl_core_hw_pcs_enable_auto_lane_degrade(struct sl_core_link *core_link)
 
 		sl_core_flush64(core_link, SS2_PORT_PML_CFG_TX_PCS);
 
-		sl_core_log_dbg(core_link, LOG_NAME, "auto lane degrade is enabled (port = %u)", port);
-
-		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_ACTIVE;
-		spin_unlock(&core_link->data_lock);
+		sl_core_log_dbg(core_link, LOG_NAME, "enable ald success");
 	}
 out:
 	if (err) {
-		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
-		spin_unlock(&core_link->data_lock);
-
-		sl_core_log_err_trace(core_link, LOG_NAME, "enable auto lane degrade failed (port = %u)", port);
+		sl_core_log_err_trace(core_link, LOG_NAME, "enable ald failed");
 
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_PCS, &data64);
 		data64 = SS2_PORT_PML_CFG_PCS_ENABLE_AUTO_LANE_DEGRADE_UPDATE(data64, 0);
@@ -181,6 +173,8 @@ out:
 
 		sl_core_hw_pcs_keep_all_lanes_active_set(core_link, 0);
 	}
+
+	return err;
 }
 
 void sl_core_hw_pcs_config_swizzles(struct sl_core_link *core_link)

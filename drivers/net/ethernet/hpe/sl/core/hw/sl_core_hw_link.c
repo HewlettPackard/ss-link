@@ -136,8 +136,9 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link, struct sl_core_
 {
 	int rtn;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "up callback (callback = 0x%p, state = %d)",
-			core_link->link.callbacks.up, core_link_up_info->state);
+	sl_core_log_dbg(core_link, LOG_NAME, "up callback (callback = 0x%p, state = %d %s)",
+			core_link->link.callbacks.up, core_link_up_info->state,
+			sl_link_state_str(core_link_up_info->state));
 
 	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link_up_info);
 	if (rtn != 0)
@@ -535,36 +536,6 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_pcs_rx_start(core_link);
 
-	if ((core_link->num == 0) && (sl_core_link_config_is_enable_ald_set(core_link)) &&
-	    (core_link->core_lgrp->config.furcation == SL_MEDIA_FURCATION_X1)) {
-		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-
-		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
-		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "up work link ald enable failed [%d]", rtn);
-			spin_lock(&core_link->data_lock);
-			core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
-			spin_unlock(&core_link->data_lock);
-			sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-			sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
-			rtn = sl_core_link_up_fail(core_link);
-			if (rtn)
-				sl_core_log_err_trace(core_link, LOG_NAME, "up work link_up_fail failed [%d]", rtn);
-			return;
-		}
-
-		/*
-		 * enable ALD after PCS start but before MAC start
-		 */
-		sl_core_hw_pcs_enable_auto_lane_degrade(core_link);
-
-		memset(&(core_link->degrade_info), 0, sizeof(core_link->degrade_info));
-	} else {
-		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_INACTIVE;
-		spin_unlock(&core_link->data_lock);
-	}
-
 	atomic_set(&core_link->pml_rec.pml_rec_down_cause_remote_fault, 0);
 }
 
@@ -646,14 +617,19 @@ static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
 
 static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 {
-	int                                rtn;
-	struct sl_core_link_fec_cw_cntrs   cw_cntrs;
-	struct sl_core_link_fec_lane_cntrs lane_cntrs;
-	struct sl_core_link_fec_tail_cntrs tail_cntrs;
-	struct sl_core_link_up_info        link_up_info;
-	u32                                link_state;
+	int                                 rtn;
+	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
+	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
+	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
+	struct sl_core_link_up_info         link_up_info;
+	u32                                 link_state;
+	struct sl_media_lgrp               *media_lgrp;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
+
+	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+
+	sl_media_jack_fault_cause_set(media_lgrp->media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn == -EAGAIN) {
@@ -742,6 +718,51 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		spin_unlock(&core_link->link.data_lock);
 		return;
 	};
+}
+
+void sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
+{
+	int rtn;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "link up ald");
+
+	if ((core_link->num != 0)                             ||
+	    !sl_core_link_config_is_enable_ald_set(core_link) ||
+	    (core_link->core_lgrp->config.furcation != SL_MEDIA_FURCATION_X1)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "link up ald not configured");
+		spin_lock(&core_link->data_lock);
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_INACTIVE;
+		spin_unlock(&core_link->data_lock);
+		return;
+	}
+
+	memset(&(core_link->degrade_info), 0, sizeof(core_link->degrade_info));
+
+	rtn = sl_core_hw_pcs_enable_auto_lane_degrade(core_link);
+	if (rtn) {
+		spin_lock(&core_link->data_lock);
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
+		spin_unlock(&core_link->data_lock);
+		return;
+	}
+
+	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
+	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "link up ald intr enable failed [%d]", rtn);
+		spin_lock(&core_link->data_lock);
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
+		spin_unlock(&core_link->data_lock);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link up ald link_up_fail failed [%d]", rtn);
+		return;
+	}
+
+	spin_lock(&core_link->data_lock);
+	core_link->degrade_state = SL_LINK_DEGRADE_STATE_ACTIVE;
+	spin_unlock(&core_link->data_lock);
 }
 
 void sl_core_hw_link_up_check_work(struct work_struct *work)
@@ -853,9 +874,9 @@ out:
 		return;
 	}
 
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+	sl_core_hw_link_up_ald(core_link);
 
-	sl_media_jack_fault_cause_set(media_lgrp->media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 
 	sl_core_hw_link_up_success(core_link);
 }
@@ -945,8 +966,6 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 	sl_ctrl_link_fec_data_calc(ctrl_link);
 	fec_info = sl_ctrl_link_fec_data_info_get(ctrl_link);
 
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(core_link->fec.settings.up_ucw_limit, &fec_info)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up fec check UCW exceeded up limit (UCW = %llu, CCW = %llu)",
@@ -954,6 +973,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_UCW_LIMIT_CROSSED);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);
@@ -966,6 +986,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 				      fec_info.ucw, fec_info.ccw);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_CCW_LIMIT_CROSSED);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP);
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);
@@ -974,6 +995,10 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_CHECK);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_OK);
+
+	sl_core_hw_link_up_ald(core_link);
+
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 
 	sl_core_hw_link_up_success(core_link);
 }
