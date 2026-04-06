@@ -720,7 +720,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	};
 }
 
-void sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
+static void sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
 {
 	int rtn;
 
