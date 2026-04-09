@@ -115,6 +115,7 @@ stage_install: modules fw
 	$(TOUCH) $(STAGING_DIR)/lib/modules/$(KNL_REL)/modules.builtin
 	$(MAKE) $(KNL_BUILD_ARGS) modules_install
 	$(INSTALL) -m 644 Module.symvers $(KNL_MOD_DIR)/module.symvers.sl
+	$(INSTALL) -m 644 Module.symvers $(STAGING_DIR)/lib/modules/module.symvers.sl
 	$(INSTALL) -d $(STAGING_DIR)/usr/include/linux/hpe/sl
 	$(INSTALL) -m 644 $(INSTALL_LINUX_HDRS) $(STAGING_DIR)/usr/include/linux/hpe/sl
 	$(INSTALL) -d $(STAGING_DIR)/lib/udev/rules.d
