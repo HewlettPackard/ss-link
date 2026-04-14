@@ -1072,13 +1072,23 @@ int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32
 		return -EINVAL;
 	}
 
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"an lp caps state get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
 	*state = sl_core_link_an_lp_caps_state_get(ldev_num, lgrp_num, link_num);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an lp caps state get - link removed (link = 0x%p)", ctrl_link);
 
 	return 0;
 }
 
 int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *fail_cause, time64_t *fail_time)
 {
+	int    rtn;
 	struct sl_ctrl_link *ctrl_link;
 
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
@@ -1089,7 +1099,18 @@ int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *f
 		return -EBADRQC;
 	}
 
-	return sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"an fail cause get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
+	rtn = sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an fail cause get - link removed (link = 0x%p)", ctrl_link);
+
+	return rtn;
 }
 
 u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count)

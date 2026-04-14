@@ -22,6 +22,12 @@ int sl_ctrl_link_fec_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_f
 		return -EBADRQC;
 	}
 
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"fec info get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
 	*fec_info = sl_ctrl_link_fec_data_info_get(ctrl_link);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
@@ -29,6 +35,9 @@ int sl_ctrl_link_fec_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_f
 		fec_info->ucw, fec_info->ccw, fec_info->gcw, fec_info->period_ms);
 	for (x = 0; x < SL_CTRL_NUM_FEC_LANES; ++x)
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "info get (lane %d = 0x%llX)", x, fec_info->lanes[x]);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fec info get - link removed (link = 0x%p)", ctrl_link);
 
 	return 0;
 }
@@ -46,11 +55,20 @@ int sl_ctrl_link_fec_tail_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_f
 		return -EBADRQC;
 	}
 
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"fec tail get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
 	*fec_tail = sl_ctrl_link_fec_data_tail_get(ctrl_link);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "tail get (period = %ums))", fec_tail->period_ms);
 	for (x = 0; x < SL_CTRL_NUM_CCW_BINS; ++x)
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "tail get (bin %d = %llu)", x, fec_tail->ccw_bins[x]);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fec tail get - link removed (link = 0x%p)", ctrl_link);
 
 	return 0;
 }
