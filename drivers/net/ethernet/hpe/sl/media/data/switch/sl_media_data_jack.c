@@ -1390,11 +1390,19 @@ static int sl_media_data_jack_cable_hot_link_down(struct sl_media_jack *media_ja
 			ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
 			if (!ctrl_link)
 				continue;
+			if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+				sl_media_log_dbg(media_jack, LOG_NAME,
+						 "cable hot link down kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+				continue;
+			}
 
 			rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP, true);
 			if (rtn)
 				sl_media_log_err_trace(media_jack, LOG_NAME,
 						       "cable hot link down async_down failed [%d]", rtn);
+			if (sl_ctrl_link_put(ctrl_link))
+				sl_media_log_dbg(media_jack, LOG_NAME,
+						 "cable hot link down - link removed (link = 0x%p)", ctrl_link);
 		}
 	}
 	return 0;

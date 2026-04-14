@@ -452,12 +452,21 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+				"fault start callback kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback");
 
 	sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_STOPPING);
 
 	sl_ctrl_link_fec_mon_stop(ctrl_link);
 	cancel_work_sync(&ctrl_link->fec_mon_timer_work);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback - link removed (link = 0x%p)", ctrl_link);
 
 	return 0;
 }
