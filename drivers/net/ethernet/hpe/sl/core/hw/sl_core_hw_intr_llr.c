@@ -42,7 +42,7 @@ void sl_core_hw_intr_llr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
 	memcpy(&(core_llr->intrs[info->intr_num].source), err_flgs,
 		sizeof(core_llr->intrs[info->intr_num].source));
 
-	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[info->work_num]));
+	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &core_llr->work[info->work_num]);
 }
 
 int sl_core_hw_intr_llr_hdlr_register(struct sl_core_llr *core_llr)

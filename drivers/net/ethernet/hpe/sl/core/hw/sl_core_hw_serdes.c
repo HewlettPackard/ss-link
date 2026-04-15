@@ -72,7 +72,7 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 		rtn = core_lgrp->core_ldev->ops.dt_info_get(core_lgrp->core_ldev->accessors.dt,
 			core_lgrp->core_ldev->num, core_lgrp->num, &(core_lgrp->serdes.dt));
 		if (rtn)
-			sl_core_log_warn(core_lgrp, LOG_NAME, "swizzles dt_info_get failed [%d}", rtn);
+			sl_core_log_warn_trace(core_lgrp, LOG_NAME, "swizzles dt_info_get failed [%d}", rtn);
 	}
 
 	for (lane_num = 0; lane_num < SL_ASIC_MAX_LANES; ++lane_num) {

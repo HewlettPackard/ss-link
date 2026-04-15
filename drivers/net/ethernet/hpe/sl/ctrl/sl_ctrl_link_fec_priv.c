@@ -343,9 +343,9 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			sl_core_log_warn_trace(ctrl_link, LOG_NAME, "ucw_warn_limit_crossed_get failed [%d]", rtn);
 
 		if (!is_limit_crossed) {
-			sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-					 "UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-					 fec_info.ucw, fec_info.ccw);
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+					       "UCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+					       fec_info.ucw, fec_info.ccw);
 			rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
 							 SL_LGRP_NOTIF_LINK_UCW_WARN, NULL, 0);
 			if (rtn)
@@ -364,9 +364,9 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "ccw_warn_limit_crossed_get failed [%d]", rtn);
 
 		if (!is_limit_crossed) {
-			sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-					 "CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
-					 fec_info.ucw, fec_info.ccw);
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+					       "CCW exceeded warn limit (UCW = %llu, CCW = %llu)",
+					       fec_info.ucw, fec_info.ccw);
 			rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
 							 SL_LGRP_NOTIF_LINK_CCW_WARN, NULL, 0);
 			if (rtn)
@@ -465,8 +465,7 @@ void sl_ctrl_link_fec_mon_timer(struct timer_list *timer)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor timer");
 
-	if (!queue_work(ctrl_link->ctrl_lgrp->ctrl_ldev->workq, &(ctrl_link->fec_mon_timer_work)))
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME, "fec mon timer work already queued");
+	queue_work(ctrl_link->ctrl_lgrp->ctrl_ldev->workq, &ctrl_link->fec_mon_timer_work);
 }
 
 void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link)

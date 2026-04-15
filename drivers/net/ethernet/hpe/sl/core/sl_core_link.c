@@ -94,10 +94,7 @@ int sl_core_link_up_fail(struct sl_core_link *core_link)
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up fail - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
-		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
-			&(core_link->work[SL_CORE_WORK_LINK_UP_FAIL])))
-			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
-				SL_CORE_WORK_LINK_UP_FAIL);
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_FAIL]);
 		spin_unlock(&core_link->link.data_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		return 0;
@@ -142,10 +139,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		core_link->link.state           = SL_CORE_LINK_STATE_CANCELING;
 		spin_unlock(&core_link->link.data_lock);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
-		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
-			&(core_link->work[SL_CORE_WORK_LINK_UP_CANCEL])))
-			sl_core_log_warn(core_link, LOG_NAME, "already queued (work_num = %u)",
-				SL_CORE_WORK_LINK_UP_CANCEL);
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
@@ -187,10 +181,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		core_link->link.state          = SL_CORE_LINK_STATE_GOING_DOWN;
 		spin_unlock(&core_link->link.data_lock);
 		sl_core_data_link_last_down_cause_map_set(core_link, down_cause_map);
-		if (!queue_work(core_link->core_lgrp->core_ldev->workqueue,
-			&(core_link->work[SL_CORE_WORK_LINK_DOWN])))
-			sl_core_log_warn(core_link, LOG_NAME,
-					 "already queued (work_num = %u)", SL_CORE_WORK_LINK_DOWN);
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_DOWN]);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		return 0;
 	default:

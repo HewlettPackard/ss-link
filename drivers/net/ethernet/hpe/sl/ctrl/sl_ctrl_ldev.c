@@ -215,15 +215,7 @@ int sl_ctrl_ldev_del(u8 ldev_num)
 
 bool sl_ctrl_ldev_kref_get_unless_zero(struct sl_ctrl_ldev *ctrl_ldev)
 {
-	bool incremented;
-
-	incremented = (kref_get_unless_zero(&ctrl_ldev->ref_cnt) != 0);
-
-	if (!incremented)
-		sl_ctrl_log_warn(ctrl_ldev, LOG_NAME,
-			"kref_get_unless_zero ref unavailable (ldev = 0x%p)", ctrl_ldev);
-
-	return incremented;
+	return (kref_get_unless_zero(&ctrl_ldev->ref_cnt) != 0);
 }
 
 struct sl_ctrl_ldev *sl_ctrl_ldev_get(u8 ldev_num)

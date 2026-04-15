@@ -79,7 +79,7 @@ void sl_core_hw_an_lp_caps_get_cmd(struct sl_core_link *core_link, u32 link_stat
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 			"lp caps get cmd - an page recv disable failed [%d]", rtn);
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_AN_LP_CAPS_GET]);
 }
 
 void sl_core_hw_an_lp_caps_get_work(struct work_struct *work)

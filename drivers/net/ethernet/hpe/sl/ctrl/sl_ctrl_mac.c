@@ -151,15 +151,7 @@ int sl_ctrl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 static bool sl_ctrl_mac_kref_get_unless_zero(struct sl_ctrl_mac *ctrl_mac)
 {
-	bool incremented;
-
-	incremented = (kref_get_unless_zero(&ctrl_mac->ref_cnt) != 0);
-
-	if (!incremented)
-		sl_ctrl_log_warn(ctrl_mac, LOG_NAME, "kref_get_unless_zero ref unavailable (ctrl_mac = 0x%p)",
-				 ctrl_mac);
-
-	return incremented;
+	return (kref_get_unless_zero(&ctrl_mac->ref_cnt) != 0);
 }
 
 struct sl_ctrl_mac *sl_ctrl_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num)
@@ -225,7 +217,7 @@ int sl_ctrl_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "tx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "tx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
@@ -347,7 +339,7 @@ int sl_ctrl_mac_rx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "rx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "rx stop - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 
@@ -433,7 +425,7 @@ int sl_ctrl_mac_reset(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 	}
 
 	if (!sl_ctrl_mac_kref_get_unless_zero(ctrl_mac)) {
-		sl_ctrl_log_dbg(ctrl_mac, LOG_NAME, "reset - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
+		sl_ctrl_log_err(ctrl_mac, LOG_NAME, "reset - kref unavailable (ctrl_mac = 0x%p)", ctrl_mac);
 		return -EBADRQC;
 	}
 

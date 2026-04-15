@@ -50,7 +50,7 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 		rtn = core_lgrp->core_ldev->ops.dt_info_get(core_lgrp->core_ldev->accessors.dt,
 			ldev_num, lgrp_num, &(core_lgrp->serdes.dt));
 		if (rtn)
-			sl_core_log_warn(core_lgrp, LOG_NAME, "new - dt_info_get failed [%d}", rtn);
+			sl_core_log_dbg(core_lgrp, LOG_NAME, "new - dt_info_get failed [%d}", rtn);
 		sl_core_log_dbg(core_lgrp, LOG_NAME, "DT lane = 0 tx = %u tx_inv = %u rx = %u rx_inv = %u",
 			core_lgrp->serdes.dt.lane_info[0].tx_source, core_lgrp->serdes.dt.lane_info[0].tx_invert,
 			core_lgrp->serdes.dt.lane_info[0].rx_source, core_lgrp->serdes.dt.lane_info[0].rx_invert);

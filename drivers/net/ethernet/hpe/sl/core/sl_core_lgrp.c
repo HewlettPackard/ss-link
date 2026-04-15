@@ -204,7 +204,7 @@ bool sl_core_lgrp_media_lane_data_swap(u8 ldev_num, u8 lgrp_num)
 
 	if (jack_type == SL_DT_JACK_TYPE_EXAMAX_LEFT || jack_type == SL_DT_JACK_TYPE_EXAMAX_RIGHT ||
 	    jack_type == SL_DT_JACK_TYPE_LOW || jack_type == SL_DT_JACK_TYPE_HIGH) {
-		sl_core_log_warn(core_lgrp, LOG_NAME, "media lane data swap (Examax jack - no shift)");
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "media lane data swap (Examax jack - no shift)");
 		return false;
 	}
 

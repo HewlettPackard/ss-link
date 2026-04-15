@@ -195,15 +195,7 @@ int sl_ctrl_lgrp_del(u8 ldev_num, u8 lgrp_num)
 
 bool sl_ctrl_lgrp_kref_get_unless_zero(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
-	bool incremented;
-
-	incremented = (kref_get_unless_zero(&ctrl_lgrp->ref_cnt) != 0);
-
-	if (!incremented)
-		sl_ctrl_log_warn(ctrl_lgrp, LOG_NAME,
-			"kref_get_unless_zero ref unavailable (ctrl_lgrp = 0x%p)", ctrl_lgrp);
-
-	return incremented;
+	return (kref_get_unless_zero(&ctrl_lgrp->ref_cnt) != 0);
 }
 
 struct sl_ctrl_lgrp *sl_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num)

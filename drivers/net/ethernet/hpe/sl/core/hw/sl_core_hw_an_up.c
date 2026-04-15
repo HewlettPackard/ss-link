@@ -110,7 +110,7 @@ void sl_core_hw_an_up_start_work(struct work_struct *work)
 		return;
 	}
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_AN_UP]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_AN_UP]);
 }
 
 static void sl_core_hw_an_up(struct sl_core_link *core_link)

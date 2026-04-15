@@ -72,7 +72,7 @@ void sl_core_timer_llr_timeout(struct timer_list *timer)
 		info->data.log, core_llr,
 		info->data.timer_num, info->data.work_num);
 
-	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[info->data.work_num]));
+	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &core_llr->work[info->data.work_num]);
 }
 
 void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num)

@@ -231,8 +231,8 @@ int sl_ctrl_data_link_fec_mon_ucw_down_limit_get(struct sl_ctrl_link *ctrl_link,
 	spin_unlock(&ctrl_link->fec_data.lock);
 
 	if (!period_ms) {
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				 "fec_mon_ucw_down_limit_get failed (monitoring disabled)");
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+				       "fec_mon_ucw_down_limit_get failed (monitoring disabled)");
 		return -EBADRQC;
 	}
 
@@ -249,8 +249,8 @@ int sl_ctrl_data_link_fec_mon_ccw_down_limit_get(struct sl_ctrl_link *ctrl_link,
 	spin_unlock(&ctrl_link->fec_data.lock);
 
 	if (!period_ms) {
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				 "fec_mon_ccw_down_limit_get failed (monitoring disabled)");
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+				       "fec_mon_ccw_down_limit_get failed (monitoring disabled)");
 		return -EBADRQC;
 	}
 
@@ -267,8 +267,8 @@ int sl_ctrl_data_link_fec_mon_ccw_warn_limit_get(struct sl_ctrl_link *ctrl_link,
 	spin_unlock(&ctrl_link->fec_data.lock);
 
 	if (!period_ms) {
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				 "fec_mon_ccw_warn_limit_get failed (monitoring disabled)");
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+				       "fec_mon_ccw_warn_limit_get failed (monitoring disabled)");
 		return -EBADRQC;
 	}
 
@@ -285,8 +285,8 @@ int sl_ctrl_data_link_fec_mon_ucw_warn_limit_get(struct sl_ctrl_link *ctrl_link,
 	spin_unlock(&ctrl_link->fec_data.lock);
 
 	if (!period_ms) {
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-				 "fec_mon_ucw_warn_limit_get failed (monitoring disabled)");
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+				       "fec_mon_ucw_warn_limit_get failed (monitoring disabled)");
 		return -EBADRQC;
 	}
 

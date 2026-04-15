@@ -142,7 +142,7 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link, struct sl_core_
 
 	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link_up_info);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME, "up callback failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up callback failed [%d]", rtn);
 }
 
 static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
@@ -163,7 +163,7 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 
 	rtn = core_link->link.callbacks.down(core_link->link.tags.down, state, down_cause_map, info_map);
 	if (rtn != 0)
-		sl_core_log_warn(core_link, LOG_NAME, "down callback failed [%d]", rtn);
+		sl_core_log_warn_trace(core_link, LOG_NAME, "down callback failed [%d]", rtn);
 }
 
 static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
@@ -258,11 +258,9 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	memset(core_link->core_lgrp->link_caps, 0, sizeof(core_link->core_lgrp->link_caps));
 
 	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		queue_work(core_link->core_lgrp->core_ldev->workqueue,
-			&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_AN_UP_START]);
 	else
-		queue_work(core_link->core_lgrp->core_ldev->workqueue,
-			&(core_link->work[SL_CORE_WORK_LINK_UP_START]));
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_START]);
 }
 
 void sl_core_hw_link_up_start_work(struct work_struct *work)
@@ -353,7 +351,7 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 		}
 	}
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_UP]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP]);
 }
 
 void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
@@ -434,7 +432,7 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[SL_CORE_WORK_LINK_UP]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP]);
 }
 
 void sl_core_hw_link_up_work(struct work_struct *work)
@@ -1807,8 +1805,7 @@ static void sl_core_hw_link_pml_recovery(struct sl_core_link *core_link)
 
 	atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_ATTEMPTS]);
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue,
-		   &(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]);
 }
 
 static inline void sl_core_hw_link_fault_handling_start(struct sl_core_link *core_link)

@@ -640,7 +640,7 @@ void sl_core_hw_llr_start_cmd(struct sl_core_llr *core_llr,
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
 				       "start cmd llr_flgs_disable failed [%d]", rtn);
 
-	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[SL_CORE_WORK_LLR_START]));
+	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &core_llr->work[SL_CORE_WORK_LLR_START]);
 }
 
 void sl_core_hw_llr_start_work(struct work_struct *work)

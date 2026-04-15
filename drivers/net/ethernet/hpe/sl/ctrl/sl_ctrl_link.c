@@ -317,15 +317,7 @@ int sl_ctrl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 bool sl_ctrl_link_kref_get_unless_zero(struct sl_ctrl_link *ctrl_link)
 {
-	bool incremented;
-
-	incremented = (kref_get_unless_zero(&ctrl_link->ref_cnt) != 0);
-
-	if (!incremented)
-		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-			"kref_get_unless_zero ref unavailable (ctrl_link = 0x%p)", ctrl_link);
-
-	return incremented;
+	return (kref_get_unless_zero(&ctrl_link->ref_cnt) != 0);
 }
 
 struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -1038,8 +1030,7 @@ int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state
 	}
 
 	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"state get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "state get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
 		return -EBADRQC;
 	}
 

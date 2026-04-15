@@ -98,7 +98,7 @@ void sl_core_timer_link_timeout(struct timer_list *timer)
 		"timeout %s (core_link = 0x%p, timer_num = %u, work_num = %u)",
 		info->data.log, core_link, info->data.timer_num, info->data.work_num);
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue, &(core_link->work[info->data.work_num]));
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[info->data.work_num]);
 }
 
 void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
