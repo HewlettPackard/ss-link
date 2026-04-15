@@ -12,6 +12,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t pml_rec_attempts_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_core_link *core_link;
@@ -158,9 +159,11 @@ static struct kobj_type link_pml_rec = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = link_pml_rec_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_pml_rec_create(struct sl_core_link *core_link, struct kobject *parent_kobj)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "link pml rec create (num = %u)", core_link->num);
@@ -174,11 +177,16 @@ int sl_sysfs_link_pml_rec_create(struct sl_core_link *core_link, struct kobject 
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_pml_rec_delete(struct sl_core_link *core_link)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "link pml rec delete (num = %u)", core_link->num);
 
 	kobject_put(&core_link->pml_rec_kobj);
+#endif /* CONFIG_SYSFS */
 }

@@ -20,6 +20,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -1091,9 +1092,11 @@ static void parent_speed_release(struct kobject *kobj)
 static struct kobj_type parent_speed_info = {
 	.release = parent_speed_release,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	int                   rtn;
 	u8                    state;
 	struct sl_media_lgrp *media_lgrp;
@@ -1153,10 +1156,14 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "create (media_kobj = 0x%p)", &media_lgrp->kobj);
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 {
+#ifdef CONFIG_SYSFS
 	int                   rtn;
 	int                   i;
 	struct sl_media_lgrp *media_lgrp;
@@ -1210,10 +1217,14 @@ int sl_sysfs_media_speeds_create(u8 ldev_num, u8 lgrp_num)
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media speed nodes created");
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	struct sl_media_lgrp *media_lgrp;
 	u8                    i;
 
@@ -1238,4 +1249,5 @@ void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 	media_lgrp->speeds_kobj_init = false;
 	kobject_put(&media_lgrp->parent_speed_kobj);
 	kobject_put(&media_lgrp->kobj);
+#endif /* CONFIG_SYSFS */
 }

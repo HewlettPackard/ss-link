@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -17,6 +17,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t last_fail_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                 rtn;
@@ -125,9 +126,11 @@ static struct kobj_type llr_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = llr_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_llr_create(struct sl_ctrl_llr *ctrl_llr)
 {
+#ifdef CONFIG_SYSFS
 	int                 rtn;
 	struct sl_core_llr *core_llr;
 
@@ -190,10 +193,14 @@ int sl_sysfs_llr_create(struct sl_ctrl_llr *ctrl_llr)
 		"llr create (llr_kobj = 0x%p)", &core_llr->kobj);
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_llr_delete(struct sl_ctrl_llr *ctrl_llr)
 {
+#ifdef CONFIG_SYSFS
 	struct sl_core_llr *core_llr;
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME, "delete (num = %u)", ctrl_llr->num);
@@ -209,4 +216,5 @@ void sl_sysfs_llr_delete(struct sl_ctrl_llr *ctrl_llr)
 	sl_sysfs_llr_policy_delete(core_llr);
 	sl_sysfs_llr_config_delete(ctrl_llr);
 	kobject_put(&core_llr->kobj);
+#endif /* CONFIG_SYSFS */
 }

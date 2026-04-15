@@ -17,6 +17,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t tx_source_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_lgrp_serdes_lane_kobj *lane_kobj;
@@ -81,9 +82,11 @@ static struct kobj_type serdes_lane_swizzle_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = serdes_lane_swizzle_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_serdes_lane_swizzle_create(struct sl_ctrl_lgrp *ctrl_lgrp, u8 asic_lane_num)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
@@ -103,13 +106,18 @@ int sl_sysfs_serdes_lane_swizzle_create(struct sl_ctrl_lgrp *ctrl_lgrp, u8 asic_
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"serdes lane swizzle create (serdes_kobj = 0x%p)", &(ctrl_lgrp->serdes_kobj));
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_serdes_lane_swizzle_delete(struct sl_ctrl_lgrp *ctrl_lgrp, u8 asic_lane_num)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"serdes lane swizzle delete (lgrp = 0x%p)", ctrl_lgrp);
 
 	kobject_put(&(ctrl_lgrp->serdes_lane_swizzle_kobjs[asic_lane_num].kobj));
 	ctrl_lgrp->serdes_lane_swizzle_kobjs[asic_lane_num].ctrl_lgrp = NULL;
+#endif /* CONFIG_SYSFS */
 }

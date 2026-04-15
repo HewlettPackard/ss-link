@@ -11,6 +11,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t mac_tx_start_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
@@ -306,9 +307,11 @@ static struct kobj_type mac_counters = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = mac_counters_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_mac_counters_create(struct sl_ctrl_mac *ctrl_mac)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac counters create");
@@ -321,10 +324,15 @@ int sl_sysfs_mac_counters_create(struct sl_ctrl_mac *ctrl_mac)
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_mac_counters_delete(struct sl_ctrl_mac *ctrl_mac)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac counters delete");
 	kobject_put(&ctrl_mac->counters_kobj);
+#endif /* CONFIG_SYSFS */
 }

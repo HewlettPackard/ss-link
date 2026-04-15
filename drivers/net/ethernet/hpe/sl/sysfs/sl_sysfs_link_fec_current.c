@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -11,6 +11,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                  rtn;
@@ -251,9 +252,11 @@ static struct kobj_type link_fec_current_tail = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = link_fec_current_tail_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_fec_current_create(struct sl_core_link *core_link, struct kobject *parent_kobj)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 	int x;
 	int out;
@@ -309,10 +312,14 @@ out_current:
 	kobject_put(&core_link->fec.current_kobj);
 
 	return rtn;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_fec_current_delete(struct sl_core_link *core_link)
 {
+#ifdef CONFIG_SYSFS
 	int x;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
@@ -323,4 +330,5 @@ void sl_sysfs_link_fec_current_delete(struct sl_core_link *core_link)
 		kobject_put(&core_link->fec.current_fecl_kobjs[x].kobj);
 	kobject_put(&core_link->fec.current_lane_kobj);
 	kobject_put(&core_link->fec.current_kobj);
+#endif /* CONFIG_SYSFS */
 }

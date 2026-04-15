@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/types.h>
@@ -12,6 +12,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                  rtn;
@@ -301,9 +302,11 @@ static struct kobj_type link_degrade = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = link_degrade_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_degrade_create(struct sl_core_link *core_link, struct kobject *parent_kobj)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "link degrade create (num = %u)", core_link->num);
@@ -317,11 +320,16 @@ int sl_sysfs_link_degrade_create(struct sl_core_link *core_link, struct kobject 
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_degrade_delete(struct sl_core_link *core_link)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "link degrade delete (num = %u)", core_link->num);
 
 	kobject_put(&core_link->degrade_kobj);
+#endif /* CONFIG_SYSFS */
 }

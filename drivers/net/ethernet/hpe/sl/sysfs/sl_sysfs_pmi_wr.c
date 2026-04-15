@@ -10,6 +10,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t addr_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_lgrp *ctrl_lgrp;
@@ -167,9 +168,11 @@ static struct kobj_type pmi_wr_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = pmi_wr_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_pmi_wr_create(struct sl_ctrl_lgrp *ctrl_lgrp, struct kobject *parent_kobj)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	rtn = kobject_init_and_add(&ctrl_lgrp->pmi_wr_kobj, &pmi_wr_info, parent_kobj, "wr");
@@ -185,11 +188,16 @@ out_pmi_wr:
 	kobject_put(&ctrl_lgrp->pmi_wr_kobj);
 
 	return -ENOMEM;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_pmi_wr_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "pmi wr delete (lgrp = 0x%p)", ctrl_lgrp);
 
 	kobject_put(&ctrl_lgrp->pmi_wr_kobj);
+#endif /* CONFIG_SYSFS */
 }

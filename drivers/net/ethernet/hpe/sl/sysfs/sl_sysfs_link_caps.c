@@ -14,6 +14,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -261,9 +262,11 @@ static struct kobj_type link_caps = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = link_caps_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_caps_create(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link caps create (num = %u)", ctrl_link->num);
@@ -277,11 +280,16 @@ int sl_sysfs_link_caps_create(struct sl_ctrl_link *ctrl_link)
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_caps_delete(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link caps delete (num = %u)", ctrl_link->num);
 
 	kobject_put(&ctrl_link->caps_kobj);
+#endif /* CONFIG_SYSFS */
 }

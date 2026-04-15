@@ -14,6 +14,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t link_up_cmd_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
@@ -1466,9 +1467,11 @@ static struct kobj_type link_counters = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = link_counters_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_counters_create(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link counters create");
@@ -1482,10 +1485,15 @@ int sl_sysfs_link_counters_create(struct sl_ctrl_link *ctrl_link)
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_counters_delete(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link counters delete");
 	kobject_put(&ctrl_link->counters_kobj);
+#endif /* CONFIG_SYSFS */
 }

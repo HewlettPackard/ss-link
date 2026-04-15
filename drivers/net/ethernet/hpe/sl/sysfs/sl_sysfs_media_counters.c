@@ -13,6 +13,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t cause_eeprom_format_unsupported_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -548,9 +549,11 @@ static struct kobj_type media_counters = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = media_counters_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_media_counters_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	struct sl_media_lgrp *media_lgrp;
 	int                   rtn;
 
@@ -572,10 +575,14 @@ int sl_sysfs_media_counters_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 	}
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_media_counters_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media counters delete");
@@ -587,4 +594,5 @@ void sl_sysfs_media_counters_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 	}
 
 	kobject_put(&media_lgrp->counters_kobj);
+#endif /* CONFIG_SYSFS */
 }

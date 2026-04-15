@@ -15,6 +15,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t rx_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_mac *ctrl_mac;
@@ -140,9 +141,11 @@ static struct kobj_type mac_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = mac_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac create (num = %u)", ctrl_mac->num);
@@ -171,10 +174,14 @@ int sl_sysfs_mac_create(struct sl_ctrl_mac *ctrl_mac)
 		   "mac create (mac_kobj = 0x%p)", &ctrl_mac->kobj);
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_mac_delete(struct sl_ctrl_mac *ctrl_mac)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "delete (num = %u)", ctrl_mac->num);
 
 	if (!ctrl_mac->parent_kobj)
@@ -182,4 +189,5 @@ void sl_sysfs_mac_delete(struct sl_ctrl_mac *ctrl_mac)
 
 	sl_sysfs_mac_counters_delete(ctrl_mac);
 	kobject_put(&ctrl_mac->kobj);
+#endif /* CONFIG_SYSFS */
 }

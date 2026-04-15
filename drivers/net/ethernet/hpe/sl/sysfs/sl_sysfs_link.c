@@ -17,6 +17,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                  rtn;
@@ -656,9 +657,11 @@ static void sl_sysfs_link_last_down_delete(struct sl_ctrl_link *ctrl_link)
 {
 	kobject_put(&ctrl_link->last_down_kobj);
 }
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	int                  rtn;
 	struct sl_core_link *core_link;
 
@@ -792,10 +795,14 @@ int sl_sysfs_link_create(struct sl_ctrl_link *ctrl_link)
 		   "link create (link_kobj = 0x%p)", &ctrl_link->kobj);
 
 	return 0;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link)
 {
+#ifdef CONFIG_SYSFS
 	struct sl_core_link *core_link;
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link delete (num = %u)", ctrl_link->num);
@@ -816,4 +823,5 @@ void sl_sysfs_link_delete(struct sl_ctrl_link *ctrl_link)
 	sl_sysfs_link_last_down_delete(ctrl_link);
 	sl_sysfs_link_last_up_fail_delete(ctrl_link);
 	kobject_put(&ctrl_link->kobj);
+#endif /* CONFIG_SYSFS */
 }

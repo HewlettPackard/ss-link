@@ -36,6 +36,7 @@ u8 lane_num_to_link_num(struct sl_ctrl_lgrp *ctrl_lgrp, u8 lane_num)
 	}
 }
 
+#ifdef CONFIG_SYSFS
 static ssize_t hw_rev_1_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -146,9 +147,11 @@ static struct kobj_type serdes_lane_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = serdes_lane_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_serdes_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 	int asic_lane_num;
 
@@ -260,10 +263,14 @@ out_serdes:
 	kobject_put(&(ctrl_lgrp->serdes_kobj));
 
 	return -ENOMEM;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_serdes_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	u8 asic_lane_num;
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "serdes delete (lgrp = 0x%p)", ctrl_lgrp);
@@ -282,4 +289,5 @@ void sl_sysfs_serdes_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 	}
 	kobject_put(&(ctrl_lgrp->serdes_lane_kobj));
 	kobject_put(&ctrl_lgrp->serdes_kobj);
+#endif /* CONFIG_SYSFS */
 }

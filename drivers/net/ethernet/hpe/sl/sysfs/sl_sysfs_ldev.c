@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 
@@ -14,6 +14,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static const char *sl_cable_type_str(u32 type)
 {
 	switch (type) {
@@ -331,9 +332,11 @@ static int sl_sysfs_cable_info_create(struct sl_ctrl_ldev *ctrl_ldev)
 
 	return 0;
 }
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 {
+#ifdef CONFIG_SYSFS
 	int                 rtn;
 	struct sl_ctrl_ldev *ctrl_ldev;
 
@@ -380,10 +383,14 @@ out:
 		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "ldev create removed (ldev = 0x%p)", ctrl_ldev);
 
 	return rtn;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_ldev_delete(struct sl_ctrl_ldev *ctrl_ldev)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "ldev delete (ldev = 0x%p)", ctrl_ldev);
 
 	if (!ctrl_ldev->parent_kobj)
@@ -397,4 +404,5 @@ void sl_sysfs_ldev_delete(struct sl_ctrl_ldev *ctrl_ldev)
 
 	kobject_put(&ctrl_ldev->supported_cables_kobj);
 	kobject_put(&ctrl_ldev->sl_info_kobj);
+#endif /* CONFIG_SYSFS */
 }

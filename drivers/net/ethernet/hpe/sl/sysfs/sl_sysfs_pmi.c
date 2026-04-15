@@ -10,6 +10,7 @@
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
 
+#ifdef CONFIG_SYSFS
 static struct attribute *pmi_attrs[] = {
 	NULL,
 };
@@ -19,9 +20,11 @@ static struct kobj_type pmi_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = pmi_groups,
 };
+#endif /* CONFIG_SYSFS */
 
 int sl_sysfs_pmi_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	int rtn;
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "pmi (lgrp = 0x%p)", ctrl_lgrp);
@@ -56,10 +59,14 @@ out_pmi:
 	kobject_put(&ctrl_lgrp->pmi_kobj);
 
 	return -ENOMEM;
+#else /* CONFIG_SYSFS */
+	return 0;
+#endif /* CONFIG_SYSFS */
 }
 
 void sl_sysfs_pmi_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
+#ifdef CONFIG_SYSFS
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "pmi delete (lgrp = 0x%p)", ctrl_lgrp);
 
 	if (!ctrl_lgrp->parent_kobj)
@@ -69,4 +76,5 @@ void sl_sysfs_pmi_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 	sl_sysfs_pmi_rd_delete(ctrl_lgrp);
 
 	kobject_put(&ctrl_lgrp->pmi_kobj);
+#endif /* CONFIG_SYSFS */
 }
