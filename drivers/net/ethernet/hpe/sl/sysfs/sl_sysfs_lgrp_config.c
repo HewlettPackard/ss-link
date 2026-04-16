@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/hpe/sl/sl_lgrp.h>
@@ -290,7 +290,54 @@ static ssize_t warn_trace_enable_store(struct kobject *kobj, struct kobj_attribu
 
 	return count;
 }
+
 static struct kobj_attribute lgrp_warn_trace_enable = __ATTR_RW(warn_trace_enable);
+
+static ssize_t serdes_lane_io_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_lgrp *ctrl_lgrp;
+	bool                 serdes_lane_io_trace;
+
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
+
+	serdes_lane_io_trace = sl_ctrl_data_lgrp_is_serdes_lane_io_trace_enabled(ctrl_lgrp);
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "core init io trace enable show (serdes_lane_io_trace = %s)",
+		   serdes_lane_io_trace ? "enabled" : "disabled");
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n", serdes_lane_io_trace ? 1 : 0);
+}
+
+static ssize_t serdes_lane_io_trace_enable_store(struct kobject *kobj, struct kobj_attribute *kattr,
+						 const char *buf, size_t count)
+{
+	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
+	u8                   val;
+
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
+
+	rtn = kstrtou8(buf, 0, &val);
+	if (rtn) {
+		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+			   "core init io trace enable store failed [%d]", rtn);
+		return count;
+	}
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "core init io trace enable store (val = %u)", val);
+
+	rtn = sl_ctrl_data_lgrp_serdes_lane_io_trace_set(ctrl_lgrp, (val == 1) ? true : false);
+	if (rtn) {
+		sl_log_err_trace(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+				 "core init io trace enable store failed [%d]", rtn);
+		return count;
+	}
+
+	return count;
+}
+
+static struct kobj_attribute lgrp_serdes_lane_io_trace_enable = __ATTR_RW(serdes_lane_io_trace_enable);
 
 static ssize_t fabric_link_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -343,6 +390,7 @@ static struct attribute *lgrp_config_attrs[] = {
 	&lgrp_loopback.attr,
 	&lgrp_err_trace_enable.attr,
 	&lgrp_warn_trace_enable.attr,
+	&lgrp_serdes_lane_io_trace_enable.attr,
 	&lgrp_fabric_link.attr,
 	&lgrp_r1_partner.attr,
 	NULL

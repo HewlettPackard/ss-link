@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_DATA_LGRP_H_
 #define _SL_CTRL_DATA_LGRP_H_
@@ -8,6 +8,7 @@
 
 int sl_ctrl_data_lgrp_err_trace_enable_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_trace_enable);
 int sl_ctrl_data_lgrp_warn_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_trace_enable);
+int sl_ctrl_data_lgrp_serdes_lane_io_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool serdes_lane_io_trace);
 
 int sl_ctrl_data_lgrp_mfs_get(struct sl_ctrl_lgrp *ctrl_lgrp, u32 *mfs);
 int sl_ctrl_data_lgrp_furcation_get(struct sl_ctrl_lgrp *ctrl_lgrp, u32 *furcation);

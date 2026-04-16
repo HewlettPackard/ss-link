@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LGRP_H_
 #define _SL_CTRL_LGRP_H_
@@ -70,6 +70,7 @@ struct sl_ctrl_lgrp {
 	// FIXME: for now only enable at the lgrp level
 	bool                             err_trace_enable;
 	bool                             warn_trace_enable;
+	bool                             serdes_lane_io_trace_enable;
 
 	spinlock_t                       data_lock;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -15,7 +15,8 @@ int sl_ctrl_data_lgrp_is_err_trace_enabled(struct sl_ctrl_lgrp *ctrl_lgrp, bool 
 	spin_unlock(&ctrl_lgrp->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
-			"get (err_trace_enable = %s)", *err_trace_enable ? "true" : "false");
+			"is err trace enabled (err_trace_enable = %s)",
+			*err_trace_enable ? "true" : "false");
 
 	return 0;
 }
@@ -27,7 +28,24 @@ int sl_ctrl_data_lgrp_is_warn_trace_enabled(struct sl_ctrl_lgrp *ctrl_lgrp, bool
 	spin_unlock(&ctrl_lgrp->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
-			"get (warn_trace_enable = %s)", *warn_trace_enable ? "true" : "false");
+			"is warn trace enabled (warn_trace_enable = %s)",
+			*warn_trace_enable ? "true" : "false");
 
 	return 0;
 }
+
+bool sl_ctrl_data_lgrp_is_serdes_lane_io_trace_enabled(struct sl_ctrl_lgrp *ctrl_lgrp)
+{
+	bool serdes_lane_io_trace;
+
+	spin_lock(&ctrl_lgrp->config_lock);
+	serdes_lane_io_trace = ctrl_lgrp->serdes_lane_io_trace_enable;
+	spin_unlock(&ctrl_lgrp->config_lock);
+
+	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
+			"is serdes lane io trace enabled (serdes_lane_io_trace = %s)",
+			serdes_lane_io_trace ? "enabled" : "disabled");
+
+	return serdes_lane_io_trace;
+}
+

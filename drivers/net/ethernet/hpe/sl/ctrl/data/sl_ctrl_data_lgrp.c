@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include "base/sl_ctrl_log.h"
 #include "sl_ctrl_ldev.h"
@@ -76,6 +76,18 @@ int sl_ctrl_data_lgrp_warn_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_tr
 
 	ctrl_lgrp->warn_trace_enable = err_trace_enable;
 
+	spin_unlock(&ctrl_lgrp->config_lock);
+
+	return 0;
+}
+
+int sl_ctrl_data_lgrp_serdes_lane_io_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool serdes_lane_io_trace)
+{
+	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
+			"set (serdes_lane_io_trace = %s)", serdes_lane_io_trace ? "enable" : "disable");
+
+	spin_lock(&ctrl_lgrp->config_lock);
+	ctrl_lgrp->serdes_lane_io_trace_enable = serdes_lane_io_trace;
 	spin_unlock(&ctrl_lgrp->config_lock);
 
 	return 0;

@@ -9,6 +9,7 @@
 
 #include "sl_asic.h"
 #include "sl_platform.h"
+#include "sl_ctrl_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_ldev.h"
@@ -20,6 +21,8 @@
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
 #include "data/sl_core_data_link.h"
+#include "data/sl_core_data_lgrp.h"
+#include "data/sl_ctrl_data_lgrp_trace.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME
 
@@ -252,7 +255,8 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 
 int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 {
-	int rtn;
+	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_link->core_lgrp->core_ldev))
 		return 0;
@@ -260,6 +264,8 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "link up");
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_START);
+
+	ctrl_lgrp = sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	/*
 	 * FIXME: remove it when this feature is needed
@@ -278,17 +284,22 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 		return rtn;
 	}
 
+	sl_core_data_lgrp_io_trace_set(core_link->core_lgrp,
+				       sl_ctrl_data_lgrp_is_serdes_lane_io_trace_enabled(ctrl_lgrp));
+
 	rtn = sl_core_hw_serdes_core_pll(core_link->core_lgrp,
 		core_link->serdes.core_serdes_settings.clocking, core_link->serdes.core_serdes_settings.tx_pll_bw);
 	if (rtn) {
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP);
 		sl_core_log_err_trace(core_link, LOG_NAME, "serdes_core_pll failed [%d]", rtn);
+		sl_core_data_lgrp_io_trace_set(core_link->core_lgrp, false);
 		return -EIO;
 	}
 
 	rtn = sl_core_hw_serdes_lanes_up(core_link, SL_CORE_HW_SERDES_ATSPEED);
 	if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "serdes_lanes_up failed [%d]", rtn);
+		sl_core_data_lgrp_io_trace_set(core_link->core_lgrp, false);
 		return rtn;
 	}
 
@@ -296,6 +307,7 @@ int sl_core_hw_serdes_link_up(struct sl_core_link *core_link)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_SERDES_START);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_SERDES_OK);
 
+	sl_core_data_lgrp_io_trace_set(core_link->core_lgrp, false);
 	return 0;
 }
 
@@ -323,12 +335,15 @@ static int sl_core_hw_serdes_link_down_settings(struct sl_core_link *core_link)
 
 void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 {
-	int rtn;
+	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_link->core_lgrp->core_ldev))
 		return;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link down");
+
+	ctrl_lgrp = sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	/*
 	 * FIXME: remove it when this feature is needed
@@ -344,7 +359,12 @@ void sl_core_hw_serdes_link_down(struct sl_core_link *core_link)
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "serdes_link_down_settings failed [%d]", rtn);
 
+	sl_core_data_lgrp_io_trace_set(core_link->core_lgrp,
+				       sl_ctrl_data_lgrp_is_serdes_lane_io_trace_enabled(ctrl_lgrp));
+
 	sl_core_hw_serdes_lanes_down(core_link);
+
+	sl_core_data_lgrp_io_trace_set(core_link->core_lgrp, false);
 
 	memset(&(core_link->serdes.core_serdes_settings), 0, sizeof(struct sl_core_serdes_settings));
 	memset(&(core_link->serdes.media_serdes_settings), 0, sizeof(struct sl_media_serdes_settings));
