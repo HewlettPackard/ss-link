@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/delay.h>
 
+#include "sl_module.h"
 #include "sl_asic.h"
 #include "sl_core_ldev.h"
 #include "sl_platform.h"
 #include "sl_core_lgrp.h"
 #include "base/sl_core_log.h"
+#include "data/sl_core_data_lgrp.h"
 #include "hw/sl_core_hw_pmi.h"
 #include "hw/sl_core_hw_sbus.h"
 #include "hw/sl_core_hw_serdes.h"
@@ -279,11 +281,15 @@ out:
 int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 {
 	int rtn;
+	u64 trace_map;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "core init");
+
+	trace_map = sl_serdes_core_io_trace_lgrp_map_get();
+	sl_core_data_lgrp_io_trace_set(core_lgrp, test_bit(core_lgrp->num, (unsigned long *)&trace_map));
 
 	rtn = sl_core_hw_serdes_core_proc_reset(core_lgrp);
 	if (rtn != 0) {
@@ -303,6 +309,7 @@ int sl_core_hw_serdes_core_init(struct sl_core_lgrp *core_lgrp)
 
 	rtn = 0;
 out:
+	sl_core_data_lgrp_io_trace_set(core_lgrp, false);
 	return rtn;
 }
 
@@ -389,6 +396,7 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u16 clocking, u16
 {
 	int  rtn;
 	u16 *addrs;
+	u64  trace_map;
 
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
@@ -399,6 +407,9 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u16 clocking, u16
 	}
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "pll");
+
+	trace_map = sl_serdes_core_io_trace_lgrp_map_get();
+	sl_core_data_lgrp_io_trace_set(core_lgrp, test_bit(core_lgrp->num, (unsigned long *)&trace_map));
 
 	addrs = core_lgrp->core_ldev->serdes.addrs;
 
@@ -426,5 +437,6 @@ int sl_core_hw_serdes_core_pll(struct sl_core_lgrp *core_lgrp, u16 clocking, u16
 
 	rtn = 0;
 out:
+	sl_core_data_lgrp_io_trace_set(core_lgrp, false);
 	return rtn;
 }

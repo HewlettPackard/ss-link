@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_HW_IO_H_
 #define _SL_CORE_HW_IO_H_
@@ -124,12 +124,11 @@ static inline int sl_core_pmi_rd(struct sl_core_lgrp *core_lgrp, u32 addr, u16 *
 {
 	int rtn;
 
-	rtn = core_lgrp->core_ldev->ops.pmi_op(
-		core_lgrp->core_ldev->accessors.pmi,
-		core_lgrp->num, SL_PMI_OP_RD, addr, data, 0, 0);
+	rtn = core_lgrp->core_ldev->ops.pmi_op(core_lgrp->core_ldev->accessors.pmi,
+					       core_lgrp->num, SL_PMI_OP_RD, addr, data, 0, 0);
 
-	sl_core_log_dbg(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
-		"PMI RD (rtn = %d, addr = 0x%08X, data = 0x%04X)", rtn, addr, *data);
+	sl_core_log_io_trace(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
+			     "PMI RD (rtn = %d, addr = 0x%08X, data = 0x%04X)", rtn, addr, *data);
 
 	return rtn;
 }
@@ -138,13 +137,12 @@ static inline int sl_core_pmi_wr(struct sl_core_lgrp *core_lgrp, u32 addr, u16 d
 {
 	int rtn;
 
-	rtn = core_lgrp->core_ldev->ops.pmi_op(
-		core_lgrp->core_ldev->accessors.pmi,
-		core_lgrp->num, SL_PMI_OP_WR, addr, NULL, data, mask);
+	rtn = core_lgrp->core_ldev->ops.pmi_op(core_lgrp->core_ldev->accessors.pmi,
+					       core_lgrp->num, SL_PMI_OP_WR, addr, NULL, data, mask);
 
-	sl_core_log_dbg(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
-		"PMI WR (rtn = %d, addr = 0x%08X, data = 0x%04X, mask = 0x%04X)",
-		rtn, addr, data, mask);
+	sl_core_log_io_trace(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
+			     "PMI WR (rtn = %d, addr = 0x%08X, data = 0x%04X, mask = 0x%04X)",
+			     rtn, addr, data, mask);
 
 	return rtn;
 }
@@ -153,13 +151,12 @@ static inline int sl_core_sbus_wr(struct sl_core_lgrp *core_lgrp, u32 dev_addr, 
 {
 	int rtn;
 
-	rtn = core_lgrp->core_ldev->ops.sbus_op(
-		core_lgrp->core_ldev->accessors.sbus,
-		SL_SBUS_OP_WR, core_lgrp->serdes.dt.sbus_ring, dev_addr, reg, NULL, data);
+	rtn = core_lgrp->core_ldev->ops.sbus_op(core_lgrp->core_ldev->accessors.sbus, SL_SBUS_OP_WR,
+						core_lgrp->serdes.dt.sbus_ring, dev_addr, reg, NULL, data);
 
-	sl_core_log_dbg(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
-		"SBUS WR (rtn = %d, dev_addr = 0x%02X, reg = 0x%02X, data = 0x%08X)",
-		rtn, dev_addr, reg, data);
+	sl_core_log_io_trace(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
+			     "SBUS WR (rtn = %d, dev_addr = 0x%02X, reg = 0x%02X, data = 0x%08X)",
+			     rtn, dev_addr, reg, data);
 
 	return rtn;
 }
@@ -168,13 +165,12 @@ static inline int sl_core_sbus_rd(struct sl_core_lgrp *core_lgrp, u32 dev_addr, 
 {
 	int rtn;
 
-	rtn = core_lgrp->core_ldev->ops.sbus_op(
-		core_lgrp->core_ldev->accessors.sbus,
-		SL_SBUS_OP_RD, core_lgrp->serdes.dt.sbus_ring, dev_addr, reg, data, 0);
+	rtn = core_lgrp->core_ldev->ops.sbus_op(core_lgrp->core_ldev->accessors.sbus, SL_SBUS_OP_RD,
+						core_lgrp->serdes.dt.sbus_ring, dev_addr, reg, data, 0);
 
-	sl_core_log_dbg(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
-		"SBUS RD (rtn = %d, dev_addr = 0x%02X, reg = 0x%02X, data = 0x%08X)",
-		rtn, dev_addr, reg, *data);
+	sl_core_log_io_trace(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
+			     "SBUS RD (rtn = %d, dev_addr = 0x%02X, reg = 0x%02X, data = 0x%08X)",
+			     rtn, dev_addr, reg, *data);
 
 	return rtn;
 }
@@ -183,12 +179,11 @@ static inline int sl_core_sbus_rst(struct sl_core_lgrp *core_lgrp, u32 dev_addr)
 {
 	int rtn;
 
-	rtn = core_lgrp->core_ldev->ops.sbus_op(
-		core_lgrp->core_ldev->accessors.sbus,
-		SL_SBUS_OP_RST, core_lgrp->serdes.dt.sbus_ring, dev_addr, 0, NULL, 0);
+	rtn = core_lgrp->core_ldev->ops.sbus_op(core_lgrp->core_ldev->accessors.sbus, SL_SBUS_OP_RST,
+						core_lgrp->serdes.dt.sbus_ring, dev_addr, 0, NULL, 0);
 
-	sl_core_log_dbg(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
-		"SBUS RST (rtn = %d, dev_addr = 0x%02X", rtn, dev_addr);
+	sl_core_log_io_trace(core_lgrp, SL_CORE_HW_IO_LOG_NAME,
+			     "SBUS RST (rtn = %d, dev_addr = 0x%02X", rtn, dev_addr);
 
 	return rtn;
 }

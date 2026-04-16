@@ -6,6 +6,8 @@
 
 struct device;
 
+u64 sl_serdes_core_io_trace_lgrp_map_get(void);
+
 char          *sl_version_str_get(void);
 struct device *sl_device_get(void);
 

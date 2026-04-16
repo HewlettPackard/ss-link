@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -254,6 +254,17 @@ int sl_core_data_lgrp_warn_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool
 	spin_unlock(&core_lgrp->data_lock);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", warn_trace_enable ? "true" : "false");
+
+	return 0;
+}
+
+int sl_core_data_lgrp_io_trace_set(struct sl_core_lgrp *core_lgrp, bool io_trace)
+{
+	spin_lock(&core_lgrp->data_lock);
+	core_lgrp->io_trace = io_trace;
+	spin_unlock(&core_lgrp->data_lock);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (io_trace = %s)", io_trace ? "enabled" : "disabled");
 
 	return 0;
 }

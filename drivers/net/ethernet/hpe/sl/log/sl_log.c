@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/sched.h>
@@ -490,6 +490,45 @@ void sl_log_warn_trace(void *ptr, const char *block,
 	}
 
 	sl_log_msg_create(KERN_WARNING, ptr, msg, block, name, text);
+
+	va_start(args, text);
+	vprintk(msg, args);
+	va_end(args);
+}
+
+void sl_log_io_trace(void *ptr, const char *block, const char *name, const char *text, ...)
+{
+	char                 msg[SL_LOG_MSG_LEN + 1];
+	va_list              args;
+	struct sl_core_lgrp *core_lgrp;
+
+	if (!block) {
+		pr_err("NULL block\n");
+		return;
+	}
+	if (!name) {
+		pr_err("NULL name\n");
+		return;
+	}
+	if (!text) {
+		pr_err("NULL text\n");
+		return;
+	}
+
+	if (!ptr)
+		return;
+
+	switch (*((u32 *)ptr)) {
+	case SL_CORE_LGRP_MAGIC:
+		core_lgrp = ptr;
+		if (!sl_core_data_lgrp_is_io_trace_enabled(core_lgrp))
+			return;
+		break;
+	default:
+		return;
+	}
+
+	sl_log_msg_create(KERN_INFO, ptr, msg, block, name, text);
 
 	va_start(args, text);
 	vprintk(msg, args);

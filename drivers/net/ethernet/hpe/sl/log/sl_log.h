@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_LOG_H_
 #define _SL_LOG_H_
@@ -21,12 +21,10 @@
 #define SL_LOG_DEBUGFS_LOG_NAME  "debugfs"
 #define SL_LOG_TEST_LOG_NAME     "test"
 
-void sl_log(void *ptr, const char *level, const char *block,
-	const char *name, const char *text, ...) __printf(5, 6);
-void sl_log_err_trace(void *ptr, const char *block,
-	const char *name, const char *text, ...) __printf(4, 5);
-void sl_log_warn_trace(void *ptr, const char *block,
-	const char *name, const char *text, ...) __printf(4, 5);
+void sl_log(void *ptr, const char *level, const char *block, const char *name, const char *text, ...) __printf(5, 6);
+void sl_log_err_trace(void *ptr, const char *block, const char *name, const char *text, ...) __printf(4, 5);
+void sl_log_warn_trace(void *ptr, const char *block, const char *name, const char *text, ...) __printf(4, 5);
+void sl_log_io_trace(void *ptr, const char *block, const char *name, const char *text, ...) __printf(4, 5);
 
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
 	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/init.h>
 #include <linux/device.h>
 #include <linux/cdev.h>
@@ -16,6 +17,15 @@
 #include "sl_link.h"
 #include "sl_llr.h"
 #include "sl_mac.h"
+
+static unsigned long serdes_core_io_trace_lgrp_map;
+module_param(serdes_core_io_trace_lgrp_map, ulong, 0644);
+MODULE_PARM_DESC(serdes_core_io_trace_lgrp_map, "serdes core io trace enable link group map");
+
+u64 sl_serdes_core_io_trace_lgrp_map_get(void)
+{
+	return serdes_core_io_trace_lgrp_map;
+}
 
 #define SL_DEVICE_NAME "sl"
 

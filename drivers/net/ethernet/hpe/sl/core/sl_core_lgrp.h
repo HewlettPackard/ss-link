@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021,2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LGRP_H_
 #define _SL_CORE_LGRP_H_
@@ -123,6 +123,7 @@ struct sl_core_lgrp {
 	// FIXME: for now only enable at the lgrp level
 	bool err_trace_enable;
 	bool warn_trace_enable;
+	bool io_trace;
 };
 
 int		     sl_core_lgrp_new(u8 ldev_num, u8 lgrp_num);

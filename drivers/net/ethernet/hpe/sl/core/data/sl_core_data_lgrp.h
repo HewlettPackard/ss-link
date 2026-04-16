@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_DATA_LGRP_H_
 #define _SL_CORE_DATA_LGRP_H_
@@ -19,6 +19,7 @@ void sl_core_data_lgrp_hw_attr_set(struct sl_core_lgrp *core_lgrp, struct sl_hw_
 void sl_core_data_lgrp_config_set(struct sl_core_lgrp *core_lgrp, struct sl_lgrp_config *lgrp_config);
 int  sl_core_data_lgrp_err_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool err_trace_enable);
 int  sl_core_data_lgrp_warn_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool warn_trace_enable);
+int  sl_core_data_lgrp_io_trace_set(struct sl_core_lgrp *core_lgrp, bool io_trace);
 
 u32  sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp);
 

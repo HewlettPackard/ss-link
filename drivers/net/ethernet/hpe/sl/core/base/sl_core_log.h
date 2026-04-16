@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CORE_LOG_H_
 #define _SL_CORE_LOG_H_
@@ -64,5 +64,7 @@
 	sl_log_err((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
 #define sl_core_log_err_trace(_ptr, _name, _text, ...) \
 	sl_log_err_trace((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
+#define sl_core_log_io_trace(_ptr, _name, _text, ...) \
+	sl_log_io_trace((_ptr), SL_CORE_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)
 
 #endif /* _SL_CORE_LOG_H_ */
