@@ -1673,12 +1673,12 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 
 	if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT) {
-		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
+		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
 		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
 			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN) {
-		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
+		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
 		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
 			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);

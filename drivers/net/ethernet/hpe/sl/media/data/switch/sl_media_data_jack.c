@@ -326,8 +326,8 @@ int sl_media_data_jack_scan(u8 ldev_num)
 		rtn = hsnxcvr_status_get(hdl, &status_data);
 		if (rtn) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
-			sl_media_log_err(media_jack, LOG_NAME,
-				"jack scan status_get failed (jack_num = %u)", jack_num);
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "jack scan status_get failed (jack_num = %u)", jack_num);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
 			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
 			if (rtn)
@@ -366,7 +366,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 
 	rtn = register_hsnxcvr_notifier(&event_notifier);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "jack scan register jack event notifier failed [%d]", rtn);
+		sl_media_log_dbg(media_jack, LOG_NAME, "jack scan register jack event notifier failed [%d]", rtn);
 		return 0;
 	}
 
@@ -380,9 +380,9 @@ int sl_media_data_jack_scan(u8 ldev_num)
 		rtn = hsnxcvr_status_get(media_jack->hdl, &status_data);
 		if (rtn) {
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET);
-			sl_media_log_err(media_jack, LOG_NAME,
-				"jack scan status_get failed (physical_jack_num = %u)",
-				media_jack->physical_num);
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "jack scan status_get failed (physical_jack_num = %u)",
+					       media_jack->physical_num);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
 			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
 			if (rtn)
@@ -521,7 +521,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		if (count++ >= SL_MEDIA_JACK_CABLE_EVENT_TIMEOUT) {
 			sl_media_jack_fault_cause_set(media_jack,
 				SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT);
-			sl_media_log_err(media_jack, LOG_NAME, "timed out waiting for online");
+			sl_media_log_err_trace(media_jack, LOG_NAME, "timed out waiting for online");
 			return -ETIMEDOUT;
 		}
 		msleep(20);
@@ -557,7 +557,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	rtn = hsnxcvr_status_get(media_jack->hdl, &status_data);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET);
-		sl_media_log_err(media_jack, LOG_NAME, "status get failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "status get failed [%d]", rtn);
 		media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
 		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 		if (ret)

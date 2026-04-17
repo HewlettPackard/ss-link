@@ -100,9 +100,8 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 	link_caps   = &(core_mac->core_lgrp->link_caps[core_mac->num]);
 
 	if (hweight_long(link_caps->tech_map) != 1) {
-		sl_core_log_err(core_mac, LOG_NAME,
-			"tx settings - tech map invalid (map = 0x%08X)",
-			link_caps->tech_map);
+		sl_core_log_err_trace(core_mac, LOG_NAME, "tx settings - tech map invalid (map = 0x%08X)",
+				      link_caps->tech_map);
 		return -EINVAL;
 	}
 

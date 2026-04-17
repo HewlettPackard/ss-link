@@ -115,7 +115,7 @@ static int sl_core_hw_serdes_core_proc_reset(struct sl_core_lgrp *core_lgrp)
 		break;
 	}
 	if (x >= SL_HW_SERDES_WAIT_UC_ACTIVE_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "uc active failed");
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "uc active failed");
 		rtn = -EIO;
 		goto out;
 	}
@@ -381,7 +381,7 @@ static int sl_core_hw_serdes_core_pll_check(struct sl_core_lgrp *core_lgrp)
 		addrs[SERDES_PLL_CAL_COM_STS_0], &data16);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "0x%X = 0x%X", addrs[SERDES_PLL_CAL_COM_STS_0], data16);
 	if ((data16 & 0x0200) == 0) { /* PLL lock status */
-		sl_core_log_err(core_lgrp, LOG_NAME, "pll lock failed");
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "pll lock failed");
 		rtn = -EIO;
 		goto out;
 	}

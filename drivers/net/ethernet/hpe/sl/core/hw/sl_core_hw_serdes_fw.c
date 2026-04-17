@@ -75,7 +75,7 @@ int sl_core_hw_serdes_fw_setup(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0,
 		addrs[SERDES_MICRO_A_COM_AHB_CONTROL0], 0x0000, 0x0300); /* disable init */
 	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "fw setup RAM init timeout");
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "fw setup RAM init timeout");
 		rtn = -EIO;
 		goto out;
 	}
@@ -94,7 +94,7 @@ int sl_core_hw_serdes_fw_setup(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_SBUS_PMI_WR(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0, 0,
 		addrs[SERDES_MICRO_A_COM_AHB_CONTROL0], 0x0000, 0x0300); /* disable init */
 	if (x >= SL_HW_SERDES_INIT_CHECK_TRIES) {
-		sl_core_log_err(core_lgrp, LOG_NAME, "code RAM init timeout");
+		sl_core_log_err_trace(core_lgrp, LOG_NAME, "code RAM init timeout");
 		rtn = -EIO;
 		goto out;
 	}
@@ -177,9 +177,9 @@ int sl_core_hw_serdes_fw_finish(struct sl_core_lgrp *core_lgrp)
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, 0, 0,
 		addrs[SERDES_MICRO_B_COM_RMI_RAM_CR_CRCSTATUS0], &data16); /* read CRC */
 	if (data16 != SL_HW_SERDES_FW_IMAGE_CRC) {
-		sl_core_log_err(core_lgrp, LOG_NAME,
-			"fw finish crc check failure (crc = 0x%04X, expected = 0x%04X)",
-			data16, SL_HW_SERDES_FW_IMAGE_CRC);
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
+				      "fw finish crc check failure (crc = 0x%04X, expected = 0x%04X)",
+				      data16, SL_HW_SERDES_FW_IMAGE_CRC);
 		rtn = -EIO;
 		goto out;
 	}

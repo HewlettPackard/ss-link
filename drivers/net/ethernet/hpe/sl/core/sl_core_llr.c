@@ -47,8 +47,7 @@ int sl_core_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_c
 	case SL_CORE_LLR_STATE_CONFIGURED:
 		rtn = sl_core_data_llr_config_set(core_llr, llr_config);
 		if (rtn) {
-			sl_core_log_err(core_llr, LOG_NAME,
-				"config set - llr_config_set failed [%d]", rtn);
+			sl_core_log_err_trace(core_llr, LOG_NAME, "config set - llr_config_set failed [%d]", rtn);
 			spin_unlock(&core_llr->data_lock);
 			return rtn;
 		}
@@ -56,9 +55,8 @@ int sl_core_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_c
 		spin_unlock(&core_llr->data_lock);
 		return 0;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME,
-			"config set - invalid (llr_state = %u %s)",
-			llr_state, sl_core_llr_state_str(llr_state));
+		sl_core_log_err(core_llr, LOG_NAME, "config set - invalid (llr_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return -EBADRQC;
 	}
@@ -75,8 +73,7 @@ int sl_core_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 
 	rtn = sl_core_data_llr_policy_set(core_llr, llr_policy);
 	if (rtn) {
-		sl_core_log_err(core_llr, LOG_NAME,
-			"policy set - llr_policy_set failed [%d]", rtn);
+		sl_core_log_err_trace(core_llr, LOG_NAME, "policy set - llr_policy_set failed [%d]", rtn);
 		return rtn;
 	}
 	return 0;

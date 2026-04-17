@@ -157,8 +157,7 @@ static int sl_ctrl_link_down_cmd(struct sl_ctrl_link *ctrl_link)
 	rtn = sl_core_link_down(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num,
 		sl_ctrl_link_down_callback, ctrl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-			"core_link_down failed [%d]", rtn);
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -185,8 +184,7 @@ static int sl_ctrl_link_cancel_cmd(struct sl_ctrl_link *ctrl_link)
 	rtn = sl_core_link_cancel(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num,
 		sl_ctrl_link_down_callback, ctrl_link);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-			"core_link_down failed [%d]", rtn);
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 		return rtn;
 	}
 
@@ -854,7 +852,7 @@ static int sl_ctrl_link_reset_cmd(struct sl_ctrl_link *ctrl_link)
 	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctrl_link_down_callback,
 		ctrl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	if (rtn)
-		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
+		sl_ctrl_log_warn(ctrl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 
 	timeleft = wait_for_completion_timeout(&ctrl_link->down_complete,
 		msecs_to_jiffies(SL_CTRL_LINK_DOWN_WAIT_TIMEOUT_MS));

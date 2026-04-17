@@ -409,15 +409,13 @@ int sl_core_data_link_settings(struct sl_core_link *core_link)
 
 	/* abilities */
 	if (hweight_long(link_caps->tech_map) != 1) {
-		sl_core_log_err(core_link, LOG_NAME,
-			"settings - tech map invalid (map = 0x%08X)",
-			link_caps->tech_map);
+		sl_core_log_err_trace(core_link, LOG_NAME, "settings - tech map invalid (map = 0x%08X)",
+				      link_caps->tech_map);
 		return -EINVAL;
 	}
 	if (hweight_long(link_caps->fec_map) > 1) {
-		sl_core_log_err(core_link, LOG_NAME,
-			"settings - fec map invalid (map = 0x%08X)",
-			link_caps->fec_map);
+		sl_core_log_err_trace(core_link, LOG_NAME, "settings - fec map invalid (map = 0x%08X)",
+				      link_caps->fec_map);
 		return -EINVAL;
 	}
 

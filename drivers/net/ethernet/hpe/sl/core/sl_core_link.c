@@ -118,7 +118,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_core_log_dbg(core_link, LOG_NAME, "cancel");
 
 	if (!callback) {
-		sl_core_log_err(core_link, LOG_NAME, "cancel - NULL callback");
+		sl_core_log_err_trace(core_link, LOG_NAME, "cancel - NULL callback");
 		return -EINVAL;
 	}
 
@@ -161,7 +161,7 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	sl_core_log_dbg(core_link, LOG_NAME, "down");
 
 	if (!callback) {
-		sl_core_log_err(core_link, LOG_NAME, "down - NULL callback");
+		sl_core_log_err_trace(core_link, LOG_NAME, "down - NULL callback");
 		return -EINVAL;
 	}
 

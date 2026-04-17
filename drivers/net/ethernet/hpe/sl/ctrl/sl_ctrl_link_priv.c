@@ -704,8 +704,7 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 					ctrl_link->num, sl_ctrl_link_async_down_callback, ctrl_link,
 					down_cause_map);
 		if (rtn) {
-			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "async_down core_link_down failed [%d]", rtn);
+			sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down core_link_down failed [%d]", rtn);
 			sl_ctrl_link_put(ctrl_link);
 			return rtn;
 		}

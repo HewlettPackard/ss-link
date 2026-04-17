@@ -673,7 +673,7 @@ static bool sl_media_jack_is_lane_data_valid(struct sl_media_jack *media_jack, u
 	sl_media_log_dbg(media_jack, LOG_NAME, "lane data valid (serdes_lane_map = 0x%lx)", serdes_lane_map);
 
 	if (lane_data->dp_states_changed & serdes_lane_map) {
-		sl_media_log_err(media_jack, LOG_NAME,
+		sl_media_log_dbg(media_jack, LOG_NAME,
 				 "lane data valid DP state changed (dp_states_changed = 0x%X, serdes_lane_map = 0x%lx)",
 				 lane_data->dp_states_changed, serdes_lane_map);
 		return false;
@@ -683,7 +683,7 @@ static bool sl_media_jack_is_lane_data_valid(struct sl_media_jack *media_jack, u
 		lane_dp_state = MEDIA_LANE_DP_STATE_GET(lane_data, serdes_lane_num);
 
 		if (!SL_MEDIA_JACK_SIGNAL_INFO_ALLOWED(lane_dp_state)) {
-			sl_media_log_err(media_jack, LOG_NAME,
+			sl_media_log_dbg(media_jack, LOG_NAME,
 					 "lane data valid DP state not allowed (lane_num = %u, dp_state = %u %s)",
 					 serdes_lane_num, lane_dp_state,
 					 sl_media_jack_lane_dp_state_str(lane_dp_state));

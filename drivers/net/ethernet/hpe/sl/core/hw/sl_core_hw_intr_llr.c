@@ -56,8 +56,7 @@ int sl_core_hw_intr_llr_hdlr_register(struct sl_core_llr *core_llr)
 		rtn = sl_core_hw_intr_llr_register(core_llr, core_llr->intrs[x].flgs,
 			sl_core_hw_intr_llr_hdlr, &(core_llr->intrs[x].data));
 		if (rtn != 0) {
-			sl_core_log_err(core_llr, LOG_NAME,
-				"register - %d failed [%d]", x, rtn);
+			sl_core_log_err_trace(core_llr, LOG_NAME, "register - %d failed [%d]", x, rtn);
 			return rtn;
 		}
 	}

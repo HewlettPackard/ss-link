@@ -597,7 +597,8 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
 
 	media_jack->is_cable_format_unsupported = true;
 	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED);
-	sl_media_log_err(media_jack, LOG_NAME, "unsupported format (id = 0x%X, rev = 0x%X)", identifier, revision);
+	sl_media_log_err_trace(media_jack, LOG_NAME, "unsupported format (id = 0x%X, rev = 0x%X)",
+			       identifier, revision);
 
 	return -EMEDIUMTYPE;
 }
