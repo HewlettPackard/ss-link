@@ -181,7 +181,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_INTR_ENABLE       BIT(9)  /* link up interrupt enable failure     */
 #define SL_LINK_DOWN_CAUSE_TIMEOUT           BIT(10) /* link up timeout                      */
 #define SL_LINK_DOWN_CAUSE_CANCELED          BIT(11) /* link up cancelled                    */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(12) /* unsuppported cable                   */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE BIT(12) /* unsupported cable                    */
 #define SL_LINK_DOWN_CAUSE_COMMAND           BIT(13) /* client command                       */
 #define SL_LINK_DOWN_CAUSE_DOWNSHIFT         BIT(14) /* link up cable downshift failed       */
 #define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    BIT(15) /* LLR replay at max fault              */

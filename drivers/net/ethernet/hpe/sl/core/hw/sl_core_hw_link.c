@@ -1683,11 +1683,13 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 	if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT) {
 		sl_core_log_err(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN) {
 		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
 	sl_core_hw_link_fault_link_down(core_link);
@@ -1978,7 +1980,8 @@ link_down:
 				       "fault intr work setting down cause as remote fault because ignored previously");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 		goto out;
 	}
 
@@ -2001,28 +2004,32 @@ link_down:
 		sl_core_log_err_trace(core_link, LOG_NAME, "llr replay max occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
 	}
 
 	if (local_fault) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	}
 
 	if (remote_fault) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 	}
 
 	if (link_down) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
 out:
