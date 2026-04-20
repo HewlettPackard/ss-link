@@ -726,7 +726,6 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 		core_link->link.is_last_down_new = false;
 	} else {
 		core_link->link.last_down_cause_map[core_link->link.last_down_entry_num] |= down_cause_map;
-		core_link->link.last_down_time[core_link->link.last_down_entry_num]       = ktime_get_real_seconds();
 	}
 
 	spin_unlock(&core_link->link.data_lock);
@@ -805,7 +804,6 @@ void sl_core_data_link_last_up_fail_cause_map_set(struct sl_core_link *core_link
 		core_link->link.is_last_up_fail_new = false;
 	} else {
 		core_link->link.last_up_fail_cause_map[core_link->link.last_up_fail_entry_num] |= up_fail_cause_map;
-		core_link->link.last_up_fail_time[core_link->link.last_up_fail_entry_num]       = ktime_get_real_seconds();
 	}
 
 	spin_unlock(&core_link->link.data_lock);

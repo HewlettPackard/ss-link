@@ -1201,7 +1201,7 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 
 	sl_core_hw_link_up_callback(core_link, sl_core_link_up_info_get(core_link, &link_up_info));
 
-	sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UP_CANCELED_MAP);
+	sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UP_CANCELED_MAP);
 	sl_core_hw_link_down_callback(core_link);
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
@@ -1557,8 +1557,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 	struct sl_media_lgrp               *media_lgrp;
-	u32                                 link_state;
-	u8				    temperature_state;
+	u8                                  temperature_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fault link down");
 
@@ -1606,13 +1605,8 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 		}
 	}
 	sl_core_data_link_state_set(core_link, SL_CORE_LINK_STATE_DOWN);
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "fault link down failed to get link state [%d]", rtn);
-		link_state = SL_CORE_LINK_STATE_INVALID;
-	}
-	rtn = core_link->config.fault_callback(core_link->link.tags.up, link_state,
+
+	rtn = core_link->config.fault_callback(core_link->link.tags.up, SL_CORE_LINK_STATE_DOWN,
 					       sl_core_data_link_last_down_cause_map_get(core_link),
 					       sl_core_data_link_info_map_get(core_link));
 	if (rtn != 0)
