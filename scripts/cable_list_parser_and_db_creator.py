@@ -12,8 +12,8 @@ from openpyxl import load_workbook
 # Defines:  sources must match sheets within the xlsm file exactly
 infile = "SlingshotCableCompatibilityMatrix.xlsm"
 outfile = "sl_media_data_cable_db.h"
-source1 = "S1 S2 Cable List 11.24.25"
-source2 = "OSFP Cable List 11.05.25"
+source1 = "S1 S2 QSFP Cable List"
+source2 = "S2 S3 OSFP Cable List"
 
 # count the rows
 def rows_count(df):

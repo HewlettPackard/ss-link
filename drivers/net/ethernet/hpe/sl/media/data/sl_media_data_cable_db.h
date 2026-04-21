@@ -2,8 +2,8 @@
 /* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 /* This file is auto-generated through script and should not be modified */
-/* source1 = S1 S2 Cable List 11.24.25 */
-/* source2 = OSFP Cable List 11.05.25 */
+/* source1 = S1 S2 QSFP Cable List */
+/* source2 = S2 S3 OSFP Cable List */
 
 #ifndef _SL_MEDIA_DATA_CABLE_DB_H_
 #define _SL_MEDIA_DATA_CABLE_DB_H_
@@ -1634,7 +1634,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54439001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN8X0QE2C05-CU",
+		.vendor_pn_str            = "FCBN8X0QE2C05-CU", /* manually truncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -1694,7 +1694,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54440001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN8X0QE2C100-C", /* manually truuncated 1 char */
+		.vendor_pn_str            = "FCBN8X0QE2C100-C", /* manually truncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 10000,
@@ -1754,7 +1754,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54442001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN8X0QE2C50-CU",
+		.vendor_pn_str            = "FCBN8X0QE2C50-CU", /* manually truncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 5000,
@@ -1874,7 +1874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54444001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN8X0QE2C30-CU",
+		.vendor_pn_str            = "FCBN8X0QE2C30-CU", /* manually truncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 3000,
@@ -2234,7 +2234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 54458001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN8X0QE2C07-CU",
+		.vendor_pn_str            = "FCBN8X0QE2C07-CU", /* manually truncated 1 char */
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 700,
@@ -2832,6 +2832,66 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.split_minor       = 1,
 	},
 	{
+		.hpe_pn                   = 65070001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "2495759-2",
+		.type                     = SL_MEDIA_TYPE_AOC,
+		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
+		.length_cm                = 700,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -12,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = -4,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = 4,
+		.fw_ver.minor             = 5,
+		.fw_ver.split_major       = 4,
+		.fw_ver.split_minor       = 5,
+	},
+	{
+		.hpe_pn                   = 65070001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "1", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_AOC,
+		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
+		.length_cm                = 700,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -12,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = -4,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = 0,
+		.fw_ver.minor             = 18,
+		.fw_ver.split_major       = 0,
+		.fw_ver.split_minor       = 15,
+	},
+	{
+		.hpe_pn                   = 65070001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "2", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_AOC,
+		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
+		.length_cm                = 700,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -12,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = -4,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = 3,
+		.fw_ver.minor             = 1,
+		.fw_ver.split_major       = 3,
+		.fw_ver.split_minor       = 1,
+	},
+	{
 		.hpe_pn                   = 65072001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
 		.vendor_pn_str            = "2495759-3",
@@ -3134,7 +3194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80489001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "3", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3154,7 +3214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80489001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "4", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -3194,7 +3254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 80490001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "5", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -4074,7 +4134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 101798705,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "FCBN950QE1C10-CY", /* manually fixed typo in spreadsheet */
+		.vendor_pn_str            = "FCBN950QE1C10-CY",
 		.type                     = SL_MEDIA_TYPE_AOC,
 		.shape                    = SL_MEDIA_SHAPE_SPLITTER,
 		.length_cm                = 1000,
@@ -5474,7 +5534,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85091001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2111661508",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 80,
@@ -5534,7 +5594,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85092001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "6", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 100,
@@ -5594,7 +5654,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85093001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "7", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 120,
@@ -5654,7 +5714,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85094001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "8", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 140,
@@ -5714,7 +5774,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85095001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2111663516",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5754,7 +5814,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "9", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5774,7 +5834,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85096001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2111664518",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5814,7 +5874,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "10", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -5834,7 +5894,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85097001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2111664520",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -5874,7 +5934,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_BIZLINK,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "11", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5894,7 +5954,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2111664220",
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5914,7 +5974,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 85098001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "12", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_PEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 220,
@@ -5934,7 +5994,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86997001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "13", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5954,7 +6014,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86997001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "14", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 160,
@@ -5974,7 +6034,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86998001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2253619502",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -5994,7 +6054,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86998001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "15", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 180,
@@ -6014,7 +6074,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86999001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "16", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -6034,7 +6094,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 86999001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "17", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 200,
@@ -6054,7 +6114,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87000001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "18", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -6074,7 +6134,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87000001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "19", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 225,
@@ -6094,7 +6154,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87001001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2253619505",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -6114,7 +6174,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87001001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "20", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 250,
@@ -6134,7 +6194,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87002001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "21", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -6154,7 +6214,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87002001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "22", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 275,
@@ -6174,7 +6234,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87003001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2253619507",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -6194,7 +6254,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87003001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "23", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 300,
@@ -6214,7 +6274,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87004001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "24", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -6234,7 +6294,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87004001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "25", /* manually_numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 400,
@@ -6254,7 +6314,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87005001,
 		.vendor                   = SL_MEDIA_VENDOR_MOLEX,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "2253619509",
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -6274,7 +6334,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87005001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "26", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_AEC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 500,
@@ -6294,7 +6354,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87655001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "27", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6314,7 +6374,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 87655001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "28", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6412,49 +6472,9 @@ static struct sl_media_cable_attr cable_db[] = {
 		.fw_ver.split_minor       = -1,
 	},
 	{
-		.hpe_pn                   = 87657001,
-		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
-		.type                     = SL_MEDIA_TYPE_POC,
-		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
-		.length_cm                = 0,
-		.is_supported_ss200_cable = false,
-		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
-		.serdes_settings.pre1     = -4,
-		.serdes_settings.pre2     = 0,
-		.serdes_settings.pre3     = 0,
-		.serdes_settings.cursor   = 98,
-		.serdes_settings.post1    = 0,
-		.serdes_settings.post2    = 0,
-		.fw_ver.major             = -1,
-		.fw_ver.minor             = -1,
-		.fw_ver.split_major       = -1,
-		.fw_ver.split_minor       = -1,
-	},
-	{
-		.hpe_pn                   = 87657001,
-		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn_str            = "?",
-		.type                     = SL_MEDIA_TYPE_POC,
-		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
-		.length_cm                = 0,
-		.is_supported_ss200_cable = false,
-		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
-		.serdes_settings.pre1     = -4,
-		.serdes_settings.pre2     = 0,
-		.serdes_settings.pre3     = 0,
-		.serdes_settings.cursor   = 98,
-		.serdes_settings.post1    = 0,
-		.serdes_settings.post2    = 0,
-		.fw_ver.major             = -1,
-		.fw_ver.minor             = -1,
-		.fw_ver.split_major       = -1,
-		.fw_ver.split_minor       = -1,
-	},
-	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "29", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6474,7 +6494,7 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "30", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6494,7 +6514,47 @@ static struct sl_media_cable_attr cable_db[] = {
 	{
 		.hpe_pn                   = 88993001,
 		.vendor                   = SL_MEDIA_VENDOR_TE,
-		.vendor_pn_str            = "?",
+		.vendor_pn_str            = "31", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 89361001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "32", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 89361001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "33", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
@@ -6535,6 +6595,286 @@ static struct sl_media_cable_attr cable_db[] = {
 		.hpe_pn                   = 90105001,
 		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
 		.vendor_pn_str            = "FTCE8627E1PCA",
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 90105001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "34", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 90105001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "35", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "36", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "37", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "38", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "39", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "40", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93284001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "41", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93285001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "42", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93285001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "43", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93285001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "44", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93286001,
+		.vendor                   = SL_MEDIA_VENDOR_FINISAR,
+		.vendor_pn_str            = "45", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93286001,
+		.vendor                   = SL_MEDIA_VENDOR_HISENSE,
+		.vendor_pn_str            = "46", /* manually numbered */
+		.type                     = SL_MEDIA_TYPE_POC,
+		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
+		.length_cm                = 0,
+		.is_supported_ss200_cable = false,
+		.max_speed                = SL_MEDIA_SPEEDS_SUPPORT_CK_800G,
+		.serdes_settings.pre1     = -4,
+		.serdes_settings.pre2     = 0,
+		.serdes_settings.pre3     = 0,
+		.serdes_settings.cursor   = 98,
+		.serdes_settings.post1    = 0,
+		.serdes_settings.post2    = 0,
+		.fw_ver.major             = -1,
+		.fw_ver.minor             = -1,
+		.fw_ver.split_major       = -1,
+		.fw_ver.split_minor       = -1,
+	},
+	{
+		.hpe_pn                   = 93286001,
+		.vendor                   = SL_MEDIA_VENDOR_TE,
+		.vendor_pn_str            = "47", /* manually numbered */
 		.type                     = SL_MEDIA_TYPE_POC,
 		.shape                    = SL_MEDIA_SHAPE_STRAIGHT,
 		.length_cm                = 0,
