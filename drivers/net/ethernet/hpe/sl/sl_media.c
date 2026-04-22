@@ -67,13 +67,14 @@ const char *sl_media_state_str(u8 state)
 }
 EXPORT_SYMBOL(sl_media_state_str);
 
-const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
+const char *sl_media_cable_speed_state_str(u8 cable_speed_state)
 {
-	switch (cable_shift_state) {
+// FIXME: for now being liberal with the strings
+	switch (cable_speed_state) {
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED:
-		return "upshifted";
+		return "400G";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED:
-		return "downshifted";
+		return "200G";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE:
 		return "failed-no-cable";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_FAKE_CABLE:
@@ -83,16 +84,16 @@ const char *sl_media_cable_shift_state_str(u8 cable_shift_state)
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_CHECK:
 		return "failed-check";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_UPSHIFT:
-		return "failed-upshift";
+		return "failed-up";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_DOWNSHIFT:
-		return "failed-downshift";
+		return "failed-down";
 	case SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED:
-		return "not-shifted";
+		return "none";
 	default:
 		return "invalid";
 	}
 }
-EXPORT_SYMBOL(sl_media_cable_shift_state_str);
+EXPORT_SYMBOL(sl_media_cable_speed_state_str);
 
 const char *sl_media_type_str(u32 type)
 {

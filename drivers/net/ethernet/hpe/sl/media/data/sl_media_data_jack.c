@@ -131,35 +131,31 @@ void sl_media_data_jack_eeprom_clr(struct sl_media_jack *media_jack)
 }
 
 int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
-		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *media_attr)
+				      struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *media_attr)
 {
-	struct sl_media_lgrp *media_lgrp;
-
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "media attr set (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%lX)",
-			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
+			 "media attr set (format = %d, vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds_map = 0x%lX)",
+			 media_attr->format, media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
 			 media_attr->type, sl_media_type_str(media_attr->type),
 			 media_attr->length_cm, media_attr->speeds_map);
 
-	media_lgrp = sl_media_data_lgrp_get(cable_info->ldev_num, cable_info->lgrp_num);
 	spin_lock(&media_jack->data_lock);
+
 	if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		spin_unlock(&media_jack->data_lock);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr already set");
+		spin_unlock(&media_jack->data_lock);
 		return -EEXIST;
 	}
 
 	if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
 		cable_info->stashed_media_attr = *media_attr;
-		cable_info->real_cable_status = CABLE_MEDIA_ATTR_STASHED;
-		spin_unlock(&media_jack->data_lock);
+		cable_info->real_cable_status  = CABLE_MEDIA_ATTR_STASHED;
 	} else {
-		cable_info->media_attr = *media_attr;
+		cable_info->media_attr        = *media_attr;
 		cable_info->real_cable_status = CABLE_MEDIA_ATTR_ADDED;
-		spin_unlock(&media_jack->data_lock);
-		if (media_lgrp)
-			sl_media_data_jack_cable_if_present_send(media_lgrp);
 	}
+
+	spin_unlock(&media_jack->data_lock);
 
 	return 0;
 }

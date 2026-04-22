@@ -175,7 +175,7 @@ int sl_media_headshell_temp_get(struct sl_lgrp *lgrp, u8 *temp);
 
 const char *sl_media_furcation_str(u32 furcation);
 const char *sl_media_state_str(u8 state);
-const char *sl_media_cable_shift_state_str(u8 cable_shift_state);
+const char *sl_media_cable_speed_state_str(u8 cable_shift_state);
 const char *sl_media_type_str(u32 type);
 const char *sl_media_shape_str(u32 shape);
 const char *sl_media_cable_end_str(u8 cable_end);
