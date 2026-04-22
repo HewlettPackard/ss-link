@@ -480,6 +480,8 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		return;
 	}
 
+	sl_core_log_dbg(core_link, LOG_NAME, "up work (speed = %d)", core_link->pcs.settings.pcs_mode);
+
 	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
 		rtn = sl_media_jack_cable_downshift(core_link->core_lgrp->core_ldev->num,
 						    core_link->core_lgrp->num, core_link->num);

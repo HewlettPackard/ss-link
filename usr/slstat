@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=16
+MINOR=17
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -209,11 +209,11 @@ function print_jack_state {
 
         local state=$(cat ${LGRP_PATH}/media/state)
         local jack_num=$(cat ${LGRP_PATH}/media/jack_num)
-        local shift=$(cat ${LGRP_PATH}/media/cable_shift_state)
+        local speed=$(cat ${LGRP_PATH}/media/cable_speed_state)
 	local power=$(cat ${LGRP_PATH}/media/jack_power_state)
         local type=$(cat ${LGRP_PATH}/media/type)
 
-       	printf "jack%03d    | state: ${state}, shift: ${shift}, power: ${power}${temp_str}\n" ${jack_num}
+       	printf "jack%03d    | cable_state: ${state}, cable_speed: ${speed}, cable_power: ${power}\n" ${jack_num}
 
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
 		local temp_c=$(cat ${LGRP_PATH}/media/temperature_celsius)
@@ -259,8 +259,8 @@ function print_link_state {
         	printf "link%d      | state: ${state}  [${D}d ${H}h ${M}m ${S}s ${MS}ms]\n" ${LINK}
         	printf "           | speed: ${speed}\n"
 	fi
-                printf "           | time_to_link_up: ${time_to_link_up}${units}, total_time_to_link_up: ${total_time_to_link_up}${units}\n"
-        printf "           | info_map: ${info_map}\n"
+        printf "           | info : ${info_map}\n"
+        printf "           | time_to_link_up: ${time_to_link_up}${units}, total_time_to_link_up: ${total_time_to_link_up}${units}\n"
 }
 
 function print_mac_state {
@@ -461,9 +461,9 @@ function print_jack {
 
         print_jack_state
 
-        printf "           | cable: ${vendor} ${type} ${length}${units}          (serial#: ${serial_num})\n"
-        printf "           |        vendor part#: ${vendor_part_num}, hpe part#: ${hpe_part_num}, data_code: ${date_code}\n"
-        printf "           |        type: ${jack_type}, shape: ${shape}, end: ${cable_end}, jack_part: ${jack_part}\n"
+        printf "           | cable: ${vendor} ${type} ${length}${units}          (serial_num: ${serial_num})\n"
+        printf "           |        vendor_part_num: ${vendor_part_num}, hpe_part_num: ${hpe_part_num}, data_code: ${date_code}\n"
+        printf "           |        type: ${jack_type}, shape: ${shape}, end: ${cable_end}, jack: ${jack_part}\n"
         printf "           |        furcation: ${furcation}\n"
         printf "           | is_supported_cable: ${is_supported_cable}, is_supported_ss200_cable: ${is_supported_ss200_cable}\n"
 	if [ "${type}" == "AEC" ] || [ "${type}" == "AOC" ] || [ "${type}" == "ACC" ] || [ "${type}" == "POC" ]; then
@@ -471,7 +471,7 @@ function print_jack {
 		printf "           | active_cable_200g: host_interface: ${host_interface_200}, lane_count: ${lane_count_200}, appselect: ${appsel_num_200}\n"
 		printf "           | active_cable_400g: host_interface: ${host_interface_400}, lane_count: ${lane_count_400}, appselect: ${appsel_num_400}\n"
 	fi
-	printf "           | speeds: "
+	printf "           | cable_supported_speeds: "
 	local have_speed=no
         if [ -e ${LGRP_PATH}/media/speeds/cd50G ] ; then
                 printf "cd50G "
@@ -509,7 +509,7 @@ function print_jack {
 		printf "none "
 	fi
         printf "\n"
-        printf "           |         max_speed: ${max_speed}\n"
+        printf "           | cable_max_speed: ${max_speed}\n"
         printf "           | error_info: ${error_info}\n"
         printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
 }

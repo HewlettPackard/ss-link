@@ -246,8 +246,8 @@ static struct notifier_block event_notifier = {
 	.priority = 0,
 };
 
-static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 ldev_num,
-					struct sl_media_attr *media_attr)
+static int sl_media_data_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 ldev_num,
+					     struct sl_media_attr *media_attr)
 {
 	u8  i;
 	int rtn;
@@ -259,13 +259,38 @@ static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 lde
 		media_jack->cable_info[i].lgrp_num = media_jack->asic_port[i];
 		rtn = sl_media_data_jack_media_attr_set(media_jack, &media_jack->cable_info[i], media_attr);
 		if (rtn) {
-			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 			sl_media_log_err_trace(media_jack, LOG_NAME, "media_attr set failed [%d]", rtn);
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET);
 			return rtn;
 		}
 	}
 
 	return 0;
+}
+
+static void sl_media_data_jack_cable_attr_errors_update(struct sl_media_jack *media_jack, u32 errors)
+{
+	u8 x;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr errors update");
+
+	for (x = 0; x < media_jack->port_count; ++x)
+		media_jack->cable_info[x].media_attr.errors |= errors;
+}
+
+static void sl_media_data_jack_cable_attr_send(struct sl_media_jack *media_jack)
+{
+	struct sl_media_lgrp *media_lgrp;
+	u8                    x;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr send");
+
+	for (x = 0; x < media_jack->port_count; ++x) {
+		media_lgrp = sl_media_data_lgrp_get(media_jack->cable_info[x].ldev_num,
+						    media_jack->cable_info[x].lgrp_num);
+		if (media_lgrp)
+			sl_media_data_jack_cable_if_present_send(media_lgrp);
+	}
 }
 
 int sl_media_data_jack_scan(u8 ldev_num)
@@ -329,10 +354,11 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			sl_media_log_err(media_jack, LOG_NAME,
 				"jack scan status_get failed (jack_num = %u)", jack_num);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
+			rtn = sl_media_data_jack_cable_attr_set(media_jack, 0, &media_attr);
 			if (rtn)
 				sl_media_log_err_trace(media_jack, LOG_NAME,
-					"jack scan cable_attr_set failed [%d]", rtn);
+						       "jack scan cable_attr_set failed [%d]", rtn);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			continue;
 		}
 		media_jack->status = status_data.flags;
@@ -384,10 +410,11 @@ int sl_media_data_jack_scan(u8 ldev_num)
 				"jack scan status_get failed (physical_jack_num = %u)",
 				media_jack->physical_num);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			rtn = sl_media_jack_cable_attr_set(media_jack, 0, &media_attr);
+			rtn = sl_media_data_jack_cable_attr_set(media_jack, 0, &media_attr);
 			if (rtn)
 				sl_media_log_err_trace(media_jack, LOG_NAME,
-					"jack scan cable_attr_set failed [%d]", rtn);
+						       "jack scan cable_attr_set failed [%d]", rtn);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			continue;
 		}
 		media_jack->status = status_data.flags;
@@ -434,9 +461,9 @@ static int sl_media_data_jack_temp_value_get(struct sl_media_jack *media_jack, u
 	return -EINVAL;
 }
 
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_MIN     64
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_MAX     70
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT 65
+#define TEMPERATURE_WARN_LIMIT_CELSIUS_MIN     55
+#define TEMPERATURE_WARN_LIMIT_CELSIUS_MAX     85
+#define TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT 70
 static int sl_media_data_jack_temp_warn_limit_get(struct sl_media_jack *media_jack, u8 *data)
 {
 	u8  i;
@@ -446,6 +473,7 @@ static int sl_media_data_jack_temp_warn_limit_get(struct sl_media_jack *media_ja
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp warn limit get");
 
 	for (i = 0; i < 3; ++i) {
+// FIXME: this offset is different for SFF
 		rtn = sl_media_io_read8(media_jack, 2, 132, &value);
 		if (rtn)
 			continue;
@@ -460,8 +488,8 @@ static int sl_media_data_jack_temp_warn_limit_get(struct sl_media_jack *media_ja
 	return -EINVAL;
 }
 
-#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN     71
-#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX     90
+#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN     65
+#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX     95
 #define TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT 80
 static int sl_media_data_jack_temp_down_limit_get(struct sl_media_jack *media_jack, u8 *data)
 {
@@ -472,6 +500,7 @@ static int sl_media_data_jack_temp_down_limit_get(struct sl_media_jack *media_ja
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp down limit get");
 
 	for (i = 0; i < 3; ++i) {
+// FIXME: this offset is different for SFF
 		rtn = sl_media_io_read8(media_jack, 2, 128, &value);
 		if (rtn)
 			continue;
@@ -543,9 +572,10 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "jack get failed [%d]", rtn);
 		media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+		ret = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 		if (ret)
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+		sl_media_data_jack_cable_attr_send(media_jack);
 		return rtn;
 	}
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -559,9 +589,10 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET);
 		sl_media_log_err(media_jack, LOG_NAME, "status get failed [%d]", rtn);
 		media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+		ret = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 		if (ret)
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+		sl_media_data_jack_cable_attr_send(media_jack);
 		return rtn;
 	}
 	media_jack->status = status_data.flags;
@@ -607,9 +638,10 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO);
 			sl_media_log_err_trace(media_jack, LOG_NAME, "i2c read failed [%d]", rtn);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			ret = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 			if (ret)
 				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			return rtn;
 		}
 
@@ -626,9 +658,10 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
-			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+			ret = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 			if (ret)
 				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			return -EFAULT;
 		}
 
@@ -690,6 +723,13 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		memset(media_attr.fw_ver, 0, sizeof(media_attr.fw_ver));
 	}
 
+	rtn = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+		return rtn;
+	}
+
+	// FIXME: can we do flags better?
 	flags = 0;
 	if (media_attr.vendor == SL_MEDIA_VENDOR_MULTILANE)
 		flags |= SL_MEDIA_TYPE_LOOPBACK;
@@ -697,67 +737,55 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		flags |= SL_MEDIA_TYPE_BACKPLANE;
 	if (media_jack->is_cable_unsupported)
 		flags |= SL_MEDIA_TYPE_UNSUPPORTED;
-
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
-		ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
-		if (ret)
-			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
+		sl_media_data_jack_cable_attr_send(media_jack);
 		return rtn;
 	}
 
 	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type)) {
-		rtn = sl_media_data_jack_cable_soft_reset(media_jack);
-		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
-			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
-			if (ret)
-				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
-			return rtn;
-		}
-
-		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
-		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
-			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			ret = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
-			if (ret)
-				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", ret);
-			return rtn;
-		}
-
 		rtn = sl_media_data_jack_temp_down_limit_get(media_jack, &value);
 		if (rtn) {
+			sl_media_log_err(media_jack, LOG_NAME, "temp down limit get failed [%d]", rtn);
 			media_jack->temperature_down_limit_c = TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT;
-			media_attr.errors |= SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT;
-			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
-			sl_media_log_dbg(media_jack, LOG_NAME, "media error cable temp down limit (0x%x)",
-					 media_attr.errors);
+			sl_media_data_jack_cable_attr_errors_update(media_jack,
+								    SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT |
+								    SL_MEDIA_ERROR_TRYABLE);
 		} else {
 			media_jack->temperature_down_limit_c = value;
 		}
 
 		rtn = sl_media_data_jack_temp_warn_limit_get(media_jack, &value);
 		if (rtn) {
+			sl_media_log_err(media_jack, LOG_NAME, "temp warn limit get failed [%d]", rtn);
 			media_jack->temperature_warn_limit_c = TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT;
-			media_attr.errors |= SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT;
-			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
-			sl_media_log_dbg(media_jack, LOG_NAME, "media error cable temp warn limit (0x%x)",
-					 media_attr.errors);
+			sl_media_data_jack_cable_attr_errors_update(media_jack,
+								    SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT |
+								    SL_MEDIA_ERROR_TRYABLE);
 		} else {
 			media_jack->temperature_warn_limit_c = value;
 		}
-	}
 
-	rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
-		return rtn;
+		rtn = sl_media_data_jack_cable_soft_reset(media_jack);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			sl_media_data_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+			sl_media_data_jack_cable_attr_send(media_jack);
+			return rtn;
+		}
+
+		/* must be last in the sequence because it needs time to load firmware */
+		rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable high power set failed [%d]", rtn);
+			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			sl_media_data_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+			sl_media_data_jack_cable_attr_send(media_jack);
+			return rtn;
+		}
 	}
 
 	if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type)) {
@@ -772,6 +800,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	sl_media_data_jack_cable_temp_state_init(media_jack);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
+
+	sl_media_data_jack_cable_attr_send(media_jack);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "online (jack = 0x%p)", media_jack);
 
@@ -925,7 +955,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(8000);
+	msleep(8000); /* allow firmware load */
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -1140,7 +1170,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(8000);
+	msleep(8000); /* allow firmware load */
 
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
@@ -1452,17 +1482,9 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 				if (rtn) {
 					sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
 					sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-
-					spin_lock(&media_jack->data_lock);
-					media_jack->cable_info[0].media_attr.errors |=
-					SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-					spin_unlock(&media_jack->data_lock);
-
-					rtn = sl_media_jack_cable_attr_set(media_jack, media_jack->media_ldev->num,
-									   &media_jack->cable_info[0].media_attr);
-					if (rtn)
-						sl_media_log_err_trace(media_jack, LOG_NAME,
-								       "cable attr set failed [%d]", rtn);
+					sl_media_data_jack_cable_attr_errors_update(media_jack,
+										    SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+					sl_media_data_jack_cable_attr_send(media_jack);
 				}
 			}
 

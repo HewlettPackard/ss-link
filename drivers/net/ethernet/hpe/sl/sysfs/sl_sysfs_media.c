@@ -59,10 +59,10 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 	is_high_powered = sl_media_jack_is_high_powered(media_lgrp->media_jack);
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"power state show (media_lgrp = 0x%p, state = %s)",
-		media_lgrp, is_high_powered ? "high_powered" : "low_powered");
+		   "power state show (media_lgrp = 0x%p, state = %s)",
+		   media_lgrp, is_high_powered ? "high" : "low");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high-powered" : "low-powered");
+	return scnprintf(buf, PAGE_SIZE, "%s\n", is_high_powered ? "high" : "low");
 }
 
 static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -88,7 +88,7 @@ static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attrib
 		return scnprintf(buf, PAGE_SIZE, "io-error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"temperature_celsius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
+		   "temperature_celsius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
 
 	return scnprintf(buf, PAGE_SIZE, "%u\n", temp);
 }
@@ -206,7 +206,8 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"vendor show (media_lgrp = 0x%p, vendor = %u %s)", media_lgrp, vendor, sl_media_vendor_str(vendor));
+		   "vendor show (media_lgrp = 0x%p, vendor = %u %s)",
+		   media_lgrp, vendor, sl_media_vendor_str(vendor));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_vendor_str(vendor));
 }
@@ -259,7 +260,8 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"type show (media_lgrp = 0x%p, type = %u %s)", media_lgrp, type, sl_media_type_str(type));
+		   "type show (media_lgrp = 0x%p, type = %u %s)",
+		   media_lgrp, type, sl_media_type_str(type));
 
 	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_type_str(type));
 }
@@ -598,11 +600,11 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 	return scnprintf(buf, PAGE_SIZE, "%s\n", target_fw_ver_str);
 }
 
-static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cable_speed_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u8                    cable_shift_state;
+	u8                    cable_speed_state;
 	int 		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
@@ -614,15 +616,15 @@ static ssize_t cable_shift_state_show(struct kobject *kobj, struct kobj_attribut
 		return scnprintf(buf, PAGE_SIZE, "no-cable\n");
 	}
 
-	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_shift_state);
+	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_speed_state);
 	if (rtn)
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"cable_shift state show (media_lgrp = 0x%p, cable_shift_state = %u %s)",
-		media_lgrp, cable_shift_state, sl_media_cable_shift_state_str(cable_shift_state));
+		   "cable_speed state show (media_lgrp = 0x%p, cable_speed_state = %u %s)",
+		   media_lgrp, cable_speed_state, sl_media_cable_speed_state_str(cable_speed_state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_cable_shift_state_str(cable_shift_state));
+	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_cable_speed_state_str(cable_speed_state));
 }
 
 static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -940,7 +942,7 @@ static struct kobj_attribute media_is_supported_cable               = __ATTR_RO(
 static struct kobj_attribute media_date_code                        = __ATTR_RO(date_code);
 static struct kobj_attribute media_firmware_version_hex             = __ATTR_RO(firmware_version_hex);
 static struct kobj_attribute media_target_firmware_version_hex      = __ATTR_RO(target_firmware_version_hex);
-static struct kobj_attribute media_cable_shift_state                = __ATTR_RO(cable_shift_state);
+static struct kobj_attribute media_cable_speed_state                = __ATTR_RO(cable_speed_state);
 static struct kobj_attribute media_active_cable_200g_host_interface = __ATTR_RO(active_cable_200g_host_interface);
 static struct kobj_attribute media_active_cable_200g_lane_count     = __ATTR_RO(active_cable_200g_lane_count);
 static struct kobj_attribute media_active_cable_200g_appsel_num     = __ATTR_RO(active_cable_200g_appsel_num);
@@ -977,7 +979,7 @@ static struct attribute *media_attrs[] = {
 	&media_date_code.attr,
 	&media_firmware_version_hex.attr,
 	&media_target_firmware_version_hex.attr,
-	&media_cable_shift_state.attr,
+	&media_cable_speed_state.attr,
 	&media_active_cable_200g_host_interface.attr,
 	&media_active_cable_200g_lane_count.attr,
 	&media_active_cable_200g_appsel_num.attr,

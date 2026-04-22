@@ -56,6 +56,31 @@ static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 lde
 	return 0;
 }
 
+static void sl_media_jack_cable_attr_errors_update(struct sl_media_jack *media_jack, u32 errors)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr errors update");
+
+	/*
+	 * only first element is valid in cable_info since single lgrp on nic
+	 */
+	media_jack->cable_info[0].media_attr.errors |= errors;
+}
+
+static void sl_media_data_jack_cable_attr_send(struct sl_media_jack *media_jack)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr send");
+
+	/*
+	 * only first element is valid in cable_info since single lgrp on nic
+	 */
+	media_lgrp = sl_media_data_lgrp_get(media_jack->cable_info[0].ldev_num,
+					    media_jack->cable_info[0].lgrp_num);
+	if (media_lgrp)
+		sl_media_data_jack_cable_if_present_send(media_lgrp);
+}
+
 int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			       u8 *eeprom_page0, u8 *eeprom_page1, u32 flags)
 {
@@ -64,6 +89,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	struct sl_media_jack *media_jack;
 
 	media_jack = sl_media_data_jack_get(ldev_num, jack_num);
+// FIXME: can this ever fail?
 	if (!media_jack) {
 		sl_media_log_err(NULL, LOG_NAME, "media_data_jack_get failed");
 		return -EFAULT;
@@ -115,6 +141,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
 			if (rtn)
 				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			return 0;
 		}
 
@@ -161,19 +188,22 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		media_attr.jack_type_info.qsfp.density = SL_MEDIA_QSFP_DENSITY_SINGLE;
 	}
 
+	rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+		return 0;
+	}
+
+	// FIXME: can we do flags better?
 	if (media_jack->is_cable_unsupported)
 		flags |= SL_MEDIA_TYPE_UNSUPPORTED;
-
 	if (media_attr.vendor == SL_MEDIA_VENDOR_MULTILANE)
 		flags |= SL_MEDIA_TYPE_LOOPBACK;
-
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
-		rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
-		if (rtn)
-			sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
+		sl_media_data_jack_cable_attr_send(media_jack);
 		return 0;
 	}
 
@@ -182,37 +212,26 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
-			if (rtn)
-				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			sl_media_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			return rtn;
 		}
 
+		/* must be last in the sequence because it needs time to load firmware */
 		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
 		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable high power set failed [%d]", rtn);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
-			media_attr.errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
-			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
-			if (rtn)
-				sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
+			sl_media_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+			sl_media_data_jack_cable_attr_send(media_jack);
 			return 0;
 		}
 	}
 
-	rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);
-		return 0;
-	}
-
-	/*
-	 * kobj cleanup in the callee function
-	 */
 	rtn = sl_sysfs_media_speeds_create(ldev_num, lgrp_num);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media speeds create failed [%d]", rtn);
+		sl_media_data_jack_cable_attr_send(media_jack);
 		return rtn;
 	}
 
@@ -228,6 +247,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	}
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
+
+	sl_media_data_jack_cable_attr_send(media_jack);
 
 	return 0;
 }
