@@ -98,10 +98,9 @@ struct sl_link_config {
 #define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE BIT(1) /* Continuous autoneg attempts */
 #define SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE BIT(2) /* Headshell loopback          */
 #define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE    BIT(3) /* Remote loopback             */
-#define SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE      BIT(4) /* Force extended reach        */
-#define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(5) /* Auto Lane Degrade           */
-#define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(6) /* Hide los and lol reporting  */
-#define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(7) /* PML Recovery                */
+#define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(4) /* Auto Lane Degrade           */
+#define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(5) /* Hide los and lol reporting  */
+#define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(6) /* PML Recovery                */
 /* BIT 30 Reserved */
 /* BIT 31 Reserved */
 

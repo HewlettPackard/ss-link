@@ -159,8 +159,6 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 			core_link->serdes.core_serdes_settings.tx_pll_bw = SL_CORE_HW_SERDES_TX_PLL_BW_DEFAULT;
 		break;
 	}
-	if (is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
-		core_link->serdes.core_serdes_settings.encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_ER;
 
 	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
 	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_shift_state);

@@ -276,27 +276,6 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return scnprintf(buf, PAGE_SIZE, "disabled\n");
 }
 
-static ssize_t extended_reach_force_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	int                  rtn;
-	struct sl_ctrl_link *ctrl_link;
-	u32                  options;
-
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
-
-	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
-	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		   "extended reach force show (options = 0x%X)", options);
-
-	if (is_flag_set(options, SL_LINK_CONFIG_OPT_EXTENDED_REACH_FORCE))
-		return scnprintf(buf, PAGE_SIZE, "enabled\n");
-
-	return scnprintf(buf, PAGE_SIZE, "disabled\n");
-}
-
 static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                  rtn;
@@ -350,7 +329,6 @@ static struct kobj_attribute pause_map             = __ATTR_RO(pause_map);
 static struct kobj_attribute hpe_map               = __ATTR_RO(hpe_map);
 static struct kobj_attribute autoneg               = __ATTR_RO(autoneg);
 static struct kobj_attribute loopback              = __ATTR_RO(loopback);
-static struct kobj_attribute extended_reach_force  = __ATTR_RO(extended_reach_force);
 static struct kobj_attribute auto_lane_degrade     = __ATTR_RO(auto_lane_degrade);
 static struct kobj_attribute pml_recovery          = __ATTR_RO(pml_recovery);
 
@@ -366,7 +344,6 @@ static struct attribute *link_config_attrs[] = {
 	&hpe_map.attr,
 	&autoneg.attr,
 	&loopback.attr,
-	&extended_reach_force.attr,
 	&auto_lane_degrade.attr,
 	&pml_recovery.attr,
 	NULL
