@@ -15,19 +15,20 @@ function usage {
         echo "    lgrp_num = link group number (0-63)"
         echo "    link_num = link number (0-3)"
         echo "  option: (omitted option will print all available info for target)"
-        echo "    state    = print state info for the target"
-        echo "    link     = print link info for the target"
-        echo "    mac      = print mac info for the target"
-        echo "    llr      = print llr info for the target"
-        echo "    pmi      = print pmi info for the target"
-        echo "    sbus     = print sbus info for the target"
-        echo "    sbus_pmi = print sbus_pmi info for the target"
-        echo "    serdes   = print serdes info for the target"
-        echo "    fec      = print fec info for the target"
-        echo "    cable    = print cable info for the target"
-        echo "    counters = print counters for a link target (requires #:#:#)"
-        echo "    show_db  = print supported cable database"
-        echo "    use_test = use the \"test_port\" directory"
+        echo "    state        = print state info for the target"
+        echo "    link         = print link info for the target"
+        echo "    mac          = print mac info for the target"
+        echo "    llr          = print llr info for the target"
+        echo "    pmi          = print pmi info for the target"
+        echo "    sbus         = print sbus info for the target"
+        echo "    sbus_pmi     = print sbus_pmi info for the target"
+        echo "    serdes       = print serdes info for the target"
+        echo "    fec          = print fec info for the target"
+        echo "    cable        = print cable info for the target"
+        echo "    counters     = print non-zero counters for a link target (requires #:#:#)"
+        echo "    counters_all = print all counters for a link target (requires #:#:#)"
+        echo "    show_db      = print supported cable database"
+        echo "    use_test     = use the \"test_port\" directory"
         exit;
 }
 
@@ -72,12 +73,16 @@ elif [ "$#" -eq 2 ] ; then
                 counters )
                         option=counters
                         ;;
-                use_test )
-                        option=use_test
-                        PORT_DIR_SYSFS=test_port
+                counters_all )
+                        option=counters
+			option_flag=all
                         ;;
                 show_db  )
                         option=show_db
+                        ;;
+                use_test )
+                        option=use_test
+                        PORT_DIR_SYSFS=test_port
                         ;;
                 * )
                         usage
@@ -293,17 +298,27 @@ function print_llr_state {
 
 function print_link_counters {
         if [ ! -e ${LINK_PATH}/counters ] ; then
-		return
-	fi
+                return
+        fi
 
-        local first=0;
+        local files=()
+        for file in ${LINK_PATH}/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "  counters |"
-        for counter in ${LINK_PATH}/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 if [[ $(basename "${counter}") == cause_* || $(basename "${counter}") == an_cause_* ]]; then
                         continue
                 fi
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %36s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -311,21 +326,34 @@ function print_link_counters {
                         printf "           | %36s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_link_cause_counters {
         if [ ! -e ${LINK_PATH}/counters ] ; then
-		return
-	fi
+                return
+        fi
 
-        local first=0;
+        local files=()
+        for file in ${LINK_PATH}/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "           |"
-        for counter in ${LINK_PATH}/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
                         continue
                 fi
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %36s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -333,6 +361,9 @@ function print_link_cause_counters {
                         printf "           | %36s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_mac_counters {
@@ -340,11 +371,21 @@ function print_mac_counters {
                 return
         fi
 
-        local first=0;
+        local files=()
+        for file in ${MAC_PATH}/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "  counters |"
-        for counter in ${MAC_PATH}/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %20s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -352,6 +393,9 @@ function print_mac_counters {
                         printf "           | %20s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_llr_counters {
@@ -359,14 +403,24 @@ function print_llr_counters {
                 return
         fi
 
-        local first=0;
+        local files=()
+        for file in ${LLR_PATH}/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "  counters |"
-        for counter in ${LLR_PATH}/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 if [[ $(basename "${counter}") == cause_* || $(basename "${counter}") == an_cause_* ]]; then
                         continue
                 fi
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %23s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -374,6 +428,9 @@ function print_llr_counters {
                         printf "           | %23s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_llr_cause_counters {
@@ -381,14 +438,24 @@ function print_llr_cause_counters {
                 return
         fi
 
-        local first=0;
+        local files=()
+        for file in ${LLR_PATH}/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "           |"
-        for counter in ${LLR_PATH}/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
                         continue
                 fi
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %23s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -396,6 +463,9 @@ function print_llr_cause_counters {
                         printf "           | %23s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_jack_cause_counters {
@@ -403,14 +473,24 @@ function print_jack_cause_counters {
                 return
         fi
 
-        local first=0;
+        local files=()
+        for file in ${LGRP_PATH}/media/counters/* ; do
+                if [[ -f "$file" ]] ; then
+                        files+=("$file")
+                fi
+        done
+        IFS=$'\n' sorted_files=($(sort <<<"${files[*]}")); unset IFS
 
+        local first=0
         printf "  counters |"
-        for counter in ${LGRP_PATH}/media/counters/* ; do
+        for counter in "${sorted_files[@]}" ; do
                 if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
                         continue
                 fi
                 val=$(cat ${counter})
+                if [[ $val == 0  && $option_flag != "all" ]] ; then
+                        continue
+                fi
                 if [ ${first} -eq 0 ] ; then
                         printf " %39s = ${val}\n" $(basename "${counter}")
                         first=1
@@ -418,6 +498,9 @@ function print_jack_cause_counters {
                         printf "           | %39s = ${val}\n" $(basename "${counter}")
                 fi
         done
+        if [[ $first == 0 ]] ; then
+                printf " none\n"
+        fi
 }
 
 function print_jack {
