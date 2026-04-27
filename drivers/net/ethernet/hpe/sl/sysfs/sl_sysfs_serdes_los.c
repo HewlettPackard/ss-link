@@ -3,6 +3,7 @@
 
 #include "asm-generic/int-ll64.h"
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -37,21 +38,21 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 		sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 				"los tx show (asic_lane_num = %u) - tx_lane_is_los no cache [%d]",
 				lane_kobj->asic_lane_num, rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-cache\n");
+		return sysfs_emit(buf, "no-cache\n");
 	}
 
 	if (rtn) {
 		sl_core_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "los tx show (asic_lane_num = %u) - tx_lane_is_los failed [%d]",
 				      lane_kobj->asic_lane_num, rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 			"los tx show (asic_lane_num = %u, is_tx_los = %s)",
 			lane_kobj->asic_lane_num, is_tx_los ? "yes" : "no");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_tx_los ? "yes" : "no");
+	return sysfs_emit(buf, "%s\n", is_tx_los ? "yes" : "no");
 }
 
 static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -73,21 +74,21 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 		sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 				"los rx show (asic_lane_num = %u) - rx_lane_is_los no cache [%d]",
 				lane_kobj->asic_lane_num, rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-cache\n");
+		return sysfs_emit(buf, "no-cache\n");
 	}
 
 	if (rtn) {
 		sl_core_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "los rx show (asic_lane_num = %u) - rx_lane_is_los failed [%d]",
 				      lane_kobj->asic_lane_num, rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 			"los rx show (asic_lane_num = %u, is_rx_los = %s)",
 			lane_kobj->asic_lane_num, is_rx_los ? "yes" : "no");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_rx_los ? "yes" : "no");
+	return sysfs_emit(buf, "%s\n", is_rx_los ? "yes" : "no");
 }
 
 static struct kobj_attribute los_tx = __ATTR_RO(tx);

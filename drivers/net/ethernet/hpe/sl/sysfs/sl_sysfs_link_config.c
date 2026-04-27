@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -29,12 +30,12 @@ static ssize_t link_up_timeout_ms_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_up_timeout_ms_get(ctrl_link, &link_up_timeout_ms);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link up timeout show (link_up_timeout = %ums)", link_up_timeout_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", link_up_timeout_ms);
+	return sysfs_emit(buf, "%u\n", link_up_timeout_ms);
 }
 
 static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -47,15 +48,15 @@ static ssize_t link_up_tries_max_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_data_link_up_tries_max_get(ctrl_link, &link_up_tries_max);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link up tries max show (link_up_tries_max = %d)", link_up_tries_max);
 
 	if (link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
-		return scnprintf(buf, PAGE_SIZE, "infinite\n");
+		return sysfs_emit(buf, "infinite\n");
 	else
-		return scnprintf(buf, PAGE_SIZE, "%d\n", link_up_tries_max);
+		return sysfs_emit(buf, "%d\n", link_up_tries_max);
 }
 
 static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -68,12 +69,12 @@ static ssize_t fec_up_settle_wait_ms_show(struct kobject *kobj, struct kobj_attr
 
 	rtn = sl_ctrl_data_link_fec_up_settle_wait_ms_get(ctrl_link, &fec_up_settle_wait_ms);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_up_settle_wait show (fec_up_settle_wait = %dms)", fec_up_settle_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_settle_wait_ms);
+	return sysfs_emit(buf, "%d\n", fec_up_settle_wait_ms);
 }
 
 static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -86,12 +87,12 @@ static ssize_t fec_up_check_wait_ms_show(struct kobject *kobj, struct kobj_attri
 
 	rtn = sl_ctrl_data_link_fec_up_check_wait_ms_get(ctrl_link, &fec_up_check_wait_ms);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_up_check_wait show (fec_up_check_wait = %dms)", fec_up_check_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_check_wait_ms);
+	return sysfs_emit(buf, "%d\n", fec_up_check_wait_ms);
 }
 
 static ssize_t fec_up_ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -104,12 +105,12 @@ static ssize_t fec_up_ucw_limit_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_data_link_fec_up_ucw_limit_get(ctrl_link, &fec_up_ucw_limit);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_up_ucw_limit show (fec_up_ucw_limit = %d)", fec_up_ucw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_ucw_limit);
+	return sysfs_emit(buf, "%d\n", fec_up_ucw_limit);
 }
 
 static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -122,12 +123,12 @@ static ssize_t fec_up_ccw_limit_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_data_link_fec_up_ccw_limit_get(ctrl_link, &fec_up_ccw_limit);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_up_ccw_limit show (fec_up_ccw_limit = %d)", fec_up_ccw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", fec_up_ccw_limit);
+	return sysfs_emit(buf, "%d\n", fec_up_ccw_limit);
 }
 
 static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -140,11 +141,11 @@ static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "lock show (options = 0x%X)", options);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", is_flag_set(options,
+	return sysfs_emit(buf, "%s\n", is_flag_set(options,
 			 SL_LINK_CONFIG_OPT_LOCK) ? "enabled" : "disabled");
 }
 
@@ -160,13 +161,13 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_data_link_pause_map_get(ctrl_link, &pause_map);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"pause map show (link = 0x%p, map = 0x%X)", ctrl_link, pause_map);
 
 	if (pause_map == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
@@ -177,7 +178,7 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_SYM));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -192,13 +193,13 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 	rtn = sl_ctrl_data_link_hpe_map_get(ctrl_link, &hpe_map);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"hpe map show (link = 0x%p, map = 0x%X)", ctrl_link, hpe_map);
 
 	if (hpe_map == 0)
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
@@ -227,7 +228,7 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LLR));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -240,17 +241,17 @@ static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "autoneg show (options = 0x%X)", options);
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled\n");
+		return sysfs_emit(buf, "enabled\n");
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-continuous\n");
+		return sysfs_emit(buf, "enabled-continuous\n");
 
-	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+	return sysfs_emit(buf, "disabled\n");
 }
 
 static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -263,17 +264,17 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-headshell\n");
+		return sysfs_emit(buf, "enabled-headshell\n");
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled-remote\n");
+		return sysfs_emit(buf, "enabled-remote\n");
 
-	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+	return sysfs_emit(buf, "disabled\n");
 }
 
 static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -286,15 +287,15 @@ static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "auto lane degrade show (options = 0x%X)", options);
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_ALD_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled\n");
+		return sysfs_emit(buf, "enabled\n");
 
-	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+	return sysfs_emit(buf, "disabled\n");
 }
 
 static ssize_t pml_recovery_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -307,15 +308,15 @@ static ssize_t pml_recovery_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "pml recovery show (options = 0x%X)", options);
 
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_PML_REC_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "enabled\n");
+		return sysfs_emit(buf, "enabled\n");
 
-	return scnprintf(buf, PAGE_SIZE, "disabled\n");
+	return sysfs_emit(buf, "disabled\n");
 }
 
 static struct kobj_attribute link_up_timeout_ms    = __ATTR_RO(link_up_timeout_ms);

@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/sysfs.h>
+#include <linux/kobject.h>
+
 #include "sl_log.h"
 #include "sl_sysfs.h"
 #include "sl_ctrl_lgrp.h"
@@ -23,11 +26,11 @@ static ssize_t addr_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_pmi_rd_addr_get(core_lgrp, &addr);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd addr show (addr = 0x%04X)", addr);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%04X\n", addr);
+	return sysfs_emit(buf, "0x%04X\n", addr);
 }
 
 static ssize_t data_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -42,11 +45,11 @@ static ssize_t data_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_pmi_rd_data_get(core_lgrp, &data);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd data show (data = 0x%04X)", data);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%04X\n", data);
+	return sysfs_emit(buf, "0x%04X\n", data);
 }
 
 static ssize_t dev_id_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -61,11 +64,11 @@ static ssize_t dev_id_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_pmi_rd_dev_id_get(core_lgrp, &dev_id);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd dev id show (dev_id = 0x%02X)", dev_id);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%02X\n", dev_id);
+	return sysfs_emit(buf, "0x%02X\n", dev_id);
 }
 
 static ssize_t lane_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -80,11 +83,11 @@ static ssize_t lane_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_pmi_rd_lane_get(core_lgrp, &lane);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd lane show (lane = 0x%02X)", lane);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%02X\n", lane);
+	return sysfs_emit(buf, "0x%02X\n", lane);
 }
 
 static ssize_t pll_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -99,11 +102,11 @@ static ssize_t pll_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_core_lgrp_pmi_rd_pll_get(core_lgrp, &pll);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd pll show (pll = 0x%02X)", pll);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%02X\n", pll);
+	return sysfs_emit(buf, "0x%02X\n", pll);
 }
 
 static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -118,11 +121,11 @@ static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_pmi_rd_result_get(core_lgrp, &result);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "pmi rd result show (result = %d)", result);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", result);
+	return sysfs_emit(buf, "%d\n", result);
 }
 
 static struct kobj_attribute addr   = __ATTR_RO(addr);

@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -40,7 +41,7 @@ static ssize_t mod_ver_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "mod ver show (ldev = 0x%p, ver = v%s)", ctrl_ldev, sl_version_str_get());
 
-	return scnprintf(buf, PAGE_SIZE, "v%s\n", sl_version_str_get());
+	return sysfs_emit(buf, "v%s\n", sl_version_str_get());
 }
 
 static ssize_t mod_hash_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -52,7 +53,7 @@ static ssize_t mod_hash_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "mod hash show (ldev = 0x%p, hash = %s)", ctrl_ldev, sl_git_hash_str_get());
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_git_hash_str_get());
+	return sysfs_emit(buf, "%s\n", sl_git_hash_str_get());
 }
 
 static struct kobj_attribute mod_ver  = __ATTR_RO(mod_ver);
@@ -110,7 +111,7 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 		   "length_cm show (ctrl_ldev = 0x%p, length_cm = %u)",
 		   hpe_pn_kobj->ctrl_ldev, cable_db[hpe_pn_kobj->cable_idx].length_cm);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", cable_db[hpe_pn_kobj->cable_idx].length_cm);
+	return sysfs_emit(buf, "%u\n", cable_db[hpe_pn_kobj->cable_idx].length_cm);
 }
 
 static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -123,7 +124,7 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 		   "max_speed show (ctrl_ldev = 0x%p, max_speed = %s)",
 		   hpe_pn_kobj->ctrl_ldev, sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
+	return sysfs_emit(buf, "%s\n", sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
 }
 
 static struct kobj_attribute cable_hpe_pn_length_cm = __ATTR_RO(length_cm);

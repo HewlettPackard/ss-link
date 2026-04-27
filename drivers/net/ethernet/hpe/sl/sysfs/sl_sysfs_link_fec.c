@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -30,12 +31,12 @@ static ssize_t monitor_state_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_ctrl_link_fec_mon_state_get(ctrl_link, &state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "monitor state show (link = 0x%p, state = %u, %s)", ctrl_link, state,
 		   sl_ctrl_link_fec_mon_state_str(state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_ctrl_link_fec_mon_state_str(state));
+	return sysfs_emit(buf, "%s\n", sl_ctrl_link_fec_mon_state_str(state));
 }
 
 static struct kobj_attribute fec_monitor_state = __ATTR_RO(monitor_state);

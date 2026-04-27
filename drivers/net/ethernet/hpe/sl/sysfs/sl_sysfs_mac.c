@@ -2,6 +2,7 @@
 /* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include <linux/hpe/sl/sl_mac.h>
 
@@ -27,12 +28,12 @@ static ssize_t rx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	rtn = sl_ctrl_mac_rx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
 				       ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		   "rx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
+	return sysfs_emit(buf, "%s\n", sl_mac_state_str(state));
 }
 
 static ssize_t rx_last_start_result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -47,12 +48,12 @@ static ssize_t rx_last_start_result_show(struct kobject *kobj, struct kobj_attri
 						   ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &last_start_result);
 
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		   "rx last start result show (mac = 0x%p, last_start_result = %d)", ctrl_mac, last_start_result);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", last_start_result);
+	return sysfs_emit(buf, "%d\n", last_start_result);
 }
 
 static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -66,12 +67,12 @@ static ssize_t tx_state_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	rtn = sl_ctrl_mac_tx_state_get(ctrl_mac->ctrl_lgrp->ctrl_ldev->num,
 				       ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		   "tx state show (mac = 0x%p, state = %u)", ctrl_mac, state);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_mac_state_str(state));
+	return sysfs_emit(buf, "%s\n", sl_mac_state_str(state));
 }
 
 static ssize_t tx_last_start_result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -86,12 +87,12 @@ static ssize_t tx_last_start_result_show(struct kobject *kobj, struct kobj_attri
 						   ctrl_mac->ctrl_lgrp->num, ctrl_mac->num, &last_start_result);
 
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		   "tx last start result show (mac = 0x%p, last_start_result = %d)", ctrl_mac, last_start_result);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", last_start_result);
+	return sysfs_emit(buf, "%d\n", last_start_result);
 }
 
 static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -108,7 +109,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (rtn) {
 		sl_log_err(ctrl_mac, LOG_BLOCK, LOG_NAME,
 			   "info map show sl_ctrl_mac_info_map_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-mac\n");
+		return sysfs_emit(buf, "no-mac\n");
 	}
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
@@ -116,7 +117,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME,
 		   "info map show (info_map = 0x%llX %s)", info_map, info_map_str);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
+	return sysfs_emit(buf, "%s\n", info_map_str);
 }
 
 // FIXME: add other mac info here

@@ -2,6 +2,7 @@
 /* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_core_link.h"
@@ -23,12 +24,12 @@ static ssize_t ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_core_data_link_fec_up_ucw_limit_get(core_link, &ucw_limit);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "fec_up_ucw_limit show (ucw_limit = %d)", ucw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", ucw_limit);
+	return sysfs_emit(buf, "%d\n", ucw_limit);
 }
 
 static ssize_t ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -41,12 +42,12 @@ static ssize_t ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_core_data_link_fec_up_ccw_limit_get(core_link, &ccw_limit);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "fec_up_ccw_limit show (ccw_limit = %d)", ccw_limit);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", ccw_limit);
+	return sysfs_emit(buf, "%d\n", ccw_limit);
 }
 
 static ssize_t settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -59,12 +60,12 @@ static ssize_t settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_core_data_link_fec_up_settle_wait_ms_get(core_link, &settle_wait_ms);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "settle_wait_ms show (settle_wait_ms = %u)", settle_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", settle_wait_ms);
+	return sysfs_emit(buf, "%u\n", settle_wait_ms);
 }
 
 static ssize_t check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -77,12 +78,12 @@ static ssize_t check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_core_data_link_fec_up_check_wait_ms_get(core_link, &check_wait_ms);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "check_wait_ms show (check_wait_ms = %u)", check_wait_ms);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", check_wait_ms);
+	return sysfs_emit(buf, "%u\n", check_wait_ms);
 }
 
 static struct kobj_attribute ucw_limit      = __ATTR_RO(ucw_limit);

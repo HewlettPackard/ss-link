@@ -2,6 +2,7 @@
 /* Copyright 2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 #include <linux/types.h>
 
 #include "sl_log.h"
@@ -23,11 +24,11 @@ static ssize_t pml_rec_attempts_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_core_data_link_pml_rec_attempts_get(core_link, &attempts);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec attempts show (attempts = %d)", attempts);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", attempts);
+	return sysfs_emit(buf, "%d\n", attempts);
 }
 
 static ssize_t pml_rec_successes_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -40,11 +41,11 @@ static ssize_t pml_rec_successes_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_core_data_link_pml_rec_successes_get(core_link, &successes);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec successes show (successes = %d)", successes);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", successes);
+	return sysfs_emit(buf, "%d\n", successes);
 }
 
 static ssize_t pml_rec_link_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -57,11 +58,11 @@ static ssize_t pml_rec_link_fault_cause_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_core_data_link_pml_rec_link_fault_cause_get(core_link, &link_fault_cause);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_cause show (link_fault_cause = %d)", link_fault_cause);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", link_fault_cause);
+	return sysfs_emit(buf, "%d\n", link_fault_cause);
 }
 
 static ssize_t pml_rec_link_down_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -74,11 +75,11 @@ static ssize_t pml_rec_link_down_cause_show(struct kobject *kobj, struct kobj_at
 
 	rtn = sl_core_data_link_pml_rec_link_down_cause_get(core_link, &link_down_cause);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_cause = %d)", link_down_cause);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", link_down_cause);
+	return sysfs_emit(buf, "%d\n", link_down_cause);
 }
 
 static ssize_t pml_rec_link_fault_failed_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -91,12 +92,12 @@ static ssize_t pml_rec_link_fault_failed_cause_show(struct kobject *kobj, struct
 
 	rtn = sl_core_data_link_pml_rec_link_fault_failed_cause_get(core_link, &link_fault_failed_cause);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_failed_cause show (link_fault_failed_cause = %d)",
 			link_fault_failed_cause);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", link_fault_failed_cause);
+	return sysfs_emit(buf, "%d\n", link_fault_failed_cause);
 }
 
 static ssize_t pml_rec_link_down_failed_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -109,12 +110,12 @@ static ssize_t pml_rec_link_down_failed_cause_show(struct kobject *kobj, struct 
 
 	rtn = sl_core_data_link_pml_rec_link_down_failed_cause_get(core_link, &link_down_failed_cause);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_failed_cause = %d)",
 			link_down_failed_cause);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", link_down_failed_cause);
+	return sysfs_emit(buf, "%d\n", link_down_failed_cause);
 }
 
 static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -127,12 +128,12 @@ static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kob
 
 	rtn = sl_core_data_link_pml_rec_rate_limit_exceeded_get(core_link, &rate_limit_exceeded);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec rate_limit_exceeded show (rate_limit_exceeded = %d)",
 			rate_limit_exceeded);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", rate_limit_exceeded);
+	return sysfs_emit(buf, "%d\n", rate_limit_exceeded);
 }
 
 static struct kobj_attribute link_pml_rec_attempts                = __ATTR_RO(pml_rec_attempts);

@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "data/sl_ctrl_data_link.h"
@@ -24,13 +25,13 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "ccw show sl_ctrl_data_link_fec_down_cache_ccw_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ccw show (link = 0x%p, ccw = %llu)", ctrl_link, ccw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw);
+	return sysfs_emit(buf, "%llu\n", ccw);
 }
 
 static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -45,13 +46,13 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "ucw show sl_ctrl_data_link_fec_down_cache_ucw_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ucw show (link = 0x%p, ucw = %llu)", ctrl_link, ucw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", ucw);
+	return sysfs_emit(buf, "%llu\n", ucw);
 }
 
 static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -66,13 +67,13 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "gcw show sl_ctrl_data_link_fec_down_cache_gcw_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"gcw show (link = 0x%p, gcw = %llu)", ctrl_link, gcw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", gcw);
+	return sysfs_emit(buf, "%llu\n", gcw);
 }
 
 static struct kobj_attribute link_fec_ccw = __ATTR_RO(ccw);
@@ -119,14 +120,14 @@ static ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribu
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "current fecl show sl_ctrl_data_link_fec_down_cache_lane_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_log_dbg(fecl_kobj->ctrl_link, LOG_BLOCK, LOG_NAME,
 		"current fecl show (link = 0x%p, num = %u, lane_num = %u, fecl %u = %llu)",
 		ctrl_link, num, fecl_kobj->lane_num, fecl_num, lane_cntr);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", lane_cntr);
+	return sysfs_emit(buf, "%llu\n", lane_cntr);
 }
 
 #define link_fec_down_fecl(_num)                                                                               \
@@ -148,14 +149,14 @@ static ssize_t link_fec_down_bin_show(struct kobject *kobj, struct kobj_attribut
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "down bin show sl_ctrl_data_link_fec_down_cache_tail_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"down bin show (link = 0x%p, bin %u = %llu)",
 		ctrl_link, num, tail_cntr);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", tail_cntr);
+	return sysfs_emit(buf, "%llu\n", tail_cntr);
 }
 
 #define link_fec_down_tail0(_num)                                                                       \

@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -26,18 +27,18 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 	rtn	  = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state tx show (asic_lane_num = %u, state = %u %s)",
 		lane_kobj->asic_lane_num, state, sl_core_serdes_lane_state_str(state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_serdes_lane_state_str(state));
+	return sysfs_emit(buf, "%s\n", sl_core_serdes_lane_state_str(state));
 }
 
 static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -49,18 +50,18 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 	rtn	  = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state rx show (asic_lane_num = %u, state = %u %s)",
 		lane_kobj->asic_lane_num, state, sl_core_serdes_lane_state_str(state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_serdes_lane_state_str(state));
+	return sysfs_emit(buf, "%s\n", sl_core_serdes_lane_state_str(state));
 }
 
 static struct kobj_attribute state_tx = __ATTR_RO(tx);

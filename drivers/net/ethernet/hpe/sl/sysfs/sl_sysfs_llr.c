@@ -2,6 +2,7 @@
 /* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include <linux/hpe/sl/sl_llr.h>
 
@@ -29,15 +30,15 @@ static ssize_t last_fail_cause_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_core_data_llr_last_fail_cause_get(core_llr, &llr_fail_cause, &llr_fail_time);
 	if (rtn)
-		scnprintf(buf, PAGE_SIZE, "error\n");
+		sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "last fail cause show (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
+		return sysfs_emit(buf, "no-fail\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_core_llr_fail_cause_str(llr_fail_cause));
+	return sysfs_emit(buf, "%s\n", sl_core_llr_fail_cause_str(llr_fail_cause));
 }
 
 static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -51,7 +52,7 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_core_data_llr_last_fail_cause_get(core_llr, &llr_fail_cause, &llr_fail_time);
 	if (rtn)
-		scnprintf(buf, PAGE_SIZE, "error\n");
+		sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "last fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
@@ -59,9 +60,9 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 		   llr_fail_time, &llr_fail_time, &llr_fail_time);
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return scnprintf(buf, PAGE_SIZE, "no-fail\n");
+		return sysfs_emit(buf, "no-fail\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%ptTt %ptTd\n", &llr_fail_time, &llr_fail_time);
+	return sysfs_emit(buf, "%ptTt %ptTd\n", &llr_fail_time, &llr_fail_time);
 }
 
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -75,7 +76,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	rtn = sl_core_data_llr_state_get(core_llr, &core_llr_state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	llr_state = sl_ctrl_llr_state_from_core_llr_state(core_llr_state);
 
@@ -84,7 +85,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 		   core_llr_state, sl_core_llr_state_str(core_llr_state),
 		   llr_state, sl_llr_state_str(llr_state));
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", sl_llr_state_str(llr_state));
+	return sysfs_emit(buf, "%s\n", sl_llr_state_str(llr_state));
 }
 
 static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -98,14 +99,14 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_data_llr_info_map_get(core_llr, &info_map);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "info map show (info_map = 0x%llX %s)", info_map, info_map_str);
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", info_map_str);
+	return sysfs_emit(buf, "%s\n", info_map_str);
 }
 
 static struct kobj_attribute llr_state           = __ATTR_RO(state);

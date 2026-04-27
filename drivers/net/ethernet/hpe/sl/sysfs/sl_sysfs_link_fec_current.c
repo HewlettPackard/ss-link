@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_core_link.h"
@@ -24,17 +25,17 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+		return sysfs_emit(buf, "io-error\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ccw show (ccw = %llu)", ccw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw);
+	return sysfs_emit(buf, "%llu\n", ccw);
 }
 
 static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -49,17 +50,17 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+		return sysfs_emit(buf, "io-error\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ucw show (ucw = %llu)", ucw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", ucw);
+	return sysfs_emit(buf, "%llu\n", ucw);
 }
 
 static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -74,18 +75,18 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+		return sysfs_emit(buf, "io-error\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "gcw show (link = 0x%p, gcw = %llu)", core_link, gcw);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", gcw);
+	return sysfs_emit(buf, "%llu\n", gcw);
 }
 
 static struct kobj_attribute link_fec_ccw = __ATTR_RO(ccw);
@@ -133,18 +134,18 @@ static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attr
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+		return sysfs_emit(buf, "io-error\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current fecl show (num = %u, lane_num = %u, fecl %u = %llu)",
 		   num, fecl_kobj->lane_num, fecl_num, fecl);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", fecl);
+	return sysfs_emit(buf, "%llu\n", fecl);
 }
 
 #define link_fec_current_fecl(_num)                                                                            \
@@ -166,17 +167,17 @@ static ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attri
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
-		return scnprintf(buf, PAGE_SIZE, "io-error\n");
+		return sysfs_emit(buf, "io-error\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current bin show (bin %u = %llu)", num, ccw_bin);
 
-	return scnprintf(buf, PAGE_SIZE, "%llu\n", ccw_bin);
+	return sysfs_emit(buf, "%llu\n", ccw_bin);
 }
 
 #define link_fec_current_tail0(_num)                                                                    \

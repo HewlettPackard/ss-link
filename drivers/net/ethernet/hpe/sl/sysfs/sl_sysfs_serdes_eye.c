@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -26,26 +27,26 @@ static ssize_t value_upper_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_eye_upper_get(core_lgrp, lane_kobj->asic_lane_num, &eye_upper);
 	if (rtn == -EIO)
-		return scnprintf(buf, PAGE_SIZE, "no-serdes\n");
+		return sysfs_emit(buf, "no-serdes\n");
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"eye value upper show (asic_lane_num = %u, eye = %u)",
 		lane_kobj->asic_lane_num, eye_upper);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", eye_upper);
+	return sysfs_emit(buf, "%u\n", eye_upper);
 }
 
 static ssize_t value_lower_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -58,26 +59,26 @@ static ssize_t value_lower_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_eye_lower_get(core_lgrp, lane_kobj->asic_lane_num, &eye_lower);
 	if (rtn == -EIO)
-		return scnprintf(buf, PAGE_SIZE, "no-serdes\n");
+		return sysfs_emit(buf, "no-serdes\n");
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"eye value lower show (asic_lane_num = %u, eye = %u)",
 		lane_kobj->asic_lane_num, eye_lower);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", eye_lower);
+	return sysfs_emit(buf, "%u\n", eye_lower);
 }
 
 static ssize_t limit_high_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -88,12 +89,12 @@ static ssize_t limit_high_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -101,7 +102,7 @@ static ssize_t limit_high_show(struct kobject *kobj, struct kobj_attribute *katt
 		"eye limit high show (asic_lane_num = %u, limit = %u)",
 		lane_kobj->asic_lane_num, core_lgrp->serdes.eye_limits[lane_kobj->asic_lane_num].high);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n",
+	return sysfs_emit(buf, "%u\n",
 		core_lgrp->serdes.eye_limits[lane_kobj->asic_lane_num].high);
 }
 
@@ -113,12 +114,12 @@ static ssize_t limit_low_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -126,7 +127,7 @@ static ssize_t limit_low_show(struct kobject *kobj, struct kobj_attribute *kattr
 		"eye limit low show (asic_lane_num = %u, limit = %u)",
 		lane_kobj->asic_lane_num, core_lgrp->serdes.eye_limits[lane_kobj->asic_lane_num].low);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n",
+	return sysfs_emit(buf, "%u\n",
 		core_lgrp->serdes.eye_limits[lane_kobj->asic_lane_num].low);
 }
 

@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/sysfs.h>
+#include <linux/kobject.h>
+
 #include "sl_log.h"
 #include "sl_sysfs.h"
 #include "sl_ctrl_lgrp.h"
@@ -23,11 +26,11 @@ static ssize_t dev_addr_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_lgrp_sbus_rst_dev_addr_get(core_lgrp, &dev_addr);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rst dev addr show (dev_addr = 0x%02X)", dev_addr);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%02X\n", dev_addr);
+	return sysfs_emit(buf, "0x%02X\n", dev_addr);
 }
 
 static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -42,11 +45,11 @@ static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_sbus_rst_result_get(core_lgrp, &result);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rst result show (result = %d)", result);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", result);
+	return sysfs_emit(buf, "%d\n", result);
 }
 
 static struct kobj_attribute dev_addr = __ATTR_RO(dev_addr);

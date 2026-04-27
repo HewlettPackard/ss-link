@@ -2,6 +2,7 @@
 /* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
+#include <linux/sysfs.h>
 #include <linux/kobject.h>
 
 #include "sl_log.h"
@@ -27,12 +28,12 @@ static ssize_t tx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -40,7 +41,7 @@ static ssize_t tx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "tx_source show (tx_source = %u)", tx_source);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", tx_source);
+	return sysfs_emit(buf, "%u\n", tx_source);
 }
 
 static ssize_t rx_source_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -52,12 +53,12 @@ static ssize_t rx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return scnprintf(buf, PAGE_SIZE, "no-lane\n");
+		return sysfs_emit(buf, "no-lane\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -65,7 +66,7 @@ static ssize_t rx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "rx_source show (rx_source = %u)", rx_source);
 
-	return scnprintf(buf, PAGE_SIZE, "%u\n", rx_source);
+	return sysfs_emit(buf, "%u\n", rx_source);
 }
 
 static struct kobj_attribute tx_source = __ATTR_RO(tx_source);

@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -49,7 +50,7 @@ static ssize_t hw_rev_1_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		"hw ver show (hw_rev_1 = 0x%X)",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_1);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+	return sysfs_emit(buf, "0x%X\n",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_1);
 }
 
@@ -65,7 +66,7 @@ static ssize_t hw_rev_2_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		"hw ver show (hw_rev_2 = 0x%X)",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_2);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+	return sysfs_emit(buf, "0x%X\n",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].rev_id_2);
 }
 
@@ -81,7 +82,7 @@ static ssize_t hw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 		"hw ver show (hw_version = 0x%X)",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+	return sysfs_emit(buf, "0x%X\n",
 		core_lgrp->core_ldev->serdes.hw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 }
 
@@ -97,7 +98,7 @@ static ssize_t fw_signature_show(struct kobject *kobj, struct kobj_attribute *ka
 		"fw signature show (fw_signature = 0x%X)",
 		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].signature);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+	return sysfs_emit(buf, "0x%X\n",
 		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].signature);
 }
 
@@ -113,7 +114,7 @@ static ssize_t fw_version_show(struct kobject *kobj, struct kobj_attribute *katt
 		"fw version show (fw_version = 0x%X)",
 		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 
-	return scnprintf(buf, PAGE_SIZE, "0x%X\n",
+	return sysfs_emit(buf, "0x%X\n",
 		core_lgrp->core_ldev->serdes.fw_info[LGRP_TO_SERDES(core_lgrp->num)].version);
 }
 

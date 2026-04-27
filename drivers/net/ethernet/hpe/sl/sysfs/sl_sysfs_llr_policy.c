@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "data/sl_core_data_llr.h"
@@ -22,9 +23,9 @@ static ssize_t continuous_tries_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_core_data_llr_policy_options_get(core_llr, &options);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n",
+	return sysfs_emit(buf, "%s\n",
 		(options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? "enabled" : "disabled");
 }
 

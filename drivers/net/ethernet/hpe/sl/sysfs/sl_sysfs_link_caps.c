@@ -2,6 +2,7 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
 
 #include "sl_log.h"
 #include "sl_sysfs.h"
@@ -31,7 +32,7 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = core_link->core_lgrp;
 
@@ -43,14 +44,14 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	if ((tech_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_GOING_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_AN)) ||
 		!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
@@ -76,7 +77,7 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -95,7 +96,7 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = core_link->core_lgrp;
 
@@ -107,14 +108,14 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	if ((pause_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_GOING_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_AN)) ||
 		!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_ASYM))
@@ -125,7 +126,7 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_SYM));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -144,7 +145,7 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = core_link->core_lgrp;
 
@@ -156,14 +157,14 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	if ((fec_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_GOING_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_AN)) ||
 		!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
@@ -174,7 +175,7 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -193,7 +194,7 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	core_link = sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num);
 	if (!core_link)
-		return scnprintf(buf, PAGE_SIZE, "no-link\n");
+		return sysfs_emit(buf, "no-link\n");
 
 	core_lgrp = core_link->core_lgrp;
 
@@ -205,14 +206,14 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	rtn = sl_core_link_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &link_state);
 	if (rtn)
-		return scnprintf(buf, PAGE_SIZE, "error\n");
+		return sysfs_emit(buf, "error\n");
 
 	if ((hpe_map == 0) ||
 		((link_state != SL_CORE_LINK_STATE_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_GOING_UP) &&
 		 (link_state != SL_CORE_LINK_STATE_AN)) ||
 		!is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE))
-		return scnprintf(buf, PAGE_SIZE, "none\n");
+		return sysfs_emit(buf, "none\n");
 
 	idx = 0;
 	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
@@ -241,7 +242,7 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LLR));
 	output[idx - 1] = '\0';
 
-	return scnprintf(buf, PAGE_SIZE, "%s\n", output);
+	return sysfs_emit(buf, "%s\n", output);
 }
 
 static struct kobj_attribute tech_map  = __ATTR_RO(tech_map);
