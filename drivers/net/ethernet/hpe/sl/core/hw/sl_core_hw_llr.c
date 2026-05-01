@@ -145,15 +145,14 @@ static void sl_core_hw_llr_on(struct sl_core_llr *core_llr)
 	sl_core_log_dbg(core_llr, LOG_NAME, "on (port = %d)", port);
 
 	core_link = sl_core_link_get(core_llr->core_lgrp->core_ldev->num,
-		core_llr->core_lgrp->num, core_llr->num);
+				     core_llr->core_lgrp->num, core_llr->num);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_RX_PCS, &data64);
-	/* NOTE: these need to match the restart_lock settings on the link */
 	if (sl_core_link_config_is_enable_ald_set(core_link)) {
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 0);
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 0);
 	} else {
-		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 0);
 		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
 	}
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_RX_PCS, data64);
@@ -172,12 +171,26 @@ static void sl_core_hw_llr_on(struct sl_core_llr *core_llr)
 
 static void sl_core_hw_llr_off(struct sl_core_llr *core_llr)
 {
-	u32 port;
-	u64 data64;
+	u32                  port;
+	u64                  data64;
+	struct sl_core_link *core_link;
 
 	port = core_llr->core_lgrp->num;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "off (port = %d)", port);
+
+	core_link = sl_core_link_get(core_llr->core_lgrp->core_ldev->num,
+				     core_llr->core_lgrp->num, core_llr->num);
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	if (sl_core_link_config_is_enable_ald_set(core_link)) {
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 0);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 0);
+	} else {
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
+		data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
+	}
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_RX_PCS, data64);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LLR_MODE_UPDATE(data64, 0); /* OFF */
