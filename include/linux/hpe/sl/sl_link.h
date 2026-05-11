@@ -242,4 +242,6 @@ int         sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int 
 const char *sl_link_config_pause_str(u32 config);
 const char *sl_link_config_hpe_str(u32 config);
 
+int sl_link_is_pml_rec_running(struct sl_link *link, bool *is_pml_rec_running);
+
 #endif /* _LINUX_SL_LINK_H_ */

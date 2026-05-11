@@ -373,6 +373,11 @@ const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause)
 	}
 }
 
+int sl_core_link_is_pml_rec_running_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running)
+{
+	return sl_core_hw_link_is_pml_rec_running(sl_core_link_get(ldev_num, lgrp_num, link_num), is_pml_rec_running);
+}
+
 int sl_core_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_core_link_policy *link_policy)
 {
 	struct sl_core_link *core_link;
