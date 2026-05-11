@@ -1137,3 +1137,31 @@ int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_m
 
 	return 0;
 }
+
+int sl_ctrl_link_is_pml_rec_running(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running)
+{
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+
+	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	if (!ctrl_link) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"pml rec running get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"pml rec running get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+		return -EBADRQC;
+	}
+
+	rtn = sl_core_link_is_pml_rec_running_get(ldev_num, lgrp_num, link_num, is_pml_rec_running);
+
+	if (sl_ctrl_link_put(ctrl_link))
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+				"pml rec running get - link removed (link = 0x%p)", ctrl_link);
+
+	return rtn;
+}

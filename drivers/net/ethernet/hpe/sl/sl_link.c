@@ -592,6 +592,20 @@ int sl_link_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map
 }
 EXPORT_SYMBOL(sl_link_info_map_str);
 
+int sl_link_is_pml_rec_running(struct sl_link *link, bool *is_pml_rec_running)
+{
+	int rtn;
+
+	rtn = sl_link_check(link);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "pml rec running get fail");
+		return rtn;
+	}
+
+	return sl_ctrl_link_is_pml_rec_running(link->ldev_num, link->lgrp_num, link->num, is_pml_rec_running);
+}
+EXPORT_SYMBOL(sl_link_is_pml_rec_running);
+
 const char *sl_link_config_pause_str(u32 config)
 {
 	if (config == SL_LINK_CONFIG_PAUSE_ASYM)

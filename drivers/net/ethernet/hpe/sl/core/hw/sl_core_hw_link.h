@@ -32,4 +32,6 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work);
 void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work);
 void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work);
 
+int sl_core_hw_link_is_pml_rec_running(struct sl_core_link *core_link, bool *is_pml_rec_running);
+
 #endif /* _SL_CORE_HW_LINK_H_ */

@@ -490,9 +490,11 @@ int sl_core_link_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num, struct sl_link_
 bool sl_core_link_config_is_enable_ald_set(struct sl_core_link *core_link);
 bool sl_core_link_is_degrade_state_active(struct sl_core_link *core_link);
 
-bool        sl_core_link_config_is_enable_pml_recovery_set(struct sl_core_link *core_link);
-bool        sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link);
+bool sl_core_link_config_is_enable_pml_recovery_set(struct sl_core_link *core_link);
+bool sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link);
 const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause);
+
+int  sl_core_link_is_pml_rec_running_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running);
 
 int  sl_core_link_is_canceled_or_timed_out(struct sl_core_link *core_link, bool *is_canceled_or_timed_out);
 

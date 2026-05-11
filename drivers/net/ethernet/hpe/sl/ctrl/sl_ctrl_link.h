@@ -148,4 +148,6 @@ u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count);
 
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
 
+int sl_ctrl_link_is_pml_rec_running(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running);
+
 #endif /* _SL_CTRL_LINK_H_ */

@@ -2139,3 +2139,16 @@ void sl_core_hw_link_lane_degrade_intr_work(struct work_struct *work)
 	if (rtn)
 		sl_core_log_err_trace(core_link, LOG_NAME, "lane degrade intr work ald enable failed [%d]", rtn);
 }
+
+int sl_core_hw_link_is_pml_rec_running(struct sl_core_link *core_link, bool *is_pml_rec_running)
+{
+	if (atomic_read(&core_link->pml_rec.pml_rec_running))
+		*is_pml_rec_running = true;
+	else
+		*is_pml_rec_running = false;
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"is pml rec running (is_pml_rec_running = %s)", *is_pml_rec_running ? "true" : "false");
+
+	return 0;
+}
