@@ -436,22 +436,36 @@ void sl_media_data_jack_unregister_event_notifier(void)
 	unregister_hsnxcvr_notifier(&event_notifier);
 }
 
-#define TEMPERATURE_CELSIUS_MIN 10
-#define TEMPERATURE_CELSIUS_MAX 200
+#define SL_MEDIA_TEMPERATURE_CELSIUS_MIN 10
+#define SL_MEDIA_TEMPERATURE_CELSIUS_MAX 200
+#define SL_MEDIA_CMIS_TEMP_VALUE_PAGE    0
+#define SL_MEDIA_CMIS_TEMP_VALUE_OFFSET  14
+#define SL_MEDIA_SFF_TEMP_VALUE_PAGE     0
+#define SL_MEDIA_SFF_TEMP_VALUE_OFFSET   22
 static int sl_media_data_jack_temp_value_get(struct sl_media_jack *media_jack, u8 *data)
 {
 	u8  i;
 	u8  value;
+	u8  page;
+	u8  offset;
 	int rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp value get");
 
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		page   = SL_MEDIA_CMIS_TEMP_VALUE_PAGE;
+		offset = SL_MEDIA_CMIS_TEMP_VALUE_OFFSET;
+	} else {
+		page   = SL_MEDIA_SFF_TEMP_VALUE_PAGE;
+		offset = SL_MEDIA_SFF_TEMP_VALUE_OFFSET;
+	}
+
 	for (i = 0; i < 3; ++i) {
-		rtn = sl_media_io_read8(media_jack, 0, 14, &value);
+		rtn = sl_media_io_read8(media_jack, page, offset, &value);
 		if (rtn)
 			continue;
 
-		if (value < TEMPERATURE_CELSIUS_MIN || value > TEMPERATURE_CELSIUS_MAX)
+		if (value < SL_MEDIA_TEMPERATURE_CELSIUS_MIN || value > SL_MEDIA_TEMPERATURE_CELSIUS_MAX)
 			continue;
 
 		*data = value;
@@ -461,24 +475,37 @@ static int sl_media_data_jack_temp_value_get(struct sl_media_jack *media_jack, u
 	return -EINVAL;
 }
 
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_MIN     55
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_MAX     85
-#define TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT 70
+#define SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_MIN     55
+#define SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_MAX     85
+#define SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT 70
+#define SL_MEDIA_CMIS_TEMP_WARN_LIMIT_PAGE              2
+#define SL_MEDIA_CMIS_TEMP_WARN_LIMIT_OFFSET            132
+#define SL_MEDIA_SFF_TEMP_WARN_LIMIT_PAGE               3
+#define SL_MEDIA_SFF_TEMP_WARN_LIMIT_OFFSET             132
 static int sl_media_data_jack_temp_warn_limit_get(struct sl_media_jack *media_jack, u8 *data)
 {
 	u8  i;
 	u8  value;
+	u8  page;
+	u8  offset;
 	int rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp warn limit get");
 
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		page   = SL_MEDIA_CMIS_TEMP_WARN_LIMIT_PAGE;
+		offset = SL_MEDIA_CMIS_TEMP_WARN_LIMIT_OFFSET;
+	} else {
+		page   = SL_MEDIA_SFF_TEMP_WARN_LIMIT_PAGE;
+		offset = SL_MEDIA_SFF_TEMP_WARN_LIMIT_OFFSET;
+	}
+
 	for (i = 0; i < 3; ++i) {
-// FIXME: this offset is different for SFF
-		rtn = sl_media_io_read8(media_jack, 2, 132, &value);
+		rtn = sl_media_io_read8(media_jack, page, offset, &value);
 		if (rtn)
 			continue;
 
-		if (value < TEMPERATURE_WARN_LIMIT_CELSIUS_MIN || value > TEMPERATURE_WARN_LIMIT_CELSIUS_MAX)
+		if (value < SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_MIN || value > SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_MAX)
 			continue;
 
 		*data = value;
@@ -488,24 +515,37 @@ static int sl_media_data_jack_temp_warn_limit_get(struct sl_media_jack *media_ja
 	return -EINVAL;
 }
 
-#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN     65
-#define TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX     95
-#define TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT 80
+#define SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN     65
+#define SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX     95
+#define SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT 80
+#define SL_MEDIA_CMIS_TEMP_DOWN_LIMIT_PAGE              2
+#define SL_MEDIA_CMIS_TEMP_DOWN_LIMIT_OFFSET            128
+#define SL_MEDIA_SFF_TEMP_DOWN_LIMIT_PAGE               3
+#define SL_MEDIA_SFF_TEMP_DOWN_LIMIT_OFFSET             128
 static int sl_media_data_jack_temp_down_limit_get(struct sl_media_jack *media_jack, u8 *data)
 {
 	u8  i;
 	u8  value;
+	u8  page;
+	u8  offset;
 	int rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temp down limit get");
 
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		page   = SL_MEDIA_CMIS_TEMP_DOWN_LIMIT_PAGE;
+		offset = SL_MEDIA_CMIS_TEMP_DOWN_LIMIT_OFFSET;
+	} else {
+		page   = SL_MEDIA_SFF_TEMP_DOWN_LIMIT_PAGE;
+		offset = SL_MEDIA_SFF_TEMP_DOWN_LIMIT_OFFSET;
+	}
+
 	for (i = 0; i < 3; ++i) {
-// FIXME: this offset is different for SFF
-		rtn = sl_media_io_read8(media_jack, 2, 128, &value);
+		rtn = sl_media_io_read8(media_jack, page, offset, &value);
 		if (rtn)
 			continue;
 
-		if (value < TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN || value > TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX)
+		if (value < SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_MIN || value > SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_MAX)
 			continue;
 
 		*data = value;
@@ -749,7 +789,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		rtn = sl_media_data_jack_temp_down_limit_get(media_jack, &value);
 		if (rtn) {
 			sl_media_log_err(media_jack, LOG_NAME, "temp down limit get failed [%d]", rtn);
-			media_jack->temperature_down_limit_c = TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT;
+			media_jack->temperature_down_limit_c = SL_MEDIA_TEMPERATURE_DOWN_LIMIT_CELSIUS_DEFAULT;
 			sl_media_data_jack_cable_attr_errors_update(media_jack,
 								    SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT |
 								    SL_MEDIA_ERROR_TRYABLE);
@@ -760,7 +800,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		rtn = sl_media_data_jack_temp_warn_limit_get(media_jack, &value);
 		if (rtn) {
 			sl_media_log_err(media_jack, LOG_NAME, "temp warn limit get failed [%d]", rtn);
-			media_jack->temperature_warn_limit_c = TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT;
+			media_jack->temperature_warn_limit_c = SL_MEDIA_TEMPERATURE_WARN_LIMIT_CELSIUS_DEFAULT;
 			sl_media_data_jack_cable_attr_errors_update(media_jack,
 								    SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT |
 								    SL_MEDIA_ERROR_TRYABLE);
