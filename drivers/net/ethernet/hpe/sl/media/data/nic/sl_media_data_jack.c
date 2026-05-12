@@ -58,7 +58,7 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
 #define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
 // FIXME: add media format choices as needed
-int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int rtn;
 	int i;
@@ -68,7 +68,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	/*
 	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
-	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
+	if (version == 3)
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
+	else
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
@@ -128,7 +131,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
-	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
+	if (version == 3)
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
+	else
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);
@@ -184,7 +190,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 }
 
 // FIXME: add media format choices as needed
-int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int rtn;
 	int i;
@@ -194,7 +200,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	/*
 	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
-	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
+	if (version == 3)
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
+	else
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0xFF - write failed [%d]", rtn);
@@ -254,7 +263,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	/*
 	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
 	 */
-	rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
+	if (version == 3)
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
+	else
+		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	if (rtn) {
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "data path deinit = 0x00 - write failed [%d]", rtn);

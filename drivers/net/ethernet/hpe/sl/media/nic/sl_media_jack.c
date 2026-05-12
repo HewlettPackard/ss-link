@@ -132,7 +132,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		sl_media_data_jack_eeprom_page1_get(media_jack, eeprom_page1);
 
-		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
+		rtn = sl_media_eeprom_format_get(media_jack, &media_attr.format, &media_attr.version);
 		if (rtn) {
 			sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom format unsupported");
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));

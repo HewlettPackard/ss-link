@@ -38,7 +38,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 	return 0;
 }
 
-int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	return 0;
 }
@@ -48,7 +48,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED;
 }
 
-int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version)
 {
 	return 0;
 }

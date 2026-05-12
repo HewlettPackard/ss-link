@@ -693,7 +693,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			return rtn;
 		}
 
-		rtn = sl_media_eeprom_format_get(media_jack, &(media_attr.format));
+		rtn = sl_media_eeprom_format_get(media_jack, &media_attr.format, &media_attr.version);
 		if (rtn) {
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED;
@@ -883,7 +883,7 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 #define DATA_PATH_UPPER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE | DATA_PATH_ID)
 #define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
 // FIXME: add media format choices as needed
-int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int                  rtn;
 	struct xcvr_i2c_data i2c_data;
@@ -899,7 +899,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 128;
-	i2c_data.data[0] = 0xFF;
+	if (version == 3)
+		i2c_data.data[0] = 0x00;
+	else
+		i2c_data.data[0] = 0xFF;
 	i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1004,7 +1007,10 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 128;
-	i2c_data.data[0] = 0x00;
+	if (version == 3)
+		i2c_data.data[0] = 0xFF;
+	else
+		i2c_data.data[0] = 0x00;
 	i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1098,7 +1104,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 }
 
 // FIXME: add media format choices as needed
-int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
+int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int                  rtn;
 	struct xcvr_i2c_data i2c_data;
@@ -1114,7 +1120,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 128;
-	i2c_data.data[0] = 0xFF;
+	if (version == 3)
+		i2c_data.data[0] = 0x00;
+	else
+		i2c_data.data[0] = 0xFF;
 	i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1219,7 +1228,10 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack)
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 128;
-	i2c_data.data[0] = 0x00;
+	if (version == 3)
+		i2c_data.data[0] = 0xFF;
+	else
+		i2c_data.data[0] = 0x00;
 	i2c_data.len     = 1;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
