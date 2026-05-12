@@ -705,10 +705,9 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		link_up_info.speed                     = core_link->pcs.settings.speed;
 		link_up_info.fec_mode                  = core_link->fec.settings.mode;
 		link_up_info.fec_type                  = core_link->fec.settings.type;
+		link_up_info.cause_map                 = 0;
 
 		spin_unlock(&core_link->link.data_lock);
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NONE);
-		link_up_info.cause_map                 = sl_core_data_link_last_up_fail_cause_map_get(core_link);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
 		return;
