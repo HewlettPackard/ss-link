@@ -31,41 +31,46 @@ enum sl_ctrl_link_counters {
 };
 
 enum sl_ctrl_link_cause_counters {
-	LINK_CAUSE_UCW,               /* link up or fec mon UCW limit crossed */
-	LINK_CAUSE_LF,                /* link local fault                     */
-	LINK_CAUSE_RF,                /* link remote fault                    */
-	LINK_CAUSE_DOWN,              /* link down fault                      */
-	LINK_CAUSE_UP_TRIES,          /* link up tries exhaused               */
-	LINK_CAUSE_AUTONEG_NOMATCH,   /* lp_caps autoneg no match             */
-	LINK_CAUSE_AUTONEG,           /* autoneg failure                      */
-	LINK_CAUSE_CONFIG,            /* link up bad config                   */
-	LINK_CAUSE_INTR_ENABLE,       /* link up interrupt enable failure     */
-	LINK_CAUSE_TIMEOUT,           /* link up timeout                      */
-	LINK_CAUSE_CANCELED,          /* link up cancelled                    */
-	LINK_CAUSE_UNSUPPORTED_CABLE, /* unsuppported cable                   */
-	LINK_CAUSE_COMMAND,           /* client command                       */
-	LINK_CAUSE_DOWNSHIFT,         /* link up cable downshift failed       */
-	LINK_CAUSE_LLR_REPLAY_MAX,    /* LLR replay at max fault              */
-	LINK_CAUSE_UPSHIFT,           /* link up cable upshift failed         */
-	LINK_CAUSE_AUTONEG_CONFIG,    /* link up config after an failed       */
-	LINK_CAUSE_PCS_FAULT,         /* link up PCS is not ok                */
-	LINK_CAUSE_SERDES_PLL,        /* link up serdes problems              */
-	LINK_CAUSE_SERDES_CONFIG,     /* link up serdes config problems       */
-	LINK_CAUSE_SERDES_SIGNAL,     /* link up serdes signal problems       */
-	LINK_CAUSE_SERDES_QUALITY,    /* link up serdes quality problems      */
-	LINK_CAUSE_NO_MEDIA,          /* no media present                     */
-	LINK_CAUSE_CCW,               /* link up or fec mon CCW limit crossed */
-	LINK_CAUSE_MEDIA_HOT,         /* active cable hot                     */
-	LINK_CAUSE_MEDIA_WARM,        /* active cable warm                    */
-	LINK_CAUSE_INTR_REGISTER,     /* link up interrupt register failure   */
-	LINK_CAUSE_MEDIA_ERROR,       /* media has errors                     */
-	LINK_CAUSE_UP_CANCELED,       /* link up canceled, link down          */
-	LINK_CAUSE_UNSUPPORTED_SPEED, /* unsupported speed                    */
-	LINK_CAUSE_SS200_CABLE,       /* SS200 cable                          */
-	LINK_CAUSE_TX_LOL,            /* TX Loss of Lock                      */
-	LINK_CAUSE_RX_LOL,            /* RX Loss of Lock                      */
-	LINK_CAUSE_TX_LOS,            /* TX Loss of Signal                    */
-	LINK_CAUSE_RX_LOS,            /* RX Loss of Signal                    */
+	LINK_CAUSE_UCW,                        /* link up or fec mon UCW limit crossed       */
+	LINK_CAUSE_LF,                         /* link local fault                           */
+	LINK_CAUSE_RF,                         /* link remote fault                          */
+	LINK_CAUSE_DOWN,                       /* link down fault                            */
+	LINK_CAUSE_UP_TRIES,                   /* link up tries exhaused                     */
+	LINK_CAUSE_AUTONEG_NOMATCH,            /* lp_caps autoneg no match                   */
+	LINK_CAUSE_AUTONEG,                    /* autoneg failure                            */
+	LINK_CAUSE_CONFIG,                     /* link up bad config                         */
+	LINK_CAUSE_INTR_UP_ENABLE,             /* link up intr up enable failure             */
+	LINK_CAUSE_INTR_HIGH_SER_ENABLE,       /* link up intr high serdes enable failure    */
+	LINK_CAUSE_INTR_LLR_STARVED_ENABLE,    /* link up intr llr starved enable failure    */
+	LINK_CAUSE_INTR_LLR_MAX_STARVE_ENABLE, /* link up intr llr max starve enable failure */
+	LINK_CAUSE_INTR_FAULT_ENABLE,          /* link up intr fault enable failure          */
+	LINK_CAUSE_INTR_LANE_DEGRADE_ENABLE,   /* link up intr lane degrade enable failure   */
+	LINK_CAUSE_TIMEOUT,                    /* link up timeout                            */
+	LINK_CAUSE_CANCELED,                   /* link up cancelled                          */
+	LINK_CAUSE_UNSUPPORTED_CABLE,          /* unsuppported cable                         */
+	LINK_CAUSE_COMMAND,                    /* client command                             */
+	LINK_CAUSE_DOWNSHIFT,                  /* link up cable downshift failed             */
+	LINK_CAUSE_LLR_REPLAY_MAX,             /* LLR replay at max fault                    */
+	LINK_CAUSE_UPSHIFT,                    /* link up cable upshift failed               */
+	LINK_CAUSE_AUTONEG_CONFIG,             /* link up config after an failed             */
+	LINK_CAUSE_PCS_FAULT,                  /* link up PCS is not ok                      */
+	LINK_CAUSE_SERDES_PLL,                 /* link up serdes problems                    */
+	LINK_CAUSE_SERDES_CONFIG,              /* link up serdes config problems             */
+	LINK_CAUSE_SERDES_SIGNAL,              /* link up serdes signal problems             */
+	LINK_CAUSE_SERDES_QUALITY,             /* link up serdes quality problems            */
+	LINK_CAUSE_NO_MEDIA,                   /* no media present                           */
+	LINK_CAUSE_CCW,                        /* link up or fec mon CCW limit crossed       */
+	LINK_CAUSE_MEDIA_HOT,                  /* active cable hot                           */
+	LINK_CAUSE_MEDIA_WARM,                 /* active cable warm                          */
+	LINK_CAUSE_INTR_REGISTER,              /* link up interrupt register failure         */
+	LINK_CAUSE_MEDIA_ERROR,                /* media has errors                           */
+	LINK_CAUSE_UP_CANCELED,                /* link up canceled, link down                */
+	LINK_CAUSE_UNSUPPORTED_SPEED,          /* unsupported speed                          */
+	LINK_CAUSE_SS200_CABLE,                /* SS200 cable                                */
+	LINK_CAUSE_TX_LOL,                     /* TX Loss of Lock                            */
+	LINK_CAUSE_RX_LOL,                     /* RX Loss of Lock                            */
+	LINK_CAUSE_TX_LOS,                     /* TX Loss of Signal                          */
+	LINK_CAUSE_RX_LOS,                     /* RX Loss of Signal                          */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 

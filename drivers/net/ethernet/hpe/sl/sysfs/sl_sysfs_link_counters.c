@@ -492,7 +492,7 @@ static ssize_t cause_config_show(struct kobject *kobj, struct kobj_attribute *ka
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_intr_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_intr_up_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_link *ctrl_link;
 	u32                  counter;
@@ -500,11 +500,97 @@ static ssize_t cause_intr_enable_show(struct kobject *kobj, struct kobj_attribut
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
 
-	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_ENABLE, &counter);
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_UP_ENABLE, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr enable show (counter = %u)", counter);
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr up enable show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_intr_high_ser_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_HIGH_SER_ENABLE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr high ser enable show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_intr_llr_starved_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_LLR_STARVED_ENABLE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr llr starved enable show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_intr_llr_max_starve_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_LLR_MAX_STARVE_ENABLE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr llr max starve enable show (counter = %u)",
+		   counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_intr_fault_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_FAULT_ENABLE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr fault enable show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_intr_lane_degrade_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_INTR_LANE_DEGRADE_ENABLE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause intr lane degrade enable show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
@@ -1322,41 +1408,46 @@ static struct kobj_attribute link_up_fail_ucw_limit_crossed = __ATTR_RO(link_up_
 static struct kobj_attribute link_autoneg_np_retry          = __ATTR_RO(link_autoneg_np_retry);
 static struct kobj_attribute link_autoneg_attempt           = __ATTR_RO(link_autoneg_attempt);
 
-static struct kobj_attribute link_cause_ucw               = __ATTR_RO(cause_ucw);
-static struct kobj_attribute link_cause_lf                = __ATTR_RO(cause_lf);
-static struct kobj_attribute link_cause_rf                = __ATTR_RO(cause_rf);
-static struct kobj_attribute link_cause_down              = __ATTR_RO(cause_down);
-static struct kobj_attribute link_cause_up_tries          = __ATTR_RO(cause_up_tries);
-static struct kobj_attribute link_cause_autoneg_nomatch   = __ATTR_RO(cause_autoneg_nomatch);
-static struct kobj_attribute link_cause_autoneg           = __ATTR_RO(cause_autoneg);
-static struct kobj_attribute link_cause_config            = __ATTR_RO(cause_config);
-static struct kobj_attribute link_cause_intr_enable       = __ATTR_RO(cause_intr_enable);
-static struct kobj_attribute link_cause_timeout           = __ATTR_RO(cause_timeout);
-static struct kobj_attribute link_cause_canceled          = __ATTR_RO(cause_canceled);
-static struct kobj_attribute link_cause_unsupported_cable = __ATTR_RO(cause_unsupported_cable);
-static struct kobj_attribute link_cause_command           = __ATTR_RO(cause_command);
-static struct kobj_attribute link_cause_downshift         = __ATTR_RO(cause_downshift);
-static struct kobj_attribute link_cause_llr_replay_max    = __ATTR_RO(cause_llr_replay_max);
-static struct kobj_attribute link_cause_upshift           = __ATTR_RO(cause_upshift);
-static struct kobj_attribute link_cause_autoneg_config    = __ATTR_RO(cause_autoneg_config);
-static struct kobj_attribute link_cause_pcs_fault         = __ATTR_RO(cause_pcs_fault);
-static struct kobj_attribute link_cause_serdes_pll        = __ATTR_RO(cause_serdes_pll);
-static struct kobj_attribute link_cause_serdes_config     = __ATTR_RO(cause_serdes_config);
-static struct kobj_attribute link_cause_serdes_signal     = __ATTR_RO(cause_serdes_signal);
-static struct kobj_attribute link_cause_serdes_quality    = __ATTR_RO(cause_serdes_quality);
-static struct kobj_attribute link_cause_no_media          = __ATTR_RO(cause_no_media);
-static struct kobj_attribute link_cause_ccw               = __ATTR_RO(cause_ccw);
-static struct kobj_attribute link_cause_hot               = __ATTR_RO(cause_hot);
-static struct kobj_attribute link_cause_warm              = __ATTR_RO(cause_warm);
-static struct kobj_attribute link_cause_intr_register     = __ATTR_RO(cause_intr_register);
-static struct kobj_attribute link_cause_media_error       = __ATTR_RO(cause_media_error);
-static struct kobj_attribute link_cause_up_canceled       = __ATTR_RO(cause_up_canceled);
-static struct kobj_attribute link_cause_unsupported_speed = __ATTR_RO(cause_unsupported_speed);
-static struct kobj_attribute link_cause_ss200_cable       = __ATTR_RO(cause_ss200_cable);
-static struct kobj_attribute link_cause_tx_lol            = __ATTR_RO(cause_tx_lol);
-static struct kobj_attribute link_cause_rx_lol            = __ATTR_RO(cause_rx_lol);
-static struct kobj_attribute link_cause_tx_los            = __ATTR_RO(cause_tx_los);
-static struct kobj_attribute link_cause_rx_los            = __ATTR_RO(cause_rx_los);
+static struct kobj_attribute link_cause_ucw                        = __ATTR_RO(cause_ucw);
+static struct kobj_attribute link_cause_lf                         = __ATTR_RO(cause_lf);
+static struct kobj_attribute link_cause_rf                         = __ATTR_RO(cause_rf);
+static struct kobj_attribute link_cause_down                       = __ATTR_RO(cause_down);
+static struct kobj_attribute link_cause_up_tries                   = __ATTR_RO(cause_up_tries);
+static struct kobj_attribute link_cause_autoneg_nomatch            = __ATTR_RO(cause_autoneg_nomatch);
+static struct kobj_attribute link_cause_autoneg                    = __ATTR_RO(cause_autoneg);
+static struct kobj_attribute link_cause_config                     = __ATTR_RO(cause_config);
+static struct kobj_attribute link_cause_intr_up_enable             = __ATTR_RO(cause_intr_up_enable);
+static struct kobj_attribute link_cause_intr_high_ser_enable       = __ATTR_RO(cause_intr_high_ser_enable);
+static struct kobj_attribute link_cause_intr_llr_starved_enable    = __ATTR_RO(cause_intr_llr_starved_enable);
+static struct kobj_attribute link_cause_intr_llr_max_starve_enable = __ATTR_RO(cause_intr_llr_max_starve_enable);
+static struct kobj_attribute link_cause_intr_fault_enable          = __ATTR_RO(cause_intr_fault_enable);
+static struct kobj_attribute link_cause_intr_lane_degrade_enable   = __ATTR_RO(cause_intr_lane_degrade_enable);
+static struct kobj_attribute link_cause_timeout                    = __ATTR_RO(cause_timeout);
+static struct kobj_attribute link_cause_canceled                   = __ATTR_RO(cause_canceled);
+static struct kobj_attribute link_cause_unsupported_cable          = __ATTR_RO(cause_unsupported_cable);
+static struct kobj_attribute link_cause_command                    = __ATTR_RO(cause_command);
+static struct kobj_attribute link_cause_downshift                  = __ATTR_RO(cause_downshift);
+static struct kobj_attribute link_cause_llr_replay_max             = __ATTR_RO(cause_llr_replay_max);
+static struct kobj_attribute link_cause_upshift                    = __ATTR_RO(cause_upshift);
+static struct kobj_attribute link_cause_autoneg_config             = __ATTR_RO(cause_autoneg_config);
+static struct kobj_attribute link_cause_pcs_fault                  = __ATTR_RO(cause_pcs_fault);
+static struct kobj_attribute link_cause_serdes_pll                 = __ATTR_RO(cause_serdes_pll);
+static struct kobj_attribute link_cause_serdes_config              = __ATTR_RO(cause_serdes_config);
+static struct kobj_attribute link_cause_serdes_signal              = __ATTR_RO(cause_serdes_signal);
+static struct kobj_attribute link_cause_serdes_quality             = __ATTR_RO(cause_serdes_quality);
+static struct kobj_attribute link_cause_no_media                   = __ATTR_RO(cause_no_media);
+static struct kobj_attribute link_cause_ccw                        = __ATTR_RO(cause_ccw);
+static struct kobj_attribute link_cause_hot                        = __ATTR_RO(cause_hot);
+static struct kobj_attribute link_cause_warm                       = __ATTR_RO(cause_warm);
+static struct kobj_attribute link_cause_intr_register              = __ATTR_RO(cause_intr_register);
+static struct kobj_attribute link_cause_media_error                = __ATTR_RO(cause_media_error);
+static struct kobj_attribute link_cause_up_canceled                = __ATTR_RO(cause_up_canceled);
+static struct kobj_attribute link_cause_unsupported_speed          = __ATTR_RO(cause_unsupported_speed);
+static struct kobj_attribute link_cause_ss200_cable                = __ATTR_RO(cause_ss200_cable);
+static struct kobj_attribute link_cause_tx_lol                     = __ATTR_RO(cause_tx_lol);
+static struct kobj_attribute link_cause_rx_lol                     = __ATTR_RO(cause_rx_lol);
+static struct kobj_attribute link_cause_tx_los                     = __ATTR_RO(cause_tx_los);
+static struct kobj_attribute link_cause_rx_los                     = __ATTR_RO(cause_rx_los);
 
 static struct kobj_attribute link_an_cause_lp_caps_serdes_link_up_fail =
 			     __ATTR_RO(an_cause_lp_caps_serdes_link_up_fail);
@@ -1413,7 +1504,12 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_autoneg_nomatch.attr,
 	&link_cause_autoneg.attr,
 	&link_cause_config.attr,
-	&link_cause_intr_enable.attr,
+	&link_cause_intr_up_enable.attr,
+	&link_cause_intr_high_ser_enable.attr,
+	&link_cause_intr_llr_starved_enable.attr,
+	&link_cause_intr_llr_max_starve_enable.attr,
+	&link_cause_intr_fault_enable.attr,
+	&link_cause_intr_lane_degrade_enable.attr,
 	&link_cause_timeout.attr,
 	&link_cause_canceled.attr,
 	&link_cause_unsupported_cable.attr,

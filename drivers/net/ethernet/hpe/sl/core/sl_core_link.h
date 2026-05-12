@@ -27,135 +27,155 @@ struct work_struct;
 
 #define is_flag_set(_flags, _flag) ((_flags & _flag) == _flag)
 
-#define SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP (            \
-		SL_LINK_DOWN_CAUSE_SERDES_PLL        | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP (                     \
+		SL_LINK_DOWN_CAUSE_SERDES_PLL                 | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP (         \
-		SL_LINK_DOWN_CAUSE_SERDES_CONFIG     | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG_MAP (                  \
+		SL_LINK_DOWN_CAUSE_SERDES_CONFIG              | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_MAP (         \
-		SL_LINK_DOWN_CAUSE_SERDES_SIGNAL     | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_MAP (                  \
+		SL_LINK_DOWN_CAUSE_SERDES_SIGNAL              | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY_MAP (        \
-		SL_LINK_DOWN_CAUSE_SERDES_QUALITY    | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY_MAP (                 \
+		SL_LINK_DOWN_CAUSE_SERDES_QUALITY             | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP (           \
-		SL_LINK_DOWN_CAUSE_INTR_ENABLE       | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE_MAP (                 \
+		SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE             | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP (       \
-		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE_MAP (           \
+		SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE       | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_CONFIG_MAP (                \
-		SL_LINK_DOWN_CAUSE_CONFIG            | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE_MAP (        \
+		SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_AUTONEG_MAP (               \
-		SL_LINK_DOWN_CAUSE_AUTONEG           | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE_MAP (     \
+		SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_TIMEOUT_MAP (               \
-		SL_LINK_DOWN_CAUSE_TIMEOUT           | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_MAP (              \
+		SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE          | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP (     \
-		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE_MAP (       \
+		SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE   | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_SS200_CABLE_MAP (           \
-		SL_LINK_DOWN_CAUSE_SS200_CABLE       | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_MAP (                \
+		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH            | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP (           \
-		SL_LINK_DOWN_CAUSE_MEDIA_ERROR       | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_CONFIG_MAP (                         \
+		SL_LINK_DOWN_CAUSE_CONFIG                     | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP (     \
-		SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_AUTONEG_MAP (                        \
+		SL_LINK_DOWN_CAUSE_AUTONEG                    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP (             \
-		SL_LINK_DOWN_CAUSE_DOWNSHIFT         | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_TIMEOUT_MAP (                        \
+		SL_LINK_DOWN_CAUSE_TIMEOUT                    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_UPSHIFT_MAP (               \
-		SL_LINK_DOWN_CAUSE_UPSHIFT           | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_MAP (              \
+		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE          | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (        \
-		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE_MAP (                    \
+		SL_LINK_DOWN_CAUSE_SS200_CABLE                | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (        \
-		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG    | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR_MAP (                    \
+		SL_LINK_DOWN_CAUSE_MEDIA_ERROR                | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_PCS_FAULT_MAP (             \
-		SL_LINK_DOWN_CAUSE_PCS_FAULT         | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP (              \
+		SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED          | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP (          \
-		SL_LINK_DOWN_CAUSE_UCW               | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_DOWNSHIFT_MAP (                      \
+		SL_LINK_DOWN_CAUSE_DOWNSHIFT                  | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UPSHIFT_MAP (                        \
+		SL_LINK_DOWN_CAUSE_UPSHIFT                    | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (                 \
+		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG             | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP (                 \
+		SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG             | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_PCS_FAULT_MAP (                      \
+		SL_LINK_DOWN_CAUSE_PCS_FAULT                  | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
+#define SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP (                   \
+		SL_LINK_DOWN_CAUSE_UCW                        | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP (          \
-		SL_LINK_DOWN_CAUSE_CCW               | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP (                   \
+		SL_LINK_DOWN_CAUSE_CCW                        | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_TX_LOL_UP_MAP (             \
-		SL_LINK_DOWN_CAUSE_TX_LOL            | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_TX_LOL_UP_MAP (                      \
+		SL_LINK_DOWN_CAUSE_TX_LOL                     | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_RX_LOL_UP_MAP (             \
-		SL_LINK_DOWN_CAUSE_RX_LOL            | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_RX_LOL_UP_MAP (                      \
+		SL_LINK_DOWN_CAUSE_RX_LOL                     | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_TX_LOS_UP_MAP (             \
-		SL_LINK_DOWN_CAUSE_TX_LOS            | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_TX_LOS_UP_MAP (                      \
+		SL_LINK_DOWN_CAUSE_TX_LOS                     | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_RX_LOS_UP_MAP (             \
-		SL_LINK_DOWN_CAUSE_RX_LOS            | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_RX_LOS_UP_MAP (                      \
+		SL_LINK_DOWN_CAUSE_RX_LOS                     | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_LF_MAP (                    \
-		SL_LINK_DOWN_CAUSE_LF                | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_LF_MAP (                             \
+		SL_LINK_DOWN_CAUSE_LF                         | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
-#define SL_LINK_DOWN_CAUSE_RF_MAP (                    \
-		SL_LINK_DOWN_CAUSE_RF                | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_RF_MAP (                             \
+		SL_LINK_DOWN_CAUSE_RF                         | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
-#define SL_LINK_DOWN_CAUSE_DOWN_MAP (                  \
-		SL_LINK_DOWN_CAUSE_DOWN              | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_DOWN_MAP (                           \
+		SL_LINK_DOWN_CAUSE_DOWN                       | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
-#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP (        \
-		SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX    | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP (                 \
+		SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX             | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
-#define SL_LINK_DOWN_CAUSE_CANCELED_MAP (              \
-		SL_LINK_DOWN_CAUSE_CANCELED          | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_CANCELED_MAP (                       \
+		SL_LINK_DOWN_CAUSE_CANCELED                   | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_UP_CANCELED_MAP (           \
-		SL_LINK_DOWN_CAUSE_UP_CANCELED       | \
-		SL_LINK_DOWN_RETRYABLE               | \
+#define SL_LINK_DOWN_CAUSE_UP_CANCELED_MAP (                    \
+		SL_LINK_DOWN_CAUSE_UP_CANCELED                | \
+		SL_LINK_DOWN_RETRYABLE                        | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_MEDIA_HOT_LINK_UP_MAP (     \
-		SL_LINK_DOWN_CAUSE_MEDIA_HOT         | \
+#define SL_LINK_DOWN_CAUSE_MEDIA_HOT_LINK_UP_MAP (              \
+		SL_LINK_DOWN_CAUSE_MEDIA_HOT                  | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP)
-#define SL_LINK_DOWN_CAUSE_MEDIA_WARM_LINK_UP_MAP (    \
-		SL_LINK_DOWN_CAUSE_MEDIA_WARM        | \
-		SL_LINK_DOWN_ORIGIN_LINK_UP          | \
+#define SL_LINK_DOWN_CAUSE_MEDIA_WARM_LINK_UP_MAP (             \
+		SL_LINK_DOWN_CAUSE_MEDIA_WARM                 | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-#define SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP (       \
-		SL_LINK_DOWN_CAUSE_MEDIA_HOT         | \
+#define SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP (                \
+		SL_LINK_DOWN_CAUSE_MEDIA_HOT                  | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
 
 #define SL_LINK_DEGRADE_STATE_INVALID    0

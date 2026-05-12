@@ -528,7 +528,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up work link up enable failed [%d]", rtn);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up work link_up_fail failed [%d]", rtn);
@@ -641,8 +641,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	} else if (rtn != 0) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up success link high SER enable failed [%d]", rtn);
-		/* no LINK_UP timer end needed here */
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up success link_up_fail failed [%d]", rtn);
@@ -653,8 +652,8 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up success link llr max starvation enable failed [%d]", rtn);
-		/* no LINK_UP timer end needed here */
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up success link_up_fail failed [%d]", rtn);
@@ -665,8 +664,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up success link llr starved enable failed [%d]", rtn);
-		/* no LINK_UP timer end needed here */
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
@@ -677,8 +675,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up success link fault enable failed [%d]", rtn);
-		/* no LINK_UP timer end needed here */
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up success link_up_fail failed [%d]", rtn);
@@ -759,8 +756,8 @@ static int sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
 		spin_lock(&core_link->data_lock);
 		core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
 		spin_unlock(&core_link->data_lock);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_ENABLE_MAP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "link up ald link_up_fail failed [%d]", rtn);

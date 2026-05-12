@@ -18,17 +18,22 @@
 
 #define LOG_NAME SL_CTRL_LINK_LOG_NAME
 
-#define SL_LINK_DOWN_CAUSE_FATAL_MASK (                \
-		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH   | \
-		SL_LINK_DOWN_CAUSE_CONFIG            | \
-		SL_LINK_DOWN_CAUSE_DOWNSHIFT         | \
-		SL_LINK_DOWN_CAUSE_INTR_ENABLE       | \
-		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE | \
-		SL_LINK_DOWN_CAUSE_SS200_CABLE       | \
-		SL_LINK_DOWN_CAUSE_UCW               | \
-		SL_LINK_DOWN_CAUSE_MEDIA_HOT         | \
-		SL_LINK_DOWN_CAUSE_MEDIA_WARM        | \
-		SL_LINK_DOWN_CAUSE_NO_MEDIA          | \
+#define SL_LINK_DOWN_CAUSE_FATAL_MASK (                         \
+		SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH            | \
+		SL_LINK_DOWN_CAUSE_CONFIG                     | \
+		SL_LINK_DOWN_CAUSE_DOWNSHIFT                  | \
+		SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE             | \
+		SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE       | \
+		SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE    | \
+		SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE | \
+		SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE          | \
+		SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE   | \
+		SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE          | \
+		SL_LINK_DOWN_CAUSE_SS200_CABLE                | \
+		SL_LINK_DOWN_CAUSE_UCW                        | \
+		SL_LINK_DOWN_CAUSE_MEDIA_HOT                  | \
+		SL_LINK_DOWN_CAUSE_MEDIA_WARM                 | \
+		SL_LINK_DOWN_CAUSE_NO_MEDIA                   | \
 		SL_LINK_DOWN_CAUSE_UPSHIFT)
 
 void sl_ctrl_link_is_canceled_set(struct sl_ctrl_link *ctrl_link, bool canceled)

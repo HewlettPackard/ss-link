@@ -463,8 +463,23 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_CONFIG:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "config ");
 			break;
-		case SL_LINK_DOWN_CAUSE_INTR_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-enable ");
+		case SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-up-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-high-ser-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-llr-starved-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-llr-max-starve-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-fault-enable ");
+			break;
+		case SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-lane-degrade-enable ");
 			break;
 		case SL_LINK_DOWN_CAUSE_TIMEOUT:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "timeout ");
