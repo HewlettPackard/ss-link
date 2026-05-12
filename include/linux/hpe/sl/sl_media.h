@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2021-2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _LINUX_SL_MEDIA_H_
 #define _LINUX_SL_MEDIA_H_
@@ -133,13 +133,14 @@ struct sl_media_qsfp {
 #define SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE 2
 
 #define SL_MEDIA_ATTR_MAGIC 0x6c6d6d61
-#define SL_MEDIA_ATTR_VER   11
+#define SL_MEDIA_ATTR_VER   12
 struct sl_media_attr {
 	u32           magic;
 	u32           ver;
 	u32           size;
 
 	u8            format;
+	u8            version;
 	u32           type;
 	u32           vendor;
 	char          vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE];

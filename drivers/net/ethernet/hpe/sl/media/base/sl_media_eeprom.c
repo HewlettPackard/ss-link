@@ -567,7 +567,7 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 
 #define IDENTIFIER_OFFSET 0
 #define REV_CMPL_OFFSET   1
-int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
+int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format, u8 *version)
 {
 	u8   identifier;
 	u8   revision;
@@ -584,13 +584,15 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format)
 			((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
 
 	if (is_sff8636) {
-		*format = SL_MEDIA_MGMT_IF_SFF8636;
+		*version = 0;
+		*format  = SL_MEDIA_MGMT_IF_SFF8636;
 		sl_media_log_dbg(media_jack, LOG_NAME, "format SFF8636 (id = 0x%X, rev = 0x%X)", identifier, revision);
 		return 0;
 	}
 
 	if (is_cmis) {
-		*format = SL_MEDIA_MGMT_IF_CMIS;
+		*version = ((revision & 0xF0) >> 4);
+		*format  = SL_MEDIA_MGMT_IF_CMIS;
 		sl_media_log_dbg(media_jack, LOG_NAME, "format CMIS (id = 0x%X, rev = 0x%X)", identifier, revision);
 		return 0;
 	}

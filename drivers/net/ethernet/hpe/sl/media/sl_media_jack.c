@@ -327,7 +327,7 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		}
 	}
 
-	rtn = sl_media_data_jack_cable_downshift(media_lgrp->media_jack);
+	rtn = sl_media_data_jack_cable_downshift(media_lgrp->media_jack, media_attr.version);
 	if (rtn) {
 		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
 						    SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_DOWNSHIFT);
@@ -388,7 +388,7 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		}
 	}
 
-	rtn = sl_media_data_jack_cable_upshift(media_lgrp->media_jack);
+	rtn = sl_media_data_jack_cable_upshift(media_lgrp->media_jack, media_attr.version);
 	if (rtn) {
 		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
 						    SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_UPSHIFT);
