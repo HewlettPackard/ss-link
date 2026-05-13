@@ -742,7 +742,7 @@ static void sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
 	rtn = sl_core_hw_pcs_enable_auto_lane_degrade(core_link);
 	if (rtn) {
 		spin_lock(&core_link->data_lock);
-		core_link->degrade_state = SL_LINK_DEGRADE_STATE_FAILED;
+		core_link->degrade_state = SL_LINK_DEGRADE_STATE_TURNED_OFF;
 		spin_unlock(&core_link->data_lock);
 		return;
 	}

@@ -344,6 +344,8 @@ const char *sl_link_degrade_state_str(u32 degrade_state)
 		return "inactive";
 	case SL_LINK_DEGRADE_STATE_FAILED:
 		return "error";
+	case SL_LINK_DEGRADE_STATE_TURNED_OFF:
+		return "decided-off";
 	case SL_LINK_DEGRADE_STATE_INVALID:
 		return "invalid";
 	default:
