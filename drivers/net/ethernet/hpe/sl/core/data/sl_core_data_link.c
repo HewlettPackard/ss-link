@@ -1031,6 +1031,8 @@ static char *sl_core_link_degrade_state_str(int degrade_state)
 		return "inactive";
 	case SL_LINK_DEGRADE_STATE_FAILED:
 		return "failed";
+	case SL_LINK_DEGRADE_STATE_TURNED_OFF:
+		return "decided-off";
 	default:
 		return "unknown";
 	}
