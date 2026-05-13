@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/string.h>
 
@@ -97,7 +97,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable insert");
 
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
+	sl_media_jack_fault_cause_clr(media_jack);
 
 	memset(&media_attr, 0, sizeof(struct sl_media_attr));
 
@@ -273,7 +273,8 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_NONE);
+
+	sl_media_jack_fault_cause_clr(media_jack);
 
 	return 0;
 }

@@ -528,12 +528,14 @@ function print_jack {
 	local lane_count_400=$(cat ${LGRP_PATH}/media/active_cable_400g_lane_count)
 	local appsel_num_400=$(cat ${LGRP_PATH}/media/active_cable_400g_appsel_num)
 	local error_info=$(cat ${LGRP_PATH}/media/error_info)
+	local last_io_fault_cause=$(cat ${LGRP_PATH}/media/last_io_fault_cause)
+	local last_io_fault_time=$(cat ${LGRP_PATH}/media/last_io_fault_time)
 	local last_fault_cause=$(cat ${LGRP_PATH}/media/last_fault_cause)
 	local last_fault_time=$(cat ${LGRP_PATH}/media/last_fault_time)
 	local target_fw_ver=$(cat ${LGRP_PATH}/media/target_firmware_version_hex)
 	local shape=$(cat ${LGRP_PATH}/media/shape)
 	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
-        local jack_part=$(cat ${LGRP_PATH}/media/jack_part)
+	local jack_part=$(cat ${LGRP_PATH}/media/jack_part)
 
 
 	if [ "${length}" == "unsupported-format" ] || [ "${length}" == "no-cable" ] ; then
@@ -593,8 +595,9 @@ function print_jack {
 	fi
         printf "\n"
         printf "           | cable_max_speed: ${max_speed}\n"
-        printf "           | error_info: ${error_info}\n"
-        printf "           | last_fault_cause: [${last_fault_time}] ${last_fault_cause}\n"
+	printf "           | error_info: ${error_info}\n"
+	printf "           | last_io_fault_cause: [${last_io_fault_time}] ${last_io_fault_cause}\n"
+	printf "           | last_fault_cause   : [${last_fault_time}] ${last_fault_cause}\n"
 }
 
 function print_lgrp {

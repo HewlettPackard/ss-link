@@ -789,52 +789,143 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 	return sysfs_emit(buf, "0x%02x\n", appsel_num);
 }
 
-static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t last_io_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   io_fault_cause;
 	u32                   fault_cause;
+	time64_t              io_fault_time;
 	time64_t              fault_time;
+	char		      io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
-	if(rtn)
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
+					    &fault_cause, &fault_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, io_fault_cause,
+					      io_cause_str, sizeof(io_cause_str));
+	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last_fault cause show (cause = %u %s)", fault_cause,
-		   sl_media_fault_cause_str(fault_cause));
+		   "last_io_fault cause show (cause = 0x%x %s)", io_fault_cause, io_cause_str);
 
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
+	if (!io_fault_cause)
 		return sysfs_emit(buf, "no-fault\n");
 
-	return sysfs_emit(buf, "%s\n", sl_media_fault_cause_str(fault_cause));
+	return sysfs_emit(buf, "%s\n", io_cause_str);
+}
+
+static ssize_t last_io_fault_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   io_fault_cause;
+	u32                   fault_cause;
+	time64_t              io_fault_time;
+	time64_t              fault_time;
+	char		      io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	int		      rtn;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
+					    &fault_cause, &fault_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, io_fault_cause,
+					      io_cause_str, sizeof(io_cause_str));
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "last io fault time show (cause = 0x%x %s)",
+		   io_fault_cause, io_cause_str);
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "last io fault time show (time = %lld %ptTt %ptTd)",
+		   io_fault_time, &io_fault_time, &io_fault_time);
+
+	if (!io_fault_cause)
+		return sysfs_emit(buf, "no-fault\n");
+
+	return sysfs_emit(buf, "%ptTt %ptTd\n", &io_fault_time, &io_fault_time);
+}
+
+static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   io_fault_cause;
+	u32                   fault_cause;
+	time64_t              io_fault_time;
+	time64_t              fault_time;
+	char		      fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	int		      rtn;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
+					    &fault_cause, &fault_time);
+	if(rtn)
+		return sysfs_emit(buf, "error\n");
+
+	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, fault_cause,
+					      fault_cause_str, sizeof(fault_cause_str));
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "last_fault cause show (cause = 0x%x %s)", fault_cause, fault_cause_str);
+
+	if (!fault_cause)
+		return sysfs_emit(buf, "no-fault\n");
+
+	return sysfs_emit(buf, "%s\n", fault_cause_str);
 }
 
 static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   io_fault_cause;
 	u32                   fault_cause;
+	time64_t              io_fault_time;
 	time64_t              fault_time;
+	char		      fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &fault_cause, &fault_time);
+	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
+					    &fault_cause, &fault_time);
 	if(rtn)
 		return sysfs_emit(buf, "error\n");
 
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		"last fault time show (cause = %u %s, time = %lld %ptTt %ptTd)",
-		fault_cause, sl_media_fault_cause_str(fault_cause),
-		fault_time, &fault_time, &fault_time);
+	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, fault_cause,
+					      fault_cause_str, sizeof(fault_cause_str));
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
 
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "last fault time show (cause = 0x%x %s)",
+		   fault_cause, fault_cause_str);
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
+		   "last fault time show (time = %lld %ptTt %ptTd)",
+		   fault_time, &fault_time, &fault_time);
+
+	if (!fault_cause)
 		return sysfs_emit(buf, "no-fault\n");
 
 	return sysfs_emit(buf, "%ptTt %ptTd\n", &fault_time, &fault_time);
@@ -951,8 +1042,10 @@ static struct kobj_attribute media_active_cable_200g_appsel_num     = __ATTR_RO(
 static struct kobj_attribute media_active_cable_400g_host_interface = __ATTR_RO(active_cable_400g_host_interface);
 static struct kobj_attribute media_active_cable_400g_lane_count     = __ATTR_RO(active_cable_400g_lane_count);
 static struct kobj_attribute media_active_cable_400g_appsel_num     = __ATTR_RO(active_cable_400g_appsel_num);
-static struct kobj_attribute media_last_fault_cause                 = __ATTR_RO(last_fault_cause);
-static struct kobj_attribute media_last_fault_time                  = __ATTR_RO(last_fault_time);
+static struct kobj_attribute media_last_io_fault_cause              = __ATTR_RO(last_io_fault_cause);
+static struct kobj_attribute media_last_fault_cause 		    = __ATTR_RO(last_fault_cause);
+static struct kobj_attribute media_last_io_fault_time               = __ATTR_RO(last_io_fault_time);
+static struct kobj_attribute media_last_fault_time		    = __ATTR_RO(last_fault_time);
 static struct kobj_attribute media_is_supported_ss200_cable         = __ATTR_RO(is_supported_ss200_cable);
 static struct kobj_attribute media_jack_part                        = __ATTR_RO(jack_part);
 static struct kobj_attribute media_signal_cache_time                = __ATTR_RO(signal_cache_time);
@@ -988,7 +1081,9 @@ static struct attribute *media_attrs[] = {
 	&media_active_cable_400g_host_interface.attr,
 	&media_active_cable_400g_lane_count.attr,
 	&media_active_cable_400g_appsel_num.attr,
+	&media_last_io_fault_cause.attr,
 	&media_last_fault_cause.attr,
+	&media_last_io_fault_time.attr,
 	&media_last_fault_time.attr,
 	&media_is_supported_ss200_cable.attr,
 	&media_jack_part.attr,

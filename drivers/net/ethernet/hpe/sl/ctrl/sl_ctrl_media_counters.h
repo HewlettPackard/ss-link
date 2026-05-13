@@ -22,8 +22,7 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_SCAN_HDL_GET,                      /* media scan hdl get error                      */
 	MEDIA_CAUSE_SCAN_JACK_GET,                     /* media scan jack get error                     */
 	MEDIA_CAUSE_MEDIA_ATTR_SET,                    /* media attribute set error                     */
-	MEDIA_CAUSE_INTR_EVENT_JACK_IO,                /* media interrupt event jack io error           */
-	MEDIA_CAUSE_POWER_SET,                         /* media power set error                         */
+	MEDIA_CAUSE_HIGH_POWER_SET_JACK_IO,            /* media high power set error                    */
 	MEDIA_CAUSE_SHIFT_DOWN_JACK_IO,                /* media shift down jack io error                */
 	MEDIA_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET,  /* media shift down jack io low power set error  */
 	MEDIA_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET, /* media shift down jack io high power set error */

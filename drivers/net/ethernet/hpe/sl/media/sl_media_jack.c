@@ -209,7 +209,7 @@ int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
 
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
-		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_POWER_SET);
+		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
 		return -EIO;
 	}
@@ -396,40 +396,8 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return rtn;
 	}
 
-	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
-
-	return 0;
-}
-
-void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause)
-{
-	spin_lock(&media_jack->data_lock);
-	media_jack->fault_cause = fault_cause;
-	media_jack->fault_time  = ktime_get_real_seconds();
-	spin_unlock(&media_jack->data_lock);
-
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_NONE)
-		return;
-
-	if (fault_cause == SL_MEDIA_FAULT_CAUSE_HOT)
-		sl_media_data_jack_led_set(media_jack);
-
-	sl_ctrl_media_cause_counter_inc(media_jack, fault_cause);
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "fault cause set (cause = %u %s)", fault_cause,
-		sl_media_fault_cause_str(fault_cause));
-}
-
-int sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
-				  time64_t *fault_time)
-{
-	spin_lock(&media_jack->data_lock);
-	*fault_cause = media_jack->fault_cause;
-	*fault_time  = media_jack->fault_time;
-	spin_unlock(&media_jack->data_lock);
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "cable fault cause get (cause = %u %s)", *fault_cause,
-		sl_media_fault_cause_str(*fault_cause));
+	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
+					    SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 
 	return 0;
 }
@@ -461,24 +429,22 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "scan-jack-get";
 	case SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET:
 		return "media-attr-set";
-	case SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO:
-		return "intr-event-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_POWER_SET:
-		return "power-set";
+	case SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO:
+		return "high-power-set-io";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO:
-		return "shift-down-jack-io";
+		return "down-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET:
-		return "shift-down-jack-io-low-power-set";
+		return "down-jack-io-low-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET:
-		return "shift-down-jack-io-high-power-set";
+		return "down-jack-io-high-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO:
-		return "shift-up-jack-io";
+		return "up-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET:
-		return "shift-up-jack-io-low-power-set";
+		return "up-jack-io-low-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET:
-		return "shift-up-jack-io-high-power-set";
+		return "up-jack-io-high-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO:
-		return "shift-state-jack-io";
+		return "state-jack-io";
 	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
 		return "offline";
 	case SL_MEDIA_FAULT_CAUSE_HOT:
@@ -1047,4 +1013,131 @@ int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *erro
 	sl_media_log_dbg(media_jack, LOG_NAME, "attr error map get (error_map = %u)", *error_map);
 
 	return 0;
+}
+
+int sl_media_fault_cause_str_create(struct sl_media_jack *media_jack, u32 cause_map,
+				    char *cause_str, unsigned int cause_str_size)
+{
+	unsigned int   which;
+	unsigned int   str_pos;
+	unsigned long  cause_map_long;
+	const char    *str;
+	int            rtn;
+
+	str_pos 	= 0;
+	cause_map_long  = cause_map;
+
+	if (!cause_str)
+		return -EINVAL;
+	if (cause_str_size < SL_MEDIA_FAULT_CAUSE_STR_MIN)
+		return -EINVAL;
+
+	for_each_set_bit(which, &cause_map_long, sizeof(cause_map) * BITS_PER_BYTE) {
+		str = sl_media_fault_cause_str(BIT(which));
+		if (strcmp(str, "unknown") == 0)
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "unknown fault bit set");
+
+		rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "%s ", str);
+		if (rtn < 0 || str_pos + rtn >= cause_str_size)
+			break;
+		str_pos += rtn;
+	}
+
+	if (str_pos == 0)
+		str_pos = snprintf(cause_str, cause_str_size, "none ");
+
+	cause_str[str_pos - 1] = '\0';
+	return 0;
+}
+
+void sl_media_jack_io_fault_cause_set(struct sl_media_jack *media_jack, u32 io_fault_cause)
+{
+	char io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	int rtn;
+
+	spin_lock(&media_jack->data_lock);
+	media_jack->io_fault_cause |= io_fault_cause;
+	media_jack->io_fault_time = ktime_get_real_seconds();
+	spin_unlock(&media_jack->data_lock);
+
+	sl_ctrl_media_cause_counter_inc(media_jack, io_fault_cause);
+
+	rtn = sl_media_fault_cause_str_create(media_jack, media_jack->io_fault_cause,
+					      io_cause_str, sizeof(io_cause_str));
+	if (rtn)
+		snprintf(io_cause_str, sizeof(io_cause_str), "error");
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "io fault cause set (cause = 0x%x %s)",
+			 io_fault_cause, io_cause_str);
+}
+
+void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause)
+{
+	char fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	int rtn;
+
+	spin_lock(&media_jack->data_lock);
+	media_jack->fault_cause |= fault_cause;
+	media_jack->fault_time = ktime_get_real_seconds();
+	spin_unlock(&media_jack->data_lock);
+
+	if (fault_cause & SL_MEDIA_FAULT_CAUSE_HOT)
+		sl_media_data_jack_led_set(media_jack);
+
+	sl_ctrl_media_cause_counter_inc(media_jack, fault_cause);
+
+	rtn = sl_media_fault_cause_str_create(media_jack, media_jack->fault_cause,
+					      fault_cause_str, sizeof(fault_cause_str));
+	if (rtn)
+		snprintf(fault_cause_str, sizeof(fault_cause_str), "error");
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "fault cause set (cause = 0x%x %s)",
+			 fault_cause, fault_cause_str);
+}
+
+int sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_fault_cause,
+				  time64_t *io_fault_time, u32 *fault_cause,
+				  time64_t *fault_time)
+{
+	char io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	int rtn;
+
+	spin_lock(&media_jack->data_lock);
+	*io_fault_cause		= media_jack->io_fault_cause;
+	*fault_cause		= media_jack->fault_cause;
+	*io_fault_time		= media_jack->io_fault_time;
+	*fault_time		= media_jack->fault_time;
+	spin_unlock(&media_jack->data_lock);
+
+	rtn = sl_media_fault_cause_str_create(media_jack, *io_fault_cause,
+					      io_cause_str, sizeof(io_cause_str));
+	if (rtn)
+		snprintf(io_cause_str, sizeof(io_cause_str), "error");
+
+	rtn = sl_media_fault_cause_str_create(media_jack, *fault_cause,
+					      fault_cause_str, sizeof(fault_cause_str));
+	if (rtn)
+		snprintf(fault_cause_str, sizeof(fault_cause_str), "error");
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "cable fault cause get (io fault cause = 0x%x %s)",
+			 *io_fault_cause, io_cause_str);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "cable fault cause get (fault cause = 0x%x %s)",
+			 *fault_cause, fault_cause_str);
+
+	return 0;
+}
+
+void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack)
+{
+	spin_lock(&media_jack->data_lock);
+	media_jack->io_fault_cause = 0;
+	media_jack->io_fault_time = 0;
+	media_jack->fault_cause = 0;
+	media_jack->fault_time = 0;
+	spin_unlock(&media_jack->data_lock);
 }

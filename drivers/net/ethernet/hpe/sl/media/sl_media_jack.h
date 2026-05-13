@@ -69,6 +69,10 @@
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN     3
 #define SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR          4
 
+/* map-string formatting */
+#define SL_MEDIA_FAULT_CAUSE_STR_MIN      10
+#define SL_MEDIA_FAULT_CAUSE_STR_SIZE     450
+
 #define SL_MEDIA_JACK_CABLE_HOT_ALARM_MASK BIT(0) /* TempMonHighAlarmFlag */
 
 #define SL_MEDIA_JACK_ATTR_ERR_STR_SIZE 128
@@ -189,7 +193,9 @@ struct sl_media_jack {
 	u8                              temperature_state;
 	u8                              temperature_prev_state;
 	unsigned long                   cable_high_power_wait_time_end;
+	u32                             io_fault_cause;
 	u32                             fault_cause;
+	time64_t                        io_fault_time;
 	time64_t                        fault_time;
 	u8                              cable_shift_state;
 	u8                              appsel_num_200_gaui; /* used for downshifting */
@@ -237,8 +243,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET                      BIT(9)
 #define SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET                     BIT(10)
 #define SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET                    BIT(11)
-#define SL_MEDIA_FAULT_CAUSE_INTR_EVENT_JACK_IO                BIT(12)
-#define SL_MEDIA_FAULT_CAUSE_POWER_SET                         BIT(13)
+#define SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO            BIT(13)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO                BIT(14)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET  BIT(15)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET BIT(16)
@@ -272,9 +277,6 @@ int sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_j
 int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
-void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause);
-int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *fault_cause,
-				   time64_t *fault_time);
 
 int  sl_media_jack_cable_temp_state_get(struct sl_media_jack *media_jack, u8 *temperature_state);
 int  sl_media_jack_cable_temp_prev_state_get(struct sl_media_jack *media_jack, u8 *temperature_prev_state);
@@ -314,4 +316,12 @@ int sl_media_jack_signal_cache_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map,
 int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, unsigned int error_str_size);
 int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *error_map);
 
+int sl_media_fault_cause_str_create(struct sl_media_jack *media_jack, u32 cause_map,
+				    char *cause_str, unsigned int cause_str_size);
+
+void sl_media_jack_io_fault_cause_set(struct sl_media_jack *media_jack, u32 io_fault_cause);
+void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause);
+int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_fault_cause,
+				   time64_t *io_fault_time, u32 *fault_cause, time64_t *fault_time);
+void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack);
 #endif /* _SL_MEDIA_JACK_H_ */

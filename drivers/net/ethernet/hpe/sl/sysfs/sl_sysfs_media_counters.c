@@ -245,7 +245,7 @@ static ssize_t cause_media_attr_set_show(struct kobject *kobj, struct kobj_attri
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_intr_event_jack_io_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_high_power_set_jack_io_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -254,31 +254,12 @@ static ssize_t cause_intr_event_jack_io_show(struct kobject *kobj, struct kobj_a
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_INTR_EVENT_JACK_IO, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_HIGH_POWER_SET_JACK_IO, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause intr event jack io show (counter = %u)", counter);
-
-	return sysfs_emit(buf, "%u\n", counter);
-}
-
-static ssize_t cause_power_set_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u32                   counter;
-	u32                   rtn;
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
-
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_POWER_SET, &counter);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause power set show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause high power set io show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
@@ -499,8 +480,7 @@ static struct kobj_attribute media_cause_scan_status_get                   = __A
 static struct kobj_attribute media_cause_scan_hdl_get                      = __ATTR_RO(cause_scan_hdl_get);
 static struct kobj_attribute media_cause_scan_jack_get                     = __ATTR_RO(cause_scan_jack_get);
 static struct kobj_attribute media_cause_media_attr_set                    = __ATTR_RO(cause_media_attr_set);
-static struct kobj_attribute media_cause_intr_event_jack_io                = __ATTR_RO(cause_intr_event_jack_io);
-static struct kobj_attribute media_cause_power_set                         = __ATTR_RO(cause_power_set);
+static struct kobj_attribute media_cause_high_power_set_jack_io            = __ATTR_RO(cause_high_power_set_jack_io);
 static struct kobj_attribute media_cause_shift_down_jack_io                = __ATTR_RO(cause_shift_down_jack_io);
 static struct kobj_attribute media_cause_shift_down_jack_io_low_power_set  =
 			     __ATTR_RO(cause_shift_down_jack_io_low_power_set);
@@ -530,8 +510,7 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_scan_hdl_get.attr,
 	&media_cause_scan_jack_get.attr,
 	&media_cause_media_attr_set.attr,
-	&media_cause_intr_event_jack_io.attr,
-	&media_cause_power_set.attr,
+	&media_cause_high_power_set_jack_io.attr,
 	&media_cause_shift_down_jack_io.attr,
 	&media_cause_shift_down_jack_io_low_power_set.attr,
 	&media_cause_shift_down_jack_io_high_power_set.attr,
