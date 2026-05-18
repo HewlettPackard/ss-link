@@ -94,8 +94,7 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 static void sl_core_hw_link_high_ser_intr_work_priv(struct sl_core_link *core_link)
 {
-	int  rtn;
-	u32  link_state;
+	u32 link_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work priv");
 
@@ -104,13 +103,7 @@ static void sl_core_hw_link_high_ser_intr_work_priv(struct sl_core_link *core_li
 	sl_core_log_warn_trace(core_link, LOG_NAME, "high symbol error ratio occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER) == -EALREADY) {
-		rtn = sl_core_data_link_state_get(core_link, &link_state);
-		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "high SER intr work priv link_state_get failed [%d]", rtn);
-			return;
-		}
-
+		sl_core_data_link_state_get(core_link, &link_state);
 		switch (link_state) {
 		case SL_CORE_LINK_STATE_GOING_DOWN:
 		case SL_CORE_LINK_STATE_CANCELING:
@@ -274,15 +267,16 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start work (link = 0x%p)", core_link);
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up start work link_state_get failed [%d]", rtn);
-		return;
-	}
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "up start work invalid state (link_state = %u %s)",
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "up start work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up start work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -302,7 +296,8 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "up start work link_up_fail failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up start work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -356,8 +351,8 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 
 void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 {
-	int           rtn;
-	u32           link_state;
+	int rtn;
+	u32 link_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up after an start (link = 0x%p)", core_link);
 
@@ -372,12 +367,10 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 	case SL_CORE_LINK_STATE_CANCELING:
 		sl_core_log_dbg(core_link, LOG_NAME, "up after an start canceled");
 		spin_unlock(&core_link->link.data_lock);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		return;
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "up after an start timeout");
 		spin_unlock(&core_link->link.data_lock);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
@@ -385,6 +378,11 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 				link_state, sl_core_link_state_str(link_state));
 		spin_unlock(&core_link->link.data_lock);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up after an start link_up_fail failed [%d]", rtn);
 		return;
 	};
 
@@ -446,17 +444,15 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up work (link = 0x%p)", core_link);
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up work link_state_get failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		return;
-	}
-	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
+	sl_core_data_link_state_get(core_link, &link_state);
+	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME, "up work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -549,18 +545,17 @@ void sl_core_hw_link_up_intr_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up intr work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up intr work link_state_get failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		return;
-	}
-	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
+	sl_core_data_link_state_get(core_link, &link_state);
+	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up intr work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up intr work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -782,18 +777,16 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up check work (port = %u)", port);
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up check work link_state_get failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		return;
-	}
-
-	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
+	sl_core_data_link_state_get(core_link, &link_state);
+	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up check work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "up check work media hot link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -895,19 +888,17 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fec settle work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fec settle work link_state_get failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		return;
-	}
-
-	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
+	sl_core_data_link_state_get(core_link, &link_state);
+	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up fec settle work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up fec settle work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -937,19 +928,17 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fec check work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fec check work link_state_get failed [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
-		return;
-	}
-
-	if ((link_state != SL_CORE_LINK_STATE_GOING_UP) && (link_state != SL_CORE_LINK_STATE_AN)) {
+	sl_core_data_link_state_get(core_link, &link_state);
+	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up fec check work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up fec check work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
@@ -1121,20 +1110,13 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_CANCEL]);
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up cancel work link_state_get failed [%d]", rtn);
-		return;
-	}
+	sl_core_log_dbg(core_link, LOG_NAME, "up cancel work");
 
-	sl_core_log_dbg(core_link, LOG_NAME, "up cancel work (link_state = %u %s)", link_state,
-		sl_core_link_state_str(link_state));
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_CANCELING) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up cancel work invalid state (link_state = %u %s)",
-				      link_state, sl_core_link_state_str(link_state));
+		sl_core_log_err(core_link, LOG_NAME,
+				"up cancel work invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -1218,17 +1200,11 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fail work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fail work link_state_get failed [%d]", rtn);
-		return;
-	}
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_DOWN) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fail work invalid state (link_state = %u %s)",
-				      link_state, sl_core_link_state_str(link_state));
+		sl_core_log_err(core_link, LOG_NAME,
+				"up fail work invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -1310,17 +1286,11 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "down work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "down work link_state_get failed [%d]", rtn);
-		return;
-	}
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_DOWN) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "down work invalid state (link_state = %u %s)",
-				      link_state, sl_core_link_state_str(link_state));
+		sl_core_log_err(core_link, LOG_NAME,
+				"down work invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -1380,7 +1350,6 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 
 void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 {
-	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -1388,13 +1357,7 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "high SER intr work link_state_get failed [%d]", rtn);
-		return;
-	}
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 	case SL_CORE_LINK_STATE_GOING_UP:
@@ -1402,10 +1365,10 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 		break;
 	default:
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "high SER intr work invalid state (link_state = %u %s)",
-				      link_state, sl_core_link_state_str(link_state));
-			return;
+		sl_core_log_dbg(core_link, LOG_NAME,
+				"high SER intr work invalid state (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
+		return;
 	}
 
 	sl_core_hw_link_high_ser_intr_work_priv(core_link);
@@ -1413,7 +1376,6 @@ void sl_core_hw_link_high_ser_intr_work(struct work_struct *work)
 
 void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 {
-	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -1421,13 +1383,7 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation intr work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "llr max starvation intr work link_state_get failed [%d]", rtn);
-		return;
-	}
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_UP) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "llr max starvation intr work invalid state (link_state = %u %s)",
@@ -1440,13 +1396,7 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 	sl_core_log_warn_trace(core_link, LOG_NAME, "llr max starvation occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_MAX_STARVATION) == -EALREADY) {
-		rtn = sl_core_data_link_state_get(core_link, &link_state);
-		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "llr max starvation intr work link_state_get failed [%d]", rtn);
-			return;
-		}
-
+		sl_core_data_link_state_get(core_link, &link_state);
 		switch (link_state) {
 		case SL_CORE_LINK_STATE_GOING_DOWN:
 		case SL_CORE_LINK_STATE_CANCELING:
@@ -1470,7 +1420,6 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 
 void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 {
-	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
 
@@ -1478,17 +1427,11 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "llr starved intr work");
 
-	rtn = sl_core_data_link_state_get(core_link, &link_state);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "llr starved intr work failed to get link state [%d]", rtn);
-		return;
-	}
-
+	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_UP) {
-		sl_core_log_dbg(core_link, LOG_NAME,
-				"llr starved intr work invalid state (link_state = %u %s)",
-				link_state, sl_core_link_state_str(link_state));
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "llr starved intr work invalid state (link_state = %u %s)",
+				      link_state, sl_core_link_state_str(link_state));
 		return;
 	}
 
@@ -1497,13 +1440,7 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 	sl_core_log_warn_trace(core_link, LOG_NAME, "llr starved occurred");
 
 	while (sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED) == -EALREADY) {
-		rtn = sl_core_data_link_state_get(core_link, &link_state);
-		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "llr starved intr work link_state_get failed [%d]", rtn);
-			return;
-		}
-
+		sl_core_data_link_state_get(core_link, &link_state);
 		switch (link_state) {
 		case SL_CORE_LINK_STATE_GOING_DOWN:
 		case SL_CORE_LINK_STATE_CANCELING:
