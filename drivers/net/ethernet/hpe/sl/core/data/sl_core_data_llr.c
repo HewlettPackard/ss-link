@@ -194,7 +194,7 @@ int sl_core_data_llr_config_set(struct sl_core_llr *core_llr, struct sl_llr_conf
 	core_llr->settings.ctl_frame_smac      = 0;
 	core_llr->settings.ctl_frame_ethertype = 0x88B6;
 	core_llr->settings.retry_threshold     = 2;
-	core_llr->settings.allow_re_init       = 0;
+	core_llr->settings.allow_re_init       = 1;
 	core_llr->settings.replay_ct_max       = 0xFF;
 	core_llr->settings.replay_timer_max    = 15500;
 
