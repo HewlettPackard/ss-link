@@ -127,6 +127,7 @@
 #define SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(a, b)                 SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_rx_mac_subport, mac_operational)
 #define SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_GET(a)                       SL_CSR_GET(a, ss2_port_pml_cfg_rx_mac_subport, mac_operational)
 #define SS2_PORT_PML_CFG_RX_MAC_SUBPORT_SHORT_PREAMBLE_UPDATE(a, b)                  SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_rx_mac_subport, short_preamble)
+#define SS2_PORT_PML_CFG_RX_MAC_SUBPORT_SHORT_PREAMBLE_GET(a)                        SL_CSR_GET(a, ss2_port_pml_cfg_rx_mac_subport, short_preamble)
 
 #define SS2_PORT_PML_CFG_TX_MAC_IEEE_IFG_ADJUSTMENT_UPDATE(a, b)                     SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_tx_mac, ieee_ifg_adjustment)
 #define SS2_PORT_PML_CFG_TX_MAC_MAC_PAD_IDLE_THRESH_UPDATE(a, b)                     SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_tx_mac, mac_pad_idle_thresh)
@@ -137,6 +138,7 @@
 #define SS2_PORT_PML_CFG_TX_MAC_SUBPORT_MAC_CDT_INIT_VAL_UPDATE(a, b)                SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_tx_mac_subport, mac_cdt_init_val)
 #define SS2_PORT_PML_CFG_TX_MAC_SUBPORT_PCS_CREDITS_UPDATE(a, b)                     SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_tx_mac_subport, pcs_credits)
 #define SS2_PORT_PML_CFG_TX_MAC_SUBPORT_SHORT_PREAMBLE_UPDATE(a, b)                  SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_tx_mac_subport, short_preamble)
+#define SS2_PORT_PML_CFG_TX_MAC_SUBPORT_SHORT_PREAMBLE_GET(a)                        SL_CSR_GET(a, ss2_port_pml_cfg_tx_mac_subport, short_preamble)
 
 #define SS2_PORT_PML_CFG_SERDES_RX_PMD_RX_LANE_MODE_UPDATE(a, b)                     SL_CSR_UPDATE(a, b, ss2_port_pml_cfg_serdes_rx, pmd_rx_lane_mode)
 #define SS2_PORT_PML_CFG_SERDES_RX_PMD_RX_OSR_MODE_GET(a)                            SL_CSR_GET(a, ss2_port_pml_cfg_serdes_rx, pmd_rx_osr_mode)

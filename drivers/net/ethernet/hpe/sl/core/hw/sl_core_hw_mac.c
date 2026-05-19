@@ -147,6 +147,10 @@ void sl_core_hw_mac_rx_stop(struct sl_core_mac *core_mac)
 	sl_core_log_dbg(core_mac, LOG_NAME, "rx - stop (port = %d)", port);
 
 	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
+	data64 = SS2_PORT_PML_CFG_RX_MAC_SUBPORT_SHORT_PREAMBLE_UPDATE(data64, 1 ^ SS2_PORT_PML_CFG_RX_MAC_SUBPORT_SHORT_PREAMBLE_GET(data64));
+	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), data64);
+
+	sl_core_mac_read64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), &data64);
 	data64 = SS2_PORT_PML_CFG_RX_MAC_SUBPORT_MAC_OPERATIONAL_UPDATE(data64, 0);
 	sl_core_mac_write64(core_mac, SS2_PORT_PML_CFG_RX_MAC_SUBPORT(core_mac->num), data64);
 
