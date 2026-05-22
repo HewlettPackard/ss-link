@@ -381,7 +381,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	return 0;
 }
 
-void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
+void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 {
 	int                                  rtn;
 	struct sl_ctrl_link                 *ctrl_link;
@@ -393,19 +393,22 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 
 	ctrl_link = container_of(work, struct sl_ctrl_link, fec_mon_timer_work);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor timer work");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work");
 
 	spin_lock(&ctrl_link->fec_data.lock);
 	period = ctrl_link->fec_data.info.monitor.period_ms;
 	spin_unlock(&ctrl_link->fec_data.lock);
 	if (!period) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor period zero");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work period zero");
 		return;
 	}
 
 	if (sl_core_link_is_pml_recovery_running(sl_core_link_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
-	    ctrl_link->ctrl_lgrp->num, ctrl_link->num))) {
-		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "fec monitor skipped due to pml recovery running");
+								  ctrl_link->ctrl_lgrp->num, ctrl_link->num))) {
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "monitor work skipped recovery running");
+		spin_lock(&ctrl_link->fec_data.lock);
+		ctrl_link->fec_mon_refresh_data = true;
+		spin_unlock(&ctrl_link->fec_data.lock);
 		goto start_mon;
 	}
 
@@ -413,7 +416,7 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 	stop = ctrl_link->fec_mon_timer_stop;
 	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 	if (stop) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor stopped");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work stopped");
 		return;
 	}
 
@@ -422,17 +425,26 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 					&tail_cntrs);
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-			"core_link_fec_tail_cntrs_get failed [%d]", rtn);
+				      "monitor work fec_data_get failed [%d]", rtn);
 		goto start_mon;
 	}
 
 	sl_ctrl_link_fec_data_store(ctrl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
+	spin_lock(&ctrl_link->fec_data.lock);
+	if (ctrl_link->fec_mon_refresh_data) {
+		ctrl_link->fec_mon_refresh_data = false;
+		spin_unlock(&ctrl_link->fec_data.lock);
+		goto start_mon;
+	}
+	spin_unlock(&ctrl_link->fec_data.lock);
+
 	sl_ctrl_link_fec_data_calc(ctrl_link);
 
 	rtn = sl_ctrl_link_fec_data_check(ctrl_link);
 	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "check failed [%d]", rtn);
+		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+				      "monitor work fec_data_check failed [%d]", rtn);
 		return;
 	}
 
@@ -440,7 +452,7 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 	period = ctrl_link->fec_data.info.monitor.period_ms;
 	spin_unlock(&ctrl_link->fec_data.lock);
 	if (!period) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor period zero");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work period zero");
 		return;
 	}
 
@@ -448,13 +460,13 @@ void sl_ctrl_link_fec_mon_timer_work(struct work_struct *work)
 	stop = ctrl_link->fec_mon_timer_stop;
 	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 	if (stop) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor stopped");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work stopped");
 		return;
 	}
 
 start_mon:
 	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor started");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work started");
 }
 
 void sl_ctrl_link_fec_mon_timer(struct timer_list *timer)

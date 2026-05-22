@@ -678,8 +678,10 @@ function print_link {
         local pml_rec_successes=$(cat ${LINK_PATH}/pml_recovery/pml_rec_successes)
         local pml_rec_local_fault_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_fault_cause)
         local pml_rec_down_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_cause)
+        local pml_rec_remote_fault_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_remote_fault_cause)
         local pml_rec_local_fault_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_fault_failed_cause)
         local pml_rec_down_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_failed_cause)
+        local pml_rec_remote_fault_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_remote_fault_failed_cause)
         local pml_rec_rate_limit_exceeded=$(cat ${LINK_PATH}/pml_recovery/pml_rec_rate_limit_exceeded)
 	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
 	local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
@@ -728,11 +730,13 @@ function print_link {
         printf "           | hpe_caps  : ${caps_hpe}\n"
         printf "  recovery | attempts : ${pml_rec_attempts}\n"
         printf "           | successes: ${pml_rec_successes}\n"
-        printf "           | rate_limit_exceeded     : ${pml_rec_rate_limit_exceeded}\n"
-        printf "           | link_down_cause         : ${pml_rec_down_cause}\n"
-        printf "           | link_down_failed_cause  : ${pml_rec_down_failed_cause}\n"
-        printf "           | local_fault_cause       : ${pml_rec_local_fault_cause}\n"
-        printf "           | local_fault_failed_cause: ${pml_rec_local_fault_failed_cause}\n"
+        printf "           | rate_limit_exceeded      : ${pml_rec_rate_limit_exceeded}\n"
+        printf "           | link_down_cause          : ${pml_rec_down_cause}\n"
+        printf "           | link_down_failed_cause   : ${pml_rec_down_failed_cause}\n"
+        printf "           | local_fault_cause        : ${pml_rec_local_fault_cause}\n"
+        printf "           | local_fault_failed_cause : ${pml_rec_local_fault_failed_cause}\n"
+        printf "           | remote_fault_cause       : ${pml_rec_remote_fault_cause}\n"
+        printf "           | remote_fault_failed_cause: ${pml_rec_remote_fault_failed_cause}\n"
 
 	print_ald_state
 }

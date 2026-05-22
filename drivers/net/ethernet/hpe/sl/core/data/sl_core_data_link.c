@@ -1200,6 +1200,13 @@ int sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link
 	return 0;
 }
 
+int sl_core_data_link_pml_rec_link_remote_fault_cause_get(struct sl_core_link *core_link, int *remote_fault_cause)
+{
+	*remote_fault_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_CAUSE]);
+
+	return 0;
+}
+
 int sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause)
 {
 	*fault_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
@@ -1210,6 +1217,13 @@ int sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *c
 int sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause)
 {
 	*down_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+
+	return 0;
+}
+
+int sl_core_data_link_pml_rec_link_remote_fault_failed_cause_get(struct sl_core_link *core_link, int *remote_fault_failed_cause)
+{
+	*remote_fault_failed_cause = atomic_read(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
 
 	return 0;
 }

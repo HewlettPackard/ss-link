@@ -97,7 +97,7 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 	spin_lock_init(&ctrl_link->fec_mon_timer_lock);
 	ctrl_link->fec_data.curr_ptr = &ctrl_link->fec_data.cntrs[0];
 	ctrl_link->fec_data.prev_ptr = &ctrl_link->fec_data.cntrs[1];
-	INIT_WORK(&ctrl_link->fec_mon_timer_work, sl_ctrl_link_fec_mon_timer_work);
+	INIT_WORK(&ctrl_link->fec_mon_timer_work, sl_ctrl_link_fec_mon_work);
 
 	spin_lock_init(&ctrl_link->fec_up_cache.lock);
 	spin_lock_init(&ctrl_link->fec_down_cache.lock);
