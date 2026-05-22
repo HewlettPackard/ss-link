@@ -69,10 +69,12 @@ struct sl_ctrl_link {
 		spinlock_t           lock;
 	} up_clock;
 
+	// FIXME: fec needs to go in a struct
 	struct sl_ctrl_link_fec_data  fec_data;
 	u32                           fec_mon_state;
 	struct timer_list             fec_mon_timer;
 	bool                          fec_mon_timer_stop;
+	bool                          fec_mon_refresh_data;
 	spinlock_t                    fec_mon_timer_lock;
 	struct work_struct            fec_mon_timer_work;
 	struct sl_ctrl_link_fec_cache fec_up_cache;

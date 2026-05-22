@@ -332,16 +332,18 @@ struct sl_core_link {
 	} link;
 
 	struct kobject			     pml_rec_kobj;
+	// FIXME: because of the struct, these elements don't need the prefix
 	struct {
 		struct sl_link_pml_rec_info  pml_rec_info;
 		atomic_t                     pml_rec_running;
 		atomic_t                     pml_rec_rate_limit_exceeded;
-		atomic_t                     pml_rec_down_cause_remote_fault;
 		ktime_t                      pml_rec_window_start_time;
 		ktime_t                      pml_rec_attempt_start_time;
 		ktime_t                      pml_rec_attempts_total_time;
 		ktime_t                      pml_rec_poll_start_time;
 		u8                           pml_rec_last_down_cause;
+		u64                          restart_lock_on_bad_cws_save;
+		u64                          restart_lock_on_bad_ams_save;
 	} pml_rec;
 
 	struct {

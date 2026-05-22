@@ -93,7 +93,7 @@ static ssize_t pml_rec_link_fault_failed_cause_show(struct kobject *kobj, struct
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_failed_cause show (link_fault_failed_cause = %d)",
-			link_fault_failed_cause);
+		   link_fault_failed_cause);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", link_fault_failed_cause);
 }
@@ -111,9 +111,46 @@ static ssize_t pml_rec_link_down_failed_cause_show(struct kobject *kobj, struct 
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_failed_cause = %d)",
-			link_down_failed_cause);
+		   link_down_failed_cause);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", link_down_failed_cause);
+}
+
+static ssize_t pml_rec_link_remote_fault_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_core_link *core_link;
+	int                  link_remote_fault_cause;
+	int		     rtn;
+
+	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
+
+	rtn = sl_core_data_link_pml_rec_link_remote_fault_cause_get(core_link, &link_remote_fault_cause);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_remote_fault_cause show (link_remote_fault_cause = %d)",
+		   link_remote_fault_cause);
+
+	return sysfs_emit(buf, "%d\n", link_remote_fault_cause);
+}
+
+static ssize_t pml_rec_link_remote_fault_failed_cause_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_core_link *core_link;
+	int                  link_remote_fault_failed_cause;
+	int		     rtn;
+
+	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
+
+	rtn = sl_core_data_link_pml_rec_link_remote_fault_failed_cause_get(core_link, &link_remote_fault_failed_cause);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
+		   "pml rec link_remote_fault_failed_cause show (link_remote_fault_failed_cause = %d)",
+		   link_remote_fault_failed_cause);
+
+	return sysfs_emit(buf, "%d\n", link_remote_fault_failed_cause);
 }
 
 static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -129,26 +166,30 @@ static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kob
 		return scnprintf(buf, PAGE_SIZE, "error\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec rate_limit_exceeded show (rate_limit_exceeded = %d)",
-			rate_limit_exceeded);
+		   rate_limit_exceeded);
 
 	return scnprintf(buf, PAGE_SIZE, "%d\n", rate_limit_exceeded);
 }
 
-static struct kobj_attribute link_pml_rec_attempts                = __ATTR_RO(pml_rec_attempts);
-static struct kobj_attribute link_pml_rec_successes               = __ATTR_RO(pml_rec_successes);
-static struct kobj_attribute link_pml_rec_link_fault_cause        = __ATTR_RO(pml_rec_link_fault_cause);
-static struct kobj_attribute link_pml_rec_link_down_cause         = __ATTR_RO(pml_rec_link_down_cause);
-static struct kobj_attribute link_pml_rec_link_fault_failed_cause = __ATTR_RO(pml_rec_link_fault_failed_cause);
-static struct kobj_attribute link_pml_rec_link_down_failed_cause  = __ATTR_RO(pml_rec_link_down_failed_cause);
-static struct kobj_attribute link_pml_rec_rate_limit_exceeded     = __ATTR_RO(pml_rec_rate_limit_exceeded);
+static struct kobj_attribute link_pml_rec_attempts                       = __ATTR_RO(pml_rec_attempts);
+static struct kobj_attribute link_pml_rec_successes                      = __ATTR_RO(pml_rec_successes);
+static struct kobj_attribute link_pml_rec_link_fault_cause               = __ATTR_RO(pml_rec_link_fault_cause);
+static struct kobj_attribute link_pml_rec_link_down_cause                = __ATTR_RO(pml_rec_link_down_cause);
+static struct kobj_attribute link_pml_rec_link_remote_fault_cause        = __ATTR_RO(pml_rec_link_remote_fault_cause);
+static struct kobj_attribute link_pml_rec_link_fault_failed_cause        = __ATTR_RO(pml_rec_link_fault_failed_cause);
+static struct kobj_attribute link_pml_rec_link_down_failed_cause         = __ATTR_RO(pml_rec_link_down_failed_cause);
+static struct kobj_attribute link_pml_rec_link_remote_fault_failed_cause = __ATTR_RO(pml_rec_link_remote_fault_failed_cause);
+static struct kobj_attribute link_pml_rec_rate_limit_exceeded            = __ATTR_RO(pml_rec_rate_limit_exceeded);
 
 static struct attribute *link_pml_rec_attrs[] = {
 	&link_pml_rec_attempts.attr,
 	&link_pml_rec_successes.attr,
 	&link_pml_rec_link_fault_cause.attr,
 	&link_pml_rec_link_down_cause.attr,
+	&link_pml_rec_link_remote_fault_cause.attr,
 	&link_pml_rec_link_fault_failed_cause.attr,
 	&link_pml_rec_link_down_failed_cause.attr,
+	&link_pml_rec_link_remote_fault_failed_cause.attr,
 	&link_pml_rec_rate_limit_exceeded.attr,
 	NULL
 };

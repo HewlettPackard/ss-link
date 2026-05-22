@@ -533,8 +533,6 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 		sl_core_hw_pcs_tx_start(core_link);
 
 	sl_core_hw_pcs_rx_start(core_link);
-
-	atomic_set(&core_link->pml_rec.pml_rec_down_cause_remote_fault, 0);
 }
 
 void sl_core_hw_link_up_intr_work(struct work_struct *work)
@@ -1573,27 +1571,38 @@ static bool sl_core_hw_link_is_pml_rec_window_valid(struct sl_core_link *core_li
 
 static void sl_core_hw_link_pml_rec_success(struct sl_core_link *core_link)
 {
-	struct sl_ctrl_lgrp     *ctrl_lgrp;
-	union sl_lgrp_notif_info info;
-	int                      rtn;
+	struct sl_ctrl_lgrp      *ctrl_lgrp;
+	union sl_lgrp_notif_info  info;
+	int                       rtn;
+	u64                       data64;
+	u32                       port;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+	port = core_link->core_lgrp->num;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "pml recovery success work");
+	sl_core_log_dbg(core_link, LOG_NAME, "pml recovery success (port = %u)", port);
 
 	info.pml_rec_info = core_link->pml_rec.pml_rec_info;
 	rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_lgrp, core_link->num, SL_LGRP_NOTIF_PML_RECOVERY, &info, 0);
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "pml recovery success work ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+				       "pml recovery success ctrl_lgrp_notif_enqueue failed [%d]", rtn);
 
 	msleep(200);
-	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 
+	/* restore restart lock on bad cws and ams settings */
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64,
+			core_link->pml_rec.restart_lock_on_bad_cws_save);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64,
+			core_link->pml_rec.restart_lock_on_bad_ams_save);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
+
+	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "pml recovery success work intr flgs enable failed [%d]", rtn);
+				       "pml recovery success intr flgs enable failed [%d]", rtn);
 }
 
 static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
@@ -1625,7 +1634,13 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN) {
 		sl_core_log_err(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
+		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 	}
 
 	sl_core_hw_link_fault_link_down(core_link);
@@ -1689,6 +1704,8 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
 			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN)
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT)
+				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
 
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
 
@@ -1699,12 +1716,14 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 
 		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) >
 		    core_link->config.pml_rec_rate_limit_max_time_ms) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "pml recovery rate limit exceeded");
+			sl_core_log_err_trace(core_link, LOG_NAME, "pml rec poll work rate limit exceeded");
 
 			if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT)
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
 			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN)
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT)
+				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
 
 			atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
@@ -1724,14 +1743,28 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 static void sl_core_hw_link_pml_recovery(struct sl_core_link *core_link)
 {
 	ktime_t current_time;
+	u64     data64;
+	u32     port;
 
-	sl_core_log_dbg(core_link, LOG_NAME, "pml recovery");
+	port = core_link->core_lgrp->num;
 
+	sl_core_log_dbg(core_link, LOG_NAME, "pml recovery (port = %u)", port);
+
+	// FIXME: this is all constant stuff, move to an init place not runtime
 	core_link->pml_rec.pml_rec_info.magic = SL_LINK_PML_REC_MAGIC;
 	core_link->pml_rec.pml_rec_info.ver   = SL_LINK_PML_REC_VER;
 	core_link->pml_rec.pml_rec_info.size  = sizeof(struct sl_link_pml_rec_info);
 
+	atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 0);
 	atomic_set(&core_link->pml_rec.pml_rec_running, 1);
+
+	/* save away old settings and set restart lock on bad cws and ams for recovery */
+	sl_core_read64(core_link, SS2_PORT_PML_CFG_RX_PCS, &data64);
+	core_link->pml_rec.restart_lock_on_bad_cws_save = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_GET(data64);
+	core_link->pml_rec.restart_lock_on_bad_ams_save = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_GET(data64);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_CWS_UPDATE(data64, 1);
+	data64 = SS2_PORT_PML_CFG_RX_PCS_RESTART_LOCK_ON_BAD_AMS_UPDATE(data64, 1);
+	sl_core_write64(core_link, SS2_PORT_PML_CFG_RX_PCS, data64);
 
 	current_time = ktime_get();
 
@@ -1745,12 +1778,12 @@ static void sl_core_hw_link_pml_recovery(struct sl_core_link *core_link)
 	core_link->pml_rec.pml_rec_attempt_start_time = current_time;
 	core_link->pml_rec.pml_rec_poll_start_time    = current_time;
 
-	sl_core_hw_pcs_toggle(core_link);
+	sl_core_hw_pcs_toggle_lock(core_link);
 
 	atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_ATTEMPTS]);
 
-	queue_work(core_link->core_lgrp->core_ldev->workqueue,
-		   &(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+	// FIXME: call directly instead of using another work function
+	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]);
 }
 
 static inline void sl_core_hw_link_fault_handling_start(struct sl_core_link *core_link)
@@ -1844,6 +1877,7 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 	    sl_core_link_is_pml_recovery_running(core_link))
 		goto link_down;
 
+	// FIXME: maybe this deserves a pml_rec function
 	current_time = ktime_get();
 	if (sl_core_hw_link_is_pml_rec_window_valid(core_link, current_time)) {
 		if (ktime_to_ms(core_link->pml_rec.pml_rec_attempts_total_time) >
@@ -1852,65 +1886,29 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 				atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 1);
 				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
 			}
-
 			sl_core_log_err_trace(core_link, LOG_NAME,
 					      "fault intr work rate limit exceeded for this window");
 			goto link_down;
 		}
 	}
 
-	atomic_set(&core_link->pml_rec.pml_rec_rate_limit_exceeded, 0);
-
 	if (local_fault) {
-		if (atomic_read(&core_link->pml_rec.pml_rec_down_cause_remote_fault) == 1) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "fault intr work link down ignored remote fault previously");
-			goto link_down;
-		}
-
 		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_CAUSE]);
-
 		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_LOCAL_FAULT;
-		sl_core_hw_link_pml_recovery(core_link);
-		return;
 	} else if (link_down) {
-		if (atomic_read(&core_link->pml_rec.pml_rec_down_cause_remote_fault) == 1) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "fault intr work link down ignored remote fault previously");
-			goto link_down;
-		}
-
 		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_CAUSE]);
-
 		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_LINK_DOWN;
-		sl_core_hw_link_pml_recovery(core_link);
-		return;
 	} else if (remote_fault) {
+		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_CAUSE]);
 		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_REMOTE_FAULT;
-		atomic_set(&core_link->pml_rec.pml_rec_down_cause_remote_fault, 1);
-
-		msleep(200);
-		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-
-		rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-		if (rtn)
-			sl_core_log_warn_trace(core_link, LOG_NAME,
-					       "fault intr work intr flgs enable failed [%d]", rtn);
-		return;
 	}
+
+	sl_core_hw_link_pml_recovery(core_link);
+
+	return;
 
 link_down:
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
-
-	if (sl_core_link_config_is_enable_pml_recovery_set(core_link) &&
-	    atomic_read(&core_link->pml_rec.pml_rec_down_cause_remote_fault) == 1) {
-		sl_core_log_warn_trace(core_link, LOG_NAME,
-				       "fault intr work setting down cause as remote fault because ignored previously");
-		sl_core_hw_link_fault_handling_start(core_link);
-		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
-		goto out;
-	}
 
 	if (llr_replay_max) {
 		sl_core_read64(core_link, SS2_PORT_PML_CFG_LLR_SM(core_link->num), &data64);
@@ -1955,7 +1953,6 @@ link_down:
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
-out:
 	sl_core_hw_link_fault_link_down(core_link);
 }
 

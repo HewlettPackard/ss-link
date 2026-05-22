@@ -80,8 +80,10 @@ int sl_core_data_link_pml_rec_attempts_get(struct sl_core_link *core_link, int *
 int sl_core_data_link_pml_rec_successes_get(struct sl_core_link *core_link, int *successes);
 int sl_core_data_link_pml_rec_link_fault_cause_get(struct sl_core_link *core_link, int *fault_cause);
 int sl_core_data_link_pml_rec_link_down_cause_get(struct sl_core_link *core_link, int *down_cause);
+int sl_core_data_link_pml_rec_link_remote_fault_cause_get(struct sl_core_link *core_link, int *remote_fault_cause);
 int sl_core_data_link_pml_rec_link_fault_failed_cause_get(struct sl_core_link *core_link, int *fault_failed_cause);
 int sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *core_link, int *down_failed_cause);
+int sl_core_data_link_pml_rec_link_remote_fault_failed_cause_get(struct sl_core_link *core_link, int *remote_fault_failed_cause);
 int sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded);
 
 #endif /* _SL_CORE_DATA_LINK_H_ */
