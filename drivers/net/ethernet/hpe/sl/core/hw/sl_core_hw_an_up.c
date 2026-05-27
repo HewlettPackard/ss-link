@@ -92,6 +92,7 @@ void sl_core_hw_an_up_start_work(struct work_struct *work)
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up start work invalid state (link_state = %u %s)",
 				      link_state, sl_core_link_state_str(link_state));
+		/* no LINK_UP timer end needed here */
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 		sl_core_link_up_fail(core_link);
 		return;
@@ -242,7 +243,6 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 			return;
 		}
 		sl_core_log_err_trace(core_link, LOG_NAME, "up done work auto neg not complete");
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_an_fail_cause_set(core_link,
 						    SL_CORE_HW_AN_FAIL_CAUSE_NOT_COMPLETE);
 		goto out_down;
@@ -257,7 +257,6 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up done work hw_an_rx_pages_decode failure [%d]", rtn);
-		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_an_fail_cause_set(core_link,
 						    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_FAIL);
 		goto out_down;
@@ -269,6 +268,7 @@ void sl_core_hw_an_up_done_work(struct work_struct *work)
 
 out_down:
 
+	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 	sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_MAP);
 	sl_core_link_up_fail(core_link);
 }
