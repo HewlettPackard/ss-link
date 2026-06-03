@@ -466,9 +466,7 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback");
 
 	sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_STOPPING);
-
 	sl_ctrl_link_fec_mon_stop(ctrl_link);
-	cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
 	if (sl_ctrl_link_put(ctrl_link))
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback - link removed (link = 0x%p)", ctrl_link);
@@ -499,9 +497,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 	case SL_CORE_LINK_STATE_DOWN:
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN);
 
-		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
-
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
@@ -592,9 +588,6 @@ int sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 		if (core_cause_map & SL_LINK_DOWN_CAUSE_CANCELED)
 			SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_CANCELED);
 
-		sl_ctrl_link_fec_mon_stop(ctrl_link);
-		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
-
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 		complete_all(&ctrl_link->down_complete);
@@ -638,7 +631,6 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 	case SL_CORE_LINK_STATE_DOWN:
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN);
 
-		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
@@ -705,6 +697,7 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down stopping");
 		spin_unlock(&ctrl_link->data_lock);
+		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		rtn = sl_core_link_down(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					ctrl_link->num, sl_ctrl_link_async_down_callback, ctrl_link,
 					down_cause_map);
