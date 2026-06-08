@@ -147,7 +147,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 
 		sl_media_eeprom_parse(media_jack, &media_attr);
 
-		if (media_attr.type == SL_MEDIA_TYPE_PEC)
+		if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type))
 			media_attr.info |= SL_MEDIA_INFO_AUTONEG;
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);

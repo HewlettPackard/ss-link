@@ -245,7 +245,7 @@ EXPORT_SYMBOL(sl_media_ber_str);
 
 const char *sl_media_host_interface_str(u32 speed, u32 type)
 {
-	if ((type == SL_MEDIA_TYPE_PEC) || (type == SL_MEDIA_TYPE_BKP)) {
+	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
 		switch (speed) {
 		case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
 			return "50GBASE-CR";

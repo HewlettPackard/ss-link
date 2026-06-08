@@ -1151,7 +1151,7 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
-	if (type == SL_MEDIA_TYPE_PEC || type == SL_MEDIA_TYPE_BKP) {
+	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 			   "projected_ber show (media_lgrp = 0x%p, projected_ber = 0)", speed_kobj->media_lgrp);
 		return sysfs_emit(buf, "0\n");

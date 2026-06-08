@@ -8,6 +8,7 @@
 
 #include "sl_asic.h"
 #include "sl_media_jack.h"
+#include "sl_media_lgrp.h"
 #include "data/sl_media_data_cable_db.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "base/sl_media_log.h"
@@ -65,10 +66,7 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 
 	if (flags & SL_MEDIA_TYPE_UNSUPPORTED) {
 		sl_media_log_warn_trace(media_jack, LOG_NAME, "serdes setting get unsuppported cable");
-		if (media_type == SL_MEDIA_TYPE_AEC ||
-		    media_type == SL_MEDIA_TYPE_ACC ||
-		    media_type == SL_MEDIA_TYPE_POC ||
-		    media_type == SL_MEDIA_TYPE_AOC) {
+		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_type)) {
 			media_jack->serdes_settings.pre1   = -12;
 			media_jack->serdes_settings.pre2   = 0;
 			media_jack->serdes_settings.pre3   = 0;
