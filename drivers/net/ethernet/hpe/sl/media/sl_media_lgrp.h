@@ -13,7 +13,7 @@
 #include "sl_media_ldev.h"
 #include "base/sl_media_log.h"
 
-#define SL_MEDIA_MAX_SUPPORTED_SPEEDS 8
+#define SL_MEDIA_MAX_SUPPORTED_SPEEDS 9
 
 struct sl_media_serdes_settings;
 

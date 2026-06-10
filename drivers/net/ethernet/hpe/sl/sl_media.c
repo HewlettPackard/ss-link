@@ -204,6 +204,8 @@ EXPORT_SYMBOL(sl_media_vendor_str);
 const char *sl_media_speed_str(u32 speed)
 {
 	switch (speed) {
+	case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
+		return "ck1600G";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
 		return "ck800G";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_400G:
@@ -261,6 +263,8 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 			return "400GBASE-CR4";
 		case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
 			return "800GBASE-CR8";
+		case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
+			return "1600GBASE-CR16";
 		case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 			return "BJ-100G";
 		default:
@@ -283,6 +287,8 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 		return "400GAUI-4-S-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
 		return "800GAUI-8-S-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
+		return "1600GAUI-16-S-C2M";
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 		return "BJ-100G";
 	default:

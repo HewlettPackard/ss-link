@@ -814,7 +814,9 @@ static ssize_t last_io_fault_cause_show(struct kobject *kobj, struct kobj_attrib
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last_io_fault cause show (cause = 0x%x %s)", io_fault_cause, io_cause_str);
+		   "last_io_fault cause show (cause = 0x%x %s, time = %lld %ptTt %ptTd)",
+		   io_fault_cause, io_cause_str,
+		   io_fault_time, &io_fault_time, &io_fault_time);
 
 	if (!io_fault_cause)
 		return sysfs_emit(buf, "no-fault\n");
@@ -847,11 +849,8 @@ static ssize_t last_io_fault_time_show(struct kobject *kobj, struct kobj_attribu
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last io fault time show (cause = 0x%x %s)",
-		   io_fault_cause, io_cause_str);
-
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last io fault time show (time = %lld %ptTt %ptTd)",
+		   "last io fault time show (cause = 0x%x %s, time = %lld %ptTt %ptTd)",
+		   io_fault_cause, io_cause_str,
 		   io_fault_time, &io_fault_time, &io_fault_time);
 
 	if (!io_fault_cause)
@@ -885,7 +884,9 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last_fault cause show (cause = 0x%x %s)", fault_cause, fault_cause_str);
+		   "last_fault cause show (cause = 0x%x %s, time = %lld %ptTt %ptTd)",
+		   fault_cause, fault_cause_str,
+		   fault_time, &fault_time, &fault_time);
 
 	if (!fault_cause)
 		return sysfs_emit(buf, "no-fault\n");
@@ -918,11 +919,8 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last fault time show (cause = 0x%x %s)",
-		   fault_cause, fault_cause_str);
-
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last fault time show (time = %lld %ptTt %ptTd)",
+		   "last fault time show (cause = 0x%x %s, time = %lld %ptTt %ptTd)",
+		   fault_cause, fault_cause_str,
 		   fault_time, &fault_time, &fault_time);
 
 	if (!fault_cause)

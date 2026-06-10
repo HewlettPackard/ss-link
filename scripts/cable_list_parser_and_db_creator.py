@@ -7,13 +7,22 @@
 # outfile will be created in the active directory at script run time
 
 import re
+import sys
 from openpyxl import load_workbook
+
+def vendor_pn_sanitize(vendor_pn_raw):
+    # Remove all whitespace (including NBSP) and non-printable/non-ASCII chars.
+    # Keep printable ASCII punctuation and alphanumerics intact.
+    vendor_pn = ''.join(ch for ch in str(vendor_pn_raw) if not ch.isspace())
+    vendor_pn = ''.join(ch for ch in vendor_pn if 0x21 <= ord(ch) <= 0x7E)
+    return vendor_pn
 
 # Defines:  sources must match sheets within the xlsm file exactly
 infile = "SlingshotCableCompatibilityMatrix.xlsm"
 outfile = "sl_media_data_cable_db.h"
 source1 = "S1 S2 QSFP Cable List"
-source2 = "S2 S3 OSFP Cable List"
+source2 = "S2 OSFP Cable List"
+source3 = "S3 OSFP Cable List"
 
 # count the rows
 def rows_count(df):
@@ -54,7 +63,7 @@ def part_nums_get(df, count, part_nums):
 
 #Algorithm: We take a PN from sorted list and for each PN, we loop through the excel sheet trying to find its associated data.
 #Once we find it, we print that data and then delete it from the excel sheet to avoid overwriting (This is important since there are different cables with same PNs)
-def cable_info_write(f, df, part_nums, sheet_name):
+def cable_info_write(f, df, part_nums, sheet_name, vendor_pn_counter):
     for i in range(len(part_nums)):
         curr_row = 1
         while(1):
@@ -102,12 +111,14 @@ def cable_info_write(f, df, part_nums, sheet_name):
 		# vendor part num
                 cell_obj = df.cell(row = curr_row+1, column = 8)
                 vendor_str = str(cell_obj.value)
-                vendor_pn = vendor_str.replace(" ","")
-                if (len(vendor_pn) > 20):
+                vendor_pn = vendor_pn_sanitize(vendor_str)
+                if len(vendor_pn) == 0 or vendor_pn == "?":
+                    vendor_pn_counter[0] += 1
+                    f.write("\t\t.vendor_pn_str            = \"" + str(vendor_pn_counter[0]) + "\", /* auto-assigned */\n")
+                elif (len(vendor_pn) > 20):
                     f.write("\t\t.vendor_pn_str            = \"???\",\n")
                 else:
                     f.write("\t\t.vendor_pn_str            = \"" + vendor_pn + "\",\n")
-
                 cell_obj = df.cell(row = curr_row+1, column = 6) #read the type
                 cell_value = str(cell_obj.value).strip() #remove whitespace
                 curr_type = cell_value
@@ -166,6 +177,8 @@ def cable_info_write(f, df, part_nums, sheet_name):
                     f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_400G" + ",\n")
                 elif cell_value == "800Gb":
                     f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_800G" + ",\n")
+                elif cell_value == "1600Gb":
+                    f.write("\t\t.max_speed                = " + "SL_MEDIA_SPEEDS_SUPPORT_CK_1600G" + ",\n")
                 else:
                     print("Invalid speeds support = %s", cell_value)
                     sys.exit(1)
@@ -257,10 +270,19 @@ print("Total number of valid cables =", str(len(HP_PN)))
 
 print("Convert:", source2)
 df2 = wb[source2]
-OSFP_HP_PN = []
-part_nums_get(df2, rows_count(df2), OSFP_HP_PN)
-OSFP_HP_PN.sort()
-print("Total number of valid OSFP cables =", str(len(OSFP_HP_PN)))
+OSFP_HP_PN_S2 = []
+part_nums_get(df2, rows_count(df2), OSFP_HP_PN_S2)
+OSFP_HP_PN_S2.sort()
+print("Total number of valid S2 OSFP cables =", str(len(OSFP_HP_PN_S2)))
+
+print("Convert:", source3)
+df3 = wb[source3]
+OSFP_HP_PN_S3 = []
+part_nums_get(df3, rows_count(df3), OSFP_HP_PN_S3)
+OSFP_HP_PN_S3.sort()
+print("Total number of valid S3 OSFP cables =", str(len(OSFP_HP_PN_S3)))
+
+vendor_pn_counter = [0]
 
 # write the header file
 file1 = open(outfile, "w")
@@ -273,13 +295,18 @@ file1.write(" */\n")
 file1.write("/* source2 = ")
 file1.write(source2)
 file1.write(" */\n")
+file1.write("/* source3 = ")
+file1.write(source3)
+file1.write(" */\n")
 file1.write("\n")
 file1.write("#ifndef _SL_MEDIA_DATA_CABLE_DB_H_\n")
 file1.write("#define _SL_MEDIA_DATA_CABLE_DB_H_\n\n")
 file1.write("#include \"sl_media_jack.h\"\n")
 file1.write("\nstatic struct sl_media_cable_attr cable_db[] = {\n")
-cable_info_write(file1, df1, HP_PN, source1)
-cable_info_write(file1, df2, OSFP_HP_PN, source2)
+cable_info_write(file1, df1, HP_PN, source1, vendor_pn_counter)
+cable_info_write(file1, df2, OSFP_HP_PN_S2, source2, vendor_pn_counter)
+cable_info_write(file1, df3, OSFP_HP_PN_S3, source3, vendor_pn_counter)
 file1.write("};\n\n")
 file1.write("#endif /* _SL_MEDIA_DATA_CABLE_DB_H_ */\n")
 file1.close()
+print("Generated", outfile, "with auto-assigned vendor_pn counter. Total auto-assigned: " + str(vendor_pn_counter[0]))
