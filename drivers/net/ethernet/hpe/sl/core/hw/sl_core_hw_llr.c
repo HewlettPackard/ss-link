@@ -199,18 +199,35 @@ static void sl_core_hw_llr_off(struct sl_core_llr *core_llr)
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
 }
 
-static void sl_core_hw_llr_discard(struct sl_core_llr *core_llr)
+static void sl_core_hw_llr_down_behavior_discard_set(struct sl_core_llr *core_llr)
 {
 	u32 port;
 	u64 data64;
 
 	port = core_llr->core_lgrp->num;
 
-	sl_core_log_dbg(core_llr, LOG_NAME, "discard (port = %d)", port);
+	sl_core_log_dbg(core_llr, LOG_NAME, "down behavior discard set (port = %d)", port);
 
 	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
 	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LINK_DOWN_BEHAVIOR_UPDATE(data64,
 		SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_DISCARD);
+	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), data64);
+
+	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
+}
+
+static void sl_core_hw_llr_down_behavior_config_set(struct sl_core_llr *core_llr)
+{
+	u32 port;
+	u64 data64;
+
+	port = core_llr->core_lgrp->num;
+
+	sl_core_log_dbg(core_llr, LOG_NAME, "down behavior config set (port = %d)", port);
+
+	sl_core_llr_read64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), &data64);
+	data64 = SS2_PORT_PML_CFG_LLR_SUBPORT_LINK_DOWN_BEHAVIOR_UPDATE(data64,
+									core_llr->settings.link_down_behavior);
 	sl_core_llr_write64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num), data64);
 
 	sl_core_llr_flush64(core_llr, SS2_PORT_PML_CFG_LLR_SUBPORT(core_llr->num));
@@ -697,6 +714,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 		return;
 	}
 
+	sl_core_hw_llr_down_behavior_config_set(core_llr);
 	sl_core_hw_llr_on(core_llr);
 }
 
@@ -801,7 +819,7 @@ void sl_core_hw_llr_start_timeout_work(struct work_struct *work)
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 	sl_core_hw_llr_off(core_llr);
-	sl_core_hw_llr_discard(core_llr);
+	sl_core_hw_llr_down_behavior_discard_set(core_llr);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
@@ -834,7 +852,7 @@ void sl_core_hw_llr_starting_cancel_cmd(struct sl_core_llr *core_llr)
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 	sl_core_hw_llr_off(core_llr);
-	sl_core_hw_llr_discard(core_llr);
+	sl_core_hw_llr_down_behavior_discard_set(core_llr);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
@@ -856,7 +874,7 @@ void sl_core_hw_llr_stop(struct sl_core_llr *core_llr)
 	sl_core_hw_llr_loop_time_stop(core_llr);
 	sl_core_hw_llr_ordered_sets_stop(core_llr);
 	sl_core_hw_llr_off(core_llr);
-	sl_core_hw_llr_discard(core_llr);
+	sl_core_hw_llr_down_behavior_discard_set(core_llr);
 }
 
 void sl_core_hw_llr_setup_stop_cmd(struct sl_core_llr *core_llr)
@@ -886,7 +904,7 @@ void sl_core_hw_llr_running_stop_cmd(struct sl_core_llr *core_llr)
 	sl_core_log_dbg(core_llr, LOG_NAME, "running stop cmd");
 
 	sl_core_hw_llr_off(core_llr);
-	sl_core_hw_llr_discard(core_llr);
+	sl_core_hw_llr_down_behavior_discard_set(core_llr);
 
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_STARTING);
 	sl_core_data_llr_info_map_clr(core_llr, SL_CORE_INFO_MAP_LLR_RUNNING);
