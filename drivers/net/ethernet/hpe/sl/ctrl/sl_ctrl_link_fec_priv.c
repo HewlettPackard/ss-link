@@ -497,7 +497,11 @@ void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link)
 		return;
 	}
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0)
+	del_timer_sync(&ctrl_link->fec_mon_timer);
+#else
 	timer_delete_sync(&ctrl_link->fec_mon_timer);
+#endif
 }
 
 #define SL_CTRL_LINK_FEC_LIMIT_25   25781250000ULL

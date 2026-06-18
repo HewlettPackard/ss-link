@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/spinlock.h>
@@ -107,5 +107,9 @@ void sl_core_timer_link_end(struct sl_core_link *core_link, u32 timer_num)
 		"end %s (core_link = 0x%p, timer_num = %u)",
 		core_link->timers[timer_num].data.log, core_link, timer_num);
 
-	timer_delete_sync(&(core_link->timers[timer_num].timer));
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0)
+	del_timer_sync(&core_link->timers[timer_num].timer);
+#else
+	timer_delete_sync(&core_link->timers[timer_num].timer);
+#endif
 }

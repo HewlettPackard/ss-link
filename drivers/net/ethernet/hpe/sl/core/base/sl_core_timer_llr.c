@@ -81,5 +81,9 @@ void sl_core_timer_llr_end(struct sl_core_llr *core_llr, u32 timer_num)
 		"end %s (core_llr = 0x%p, timer_num = %u)",
 		core_llr->timers[timer_num].data.log, core_llr, timer_num);
 
-	timer_delete_sync(&(core_llr->timers[timer_num].timer));
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0)
+	del_timer_sync(&core_llr->timers[timer_num].timer);
+#else
+	timer_delete_sync(&core_llr->timers[timer_num].timer);
+#endif
 }
