@@ -18,9 +18,9 @@ static int sl_core_link_fec_cw_cntrs_get(struct sl_core_link *core_link,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fec_cw_cntrs_get");
 
-	spin_lock(&core_link->data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
-	spin_unlock(&core_link->data_lock);
+	spin_unlock(&core_link->link.state_lock);
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		rtn = sl_core_hw_fec_cw_cntrs_get(core_link, cw_cntrs);
@@ -50,9 +50,9 @@ static int sl_core_link_fec_lane_cntrs_get(struct sl_core_link *core_link,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fec_lane_cntrs_get");
 
-	spin_lock(&core_link->data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
-	spin_unlock(&core_link->data_lock);
+	spin_unlock(&core_link->link.state_lock);
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		rtn = sl_core_hw_fec_lane_cntrs_get(core_link, lane_cntrs);
@@ -83,9 +83,9 @@ static int sl_core_link_fec_tail_cntrs_get(struct sl_core_link *core_link,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fec_tail_cntrs_get");
 
-	spin_lock(&core_link->data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
-	spin_unlock(&core_link->data_lock);
+	spin_unlock(&core_link->link.state_lock);
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		rtn = sl_core_hw_fec_tail_cntrs_get(core_link, tail_cntrs);
@@ -213,9 +213,9 @@ int sl_core_link_fec_data_get(struct sl_core_link *core_link,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fec_data_get");
 
-	spin_lock(&core_link->data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
-	spin_unlock(&core_link->data_lock);
+	spin_unlock(&core_link->link.state_lock);
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		rtn = sl_core_hw_fec_data_get(core_link, cw_cntrs, lane_cntrs, tail_cntr);

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LINK_H_
 #define _SL_CTRL_LINK_H_
@@ -53,6 +53,7 @@ struct sl_ctrl_link {
 	spinlock_t                   config_lock;
 
 	spinlock_t                   data_lock;
+	spinlock_t                   state_lock; /* lock for state variable */
 	bool                         is_canceled;
 
 	struct sl_ctrl_link_counter *counters;

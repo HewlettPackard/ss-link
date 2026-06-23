@@ -57,7 +57,7 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 		return;
 	}
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
@@ -68,14 +68,14 @@ void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_UP:
 		add_timer(&(core_link->timers[timer_num].timer));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"begin %s invalid state (link_state = %u %s, timer_num = %u)",
 			core_link->timers[timer_num].data.log,
 			link_state, sl_core_link_state_str(link_state), timer_num);
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	}
 }

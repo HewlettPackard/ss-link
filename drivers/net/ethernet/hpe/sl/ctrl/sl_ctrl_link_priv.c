@@ -38,18 +38,18 @@
 
 void sl_ctrl_link_is_canceled_set(struct sl_ctrl_link *ctrl_link, bool canceled)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	ctrl_link->is_canceled = canceled;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->state_lock);
 }
 
 bool sl_ctrl_link_is_canceled(struct sl_ctrl_link *ctrl_link)
 {
 	bool is_canceled;
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	is_canceled = ctrl_link->is_canceled;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->state_lock);
 
 	return is_canceled;
 }
@@ -220,24 +220,24 @@ static void sl_ctrl_link_state_stopping_set(struct sl_ctrl_link *ctrl_link)
 {
 	u32           link_state;
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_STOPPING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "stopping set - already stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		return;
 	case SL_LINK_STATE_STARTING:
 	case SL_LINK_STATE_UP:
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "stopping set - stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		return;
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "stopping set - invalid state (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		return;
 	}
 }
@@ -675,18 +675,18 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 
 	sl_ctrl_link_up_clock_reset(ctrl_link);
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already requested");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		return 0;
 	case SL_LINK_STATE_UP:
 		if (!force_down && (ctrl_link->policy.options & SL_LINK_POLICY_OPT_LINK_DOWN_REQ)) {
 			ctrl_link->state = SL_LINK_STATE_UP_DOWN_REQ;
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down request link down");
-			spin_unlock(&ctrl_link->data_lock);
+			spin_unlock(&ctrl_link->state_lock);
 			rtn = sl_ctrl_link_down_req_notif_send(ctrl_link, down_cause_map, 0); // FIXME: info_map?
 			if (rtn)
 				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
@@ -696,7 +696,7 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 		}
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
 		rtn = sl_core_link_down(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					ctrl_link->num, sl_ctrl_link_async_down_callback, ctrl_link,
@@ -710,18 +710,18 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 		return 0;
 	case SL_LINK_STATE_DOWN:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already down");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down invalid state (link_state = %u %s)",
 				link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_put(ctrl_link);
 		return -EBADRQC;
 	}
@@ -809,18 +809,18 @@ u32 sl_ctrl_link_policy_options_get(struct sl_ctrl_link *ctrl_link)
 
 void sl_ctrl_link_state_set(struct sl_ctrl_link *ctrl_link, u32 link_state)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	ctrl_link->state = link_state;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->state_lock);
 }
 
 u32 sl_ctrl_link_state_get(struct sl_ctrl_link *ctrl_link)
 {
 	u32 state;
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	state = ctrl_link->state;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->state_lock);
 
 	return state;
 }

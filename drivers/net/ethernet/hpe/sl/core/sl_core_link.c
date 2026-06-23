@@ -44,17 +44,17 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EIO;
 	}
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - already going up");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - already up");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
@@ -62,7 +62,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		core_link->link.state = is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE) ?
 			SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
 		link_state = core_link->link.state;
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_cmd(core_link, callback, tag);
 		return 0;
@@ -70,7 +70,7 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_core_log_err(core_link, LOG_NAME,
 			"up - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
 }
@@ -81,28 +81,28 @@ int sl_core_link_up_fail(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fail");
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "up fail - already going down");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up fail - going down");
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
-		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_FAIL]);
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_FAIL]);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"up fail - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
 }
@@ -122,14 +122,14 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EINVAL;
 	}
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "cancel - already going down");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
@@ -137,7 +137,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		core_link->link.tags.down       = tag;
 		core_link->link.callbacks.down  = callback;
 		core_link->link.state           = SL_CORE_LINK_STATE_CANCELING;
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CANCELED_MAP);
 		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_CANCEL]);
 		return 0;
@@ -145,7 +145,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_core_log_err(core_link, LOG_NAME,
 			"cancel - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
 }
@@ -165,30 +165,30 @@ int sl_core_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return -EINVAL;
 	}
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_CANCELING:
 	case SL_CORE_LINK_STATE_GOING_DOWN:
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - already going down");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return 0;
 	case SL_CORE_LINK_STATE_UP:
 		sl_core_log_dbg(core_link, LOG_NAME, "down - going down");
 		core_link->link.tags.down      = tag;
 		core_link->link.callbacks.down = callback;
 		core_link->link.state          = SL_CORE_LINK_STATE_GOING_DOWN;
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_core_data_link_last_down_cause_map_set(core_link, down_cause_map);
-		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_DOWN]);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_DOWN]);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"down - invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
 }
@@ -286,21 +286,21 @@ int sl_core_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	sl_core_log_dbg(core_link, LOG_NAME, "config set");
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UNCONFIGURED:
 	case SL_CORE_LINK_STATE_CONFIGURED:
 	case SL_CORE_LINK_STATE_DOWN:
 		core_link->link.state = SL_CORE_LINK_STATE_CONFIGURING;
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_core_data_link_config_set(core_link, link_config);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 			"config set invalid (link_state = %u %s)",
 			link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
 }
@@ -521,15 +521,19 @@ bool sl_core_link_policy_is_ignore_media_errors_set(struct sl_core_link *core_li
 }
 
 struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,
-	struct sl_core_link_up_info *link_up_info)
+						      struct sl_core_link_up_info *link_up_info)
 {
+	spin_lock(&core_link->link.state_lock);
+	link_up_info->state = core_link->link.state;
+	spin_unlock(&core_link->link.state_lock);
+
 	spin_lock(&core_link->link.data_lock);
-	link_up_info->state     = core_link->link.state;
-	link_up_info->info_map  = core_link->info_map;
-	link_up_info->speed     = core_link->pcs.settings.speed;
-	link_up_info->fec_mode  = core_link->fec.settings.mode;
-	link_up_info->fec_type  = core_link->fec.settings.type;
+	link_up_info->info_map = core_link->info_map;
+	link_up_info->speed    = core_link->pcs.settings.speed;
+	link_up_info->fec_mode = core_link->fec.settings.mode;
+	link_up_info->fec_type = core_link->fec.settings.type;
 	spin_unlock(&core_link->link.data_lock);
+
 	link_up_info->cause_map = sl_core_data_link_last_up_fail_cause_map_get(core_link);
 
 	return link_up_info;

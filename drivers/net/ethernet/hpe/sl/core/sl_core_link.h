@@ -325,6 +325,7 @@ struct sl_core_link {
 
 	struct {
 		spinlock_t                            data_lock;
+		spinlock_t                            state_lock; /* lock for state variable */
 		u32                                   state;
 		bool                                  is_last_down_new;
 		u8                                    last_down_entry_num;

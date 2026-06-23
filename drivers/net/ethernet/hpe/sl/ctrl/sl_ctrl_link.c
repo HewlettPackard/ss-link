@@ -63,6 +63,7 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 
 	spin_lock_init(&ctrl_link->config_lock);
 	spin_lock_init(&ctrl_link->data_lock);
+	spin_lock_init(&ctrl_link->state_lock);
 
 	rtn = sl_ctrl_link_counters_init(ctrl_link);
 	if (rtn) {
@@ -222,12 +223,12 @@ static void sl_ctrl_link_release(struct kref *kref)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release (link = 0x%p)", ctrl_link);
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctrl_link->is_canceled = true;
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_CANCEL_CMD);
 		sl_ctrl_link_cancel_cmd(ctrl_link);
 		sl_ctrl_link_down_wait(ctrl_link);
@@ -236,24 +237,24 @@ static void sl_ctrl_link_release(struct kref *kref)
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_down_cmd(ctrl_link);
 		sl_ctrl_link_down_wait(ctrl_link);
 		break;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release already stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_down_wait(ctrl_link);
 		break;
 	case SL_LINK_STATE_DOWN:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release already down");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		break;
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "release invalid state (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		return;
 	}
 
@@ -692,13 +693,13 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up");
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_DOWN:
 		ctrl_link->state = SL_LINK_STATE_STARTING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - starting");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = sl_ctrl_link_up_cmd(ctrl_link);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "link_up_cmd failed [%d]", rtn);
@@ -709,17 +710,17 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		goto out;
 	case SL_LINK_STATE_STARTING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - already starting");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EINPROGRESS;
 		goto out;
 	case SL_LINK_STATE_UP:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - already up");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EALREADY;
 		goto out;
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - already up down requested");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EALREADY;
 		goto out;
 	case SL_LINK_STATE_STOPPING:
@@ -727,7 +728,7 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	default:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EBADRQC;
 		goto out;
 	}
@@ -761,14 +762,14 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down");
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		ctrl_link->is_canceled = true;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - canceling");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = sl_ctrl_link_cancel_cmd(ctrl_link);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "cancel_cmd failed [%d]", rtn);
@@ -781,7 +782,7 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = sl_ctrl_link_down_cmd(ctrl_link);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "down_cmd failed [%d]", rtn);
@@ -792,19 +793,19 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		goto out;
 	case SL_LINK_STATE_DOWN:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - already down");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EALREADY;
 		goto out;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - already stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EINPROGRESS;
 		goto out;
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EBADRQC;
 		goto out;
 	}
@@ -889,7 +890,7 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset");
 
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_STARTING:
@@ -900,7 +901,7 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	case SL_LINK_STATE_UP_DOWN_REQ:
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset - stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = sl_ctrl_link_reset_cmd(ctrl_link);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "link_reset_cmd failed [%d]", rtn);
@@ -911,12 +912,12 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		goto out;
 	case SL_LINK_STATE_DOWN:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset - already down");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = 0;
 		goto out;
 	case SL_LINK_STATE_STOPPING:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - already stopping");
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 
 		rtn = 0;
 		goto out;
@@ -924,7 +925,7 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	default:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset - invalid (link_state = %u %s)",
 			link_state, sl_link_state_str(link_state));
-		spin_unlock(&ctrl_link->data_lock);
+		spin_unlock(&ctrl_link->state_lock);
 		rtn = -EBADRQC;
 		goto out;
 	}

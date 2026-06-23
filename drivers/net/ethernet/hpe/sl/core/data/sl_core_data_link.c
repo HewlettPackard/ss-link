@@ -80,7 +80,8 @@ static int sl_core_data_link_init(struct sl_core_lgrp *core_lgrp, u8 link_num, s
 
 	/* ----- link ----- */
 
-	spin_lock_init(&(core_link->link.data_lock));
+	spin_lock_init(&core_link->link.data_lock);
+	spin_lock_init(&core_link->link.state_lock);
 
 	timer_setup(&(core_link->timers[SL_CORE_TIMER_LINK_UP].timer),
 		sl_core_timer_link_timeout, 0);
@@ -597,9 +598,9 @@ void sl_core_data_link_timeouts(struct sl_core_link *core_link)
 
 void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 {
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	core_link->link.state = link_state;
-	spin_unlock(&core_link->link.data_lock);
+	spin_unlock(&core_link->link.state_lock);
 
 	sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
@@ -610,9 +611,9 @@ void sl_core_data_link_state_set(struct sl_core_link *core_link, u32 link_state)
 
 int sl_core_data_link_state_get(struct sl_core_link *core_link, u32 *link_state)
 {
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	*link_state = core_link->link.state;
-	spin_unlock(&core_link->link.data_lock);
+	spin_unlock(&core_link->link.state_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
 			"get (link_state = %u %s)",
@@ -625,8 +626,11 @@ int sl_core_data_link_speed_get(struct sl_core_link *core_link, u32 *link_speed)
 {
 	u32 state;
 
+	spin_lock(&core_link->link.state_lock);
+	state = core_link->link.state;
+	spin_unlock(&core_link->link.state_lock);
+
 	spin_lock(&core_link->link.data_lock);
-	state       = core_link->link.state;
 	*link_speed = core_link->pcs.settings.speed;
 	spin_unlock(&core_link->link.data_lock);
 

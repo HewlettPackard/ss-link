@@ -148,8 +148,11 @@ static void sl_core_hw_link_down_callback(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME,
 			"down callback (callback = 0x%p)", core_link->link.callbacks.down);
 
+	spin_lock(&core_link->link.state_lock);
+	state = core_link->link.state;
+	spin_unlock(&core_link->link.state_lock);
+
 	spin_lock(&core_link->link.data_lock);
-	state          = core_link->link.state;
 	down_cause_map = core_link->link.last_down_cause_map[core_link->link.last_down_entry_num];
 	info_map       = core_link->info_map;
 	spin_unlock(&core_link->link.data_lock);
@@ -364,27 +367,27 @@ void sl_core_hw_link_up_after_an_start(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up after an start (link = 0x%p)", core_link);
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_AN:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_UP;
 		sl_core_log_dbg(core_link, LOG_NAME, "up after an start going up");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		break;
 	case SL_CORE_LINK_STATE_CANCELING:
 		sl_core_log_dbg(core_link, LOG_NAME, "up after an start canceled");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	case SL_CORE_LINK_STATE_TIMEOUT:
 		sl_core_log_dbg(core_link, LOG_NAME, "up after an start timeout");
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
 				"up after an start invalid state (link_state = %u %s)",
 				link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_MAP);
 		rtn = sl_core_link_up_fail(core_link);
@@ -695,7 +698,7 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	}
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
@@ -711,14 +714,14 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		link_up_info.fec_type                  = core_link->fec.settings.type;
 		link_up_info.cause_map                 = 0;
 
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 		sl_core_hw_link_up_callback(core_link, &link_up_info);
 		return;
 	default:
 		sl_core_log_err(core_link, LOG_NAME, "up success invalid state (link_state = %u %s)",
 				link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	};
 }
@@ -1029,20 +1032,20 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up timeout work");
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up timeout work going down");
 		core_link->link.state = SL_CORE_LINK_STATE_TIMEOUT;
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_TIMEOUT_MAP);
 		break;
 	default:
 		sl_core_log_err(core_link, LOG_NAME, "up timeout work invalid state (link_state = %u %s)",
 				link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	}
 
@@ -1478,20 +1481,20 @@ static void sl_core_hw_link_fault_callback_start(struct sl_core_link *core_link)
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fault callback start");
 
-	spin_lock(&core_link->link.data_lock);
+	spin_lock(&core_link->link.state_lock);
 	link_state = core_link->link.state;
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
 		core_link->config.fault_start_callback(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num, core_link->num);
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		break;
 	default:
 		sl_core_log_dbg(core_link, LOG_NAME,
 				"fault callback start invalid state (link_state = %u %s)",
 				link_state, sl_core_link_state_str(link_state));
-		spin_unlock(&core_link->link.data_lock);
+		spin_unlock(&core_link->link.state_lock);
 		return;
 	}
 }
