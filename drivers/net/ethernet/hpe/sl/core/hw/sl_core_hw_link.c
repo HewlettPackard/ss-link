@@ -742,6 +742,8 @@ static int sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
 		return 0;
 	}
 
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG);
+
 	memset(&(core_link->degrade_info), 0, sizeof(core_link->degrade_info));
 
 	rtn = sl_core_hw_pcs_enable_auto_lane_degrade(core_link);
@@ -766,6 +768,9 @@ static int sl_core_hw_link_up_ald(struct sl_core_link  *core_link)
 			sl_core_log_err_trace(core_link, LOG_NAME, "link up ald link_up_fail failed [%d]", rtn);
 		return -EIO;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG_OK);
 
 	spin_lock(&core_link->data_lock);
 	core_link->degrade_state = SL_LINK_DEGRADE_STATE_ACTIVE;
@@ -809,6 +814,8 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 	    is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
 			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
 		goto out;
+
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK);
 
 	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
 	if (rtn) {
@@ -855,6 +862,9 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 	}
 
 out:
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_OK);
+
 	/* check PCS */
 	if (!sl_core_hw_pcs_is_ok(core_link)) {
 		sl_core_log_warn_trace(core_link, LOG_NAME, "up check work pcs is not ok");
@@ -877,6 +887,7 @@ out:
 	sl_core_write64(core_link, SS2_PORT_PML_ERR_INFO_PCS_TX_DP, data64);
 
 	if (core_link->fec.settings.up_settle_wait_ms) {
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_SETTLE_START);
 		sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 		return;
 	}
@@ -902,6 +913,9 @@ void sl_core_hw_link_up_fec_settle_work(struct work_struct *work)
 	ctrl_link = sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num, core_link->num);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up fec settle work");
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_SETTLE_START);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_SETTLE_DONE);
 
 	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {

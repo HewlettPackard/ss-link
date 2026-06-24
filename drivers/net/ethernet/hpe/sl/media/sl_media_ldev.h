@@ -11,12 +11,21 @@
 
 #define SL_MEDIA_LDEV_MAGIC 0x736c4D44
 
+enum {
+	SL_MEDIA_TEMP_MON_INVALID,
+	SL_MEDIA_TEMP_MON_OFF,
+	SL_MEDIA_TEMP_MON_CHECKING,
+	SL_MEDIA_TEMP_MON_SLEEPING
+};
+
 struct sl_uc_ops;
 struct sl_uc_accessor;
 
 struct sl_media_ldev {
 	u32                      magic;
 	u8                       num;
+	spinlock_t               data_lock; /* data lock for media ldev object */
+	u8                       temp_mon_state;
 	struct delayed_work      delayed_work[SL_MEDIA_WORK_COUNT];
 	struct sl_uc_ops        *uc_ops;
 	struct sl_uc_accessor   *uc_accessor;

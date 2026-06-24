@@ -11,9 +11,9 @@ cmd=$(basename $0)
 function usage {
         echo "$cmd ldev_num[:lgrp_num][:link_num] [option]"
         echo "  target:"
-        echo "    ldev_num = link device number (0-1)"
-        echo "    lgrp_num = link group number (0-63)"
-        echo "    link_num = link number (0-3)"
+        echo "    ldev_num = link device number"
+        echo "    lgrp_num = link group number"
+        echo "    link_num = link number"
         echo "  option: (omitted option will print all available info for target)"
         echo "    state        = print state info for the target"
         echo "    link         = print link info for the target"
@@ -129,7 +129,7 @@ else
         exit
 fi
 
-function print_ldev {
+function print_header {
         if [ ! -e ${LDEV_PATH} ] ; then
                 return
         fi
@@ -611,6 +611,16 @@ function print_jack {
                 cable_insert_serial_num=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_${entry_num}/serial_num)
                 printf "           |                   ${entry_num}: [${cable_insert_time}] ${cable_insert_vendor} ${cable_insert_type} ${cable_insert_serial_num}\n"
         done
+}
+
+function print_ldev {
+        if [ ! -e ${LDEV_PATH} ] ; then
+                return
+        fi
+
+        local media_temperature_monitor_state=$(cat ${LDEV_PATH}/sl_info/media_temperature_monitor_state)
+
+        printf "ldev${LDEV}%01d     | media_temperature_monitor_state: ${media_temperature_monitor_state}\n"
 }
 
 function print_lgrp {
@@ -1109,9 +1119,10 @@ function print_serdes_settings {
 case $option in
         state )
                 if [ ${num_args} -ge 1 ] ; then
-                        print_ldev
+                        print_header
                 fi
                 if [ ${num_args} -ge 2 ] ; then
+                        print_ldev
                         print_jack_state
                 fi
                 if [ ${num_args} -ge 3 ] ; then
@@ -1127,7 +1138,7 @@ case $option in
                 ;;
         link )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_lgrp
                         print_link
                         print_link_counters
@@ -1135,7 +1146,7 @@ case $option in
 		;;
 	mac )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_lgrp
                         print_mac
                         print_mac_counters
@@ -1143,7 +1154,7 @@ case $option in
 		;;
 	llr )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_lgrp
                         print_llr
                         print_llr_counters
@@ -1151,44 +1162,45 @@ case $option in
 		;;
         pmi )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_pmi
 		fi
 		;;
         sbus )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_sbus
 		fi
 		;;
         sbus_pmi )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_sbus_pmi
 		fi
 		;;
         serdes )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_serdes_settings
 		fi
 		;;
         fec )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_fec
                         print_fec_bins
 		fi
 		;;
         cable )
                 if [ ${num_args} -ge 2 ] ; then
+                        print_header
                         print_ldev
                         print_jack
 		fi
 		;;
         counters )
                 if [ ${num_args} -ge 3 ] ; then
-                        print_ldev
+                        print_header
                         print_jack_state
                         print_jack_cause_counters
                         print_link_state
@@ -1204,16 +1216,17 @@ case $option in
                 ;;
          show_db )
                 if [ ${num_args} -ge 1 ] ; then
-                        print_ldev
+                        print_header
                         print_supported_db
                 fi
                 exit
                 ;;
         * )
                 if [ ${num_args} -ge 1 ] ; then
-                        print_ldev
+                        print_header
                 fi
                 if [ ${num_args} -ge 2 ] ; then
+                        print_ldev
                         print_jack
                         print_lgrp
                 fi

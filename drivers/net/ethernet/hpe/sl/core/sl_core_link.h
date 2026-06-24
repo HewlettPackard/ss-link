@@ -186,62 +186,78 @@ struct work_struct;
 
 enum sl_core_info_map_bits {
 	/* Media */
-	SL_CORE_INFO_MAP_MEDIA_CHECK,        /* link up process is checking media */
-	SL_CORE_INFO_MAP_MEDIA_OK,           /* link up media check completed successfully */
+	SL_CORE_INFO_MAP_MEDIA_CHECK,             /* link up process is checking media */
+	SL_CORE_INFO_MAP_MEDIA_OK,                /* link up media check completed successfully */
+	SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK, /* link up process is checking media temperature */
+	SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_OK,    /* link up media temperature check completed successfully */
 
 	/* SerDes */
-	SL_CORE_INFO_MAP_SERDES_START,       /* SerDes is starting */
-	SL_CORE_INFO_MAP_SERDES_CHECK,       /* SerDes is being checked */
-	SL_CORE_INFO_MAP_SERDES_OK,          /* SerDes check is complete */
-	SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON, /* SerDes loopback is ON */
+	SL_CORE_INFO_MAP_SERDES_START,            /* SerDes is starting */
+	SL_CORE_INFO_MAP_SERDES_CHECK,            /* SerDes is being checked */
+	SL_CORE_INFO_MAP_SERDES_OK,               /* SerDes check is complete */
+	SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON,      /* SerDes loopback is ON */
 
 	/* PCS */
-	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,    /* link is going down from a local fault interrupt */
-	SL_CORE_INFO_MAP_PCS_REMOTE_FAULT,   /* link is going down from a remote fault interrupt */
-	SL_CORE_INFO_MAP_PCS_LINK_DOWN,      /* link is going down from a link down interrupt */
-	SL_CORE_INFO_MAP_PCS_CHECK,          /* PCS is being checked */
-	SL_CORE_INFO_MAP_PCS_OK,             /* PCS check is complete */
+	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,         /* link is going down from a local fault interrupt */
+	SL_CORE_INFO_MAP_PCS_REMOTE_FAULT,        /* link is going down from a remote fault interrupt */
+	SL_CORE_INFO_MAP_PCS_LINK_DOWN,           /* link is going down from a link down interrupt */
+	SL_CORE_INFO_MAP_PCS_CHECK,               /* PCS is being checked */
+	SL_CORE_INFO_MAP_PCS_OK,                  /* PCS check is complete */
 
 	/* Link Quality */
-	SL_CORE_INFO_MAP_FEC_CHECK,          /* link up process is checking FEC */
-	SL_CORE_INFO_MAP_FEC_OK,             /* link up FEC check completed successfully */
-	SL_CORE_INFO_MAP_LINK_DEGRADED,      /* link degradation process started */
+	SL_CORE_INFO_MAP_FEC_CHECK,               /* link up process is checking FEC */
+	SL_CORE_INFO_MAP_FEC_OK,                  /* link up FEC check completed successfully */
+	SL_CORE_INFO_MAP_LINK_DEGRADED,           /* link degradation process started */
+	SL_CORE_INFO_MAP_FEC_SETTLE_START,        /* link up FEC settle is starting */
+	SL_CORE_INFO_MAP_FEC_SETTLE_DONE,         /* link up FEC settle is complete */
 
 	/* Link Forward Progress */
-	SL_CORE_INFO_MAP_LINK_DOWN,          /* link has been commanded down */
-	SL_CORE_INFO_MAP_LINK_UP_CANCEL,     /* link up process has been canceled */
-	SL_CORE_INFO_MAP_LINK_UP_TIMEOUT,    /* link up process has timed out */
-	SL_CORE_INFO_MAP_LINK_UP_FAIL,       /* link up process has failed */
-	SL_CORE_INFO_MAP_LINK_UP,            /* link up process completed successfully */
+	SL_CORE_INFO_MAP_LINK_DOWN,               /* link has been commanded down */
+	SL_CORE_INFO_MAP_LINK_UP_CANCEL,          /* link up process has been canceled */
+	SL_CORE_INFO_MAP_LINK_UP_TIMEOUT,         /* link up process has timed out */
+	SL_CORE_INFO_MAP_LINK_UP_FAIL,            /* link up process has failed */
+	SL_CORE_INFO_MAP_LINK_UP,                 /* link up process completed successfully */
 
 	/* MAC */
-	SL_CORE_INFO_MAP_MAC_RX_CONFIG,      /* MAC RX configuration is in progress */
-	SL_CORE_INFO_MAP_MAC_TX_CONFIG,      /* MAC TX configuration is in progress */
-	SL_CORE_INFO_MAP_MAC_RX,             /* MAC RX is operational */
-	SL_CORE_INFO_MAP_MAC_TX,             /* MAC TX is operational */
+	SL_CORE_INFO_MAP_MAC_RX_CONFIG,           /* MAC RX configuration is in progress */
+	SL_CORE_INFO_MAP_MAC_TX_CONFIG,           /* MAC TX configuration is in progress */
+	SL_CORE_INFO_MAP_MAC_RX,                  /* MAC RX is operational */
+	SL_CORE_INFO_MAP_MAC_TX,                  /* MAC TX is operational */
 
 	/* Autoneg */
-	SL_CORE_INFO_MAP_AN_BASE_PAGE,       /* base page of autonegotiation is being sent */
-	SL_CORE_INFO_MAP_AN_NEXT_PAGE,       /* next page of autonegotiation is being sent */
-	SL_CORE_INFO_MAP_AN_ERROR,           /* autonegotiation error */
-	SL_CORE_INFO_MAP_AN_DONE,            /* autonegotiation completed successfully */
+	SL_CORE_INFO_MAP_AN_BASE_PAGE,            /* base page of autonegotiation is being sent */
+	SL_CORE_INFO_MAP_AN_NEXT_PAGE,            /* next page of autonegotiation is being sent */
+	SL_CORE_INFO_MAP_AN_ERROR,                /* autonegotiation error */
+	SL_CORE_INFO_MAP_AN_DONE,                 /* autonegotiation completed successfully */
 
 	/* LLR */
-	SL_CORE_INFO_MAP_LLR_CONFIG,         /* LLR is being configured */
-	SL_CORE_INFO_MAP_LLR_SETTING_UP,     /* LLR is setting up */
-	SL_CORE_INFO_MAP_LLR_SETUP,          /* LLR setup completed successfully */
-	SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT,  /* LLR setup has timed out */
-	SL_CORE_INFO_MAP_LLR_STARTING,       /* LLR is starting */
-	SL_CORE_INFO_MAP_LLR_RUNNING,        /* LLR is running */
-	SL_CORE_INFO_MAP_LLR_START_TIMEOUT,  /* LLR start process timed out */
-	SL_CORE_INFO_MAP_LLR_MAX_STARVATION, /* LLR Max Starvation work started */
-	SL_CORE_INFO_MAP_LLR_STARVED,        /* LLR starved work started */
-	SL_CORE_INFO_MAP_LLR_REPLAY_MAX,     /* LLR replay at max */
+	SL_CORE_INFO_MAP_LLR_CONFIG,              /* LLR is being configured */
+	SL_CORE_INFO_MAP_LLR_SETTING_UP,          /* LLR is setting up */
+	SL_CORE_INFO_MAP_LLR_SETUP,               /* LLR setup completed successfully */
+	SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT,       /* LLR setup has timed out */
+	SL_CORE_INFO_MAP_LLR_STARTING,            /* LLR is starting */
+	SL_CORE_INFO_MAP_LLR_RUNNING,             /* LLR is running */
+	SL_CORE_INFO_MAP_LLR_START_TIMEOUT,       /* LLR start process timed out */
+	SL_CORE_INFO_MAP_LLR_MAX_STARVATION,      /* LLR Max Starvation work started */
+	SL_CORE_INFO_MAP_LLR_STARVED,             /* LLR starved work started */
+	SL_CORE_INFO_MAP_LLR_REPLAY_MAX,          /* LLR replay at max */
 
 	/* fault */
-	SL_CORE_INFO_MAP_HIGH_SER,           /* High Symbol Error ratio work started */
+	SL_CORE_INFO_MAP_HIGH_SER,                /* High Symbol Error ratio work started */
 
-	SL_CORE_INFO_MAP_NUM_BITS            /* must be last */
+	/* ALD */
+	SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG,      /* ALD config */
+	SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG_OK,   /* ALD config okay */
+
+	/* Cable speed 200G */
+	SL_CORE_INFO_MAP_CABLE_SPEED_200G_START,  /* Cable speed 200G starting */
+	SL_CORE_INFO_MAP_CABLE_SPEED_200G_OK,     /* Cable speed set to 200G */
+
+	/* Cable speed 400G */
+	SL_CORE_INFO_MAP_CABLE_SPEED_400G_START,  /* Cable speed 400G starting */
+	SL_CORE_INFO_MAP_CABLE_SPEED_400G_OK,     /* Cable speed set to 400G */
+
+	SL_CORE_INFO_MAP_NUM_BITS                 /* must be last */
 };
 
 struct sl_core_link_up_info {
@@ -528,7 +544,7 @@ int  sl_core_link_clocking_get(struct sl_core_link *core_link, u16 *clocking);
 int  sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
 					       u64 *down_cause_map, time64_t *down_time);
 int  sl_core_link_last_up_fail_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
-					          u64 *up_fail_cause_map, time64_t *up_fail_time);
+						  u64 *up_fail_cause_map, time64_t *up_fail_time);
 void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map);
 
 int  sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,

@@ -36,9 +36,10 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	if (!media_ldev)
 		return -ENOMEM;
 
-	media_ldev->magic     = SL_MEDIA_LDEV_MAGIC;
-	media_ldev->num       = ldev_num;
-	media_ldev->workqueue = workqueue;
+	media_ldev->magic          = SL_MEDIA_LDEV_MAGIC;
+	media_ldev->num            = ldev_num;
+	media_ldev->workqueue      = workqueue;
+	media_ldev->temp_mon_state = SL_MEDIA_TEMP_MON_OFF;
 
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		rtn = sl_media_data_jack_new(media_ldev, jack_num);
@@ -111,4 +112,38 @@ struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num)
 	sl_media_log_dbg(media_ldev, LOG_NAME, "get (ldev = 0x%p)", media_ldev);
 
 	return media_ldev;
+}
+
+int sl_media_data_ldev_temp_mon_state_get(struct sl_media_ldev *media_ldev, u8 *temp_mon_state)
+{
+	spin_lock(&media_ldev->data_lock);
+	*temp_mon_state = media_ldev->temp_mon_state;
+	spin_unlock(&media_ldev->data_lock);
+
+	sl_media_log_dbg(media_ldev, LOG_NAME, "temp_mon_state_get (state = %u)", *temp_mon_state);
+
+	return 0;
+}
+
+void sl_media_data_ldev_temp_mon_state_set(struct sl_media_ldev *media_ldev, u8 temp_mon_state)
+{
+	spin_lock(&media_ldev->data_lock);
+	media_ldev->temp_mon_state = temp_mon_state;
+	spin_unlock(&media_ldev->data_lock);
+}
+
+char *sl_media_data_ldev_temp_mon_state_str(u8 temp_mon_state)
+{
+	switch (temp_mon_state) {
+	case SL_MEDIA_TEMP_MON_INVALID:
+		return "invalid";
+	case SL_MEDIA_TEMP_MON_OFF:
+		return "off";
+	case SL_MEDIA_TEMP_MON_CHECKING:
+		return "checking";
+	case SL_MEDIA_TEMP_MON_SLEEPING:
+		return "sleeping";
+	default:
+		return "unknown";
+	}
 }

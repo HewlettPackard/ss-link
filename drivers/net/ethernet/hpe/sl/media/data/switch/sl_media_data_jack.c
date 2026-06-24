@@ -1508,6 +1508,8 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "cable monitor temp delayed work (ldev = 0x%p)", media_ldev);
 
+	sl_media_data_ldev_temp_mon_state_set(media_ldev, SL_MEDIA_TEMP_MON_CHECKING);
+
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		media_jack = sl_media_data_jack_get(media_ldev->num, jack_num);
 		if (!media_jack)
@@ -1600,6 +1602,8 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 
 	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_TEMP],
 			   msecs_to_jiffies(SL_MEDIA_TEMP_MONITOR_TIME_MS));
+
+	sl_media_data_ldev_temp_mon_state_set(media_ldev, SL_MEDIA_TEMP_MON_SLEEPING);
 }
 
 bool sl_media_data_jack_cable_is_hot_client_ready(struct sl_media_jack *media_jack,

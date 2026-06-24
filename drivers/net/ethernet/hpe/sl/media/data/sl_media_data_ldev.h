@@ -17,4 +17,8 @@ struct sl_media_ldev *sl_media_data_ldev_get(u8 ldev_num);
 int sl_media_data_ldev_uc_ops_set(u8 ldev_num, struct sl_uc_ops *uc_ops,
 				  struct sl_uc_accessor *uc_accessor);
 
+int   sl_media_data_ldev_temp_mon_state_get(struct sl_media_ldev *media_ldev, u8 *temp_mon_state);
+void  sl_media_data_ldev_temp_mon_state_set(struct sl_media_ldev *media_ldev, u8 temp_mon_state);
+char *sl_media_data_ldev_temp_mon_state_str(u8 temp_mon_state);
+
 #endif /* _SL_MEDIA_DATA_LDEV_H_ */

@@ -10,6 +10,7 @@
 #include "sl_media_lgrp.h"
 #include "sl_media_io.h"
 #include "sl_ctrl_ldev.h"
+#include "data/sl_core_data_link.h"
 #include "data/sl_media_data_jack.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_ldev.h"
@@ -308,9 +309,12 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	if (sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_DOWNSHIFTED) {
 		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_200G_OK);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already downshifted");
 		return 0;
 	}
+
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_200G_START);
 
 	rtn = sl_media_jack_cable_shift_checks(media_lgrp, SL_MEDIA_JACK_CABLE_DOWNSHIFT);
 	if (rtn) {
@@ -334,6 +338,9 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME, "data jack cable downshift failed [%d]", rtn);
 		return rtn;
 	}
+
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_200G_START);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_200G_OK);
 
 	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED);
 
@@ -369,9 +376,12 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	if (sl_media_data_jack_cable_hw_shift_state_get(media_lgrp->media_jack) == SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UPSHIFTED) {
 		sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_400G_OK);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "already upshifted");
 		return 0;
 	}
+
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_400G_START);
 
 	rtn = sl_media_jack_cable_shift_checks(media_lgrp, SL_MEDIA_JACK_CABLE_UPSHIFT);
 	if (rtn) {
@@ -396,8 +406,10 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return rtn;
 	}
 
-	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack,
-					    SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
+	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_400G_START);
+	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_CABLE_SPEED_400G_OK);
+
+	sl_media_jack_cable_shift_state_set(media_lgrp->media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_UPSHIFTED);
 
 	return 0;
 }

@@ -11,6 +11,7 @@
 #include "sl_sysfs.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_module.h"
+#include "data/sl_media_data_ldev.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -56,12 +57,35 @@ static ssize_t mod_hash_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return sysfs_emit(buf, "%s\n", sl_git_hash_str_get());
 }
 
-static struct kobj_attribute mod_ver  = __ATTR_RO(mod_ver);
-static struct kobj_attribute mod_hash = __ATTR_RO(mod_hash);
+static ssize_t media_temperature_monitor_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_ldev  *ctrl_ldev;
+	struct sl_media_ldev *media_ldev;
+	u8                    temp_mon_state;
+	int                   rtn;
+
+	ctrl_ldev = container_of(kobj, struct sl_ctrl_ldev, sl_info_kobj);
+
+	media_ldev = sl_media_data_ldev_get(ctrl_ldev->num);
+
+	rtn = sl_media_data_ldev_temp_mon_state_get(media_ldev, &temp_mon_state);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "media temperature monitor state show (ldev = 0x%p, temp_mon_state = %s)",
+		   ctrl_ldev, sl_media_data_ldev_temp_mon_state_str(temp_mon_state));
+
+	return sysfs_emit(buf, "%s\n", sl_media_data_ldev_temp_mon_state_str(temp_mon_state));
+}
+
+static struct kobj_attribute mod_ver                         = __ATTR_RO(mod_ver);
+static struct kobj_attribute mod_hash                        = __ATTR_RO(mod_hash);
+static struct kobj_attribute media_temperature_monitor_state = __ATTR_RO(media_temperature_monitor_state);
 
 static struct attribute *ldev_attrs[] = {
 	&mod_ver.attr,
 	&mod_hash.attr,
+	&media_temperature_monitor_state.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(ldev);
