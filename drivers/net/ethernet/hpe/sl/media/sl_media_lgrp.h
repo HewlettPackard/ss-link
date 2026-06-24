@@ -11,11 +11,18 @@
 
 #include "sl_lgrp.h"
 #include "sl_media_ldev.h"
+#include "sl_media_jack.h"
 #include "base/sl_media_log.h"
 
 #define SL_MEDIA_MAX_SUPPORTED_SPEEDS 9
 
 struct sl_media_serdes_settings;
+
+struct media_cable_entry {
+	struct kobject        kobj;
+	struct sl_media_lgrp *parent;
+	u8                    index;
+};
 
 struct sl_media_lgrp_speed_kobject {
 	struct sl_media_lgrp *media_lgrp;
@@ -35,6 +42,8 @@ struct sl_media_lgrp {
 	struct kobject                      kobj;
 	struct kobject                      parent_speed_kobj;
 	struct sl_media_lgrp_speed_kobject  speeds_kobj[SL_MEDIA_MAX_SUPPORTED_SPEEDS];
+	struct media_cable_entry            last_cable_insert_cables_kobj[SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES];
+	struct kobject                      last_cable_insert_kobj;
 	struct kobject                      counters_kobj;
 	u8                                  supported_speeds_num;
 	bool                                speeds_kobj_init;

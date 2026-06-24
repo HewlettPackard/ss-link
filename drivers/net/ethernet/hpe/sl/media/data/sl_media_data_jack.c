@@ -289,3 +289,41 @@ bool sl_media_data_jack_is_headshell_busy(struct sl_media_jack *media_jack)
 {
 	return (atomic_read(&media_jack->is_headshell_busy) == SL_MEDIA_JACK_HEADSHELL_BUSY);
 }
+
+void sl_media_data_jack_last_cable_insert_set(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
+{
+	struct sl_media_cable_insert_entry *cable_insert_entry;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable insert set (jack = 0x%p)", media_jack);
+
+	spin_lock(&media_jack->data_lock);
+	media_jack->last_cable_insert_entry_num++;
+	if (media_jack->last_cable_insert_entry_num >= SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES)
+		media_jack->last_cable_insert_entry_num = 0;
+
+	cable_insert_entry = &media_jack->last_cable_insert_entry[media_jack->last_cable_insert_entry_num];
+	cable_insert_entry->timestamp = ktime_get_real_seconds();
+	memcpy(&cable_insert_entry->cable, media_attr, sizeof(cable_insert_entry->cable));
+	spin_unlock(&media_jack->data_lock);
+}
+
+int sl_media_data_jack_last_cable_insert_get(struct sl_media_jack *media_jack, u8 entry_num,
+					     struct sl_media_cable_insert_entry *cable_insert_entry)
+{
+	u8 actual_entry_num;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "last cable insert get (jack = 0x%p)", media_jack);
+
+	spin_lock(&media_jack->data_lock);
+	if (entry_num > media_jack->last_cable_insert_entry_num)
+		actual_entry_num = SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES -
+				   (entry_num - media_jack->last_cable_insert_entry_num);
+	else
+		actual_entry_num = media_jack->last_cable_insert_entry_num - entry_num;
+
+	memcpy(cable_insert_entry, &media_jack->last_cable_insert_entry[actual_entry_num],
+	       sizeof(*cable_insert_entry));
+	spin_unlock(&media_jack->data_lock);
+
+	return 0;
+}

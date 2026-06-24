@@ -88,4 +88,8 @@ void sl_media_data_jack_cable_temp_monitor_stop(struct sl_media_ldev *media_ldev
 void sl_media_data_jack_headshell_busy_set(struct sl_media_jack *media_jack, int value);
 bool sl_media_data_jack_is_headshell_busy(struct sl_media_jack *media_jack);
 
+void sl_media_data_jack_last_cable_insert_set(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr);
+int  sl_media_data_jack_last_cable_insert_get(struct sl_media_jack *media_jack, u8 entry_num,
+					      struct sl_media_cable_insert_entry *cable_insert_entry);
+
 #endif /* _SL_MEDIA_DATA_JACK_H_ */

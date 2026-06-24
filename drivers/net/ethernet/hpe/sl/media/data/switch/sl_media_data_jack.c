@@ -762,6 +762,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		memset(media_attr.fw_ver, 0, sizeof(media_attr.fw_ver));
 	}
 
+	sl_media_data_jack_last_cable_insert_set(media_jack, &media_attr);
+
 	rtn = sl_media_data_jack_cable_attr_set(media_jack, ldev_num, &media_attr);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "cable attr set failed [%d]", rtn);

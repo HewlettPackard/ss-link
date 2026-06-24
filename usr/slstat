@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=17
+MINOR=18
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -598,6 +598,19 @@ function print_jack {
 	printf "           | error_info: ${error_info}\n"
 	printf "           | last_io_fault_cause: [${last_io_fault_time}] ${last_io_fault_cause}\n"
 	printf "           | last_fault_cause   : [${last_fault_time}] ${last_fault_cause}\n"
+
+        cable_insert_time=$(cat ${LGRP_PATH}/media/last_cable_insert/time_0)
+        cable_insert_vendor=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_0/vendor)
+        cable_insert_type=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_0/type)
+        cable_insert_serial_num=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_0/serial_num)
+        printf "           | last_cable_insert 0: [${cable_insert_time}] ${cable_insert_vendor} ${cable_insert_type} ${cable_insert_serial_num}\n"
+        for entry_num in {1..9} ; do
+                cable_insert_time=$(cat ${LGRP_PATH}/media/last_cable_insert/time_${entry_num})
+                cable_insert_vendor=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_${entry_num}/vendor)
+                cable_insert_type=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_${entry_num}/type)
+                cable_insert_serial_num=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_${entry_num}/serial_num)
+                printf "           |                   ${entry_num}: [${cable_insert_time}] ${cable_insert_vendor} ${cable_insert_type} ${cable_insert_serial_num}\n"
+        done
 }
 
 function print_lgrp {

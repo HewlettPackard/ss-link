@@ -191,6 +191,7 @@ $(SL_NAME)-y += \
 	sysfs/sl_sysfs_mac.o                \
 	sysfs/sl_sysfs_mac_counters.o       \
 	sysfs/sl_sysfs_media.o              \
+	sysfs/sl_sysfs_media_last_cable.o   \
 	sysfs/sl_sysfs_media_counters.o
 
 ccflags-y := -I$(M)

@@ -77,6 +77,8 @@
 
 #define SL_MEDIA_JACK_ATTR_ERR_STR_SIZE 128
 
+#define SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES 10
+
 enum sl_media_jack_temp_state {
 	SL_MEDIA_JACK_TEMP_STATE_INIT = 0,
 	SL_MEDIA_JACK_TEMP_STATE_COLD,
@@ -165,47 +167,52 @@ struct sl_media_lgrp_cable_info {
 	bool                 cold_notif_sent;
 };
 
+struct sl_media_cable_insert_entry {
+	time64_t             timestamp;
+	struct sl_media_attr cable;
+};
+
 #define SL_MEDIA_EEPROM_PAGE_SIZE 256
 #define SL_MEDIA_JACK_MAGIC       0xAD91C879
 struct sl_media_jack {
-	u32                             magic;
-	u8                              num;
-	u8                              physical_num; /* number printed on jack */
-	u8                              state;
-	struct sl_media_ldev           *media_ldev;
+	u32                                magic;
+	u8                                 num;
+	u8                                 physical_num; /* number printed on jack */
+	u8                                 state;
+	struct sl_media_ldev              *media_ldev;
 
-	int                             cable_db_idx;
-	struct sl_media_lgrp_cable_info cable_info[SL_MEDIA_MAX_LGRPS_PER_JACK];
-	u32                             cable_end;
+	int                                cable_db_idx;
+	struct sl_media_lgrp_cable_info    cable_info[SL_MEDIA_MAX_LGRPS_PER_JACK];
+	u32                                cable_end;
 
-	u8                              eeprom_page0[SL_MEDIA_EEPROM_PAGE_SIZE];
-	u8                              eeprom_page1[SL_MEDIA_EEPROM_PAGE_SIZE];
+	u8                                 eeprom_page0[SL_MEDIA_EEPROM_PAGE_SIZE];
+	u8                                 eeprom_page1[SL_MEDIA_EEPROM_PAGE_SIZE];
 
-	struct sl_media_serdes_settings serdes_settings;
+	struct sl_media_serdes_settings    serdes_settings;
 
-	spinlock_t                      data_lock; /* data lock for jack object */
-	spinlock_t                      log_lock;  /* log lock for jack object  */
+	spinlock_t                         data_lock; /* data lock for jack object */
+	spinlock_t                         log_lock;  /* log lock for jack object  */
 
-	bool                            is_cable_unsupported;
-	bool                            is_cable_format_unsupported;
-	bool                            is_supported_ss200_cable;
-	bool                            is_high_powered;
-	u8                              temperature_state;
-	u8                              temperature_prev_state;
-	unsigned long                   cable_high_power_wait_time_end;
-	u32                             io_fault_cause;
-	u32                             fault_cause;
-	time64_t                        io_fault_time;
-	time64_t                        fault_time;
-	u8                              cable_shift_state;
-	u8                              appsel_num_200_gaui; /* used for downshifting */
-	u8                              lane_count_200_gaui; /* used for downshifting */
-	u8                              host_interface_200_gaui; /* used for downshifting */
-	u8                              appsel_num_400_gaui; /* used for upshifting */
-	u8                              lane_count_400_gaui; /* used for upshifting */
-	u8                              host_interface_400_gaui; /* used for upshifting */
+	bool                               is_cable_unsupported;
+	bool                               is_cable_format_unsupported;
+	bool                               is_supported_ss200_cable;
+	bool                               is_high_powered;
+	u8                                 temperature_state;
+	u8                                 temperature_prev_state;
+	unsigned long                      cable_high_power_wait_time_end;
+	u32                                io_fault_cause;
+	u32                                fault_cause;
+	time64_t                           io_fault_time;
+	time64_t                           fault_time;
+	u8                                 cable_shift_state;
+	u8                                 appsel_num_200_gaui; /* used for downshifting */
+	u8                                 lane_count_200_gaui; /* used for downshifting */
+	u8                                 host_interface_200_gaui; /* used for downshifting */
+	u8                                 appsel_num_400_gaui; /* used for upshifting */
+	u8                                 lane_count_400_gaui; /* used for upshifting */
+	u8                                 host_interface_400_gaui; /* used for upshifting */
 
-	atomic_t                        is_headshell_busy;
+	atomic_t                           is_headshell_busy;
 
 	struct {
 		u32               read_state;
@@ -218,16 +225,18 @@ struct sl_media_jack {
 		} cache;
 	} lane_data;
 
-	void                           *hdl;
-	u8                              port_count;
-	u16                             asic_port[4];
-	u32                             status;
+	void                              *hdl;
+	u8                                 port_count;
+	u16                                asic_port[4];
+	u32                                status;
 
-	int                             temperature_value_c;
-	int                             temperature_warn_limit_c;
-	int                             temperature_down_limit_c;
+	int                                temperature_value_c;
+	int                                temperature_warn_limit_c;
+	int                                temperature_down_limit_c;
 
-	struct sl_ctrl_media_counter   *cause_counters;
+	u8                                 last_cable_insert_entry_num;
+	struct sl_media_cable_insert_entry last_cable_insert_entry[SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES];
+	struct sl_ctrl_media_counter      *cause_counters;
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0
@@ -324,4 +333,5 @@ void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_c
 int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_fault_cause,
 				   time64_t *io_fault_time, u32 *fault_cause, time64_t *fault_time);
 void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack);
+
 #endif /* _SL_MEDIA_JACK_H_ */

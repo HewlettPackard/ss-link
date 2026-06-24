@@ -17,6 +17,7 @@
 #include "sl_media_jack.h"
 #include "data/sl_media_data_jack.h"
 #include "base/sl_media_eeprom.h"
+#include "sl_sysfs_media_last_cable.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -1225,6 +1226,12 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_media_last_cable_create(ctrl_lgrp, media_lgrp);
+	if (rtn) {
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media last cable create failed [%d]", rtn);
+		return rtn;
+	}
+
 	rtn = sl_sysfs_media_counters_create(ctrl_lgrp);
 	if (rtn) {
 		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media counters create failed [%d]", rtn);
@@ -1336,6 +1343,11 @@ void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media_lgrp_get failed");
 		return;
 	}
+
+	for (i = 0; i < SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES; ++i)
+		kobject_put(&media_lgrp->last_cable_insert_cables_kobj[i].kobj);
+
+	kobject_put(&media_lgrp->last_cable_insert_kobj);
 
 	if (media_lgrp->speeds_kobj_init) {
 		for (i = 0; i < media_lgrp->supported_speeds_num; ++i)
