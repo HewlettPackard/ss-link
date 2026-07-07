@@ -53,17 +53,28 @@ static int sl_media_data_jack_eeprom_page0_get(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define FLAT_MEM_OFFSET 2
-#define FLAT_MEM_BIT    7
-static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack)
+#define FLAT_MEM_OFFSET    2
+#define CMIS_FLAT_MEM_BIT  7
+#define SFF_FLAT_MEM_BIT   2
+static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack, u8 *format)
 {
 	int                  rtn;
 	struct xcvr_i2c_data i2c_data;
+	u8                   flat_mem_bit;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get");
 
-	if ((media_jack->eeprom_page0[FLAT_MEM_OFFSET] & BIT(FLAT_MEM_BIT)) != 0) {
-		sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get no page");
+	if (*format == SL_MEDIA_MGMT_IF_CMIS) {
+		flat_mem_bit = CMIS_FLAT_MEM_BIT;
+	} else if (*format == SL_MEDIA_MGMT_IF_SFF8636) {
+		flat_mem_bit = SFF_FLAT_MEM_BIT;
+	} else {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "unknown cable format, skipping page1");
+		return -EMEDIUMTYPE;
+	}
+
+	if ((media_jack->eeprom_page0[FLAT_MEM_OFFSET] & BIT(flat_mem_bit)) != 0) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "no page1 in eeprom");
 		return 0;
 	}
 
@@ -703,11 +714,6 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			return rtn;
 		}
 
-		rtn = sl_media_data_jack_eeprom_page1_get(media_jack);
-		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "online eeprom_page1_get failed [%d]", rtn);
-			return rtn;
-		}
 
 		rtn = sl_media_eeprom_format_get(media_jack, &media_attr.format, &media_attr.version);
 		if (rtn) {
@@ -719,6 +725,12 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 				sl_media_log_err_trace(media_jack, LOG_NAME, "online cable_attr_set failed [%d]", ret);
 			sl_media_data_jack_cable_attr_send(media_jack);
 			return -EFAULT;
+		}
+
+		rtn = sl_media_data_jack_eeprom_page1_get(media_jack, &media_attr.format);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom page1 get failed [%d]", rtn);
+			return rtn;
 		}
 
 		sl_media_eeprom_parse(media_jack, &media_attr);
@@ -743,7 +755,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			}
 			sl_media_data_jack_data_clr(media_jack);
 			sl_media_data_jack_eeprom_page0_get(media_jack);
-			sl_media_data_jack_eeprom_page1_get(media_jack);
+			sl_media_data_jack_eeprom_page1_get(media_jack, &media_attr.format);
 			sl_media_eeprom_format_get(media_jack, &media_attr.format, &media_attr.version);
 			sl_media_eeprom_parse(media_jack, &media_attr);
 			rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
