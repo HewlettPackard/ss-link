@@ -169,7 +169,7 @@ int sl_core_data_mac_tx_settings(struct sl_core_mac *core_mac)
 		core_mac->settings.tx_short_preamble = 0;
 	}
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_8BYTE_PREAMBLE))
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_LONG_PREAMBLE))
 		core_mac->settings.tx_short_preamble = 0;
 
 	return 0;
@@ -191,7 +191,7 @@ int sl_core_data_mac_rx_settings(struct sl_core_mac *core_mac)
 		core_mac->settings.rx_short_preamble   = 0;
 	}
 
-	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_8BYTE_PREAMBLE))
+	if (is_flag_set(lgrp_config->options, SL_LGRP_CONFIG_OPT_LONG_PREAMBLE))
 		core_mac->settings.rx_short_preamble   = 0;
 
 	return 0;

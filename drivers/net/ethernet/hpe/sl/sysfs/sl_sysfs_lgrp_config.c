@@ -190,6 +190,26 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return sysfs_emit(buf, "disabled\n");
 }
 
+static ssize_t preamble_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
+	u32                  options;
+
+	ctrl_lgrp = container_of(kobj, struct sl_ctrl_lgrp, config_kobj);
+
+	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "preamble show (options = 0x%X)", options);
+
+	if (options & SL_LGRP_CONFIG_OPT_LONG_PREAMBLE)
+		return sysfs_emit(buf, "long\n");
+
+	return sysfs_emit(buf, "short\n");
+}
+
 static struct kobj_attribute lgrp_mfs       = __ATTR_RO(mfs);
 static struct kobj_attribute lgrp_furcation = __ATTR_RO(furcation);
 static struct kobj_attribute lgrp_fec_mode  = __ATTR_RO(fec_mode);
@@ -197,6 +217,7 @@ static struct kobj_attribute lgrp_tech_map  = __ATTR_RO(tech_map);
 static struct kobj_attribute lgrp_fec_map   = __ATTR_RO(fec_map);
 static struct kobj_attribute lgrp_link_type = __ATTR_RO(link_type);
 static struct kobj_attribute lgrp_loopback  = __ATTR_RO(loopback);
+static struct kobj_attribute lgrp_preamble  = __ATTR_RO(preamble);
 
 static ssize_t err_trace_enable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
@@ -390,6 +411,7 @@ static struct attribute *lgrp_config_attrs[] = {
 	&lgrp_fec_map.attr,
 	&lgrp_link_type.attr,
 	&lgrp_loopback.attr,
+	&lgrp_preamble.attr,
 	&lgrp_err_trace_enable.attr,
 	&lgrp_warn_trace_enable.attr,
 	&lgrp_serdes_lane_io_trace_enable.attr,
