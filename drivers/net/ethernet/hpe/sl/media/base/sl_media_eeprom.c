@@ -257,6 +257,8 @@ static const struct vendor vendor_list[] = {
 	  .type = SL_MEDIA_VENDOR_MULTILANE },
 	{ .name = "Amphenol",
 	  .type = SL_MEDIA_VENDOR_AMPHENOL },
+	{ .name = "Leoni",
+	  .type = SL_MEDIA_VENDOR_LEONI },
 };
 static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 format, u32 *vendor)
 {

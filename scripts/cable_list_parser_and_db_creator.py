@@ -104,6 +104,8 @@ def cable_info_write(f, df, part_nums, sheet_name, vendor_pn_counter):
                     f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_CLOUD_LIGHT" + ",\n")
                 elif cell_value == "Molex":
                     f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_MOLEX" + ",\n")
+                elif cell_value == "Leoni":
+                    f.write("\t\t.vendor                   = " + "SL_MEDIA_VENDOR_LEONI" + ",\n")
                 else:
                     print("Invalid vendor = %s", cell_value)
                     sys.exit(1)
