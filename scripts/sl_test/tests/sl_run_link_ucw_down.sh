@@ -28,82 +28,10 @@ function test_cleanup {
 }
 
 function test_verify {
-
-	local found
-	local lgrp_num
-	local furcation
-	local sl_test_link_nums
-	local notifs
-	local lgrp_sysfs
-
-	data=$1
-
-	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
-	rtn=$?
-	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "lgrp_sysfs_parent_set failed [${rtn}]"
-		return ${rtn}
-	fi
-
-	#TODO: This is really inefficient
-	found=false
-	for lgrp_num in "${lgrp_nums[@]}"; do
-
-		furcation=$(cat ${lgrp_sysfs}/${lgrp_num}/config/furcation)
-		rtn=$?
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "furcation read failed [${rtn}]"
-			return ${rtn}
-		fi
-
-		__sl_test_set_links_from_furcation ${furcation} sl_test_link_nums
-		if [[ "${rtn}" != 0 ]]; then
-			sl_test_error_log "${FUNCNAME}" "set_links_from_furcation failed [${rtn}]"
-			return ${rtn}
-		fi
-
-		for link_num in "${sl_test_link_nums[@]}"; do
-			IFS=';' read -ra notifs <<< "${data}"
-			for notif in "${notifs[@]}"; do
-				notif_fields=(${notif})
-				notif_ldev_num=${notif_fields[2]}
-				notif_lgrp_num=${notif_fields[3]}
-				notif_link_num=${notif_fields[4]}
-				notif_type=${notif_fields[6]}
-
-				if [[ "${notif_ldev_num}" != ${ldev_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_lgrp_num}" != ${lgrp_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_link_num}" != ${link_num} ]]; then
-					continue
-				fi
-
-				if [[ "${notif_type}" == "link-up-fail" && \
-					"${notif_fields[7]}" == "ucw" && \
-					"${notif_fields[8]}" == "retryable" && \
-					"${notif_fields[9]}" == "origin-up" ]]; then
-						found=true
-					break
-				fi
-			done
-
-			if [[ "${found}" != true ]]; then
-				sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-				sl_test_error_log "${FUNCNAME}" "notif expected: link-up-fail ucw retryable origin-up"
-				sl_test_error_log "${FUNCNAME}" "notif actual: ${notif}"
-				return 1
-			fi
-
-			found=false
-		done
-	done
-
-	return 0
+	local data=$1
+	
+	sl_test_notif_verify_per_link ${ldev_num} "${lgrp_nums[*]}" "${data}" "link-up-fail" 7 "ucw" 8 "retryable" 9 "origin-up"
+	return $?
 }
 
 function main {
