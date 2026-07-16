@@ -8,7 +8,22 @@ brief="Test link-up-fail notification is received when cabled links are commande
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/autoneg_x1_fec_calc_early_timeout.sh"
+
+settings="${SL_TEST_DIR}/systems/settings/ck400_x1.sh"
+
+autoneg=1
+hpe_map_linktrain_set=1
+link_up_timeout_ms=2000
+link_up_tries_max=1
+
+# Tech map for auto-negotiation
+tech_map_ck400g_set=1
+tech_map_bs200g_set=1
+tech_map_ck200g_set=0
+tech_map_cd100g_set=0
+tech_map_bj100g_set=0
+tech_map_ck100g_set=0
+tech_map_cd50g_set=0
 
 ldev_num=0
 lgrp_nums=(23 54)

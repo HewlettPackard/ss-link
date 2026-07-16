@@ -9,7 +9,10 @@ brief="Test the link-up with MAC running & LLR running"
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/bs200_x1_llr_on_fec_calc.sh"
+link_config="${SL_TEST_DIR}/configs/link/fec_calc.sh"
+llr_config="${SL_TEST_DIR}/configs/llr/discard_on.sh"
+link_policy="${SL_TEST_DIR}/policies/link/fec_mon_calc.sh"
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
 
 ldev_num=0
 lgrp_nums=(23 54)

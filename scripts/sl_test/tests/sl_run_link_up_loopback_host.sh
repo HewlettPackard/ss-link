@@ -9,7 +9,8 @@ brief="Test link-up notification is received when cabled links are commanded up 
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=275000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/bs200_x1_host_lb.sh"
+loopback_host=1
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
 
 ldev_num=0
 lgrp_nums=(46)

@@ -7,7 +7,10 @@
 brief="Verify the FEC monitor policy matches the explicit link FEC policy for bs200"
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
-settings="${SL_TEST_DIR}/systems/settings/bs200_x1_lb_fec_on.sh"
+loopback_serdes=1
+link_config="${SL_TEST_DIR}/configs/link/fec_on.sh"
+link_policy="${SL_TEST_DIR}/policies/link/fec_mon_on.sh"
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
 ldev_num=0

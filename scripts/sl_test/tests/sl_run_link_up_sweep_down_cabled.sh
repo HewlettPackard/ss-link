@@ -9,7 +9,8 @@ brief="Verify link down can be issued at different intervals during link up sequ
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/bs200_x1_fec_off_one_try.sh"
+link_up_tries_max=1
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
 ldev_num=0
 lgrp_nums=({0..63})
 down_cmd_lgrp_nums=({0..31})

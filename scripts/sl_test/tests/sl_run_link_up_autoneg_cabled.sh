@@ -4,11 +4,27 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
+# TODO: remove in favor of sl_run_autoneg_ck400_bs200.sh once the test is verified to be working.
+
 brief="Test link-up notification is received when cabled links are commanded up with autoneg enabled."
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=275000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/autoneg_x1_fec_calc.sh"
+
+settings="${SL_TEST_DIR}/systems/settings/ck400_x1.sh"
+
+autoneg=1
+hpe_map_linktrain_set=1
+
+# Tech map for auto-negotiation
+tech_map_ck400g_set=1
+tech_map_bs200g_set=1
+tech_map_ck200g_set=0
+tech_map_cd100g_set=0
+tech_map_bj100g_set=0
+tech_map_ck100g_set=0
+tech_map_cd50g_set=0
+
 
 ldev_num=0
 lgrp_nums=(23 54)
