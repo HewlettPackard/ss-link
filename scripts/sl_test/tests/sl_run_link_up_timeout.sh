@@ -29,33 +29,10 @@ function test_cleanup {
 }
 
 function test_verify {
-	local data
-	local notifs
-	local notif
-	local notif_fields
-	local notif_ldev_num
-	local notif_lgrp_num
-	local notif_link_num
-	local notif_type
-
-	data=$1
-
-	IFS=';' read -ra notifs <<< "${data}"
-	for notif in "${notifs[@]}"; do
-		notif_fields=(${notif})
-		notif_ldev_num=${notif_fields[2]}
-		notif_lgrp_num=${notif_fields[3]}
-		notif_link_num=${notif_fields[4]}
-		notif_type=${notif_fields[6]}
-
-		if [[ "${notif_type}" != "link-up-fail" ]]; then
-			sl_test_error_log "${FUNCNAME}" "failed (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
-			sl_test_error_log "${FUNCNAME}" "Expected: link-up-fail, Found: ${notif_type}"
-			return 1
-		fi
-	done
-
-	return 0
+	local data=$1
+	
+	sl_test_notif_expect_all_have_type "${data}" "link-up-fail"
+	return $?
 }
 
 function main {

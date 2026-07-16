@@ -66,28 +66,35 @@ enum {
 };
 
 //TODO: Maybe this should be common somewhere
+/* Strings need to match output of sl_lgrp_notif_str(). Order doesn't matter. */
 static const char *notif_names[] = {
 	"invalid",
 	"link-up",
 	"link-up-fail",
+	"link-down",
 	"link-async-down",
 	"link-error",
-	"llr-data",
+	"link-ucw-warn",
+	"link-ccw-warn",
+	"llr-setup",
 	"llr-setup-timeout",
-	"llr-start-timeout",
 	"llr-running",
+	"llr-start-timeout",
+	"llr-canceled",
 	"llr-error",
 	"media-present",
 	"media-not-present",
 	"media-error",
-	"link-ucw-warn",
-	"link-ccw-warn",
+	"media-hot",
+	"media-cold",
+	"media-warm",
 	"an-data",
 	"an-timeout",
 	"an-error",
-	"llr-canceled",
-	"link-down",
-	"link-async-down",
+	"auto-lane-degrade",
+	"auto-lane-degrade-recovery",
+	"pml-recovery",
+	"link-down-request",
 	"unknown",
 };
 
