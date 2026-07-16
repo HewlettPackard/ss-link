@@ -9,7 +9,7 @@ brief="Verify link will cycle up and down."
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=60000 # Timeout in milliseconds
-settings="${SL_TEST_DIR}/systems/settings/bs200_x1_fec_off.sh"
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
 ldev_num=0
 lgrp_nums=({0..63})
 down_cmd_lgrp_nums=({0..31})
