@@ -239,6 +239,9 @@ static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute 
 		   "vendor part num show (media_lgrp = 0x%p, vendor_pn_str = %s)",
 		   media_lgrp, vendor_pn_str);
 
+	if (strlen(vendor_pn_str) == 0)
+		return sysfs_emit(buf, "empty\n");
+
 	return sysfs_emit(buf, "%s\n", vendor_pn_str);
 }
 
@@ -398,6 +401,9 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "serial num show (media_lgrp = 0x%p, serial_num = %s)",
 		   media_lgrp, serial_num_str);
 
+	if (strlen(serial_num_str) == 0)
+		return sysfs_emit(buf, "empty\n");
+
 	return sysfs_emit(buf, "%s\n", serial_num_str);
 }
 
@@ -423,6 +429,9 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "hpe part num show (media_lgrp = 0x%p, hpe_pn = %s)",
 		media_lgrp, hpe_pn_str);
+
+	if (strlen(hpe_pn_str) == 0)
+		return sysfs_emit(buf, "empty\n");
 
 	return sysfs_emit(buf, "%s\n", hpe_pn_str);
 }
@@ -545,6 +554,9 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "date code show (media_lgrp = 0x%p, date_code = %s)",
 		media_lgrp, date_code_str);
+
+	if (strlen(date_code_str) == 0)
+		return sysfs_emit(buf, "empty\n");
 
 	return sysfs_emit(buf, "%s\n", date_code_str);
 }

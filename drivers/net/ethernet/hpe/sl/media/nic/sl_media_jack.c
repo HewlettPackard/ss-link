@@ -151,6 +151,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			media_attr.info |= SL_MEDIA_INFO_AUTONEG;
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
+		// FIXME: possibly need a second eeprom scan here if cable info is seen to be corrupt
 		if (rtn) {
 			sl_media_log_warn_trace(media_jack, LOG_NAME,
 						"cable validate failed [%d] (vendor = %d %s, type = 0x%X %s, length_cm = %d, speeds = 0x%lX)",
@@ -204,6 +205,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
+		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_data_jack_cable_attr_send(media_jack);
 		return 0;

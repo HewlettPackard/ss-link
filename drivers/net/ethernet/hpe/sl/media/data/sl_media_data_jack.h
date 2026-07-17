@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_DATA_JACK_H_
 #define _SL_MEDIA_DATA_JACK_H_
@@ -23,9 +23,11 @@ void sl_media_data_jack_unregister_event_notifier(void);
 void sl_media_data_cable_serdes_settings_clr(struct sl_media_jack *media_jack);
 void sl_media_data_jack_eeprom_clr(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
-		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *media_attr);
+				       struct sl_media_lgrp_cable_info *cable_info,
+				       struct sl_media_attr *media_attr);
 void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
-		struct sl_media_lgrp_cable_info *cable_info);
+				       struct sl_media_lgrp_cable_info *cable_info);
+void sl_media_data_jack_data_clr(struct sl_media_jack *media_jack);
 bool sl_media_data_jack_media_is_format_cmis(struct sl_media_jack *media_jack);
 
 void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp);

@@ -287,14 +287,7 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 
 	sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
 
-	msleep(300);
-
-	sl_media_io_write8(media_jack, 0x00, 0x1a, 0x00);
-
-	/*
-	 * waiting for firmware reload
-	 */
-	msleep(3000);
+	msleep(8000);
 
 	return 0;
 }

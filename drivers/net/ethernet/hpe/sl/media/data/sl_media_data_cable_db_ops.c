@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/slab.h>
 #include <linux/kernel.h>
@@ -21,7 +21,11 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 {
 	int indexer;
 
-	sl_media_log_dbg(NULL, LOG_NAME, "cable validate");
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "validate (hpe_part_num = %d %s, vendor = %d %s, type = %d %s)",
+			 media_attr->hpe_pn, media_attr->hpe_pn_str,
+			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
+			 media_attr->type, sl_media_type_str(media_attr->type));
 
 	/*
 	 * Check for loopback module
@@ -37,6 +41,8 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 					   SL_MEDIA_SPEEDS_SUPPORT_BJ_100G |
 					   SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 		media_jack->cable_db_idx = -1;
+
+		media_jack->is_cable_unsupported = false;
 		return 0;
 	}
 
@@ -60,6 +66,9 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 		media_jack->cable_db_idx             = indexer;
 		return 0;
 	}
+
+	media_jack->is_cable_unsupported = true;
+	sl_media_log_dbg(media_jack, LOG_NAME, "validate not found");
 
 	return -ENOENT;
 }

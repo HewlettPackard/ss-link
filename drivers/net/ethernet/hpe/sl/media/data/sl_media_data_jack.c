@@ -118,15 +118,19 @@ void sl_media_data_cable_serdes_settings_clr(struct sl_media_jack *media_jack)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "serdes settings clr");
 
+	spin_lock(&media_jack->data_lock);
 	memset(&(media_jack->serdes_settings), 0, sizeof(struct sl_media_serdes_settings));
+	spin_unlock(&media_jack->data_lock);
 }
 
 void sl_media_data_jack_eeprom_clr(struct sl_media_jack *media_jack)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "eeprom clr");
 
+	spin_lock(&media_jack->data_lock);
 	memset(media_jack->eeprom_page0, 0, SL_MEDIA_EEPROM_PAGE_SIZE);
 	memset(media_jack->eeprom_page1, 0, SL_MEDIA_EEPROM_PAGE_SIZE);
+	spin_unlock(&media_jack->data_lock);
 }
 
 int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
@@ -185,6 +189,24 @@ void sl_media_data_jack_media_attr_clr(struct sl_media_jack *media_jack,
 		if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_REMOVED)
 			sl_media_data_jack_cable_if_not_present_send(media_lgrp);
 	}
+}
+
+void sl_media_data_jack_data_clr(struct sl_media_jack *media_jack)
+{
+	sl_media_log_dbg(media_jack, LOG_NAME, "jack data clr");
+
+	spin_lock(&media_jack->data_lock);
+
+	media_jack->temperature_value_c         = -1;
+	media_jack->temperature_down_limit_c    = -1;
+	media_jack->temperature_warn_limit_c    = -1;
+	media_jack->state                       = SL_MEDIA_JACK_CABLE_REMOVED;
+	media_jack->is_cable_unsupported        = false;
+	media_jack->is_cable_format_unsupported = false;
+	media_jack->is_supported_ss200_cable    = false;
+	media_jack->is_high_powered             = false;
+
+	spin_unlock(&media_jack->data_lock);
 }
 
 bool sl_media_data_jack_media_is_format_cmis(struct sl_media_jack *media_jack)
