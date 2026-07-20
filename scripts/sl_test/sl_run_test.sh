@@ -40,11 +40,13 @@ function resolve_test_entry_by_id {
 function resolve_test_entry {
 	local registry=$1
 	local profile=$2
-	local id=$3
+        local test_ref=$3
 
-	jq -c --arg profile "${profile}" --argjson id "${id}" \
-		'.[] | select(.id == $id) | {id, file, tags, requires, parameters: .scale[$profile]}' \
-		"${registry}"
+        if [[ "${test_ref}" =~ ^[0-9]+$ ]]; then
+                resolve_test_entry_by_id "${registry}" "${profile}" "${test_ref}"
+        else
+                resolve_test_entry_by_file "${registry}" "${profile}" "${test_ref}"
+        fi
 }
 
 function exec_test {
@@ -141,6 +143,7 @@ function exec_test_by_names {
         local registry=$2
         local profile
         local test_desc
+        local test_ref
         local test_file
         local names
         local name
@@ -152,11 +155,12 @@ function exec_test_by_names {
         for name in "${names[@]}"; do
                 sl_test_debug_log "${FUNCNAME}" "(name = ${name})"
 
-                while read -r test_file; do
-                        if [[ "${test_file}" == *"${name}"* ]]; then
-                                test_desc=$(resolve_test_entry_by_file "${registry}" "${profile}" "${test_file}")
-                                [[ -z "${test_desc}" ]] && continue
+                while read -r test_ref; do
+                        test_desc=$(resolve_test_entry "${registry}" "${profile}" "${test_ref}")
+                        [[ -z "${test_desc}" ]] && continue
 
+                        test_file=$(jq -r '.file' <<< "${test_desc}")
+                        if [[ "${test_file}" == *"${name}"* ]]; then
                                 exec_test "${test_desc}"
                                 rtn=$?
                                 if [[ "${rtn}" != 0 ]]; then
@@ -176,15 +180,15 @@ function exec_all_tests_registry {
         local registry=$2
         local profile
         local tag_filter=$3
-        local test_file
+        local test_ref
         local test_desc
 
         profile=$(jq -r '.profile' "${manifest}")
 
-        while read -r test_file; do
-                test_desc=$(resolve_test_entry_by_file "${registry}" "${profile}" "${test_file}")
+        while read -r test_ref; do
+                test_desc=$(resolve_test_entry "${registry}" "${profile}" "${test_ref}")
                 if [[ -z "${test_desc}" ]]; then
-                        sl_test_error_log "${FUNCNAME}" "file ${test_file} not found in registry"
+                        sl_test_error_log "${FUNCNAME}" "test ${test_ref} not found in registry"
                         return 1
                 fi
 
