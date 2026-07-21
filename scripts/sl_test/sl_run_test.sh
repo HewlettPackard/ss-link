@@ -11,6 +11,11 @@ source "${SCRIPT_DIR}/sl_test_env.sh"
 passed=0
 failed=0
 
+# Set log level to debug if we are on a continuous-test system.
+if [[ $(hostname) == *"ct"* ]]; then
+	SL_TEST_LOG_LEVEL=3
+fi
+
 SL_TEST_REGISTRY=${SL_TEST_DIR}/systems/manifests/registry.json
 
 # Resolve a test entry from registry by filename, applying the manifest's profile
