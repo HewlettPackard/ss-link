@@ -111,11 +111,9 @@ for flavor in %flavors_to_build; do
     install -D $PWD/obj/$flavor/drivers/net/ethernet/hpe/sl/Module.symvers  $RPM_BUILD_ROOT/%{prefix}/src/sl/$flavor/Module.symvers
 done
 
-%if 0%{?rhel}
-# Centos/Rocky/RHEL does not exclude the depmod-generated modules.* files from
+# Centos/Rocky/RHEL/SUSE does not exclude the depmod-generated modules.* files from
 # the RPM, causing file conflicts when updating
 find $RPM_BUILD_ROOT -iname 'modules.*' -exec rm {} \;
-%endif
 
 # DKMS bits
 dkms_source_dir=%{dkms_source_tree}/%{name}-%{version}-%{release}
