@@ -256,72 +256,95 @@ sl_run_test.sh --all
 
 ### Running Individual Tests
 
-Individual tests can be run in a few different ways.
+The SL test runner supports selecting tests in multiple ways.
 
-1. Run [by test id](#by-test-id)
-2. Run [by test name](#by-test-name)
-3. Run test script [directly](#directly).
+1. Run [all tests](#run-all-tests-from-a-manifest)
+2. Run [by test id](#by-test-id)
+3. Run [by test name](#by-test-name)
+4. Run [by tags](#by-tags)
+5. Run test script [directly](#directly).
 
-Running a test by the ID or the name provides the advantage of supplying the test
-arguments for you. However, you may wish to run a test directly. All tests are
-added to the `PATH` variable and can be directly executed.
+The runner resolves test metadata from `registry.json` and applies scale-specific
+parameters using the manifest profile (for example `quick` or `full`).
 
-#### Get List of all Tests
+#### Common Runner Options
 
-Run all tests defined in the manifest.
+- `--all` Select all tests in the manifest.
+- `--id "<space-separated-ids>"` Select by one or more test IDs.
+- `--name "<space-separated-names>"` Select by partial or full script name.
+- `--tags "tag1,tag2"` Select tests that contain all listed tags.
+- `--brief` Print brief test descriptions without running tests.
+- `--list` Print a table: ID, file, tags, requires.
+- `--manifest <path/to/manifest.json>` Use a non-default manifest.
 
-- `--all` Select all tests.
-- `--brief` Get brief test information (will not execute test).
+#### Run All Tests from a Manifest
 
 ```sh
+# Run all tests from the default manifest (quick.json)
+sl_run_test.sh --all
+
+# Run all tests from a custom manifest
+sl_run_test.sh --all --manifest /usr/bin/sl_test_scripts/systems/manifests/full.json
+```
+
+#### List Tests and Briefs
+
+```sh
+# List tests with id, file, tags, and requirements
+sl_run_test.sh --list
+
+# Brief output for all tests in the selected manifest
 sl_run_test.sh --all --brief
+
+# Brief output for selected IDs
+sl_run_test.sh --id "0 10 11" --brief
 ```
 
 #### By Test ID
 
-Run test by a unique ID, or by specifying a space delimited list of IDs.
-
-##### Single ID
+Run by unique ID, or by a space-delimited list of IDs.
 
 ```sh
-# Run the initialization test
-sl_run_test.sh --id 0
-```
+# Run one test by ID
+sl_run_test.sh --id "0"
 
-##### Multiple IDs
-
-```sh
-# Run the initialization test
-sl_run_test.sh --id "0 1"
+# Run multiple tests by ID
+sl_run_test.sh --id "0 1 2"
 ```
 
 #### By Test Name
 
-Run the test using the test name. This can also be a space delimited list of names.
-
-##### Single Name
+Run by test filename, or by a substring of the filename.
 
 ```sh
-# Run the initialization test
+# Run one test by exact name
 sl_run_test.sh --name "sl_run_init.sh"
+
+# Run all tests with "sl_run_link" in the filename
+sl_run_test.sh --name "sl_run_link"
+
+# Run multiple name filters
+sl_run_test.sh --name "sl_run_init.sh sl_run_link_policy_fec_on.sh"
 ```
 
-##### Multiple Names
+#### By Tags
 
-The test name must only be contained in the file name. So...
-
-1. `sl_run_init` will match `sl_run_init.sh`.
-1. `sl_run_link` will match all tests with string such as
-`sl_run_link_policy_fec_on` or `sl_run_link_policy_fec_calc`
+Tags are defined per test in `registry.json`. Use comma-separated tags.
 
 ```sh
-# Run the initialization test
-sl_run_test.sh --name "sl_run_init.sh sl_run_link_policy_fec_on.sh"
+# Run all tests tagged cabled
+sl_run_test.sh --tags "cabled"
+
+# Run tests that contain both tags
+sl_run_test.sh --tags "link-up,notif"
+
+# Print briefs only for tagged tests
+sl_run_test.sh --tags "policy,fec" --brief
 ```
 
 #### Directly
 
-Run the test directly by invoking the script and bypassing the `sl_run_test` runner.
+Run a test script directly (bypasses the runner and manifest/registry parameter resolution).
 
 ```sh
 sl_run_init.sh
@@ -524,27 +547,62 @@ sent to the log
 | info      | Execution step a test is running. Any info needed for test log output other than failure. |
 | debug     | Developer messages to assist in debugging test behavior.                                  |
 
-### Adding Tests to the Manifest
+### Test Registry and Manifests
 
-The manifest file located in `${SL_TEST_DIR}/systems/manifests/` provides a
-list of tests to run. Each test is defined by the following JSON snippet
+The SL test framework now separates test metadata from test selection:
+
+1. `registry.json` defines each test (id, file, tags, requirements, brief, and scale).
+1. Manifest files (`quick.json`, `full.json`, custom manifests) define run order and profile.
+
+The runner reads each manifest test entry, resolves it from the registry, and applies
+the selected profile from the manifest (`quick` or `full`) to select `lgrp_nums` and
+`arguments`.
+
+#### Registry Format
+
+Registry entries live in `${SL_TEST_DIR}/systems/manifests/registry.json`.
 
 ```json
 {
-        "id": <num>,
-        "file": <script_name.sh>,
-        "parameters": {
-                "arguments": ""
-        }
+        "id": 10,
+        "file": "sl_run_link_up_autoneg_cabled.sh",
+        "tags": ["link-up", "notif", "autoneg"],
+        "requires": ["cabled"],
+        "scale": {
+                "quick": {
+                        "lgrp_nums": "",
+                        "arguments": "-m 1"
+                },
+                "full": {
+                        "lgrp_nums": "",
+                        "arguments": "-m 32"
+                }
+        },
+        "brief": "Test link-up notification is received when cabled links are commanded up with autoneg enabled."
 }
 ```
 
-| Name | Value | Type |
-|--- |--- |--- |
-| id | Unique test identification | integer |
-| file | Name of test file including extension | string |
-| parameters | Test parameters | json object |
-| arguments | Arguments to pass to the test file | string |
+#### Manifest Format
+
+Manifest files live in `${SL_TEST_DIR}/systems/manifests/`.
+
+```json
+{
+        "profile": "quick",
+        "tests": [0, 1, 2, 10, 11, 9]
+}
+```
+
+Manifest `tests` entries can be either:
+
+1. integer IDs that reference `registry.json` test IDs
+1. strings that reference `registry.json` test filenames
+
+#### Adding a New Test
+
+1. Add a new entry to `registry.json` with `id`, `file`, `tags`, `requires`, `scale`, and `brief`.
+1. Add the new test ID (or filename) to one or more manifests.
+1. Select the manifest profile (`quick` or `full`) based on desired scale arguments.
 
 ### Environment Variables
 
