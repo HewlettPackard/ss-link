@@ -1,0 +1,1424 @@
+[
+  {
+    "id": 0,
+    "file": "sl_run_init.sh",
+    "tags": [],
+    "requires": [],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": ""
+      }
+    },
+    "brief": "Initialize sl-test"
+  },
+  {
+    "id": 1,
+    "file": "sl_run_link_policy_fec_on.sh",
+    "tags": [
+      "policy",
+      "fec"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Verify the FEC monitor policy matches the explicit link FEC policy for bs200"
+  },
+  {
+    "id": 2,
+    "file": "sl_run_link_policy_fec_calc.sh",
+    "tags": [
+      "policy",
+      "fec"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Verify the FEC monitor policy matches the calculated link policy for bs200"
+  },
+  {
+    "id": 3,
+    "file": "sl_run_link_policy_fec_calc_ck400.sh",
+    "tags": [
+      "policy",
+      "fec"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Verify the FEC monitor policy matches the calculated link policy for ck400"
+  },
+  {
+    "id": 4,
+    "file": "sl_run_link_ucw_down.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "fec"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Test the FEC UCW limit during link up check exceeds and sends a link-up-fail notification with reason."
+  },
+  {
+    "id": 5,
+    "file": "sl_run_link_up_cabled.sh",
+    "tags": [
+      "link-up",
+      "notif"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received when cabled links are commanded up."
+  },
+  {
+    "id": 6,
+    "file": "sl_run_link_last_down_cause_match.sh",
+    "tags": [
+      "link-down",
+      "notif",
+      "fec"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Test the FEC UCW limit during link up check exceeds and sends a link-up-fail notification with cause matching last down cause in sysfs."
+  },
+  {
+    "id": 7,
+    "file": "sl_run_link_last_down_cause_command.sh",
+    "tags": [
+      "link-down",
+      "notif"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Test the link-down notification is sent and the last_down_cause is set to command in sysfs."
+  },
+  {
+    "id": 8,
+    "file": "sl_run_link_up_cancel.sh",
+    "tags": [
+      "link-up",
+      "link-down",
+      "notif",
+      "cancel"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Test the link down during state starting will send both a link-up-fail and link down notification. Check all causes."
+  },
+  {
+    "id": 9,
+    "file": "sl_run_remove.sh",
+    "tags": [],
+    "requires": [],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": ""
+      }
+    },
+    "brief": "Remove sl-test"
+  },
+  {
+    "id": 10,
+    "file": "sl_run_link_up_autoneg_cabled.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received when cabled links are commanded up with autoneg enabled."
+  },
+  {
+    "id": 11,
+    "file": "sl_run_link_up_timeout_autoneg_cabled.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg",
+      "timeout"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up-fail notification is received when cabled links are commanded up with autoneg enabled, but timeout early."
+  },
+  {
+    "id": 12,
+    "file": "sl_run_link_up_timeout.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "timeout",
+      "thrash"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": ""
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": ""
+      }
+    },
+    "brief": "Verify link will timeout when sweeping different timeout intervals."
+  },
+  {
+    "id": 13,
+    "file": "sl_run_link_up_thrash.sh",
+    "tags": [
+      "link-up",
+      "link-down",
+      "notif",
+      "thrash"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "0",
+        "arguments": "-c 10"
+      },
+      "full": {
+        "lgrp_nums": "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63",
+        "arguments": "-c 100"
+      }
+    },
+    "brief": "Verify link will cycle up and down."
+  },
+  {
+    "id": 14,
+    "file": "sl_run_link_up_thrash_cabled.sh",
+    "tags": [
+      "link-up",
+      "link-down",
+      "notif",
+      "thrash"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1 -c 10"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32 -c 100"
+      }
+    },
+    "brief": "Verify link will cycle up and down."
+  },
+  {
+    "id": 15,
+    "file": "sl_run_link_up_llr.sh",
+    "tags": [
+      "link-up",
+      "llr",
+      "sysfs"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test the link-up with MAC running & LLR running"
+  },
+  {
+    "id": 16,
+    "file": "sl_run_link_up_llr_thrash.sh",
+    "tags": [
+      "link-up",
+      "llr",
+      "notif",
+      "thrash"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1 -c 10"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32 -c 100"
+      }
+    },
+    "brief": "Test the link-up with MAC running & LLR running"
+  },
+  {
+    "id": 17,
+    "file": "sl_run_link_up_sweep_down_cabled.sh",
+    "tags": [
+      "link-up",
+      "link-down",
+      "notif",
+      "thrash"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Verify link down can be issued at different intervals during link up sequence using wrap back cables."
+  },
+  {
+    "id": 18,
+    "file": "sl_run_link_up_loopback_host.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "loopback"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      }
+    },
+    "brief": "Test link-up notification is received when cabled links are commanded up with loopback host enabled for the transceiver."
+  },
+  {
+    "id": 19,
+    "file": "sl_run_media_present_cabled.sh",
+    "tags": [
+      "media",
+      "notif"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test media-present notification is received for cabled links after registration."
+  },
+  {
+    "id": 20,
+    "file": "sl_run_link_up_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck100g tech mode."
+  },
+  {
+    "id": 21,
+    "file": "sl_run_link_up_ck200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck200g tech mode."
+  },
+  {
+    "id": 22,
+    "file": "sl_run_link_up_cd100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for cd100g tech mode."
+  },
+  {
+    "id": 23,
+    "file": "sl_run_link_up_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for cd50g tech mode."
+  },
+  {
+    "id": 24,
+    "file": "sl_run_link_up_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for bj100g tech mode."
+  },
+  {
+    "id": 25,
+    "file": "sl_run_link_up_bs200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for bs200g tech mode."
+  },
+  {
+    "id": 26,
+    "file": "sl_run_link_up_ck400.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode"
+    ],
+    "requires": [
+      "loopback"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck400g tech mode."
+  },
+  {
+    "id": 27,
+    "file": "sl_run_autoneg_bj100_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bj100 and cd50 enabled (should select bj100g)."
+  },
+  {
+    "id": 28,
+    "file": "sl_run_autoneg_bj100_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bj100 and ck100 enabled (should select bj100g)."
+  },
+  {
+    "id": 29,
+    "file": "sl_run_autoneg_bj100_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bj100 only enabled (should select bj100g)."
+  },
+  {
+    "id": 30,
+    "file": "sl_run_autoneg_bs200_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 and bj100 enabled (should select bs200g)."
+  },
+  {
+    "id": 31,
+    "file": "sl_run_autoneg_bs200_cd100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 and cd100 enabled (should select bs200g)."
+  },
+  {
+    "id": 32,
+    "file": "sl_run_autoneg_bs200_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 and cd50 enabled (should select bs200g)."
+  },
+  {
+    "id": 33,
+    "file": "sl_run_autoneg_bs200_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 and ck100 enabled (should select bs200g)."
+  },
+  {
+    "id": 34,
+    "file": "sl_run_autoneg_bs200_ck200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 and ck200 enabled (should select bs200g)."
+  },
+  {
+    "id": 35,
+    "file": "sl_run_autoneg_bs200_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: bs200 only enabled (should select bs200g)."
+  },
+  {
+    "id": 36,
+    "file": "sl_run_autoneg_cd100_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: cd100 and bj100 enabled (should select cd100g)."
+  },
+  {
+    "id": 37,
+    "file": "sl_run_autoneg_cd100_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: cd100 and cd50 enabled (should select cd100g)."
+  },
+  {
+    "id": 38,
+    "file": "sl_run_autoneg_cd100_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: cd100 and ck100 enabled (should select cd100g)."
+  },
+  {
+    "id": 39,
+    "file": "sl_run_autoneg_cd100_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: cd100 only enabled (should select cd100)."
+  },
+  {
+    "id": 40,
+    "file": "sl_run_autoneg_cd50_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: cd50 only enabled (should select cd50)."
+  },
+  {
+    "id": 41,
+    "file": "sl_run_autoneg_ck100_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck100 and cd50 enabled (should select ck100g)."
+  },
+  {
+    "id": 42,
+    "file": "sl_run_autoneg_ck100_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck100 only enabled (should select ck100)."
+  },
+  {
+    "id": 43,
+    "file": "sl_run_autoneg_ck200_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck200 and bj100 enabled (should select ck200g)."
+  },
+  {
+    "id": 44,
+    "file": "sl_run_autoneg_ck200_cd100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck200 and cd100 enabled (should select ck200g)."
+  },
+  {
+    "id": 45,
+    "file": "sl_run_autoneg_ck200_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck200 and cd50 enabled (should select ck200g)."
+  },
+  {
+    "id": 46,
+    "file": "sl_run_autoneg_ck200_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck200 and ck100 enabled (should select ck200g)."
+  },
+  {
+    "id": 47,
+    "file": "sl_run_autoneg_ck200_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck200 only enabled (should select ck200g)."
+  },
+  {
+    "id": 48,
+    "file": "sl_run_autoneg_ck400_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and bj100 enabled (should select ck400g)."
+  },
+  {
+    "id": 49,
+    "file": "sl_run_autoneg_ck400_bs200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and bs200 enabled (should select ck400g)."
+  },
+  {
+    "id": 50,
+    "file": "sl_run_autoneg_ck400_cd100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and cd100 enabled (should select ck400g)."
+  },
+  {
+    "id": 51,
+    "file": "sl_run_autoneg_ck400_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and cd50 enabled (should select ck400g)."
+  },
+  {
+    "id": 52,
+    "file": "sl_run_autoneg_ck400_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and ck100 enabled (should select ck400g)."
+  },
+  {
+    "id": 53,
+    "file": "sl_run_autoneg_ck400_ck200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 and ck200 enabled (should select ck400g)."
+  },
+  {
+    "id": 54,
+    "file": "sl_run_autoneg_ck400_only.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "autoneg"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test auto-negotiation selects fastest speed: ck400 only enabled (should select ck400g)."
+  },
+  {
+    "id": 55,
+    "file": "sl_run_link_up_ck100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck100g tech mode."
+  },
+  {
+    "id": 56,
+    "file": "sl_run_link_up_ck200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck200g tech mode."
+  },
+  {
+    "id": 57,
+    "file": "sl_run_link_up_cd100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for cd100g tech mode."
+  },
+  {
+    "id": 58,
+    "file": "sl_run_link_up_cd50.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for cd50g tech mode."
+  },
+  {
+    "id": 59,
+    "file": "sl_run_link_up_bj100.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for bj100g tech mode."
+  },
+  {
+    "id": 60,
+    "file": "sl_run_link_up_bs200.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for bs200g tech mode."
+  },
+  {
+    "id": 61,
+    "file": "sl_run_link_up_ck400.sh",
+    "tags": [
+      "link-up",
+      "notif",
+      "tech-mode",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-c true -m 32"
+      }
+    },
+    "brief": "Test link-up notification is received for ck400g tech mode."
+  }
+]
