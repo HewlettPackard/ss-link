@@ -9,7 +9,7 @@ brief="Test link-up notification is received for cd50g tech mode."
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
 LINK_NOTIF_TIMEOUT=275000 # Timeout in milliseconds
-serdes_loopback=1
+loopback_serdes=1
 hpe_map_linktrain_set=0
 cabled=false
 settings="${SL_TEST_DIR}/systems/settings/cd50_x1.sh"
@@ -195,12 +195,12 @@ done
 case "${cabled,,}" in
 	true|1|yes)
 		cabled=true
-		serdes_loopback=0
+		loopback_serdes=0
 		hpe_map_linktrain_set=1
 		;;
 	false|0|no)
 		cabled=false
-		serdes_loopback=1
+		loopback_serdes=1
 		hpe_map_linktrain_set=0
 		;;
 	*)

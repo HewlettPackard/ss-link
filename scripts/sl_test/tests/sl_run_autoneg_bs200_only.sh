@@ -4,15 +4,25 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-brief="Test link-up notification is received for ck200g tech mode."
+brief="Test auto-negotiation selects fastest speed: bs200 only enabled (should select bs200g)."
 
 source "${SL_TEST_DIR}/sl_test_env.sh"
 
+settings="${SL_TEST_DIR}/systems/settings/bs200_x1.sh"
+autoneg=1
+hpe_map_linktrain_set=1
+
 LINK_NOTIF_TIMEOUT=275000 # Timeout in milliseconds
-loopback_serdes=1
-hpe_map_linktrain_set=0
-cabled=false
-settings="${SL_TEST_DIR}/systems/settings/ck200_x1.sh"
+expected_speed="bs200g"
+
+# Tech map for auto-negotiation
+tech_map_ck400g_set=0
+tech_map_bs200g_set=1
+tech_map_ck200g_set=0
+tech_map_cd100g_set=0
+tech_map_bj100g_set=0
+tech_map_ck100g_set=0
+tech_map_cd50g_set=0
 
 ldev_num=0
 lgrp_nums=(23 54)
@@ -32,9 +42,51 @@ function test_cleanup {
 
 function test_verify {
 	local data=$1
-	
-	sl_test_notif_verify_per_link ${ldev_num} "${lgrp_nums[*]}" "${data}" "link-up" 7 "ck200G"
-	return $?
+	local lgrp_sysfs
+	local port
+	local link_num
+	local actual_speed
+	local rtn
+
+	__sl_test_lgrp_sysfs_parent_set ${ldev_num} lgrp_sysfs
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "lgrp_sysfs_parent_set failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	# Verify link-up notifications received
+	sl_test_notif_verify_per_link ${ldev_num} "${lgrp_nums[*]}" "${data}" "link-up"
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		return ${rtn}
+	fi
+
+	# Read actual negotiated speeds from sysfs
+	for lgrp in "${lgrp_nums[@]}"; do
+		for link_num in {0..3}; do
+			local link_path="${lgrp_sysfs}/${lgrp}/port/${link_num}/link"
+			if [[ ! -f "${link_path}/speed" ]]; then
+				continue
+			fi
+
+			actual_speed=$(cat "${link_path}/speed")
+			rtn=$?
+			if [[ "${rtn}" != 0 ]]; then
+				sl_test_error_log "${FUNCNAME}" "Failed to read speed for lgrp ${lgrp} link ${link_num}"
+				return ${rtn}
+			fi
+
+			sl_test_info_log "${FUNCNAME}" "lgrp ${lgrp} link ${link_num}: expected_speed=${expected_speed}, actual_speed=${actual_speed}"
+
+			if [[ "${actual_speed}" != "${expected_speed}" ]]; then
+				sl_test_error_log "${FUNCNAME}" "Speed mismatch for lgrp ${lgrp} link ${link_num}: expected ${expected_speed}, got ${actual_speed}"
+				return 1
+			fi
+		done
+	done
+
+	return 0
 }
 
 function main {
@@ -53,12 +105,12 @@ function main {
 	fi
 
 	sl_test_info_log "${FUNCNAME}" \
-		"lgrp_setup (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), settings = ${settings})"
+		"lgrp_setup (ldev_num = ${ldev_num}, lgrp_nums = (${lgrp_nums[*]}), tech_map_bs200g=${tech_map_bs200g_set})"
 
 	sl_test_lgrp_setup ${ldev_num} "${lgrp_nums[*]}" ${settings}
 	rtn=$?
 	if [[ "${rtn}" != 0 ]]; then
-		sl_test_error_log "${FUNCNAME}" "link_setup failed [${rtn}]"
+		sl_test_error_log "${FUNCNAME}" "lgrp_setup failed [${rtn}]"
 		return ${rtn}
 	fi
 
@@ -71,8 +123,7 @@ function main {
 		return ${rtn}
 	fi
 
-	# Give time for any media-present notifications to arrive. Link groups may or may not receive this notification.
-	# Either way the notification queue must be empty before continuing.
+	# Give time for any media-present notifications to arrive
 	sleep 1
 
 	sl_test_lgrp_notifs_remove ${ldev_num} "${lgrp_nums[*]}"
@@ -129,20 +180,19 @@ function main {
 
 SCRIPT_NAME=$(basename $0)
 
-usage="Usage: ${SCRIPT_NAME} [-h | --help] [-m | --max_num_media] [-b | --brief] [-g | --lgrp_nums] [-c | --cabled true|false]"
-description=$(cat <<-EOF
+usage="Usage: ${SCRIPT_NAME} [-h | --help] [-m | --max_num_media] [-b | --brief] [-g | --lgrp_nums]"
+description=$(cat <<-DESCEOF
 	${brief}
 
 Options:
 -b, --brief         Brief test description.
--m, --max_num_media Number of link groups to test. Uses wrap-back cable discovery when cabled=true.
+-m, --max_num_media Number of link group connections to automatically discover.
 -g, --lgrp_nums     Link group numbers to test.
--c, --cabled        Whether cabled mode is enabled (true|false).
 -h, --help          This message.
-EOF
+DESCEOF
 )
 
-options=$(getopt -o "hm:g:bc:" --long "help,max_num_media:,lgrp_nums:,brief,cabled:" -- "$@")
+options=$(getopt -o "hm:g:b" --long "help,max_num_media:,lgrp_nums:,brief" -- "$@")
 
 if [ "$?" != 0 ]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
@@ -153,10 +203,6 @@ fi
 
 eval set -- "${options}"
 
-max_num_media=""
-lgrp_nums_arg=""
-lgrp_select_source=""
-
 while true; do
 	case "$1" in
 		-h | --help)
@@ -165,75 +211,24 @@ while true; do
 			exit 0
 			;;
 		-m | --max_num_media)
-			max_num_media=${2}
-			lgrp_select_source="max_num_media"
+			__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "all" ${2}
+			lgrp_nums=(${tmp_lgrp_nums//;/ })
 			shift 2
 			;;
 		-g | --lgrp_nums)
-			lgrp_nums_arg=${2}
-			lgrp_select_source="lgrp_nums"
-			shift 2
-			;;
-		-c | --cabled)
-			cabled=${2}
+			lgrp_nums=(${2})
 			shift 2
 			;;
 		-b | --brief)
-			echo ${brief}
+			echo "${brief}"
 			exit 0
 			;;
-		-- )
-			shift
-			break
-			;;
-		* )
-			break
-			;;
+		-- ) shift; break ;;
+		* ) break ;;
 	esac
 done
 
-case "${cabled,,}" in
-	true|1|yes)
-		cabled=true
-		loopback_serdes=0
-		hpe_map_linktrain_set=1
-		;;
-	false|0|no)
-		cabled=false
-		loopback_serdes=1
-		hpe_map_linktrain_set=0
-		;;
-	*)
-		sl_test_error_log "${SCRIPT_NAME}" "Invalid --cabled value '${cabled}'. Use true or false."
-		echo "${usage}"
-		echo "${description}"
-		exit 1
-		;;
-esac
-
-if [[ "${lgrp_select_source}" == "max_num_media" ]]; then
-	if [[ "${cabled}" == true ]]; then
-		__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "all" ${max_num_media}
-		lgrp_nums=(${tmp_lgrp_nums//;/ })
-	else
-		tmp_lgrp_nums=()
-		for ((lgrp_num=0; lgrp_num<${max_num_media} && lgrp_num<=${SL_TEST_LGRP_NUM_END}; lgrp_num++)); do
-			tmp_lgrp_nums+=(${lgrp_num})
-		done
-		lgrp_nums=(${tmp_lgrp_nums[*]})
-	fi
-elif [[ "${lgrp_select_source}" == "lgrp_nums" ]]; then
-	lgrp_nums=(${lgrp_nums_arg})
-fi
-
-if [[ "$#" != 0 ]]; then
-	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
-	echo "${usage}"
-	echo "${description}"
-	exit 1
-fi
-
-if [[ "${#lgrp_nums}" -le "0" ]]; then
+if [[ "${#lgrp_nums[@]}" == 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "No lgrps to test"
 	exit 1
 fi
