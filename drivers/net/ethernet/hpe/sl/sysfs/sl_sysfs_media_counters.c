@@ -188,25 +188,6 @@ static ssize_t cause_scan_status_get_show(struct kobject *kobj, struct kobj_attr
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_scan_hdl_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u32                   counter;
-	u32                   rtn;
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
-
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SCAN_HDL_GET, &counter);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause scan hdl get show (counter = %u)", counter);
-
-	return sysfs_emit(buf, "%u\n", counter);
-}
-
 static ssize_t cause_scan_jack_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -477,7 +458,6 @@ static struct kobj_attribute media_cause_online_jack_io                    = __A
 static struct kobj_attribute media_cause_online_jack_get                   = __ATTR_RO(cause_online_jack_get);
 static struct kobj_attribute media_cause_serdes_settings_get               = __ATTR_RO(cause_serdes_settings_get);
 static struct kobj_attribute media_cause_scan_status_get                   = __ATTR_RO(cause_scan_status_get);
-static struct kobj_attribute media_cause_scan_hdl_get                      = __ATTR_RO(cause_scan_hdl_get);
 static struct kobj_attribute media_cause_scan_jack_get                     = __ATTR_RO(cause_scan_jack_get);
 static struct kobj_attribute media_cause_media_attr_set                    = __ATTR_RO(cause_media_attr_set);
 static struct kobj_attribute media_cause_high_power_set_jack_io            = __ATTR_RO(cause_high_power_set_jack_io);
@@ -507,7 +487,6 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_online_jack_get.attr,
 	&media_cause_serdes_settings_get.attr,
 	&media_cause_scan_status_get.attr,
-	&media_cause_scan_hdl_get.attr,
 	&media_cause_scan_jack_get.attr,
 	&media_cause_media_attr_set.attr,
 	&media_cause_high_power_set_jack_io.attr,

@@ -227,7 +227,7 @@ struct sl_media_jack {
 
 	void                              *hdl;
 	u8                                 port_count;
-	u16                                asic_port[4];
+	u16                                asic_port[SL_MEDIA_MAX_LGRPS_PER_JACK];
 	u32                                status;
 
 	int                                temperature_value_c;
@@ -249,20 +249,19 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET                   BIT(6)
 #define SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET               BIT(7)
 #define SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET                   BIT(8)
-#define SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET                      BIT(9)
-#define SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET                     BIT(10)
-#define SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET                    BIT(11)
-#define SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO            BIT(13)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO                BIT(14)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET  BIT(15)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET BIT(16)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO                  BIT(17)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET    BIT(18)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET   BIT(19)
-#define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(20)
-#define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(21)
-#define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(22)
-#define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(23)
+#define SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET                     BIT(9)
+#define SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET                    BIT(10)
+#define SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO            BIT(11)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO                BIT(12)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET  BIT(13)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET BIT(14)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO                  BIT(15)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET    BIT(16)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET   BIT(17)
+#define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(18)
+#define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(19)
+#define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(20)
+#define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(21)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);

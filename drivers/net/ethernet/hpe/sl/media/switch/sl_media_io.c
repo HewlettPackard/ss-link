@@ -91,7 +91,9 @@ void sl_media_io_led_set(struct sl_media_jack *media_jack, u8 led_pattern)
 {
 	struct xcvr_led_data led_data;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "io led set (pattern = %u)", led_pattern);
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "media_io_led_set (pattern = %u, physical_num = %d, hdl = 0x%p)",
+			 led_pattern, media_jack->physical_num, media_jack->hdl);
 
 	led_data.led_pattern = led_pattern;
 

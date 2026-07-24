@@ -19,7 +19,6 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_ONLINE_JACK_GET,                   /* media online jack get error                   */
 	MEDIA_CAUSE_SERDES_SETTINGS_GET,               /* media serdes settings get error               */
 	MEDIA_CAUSE_SCAN_STATUS_GET,                   /* media scan status get error                   */
-	MEDIA_CAUSE_SCAN_HDL_GET,                      /* media scan hdl get error                      */
 	MEDIA_CAUSE_SCAN_JACK_GET,                     /* media scan jack get error                     */
 	MEDIA_CAUSE_MEDIA_ATTR_SET,                    /* media attribute set error                     */
 	MEDIA_CAUSE_HIGH_POWER_SET_JACK_IO,            /* media high power set error                    */

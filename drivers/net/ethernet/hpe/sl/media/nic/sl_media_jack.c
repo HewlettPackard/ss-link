@@ -218,6 +218,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+		sl_media_data_jack_led_set(media_jack);
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET);
 		sl_media_data_jack_cable_attr_send(media_jack);
 		return 0;
@@ -228,6 +229,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable soft reset failed [%d]", rtn);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			sl_media_data_jack_led_set(media_jack);
 			sl_media_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
 			sl_media_data_jack_cable_attr_send(media_jack);
 			return rtn;
@@ -238,6 +240,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "cable high power set failed [%d]", rtn);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+			sl_media_data_jack_led_set(media_jack);
 			sl_media_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
 			sl_media_data_jack_cable_attr_send(media_jack);
 			return 0;
@@ -263,6 +266,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 	}
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
+	sl_media_data_jack_led_set(media_jack);
 
 	sl_media_data_jack_cable_attr_send(media_jack);
 
@@ -289,6 +293,7 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 	sl_media_data_jack_eeprom_clr(media_jack);
 
 	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_REMOVED);
+	sl_media_data_jack_led_set(media_jack);
 
 	sl_media_jack_fault_cause_clr(media_jack);
 

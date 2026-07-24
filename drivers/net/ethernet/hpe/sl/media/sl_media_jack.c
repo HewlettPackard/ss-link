@@ -69,8 +69,6 @@ void sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 jack_state)
 	spin_lock(&media_jack->data_lock);
 	media_jack->state = jack_state;
 	spin_unlock(&media_jack->data_lock);
-
-	sl_media_data_jack_led_set(media_jack);
 }
 
 int sl_media_jack_state_get(struct sl_media_jack *media_jack, u8 *state)
@@ -435,8 +433,6 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "serdes-settings-get";
 	case SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET:
 		return "scan-status-get";
-	case SL_MEDIA_FAULT_CAUSE_SCAN_HDL_GET:
-		return "scan-hdl-get";
 	case SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET:
 		return "scan-jack-get";
 	case SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET:
