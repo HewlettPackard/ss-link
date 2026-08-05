@@ -11,7 +11,7 @@ SL_MOD_DIR = sshot
 
 INSTALL_DIR := $(DESTDIR)
 STAGING_DIR := $(WORKSPACE)/staging_dir
-KNL_REL     := 5.10.35-amd64-slingshot
+KNL_REL     := 6.12.92-cip25-amd64-slingshot
 KDIR        := /lib/modules/$(KNL_REL)/build
 
 GIT_HASH := $(shell git rev-parse HEAD)

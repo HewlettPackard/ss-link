@@ -13,7 +13,7 @@ SL_MOD_DIR = sshot
 INSTALL_DIR := $(DESTDIR)
 STAGING_DIR := $(WORKSPACE)/staging_dir
 KDIR        := $(WORKSPACE)/hpc-hms_ec-linux-lsdk
-KNL_REL     := 5.10.35-ls64-slingshot
+KNL_REL     := 6.12.92-cip25-ls64-slingshot
 KNL_MOD_DIR := $(STAGING_DIR)/lib/modules/$(KNL_REL)
 KNL_SYM_DIR := $(KNL_MOD_DIR)
 

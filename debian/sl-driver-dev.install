@@ -1,6 +1,6 @@
-lib/modules/5.10.*/module.symvers.sl
-lib/modules/5.10.*/modules.builtin
-lib/modules/5.10.*/modules.order
+lib/modules/6.12.*/module.symvers.sl
+lib/modules/6.12.*/modules.builtin
+lib/modules/6.12.*/modules.order
 usr/include/linux/hpe/sl/sl.h
 usr/include/linux/hpe/sl/sl_ldev.h
 usr/include/linux/hpe/sl/sl_lgrp.h
