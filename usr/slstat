@@ -468,7 +468,7 @@ function print_llr_cause_counters {
         fi
 }
 
-function print_jack_cause_counters {
+function print_jack_counters {
         if [ ! -e ${LGRP_PATH}/media/counters ] ; then
                 return
         fi
@@ -484,9 +484,6 @@ function print_jack_cause_counters {
         local first=0
         printf "  counters |"
         for counter in "${sorted_files[@]}" ; do
-                if [[ $(basename "${counter}") != cause_* && $(basename "${counter}") != an_cause_* ]]; then
-                        continue
-                fi
                 val=$(cat ${counter})
                 if [[ $val == 0  && $option_flag != "all" ]] ; then
                         continue
@@ -1204,7 +1201,7 @@ case $option in
                 if [ ${num_args} -ge 3 ] ; then
                         print_header
                         print_jack_state
-                        print_jack_cause_counters
+                        print_jack_counters
                         print_link_state
                         print_link_counters
                         print_link_cause_counters

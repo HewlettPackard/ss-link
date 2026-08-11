@@ -84,7 +84,8 @@ enum sl_media_jack_temp_state {
 	SL_MEDIA_JACK_TEMP_STATE_COLD,
 	SL_MEDIA_JACK_TEMP_STATE_WARM,
 	SL_MEDIA_JACK_TEMP_STATE_HOT,
-	SL_MEDIA_JACK_TEMP_STATE_UNKNOWN,
+	SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_IO,
+	SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_SLOPE,
 };
 
 enum sl_media_jack_dp_state {
@@ -237,6 +238,7 @@ struct sl_media_jack {
 	u8                                 last_cable_insert_entry_num;
 	struct sl_media_cable_insert_entry last_cable_insert_entry[SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES];
 	struct sl_ctrl_media_counter      *cause_counters;
+	struct sl_ctrl_media_counter      *temp_state_counters;
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE                              0

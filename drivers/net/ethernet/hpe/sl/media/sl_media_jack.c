@@ -473,6 +473,10 @@ const char *sl_media_temp_state_str(u8 temperature_state)
 		return "warm";
 	case SL_MEDIA_JACK_TEMP_STATE_HOT:
 		return "hot";
+	case SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_IO:
+		return "unknown-io";
+	case SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_SLOPE:
+		return "unknown-slope";
 	default:
 		return "unknown";
 	}

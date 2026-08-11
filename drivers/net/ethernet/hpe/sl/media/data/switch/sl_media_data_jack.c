@@ -1689,7 +1689,7 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 			continue;
 		}
 
-		sl_media_data_jack_cable_temp_state_set(media_jack, SL_MEDIA_JACK_TEMP_STATE_UNKNOWN);
+		sl_media_data_jack_cable_temp_state_set(media_jack, curr_temp_state);
 	}
 
 	queue_delayed_work(media_ldev->workqueue, &media_ldev->delayed_work[SL_MEDIA_WORK_CABLE_MON_TEMP],
@@ -1756,7 +1756,7 @@ int sl_media_data_jack_cable_temp_hw_check(struct sl_media_jack *media_jack)
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "temp hw check temp_value_get failed [%d]", rtn);
 		media_jack->temperature_value_c = -1;
-		return SL_MEDIA_JACK_TEMP_STATE_UNKNOWN;
+		return SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_IO;
 	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -1774,7 +1774,7 @@ int sl_media_data_jack_cable_temp_hw_check(struct sl_media_jack *media_jack)
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				       "temperature hw check slope failure (temperature = %dc, previous = %dc, slope = %dc)",
 				       current_temp_c, prev_temp_c, TEMPERATURE_CELSIUS_SLOPE);
-		return SL_MEDIA_JACK_TEMP_STATE_UNKNOWN;
+		return SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_SLOPE;
 	}
 
 out:

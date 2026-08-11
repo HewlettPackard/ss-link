@@ -38,6 +38,7 @@ void sl_media_data_jack_del(u8 ldev_num, u8 jack_num)
 		return;
 	}
 
+	sl_ctrl_media_temp_state_counters_del(media_jack);
 	sl_ctrl_media_cause_counters_del(media_jack);
 
 	spin_lock(&media_jacks_lock);
@@ -72,6 +73,12 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	rtn = sl_ctrl_media_cause_counters_init(media_jack);
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "ctrl_media_cause_counters_init failed [%d]", rtn);
+		goto out;
+	}
+
+	rtn = sl_ctrl_media_temp_state_counters_init(media_jack);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "ctrl_media_temp_state_counters_init failed [%d]", rtn);
 		goto out;
 	}
 
@@ -262,6 +269,7 @@ void sl_media_data_jack_cable_temp_state_init(struct sl_media_jack *media_jack)
 	spin_lock(&media_jack->data_lock);
 	media_jack->temperature_prev_state = SL_MEDIA_JACK_TEMP_STATE_COLD;
 	media_jack->temperature_state = SL_MEDIA_JACK_TEMP_STATE_COLD;
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_COLD);
 	spin_unlock(&media_jack->data_lock);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state init (prev_state = %u, state = %u)",
@@ -274,6 +282,8 @@ void sl_media_data_jack_cable_temp_state_set(struct sl_media_jack *media_jack, u
 	media_jack->temperature_prev_state = media_jack->temperature_state;
 	media_jack->temperature_state = temperature_state;
 	spin_unlock(&media_jack->data_lock);
+
+	sl_ctrl_media_temp_state_counter_inc(media_jack, temperature_state);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "temperature state set (state = %u)", media_jack->temperature_state);
 }

@@ -14,6 +14,9 @@
 #define SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(_media, _counter) \
 	(_media)->cause_counters[_counter].name = #_counter
 
+#define SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(_media, _counter) \
+	(_media)->temp_state_counters[_counter].name = #_counter
+
 int sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack)
 {
 	sl_ctrl_log_dbg(media_jack, LOG_NAME, "media cause counters init");
@@ -48,6 +51,24 @@ int sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack)
 	return 0;
 }
 
+int sl_ctrl_media_temp_state_counters_init(struct sl_media_jack *media_jack)
+{
+	sl_ctrl_log_dbg(media_jack, LOG_NAME, "temp state counters init");
+
+	media_jack->temp_state_counters = kzalloc(sizeof(*media_jack->temp_state_counters) *
+						  SL_CTRL_MEDIA_TEMP_STATE_COUNTERS_COUNT, GFP_KERNEL);
+	if (!media_jack->temp_state_counters)
+		return -ENOMEM;
+
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(media_jack, MEDIA_TEMP_STATE_COLD);
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(media_jack, MEDIA_TEMP_STATE_WARM);
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(media_jack, MEDIA_TEMP_STATE_HOT);
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(media_jack, MEDIA_TEMP_STATE_UNKNOWN_IO);
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INIT(media_jack, MEDIA_TEMP_STATE_UNKNOWN_SLOPE);
+
+	return 0;
+}
+
 int sl_ctrl_media_cause_counter_get(struct sl_media_jack *media_jack, u32 counter, int *count)
 {
 	*count = atomic_read(&media_jack->cause_counters[counter].count);
@@ -58,9 +79,24 @@ int sl_ctrl_media_cause_counter_get(struct sl_media_jack *media_jack, u32 counte
 	return 0;
 }
 
+int sl_ctrl_media_temp_state_counter_get(struct sl_media_jack *media_jack, u32 counter, int *count)
+{
+	*count = atomic_read(&media_jack->temp_state_counters[counter].count);
+
+	sl_ctrl_log_dbg(media_jack, LOG_NAME, "get (temp state counter = %u %s, count = %d)", counter,
+			media_jack->temp_state_counters[counter].name, *count);
+
+	return 0;
+}
+
 void sl_ctrl_media_cause_counters_del(struct sl_media_jack *media_jack)
 {
 	kfree(media_jack->cause_counters);
+}
+
+void sl_ctrl_media_temp_state_counters_del(struct sl_media_jack *media_jack)
+{
+	kfree(media_jack->temp_state_counters);
 }
 
 void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned long cause_map)
@@ -144,5 +180,32 @@ void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned 
 					       "cause_counter_inc unknown fault cause (bit = %lu)", which);
 			break;
 		}
+	}
+}
+
+void sl_ctrl_media_temp_state_counter_inc(struct sl_media_jack *media_jack, u8 state)
+{
+	sl_ctrl_log_dbg(media_jack, LOG_NAME, "temp state counter inc");
+
+	switch (state) {
+	case SL_MEDIA_JACK_TEMP_STATE_COLD:
+		SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_COLD);
+		break;
+	case SL_MEDIA_JACK_TEMP_STATE_WARM:
+		SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_WARM);
+		break;
+	case SL_MEDIA_JACK_TEMP_STATE_HOT:
+		SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_HOT);
+		break;
+	case SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_IO:
+		SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_UNKNOWN_IO);
+		break;
+	case SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_SLOPE:
+		SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(media_jack, MEDIA_TEMP_STATE_UNKNOWN_SLOPE);
+		break;
+	default:
+		sl_ctrl_log_warn_trace(media_jack, LOG_NAME,
+				       "temp_state_counter_inc unknown temp state (state = %u)", state);
+		break;
 	}
 }

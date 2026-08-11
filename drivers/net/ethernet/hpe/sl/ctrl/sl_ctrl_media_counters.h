@@ -9,6 +9,15 @@
 
 struct sl_media_jack;
 
+enum sl_ctrl_media_temp_state_counters {
+	MEDIA_TEMP_STATE_COLD,                         /* media temperature state cold                  */
+	MEDIA_TEMP_STATE_WARM,                         /* media temperature state warm                  */
+	MEDIA_TEMP_STATE_HOT,                          /* media temperature state hot                   */
+	MEDIA_TEMP_STATE_UNKNOWN_IO,                   /* media temperature state unknown io error      */
+	MEDIA_TEMP_STATE_UNKNOWN_SLOPE,                /* media temperature state unknown slope error   */
+	SL_CTRL_MEDIA_TEMP_STATE_COUNTERS_COUNT
+};
+
 enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_EEPROM_FORMAT_UNSUPPORTED,         /* media eeprom format is unsupported            */
 	MEDIA_CAUSE_EEPROM_VENDOR_UNSUPPORTED,         /* media eeprom vendor is unsupported            */
@@ -43,9 +52,17 @@ struct sl_ctrl_media_counter {
 #define SL_CTRL_MEDIA_CAUSE_COUNTER_INC(_media, _counter) \
 	atomic_inc(&(_media)->cause_counters[_counter].count)
 
+#define SL_CTRL_MEDIA_TEMP_STATE_COUNTER_INC(_media, _counter) \
+	atomic_inc(&(_media)->temp_state_counters[_counter].count)
+
 int  sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack);
 void sl_ctrl_media_cause_counters_del(struct sl_media_jack *media_jack);
 int  sl_ctrl_media_cause_counter_get(struct sl_media_jack *media_jack, u32 counter, int *count);
 void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned long cause_map);
+
+int  sl_ctrl_media_temp_state_counters_init(struct sl_media_jack *media_jack);
+void sl_ctrl_media_temp_state_counters_del(struct sl_media_jack *media_jack);
+int  sl_ctrl_media_temp_state_counter_get(struct sl_media_jack *media_jack, u32 counter, int *count);
+void sl_ctrl_media_temp_state_counter_inc(struct sl_media_jack *media_jack, u8 state);
 
 #endif /* _SL_CTRL_MEDIA_COUNTERS_H_ */
