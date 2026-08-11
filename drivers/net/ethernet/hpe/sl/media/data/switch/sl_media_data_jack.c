@@ -755,7 +755,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 		sl_media_eeprom_parse(media_jack, &media_attr);
 
 		if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr.type))
-			media_attr.info |= SL_MEDIA_INFO_AUTONEG;
+			media_attr.info |= SL_MEDIA_INFO_AUTONEG |
+					   SL_MEDIA_INFO_LINKTRAIN;
 
 		rtn = sl_media_data_cable_db_ops_cable_validate(&media_attr, media_jack);
 		if (rtn) {
@@ -821,7 +822,8 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 	} else {
 		media_attr.vendor        = SL_MEDIA_VENDOR_HPE;
 		media_attr.type          = SL_MEDIA_TYPE_BKP;
-		media_attr.info          = SL_MEDIA_INFO_AUTONEG;
+		media_attr.info          = SL_MEDIA_INFO_AUTONEG |
+					   SL_MEDIA_INFO_LINKTRAIN;
 		media_attr.length_cm     = 25;
 		media_attr.hpe_pn        = 60821555;
 		media_attr.furcation     = SL_MEDIA_FURCATION_X1;
