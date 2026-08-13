@@ -215,6 +215,7 @@ ${postinst} %{name} %{version}-%{release}
 %files
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin
+/lib/firmware/sl_cable_db.bin
 /usr/bin/slstat
 
 %files devel
@@ -230,6 +231,7 @@ ${postinst} %{name} %{version}-%{release}
 %{prefix}/src/sl/*/Module.symvers
 /lib/firmware/sl_fw_quad_3.04.bin
 /lib/firmware/sl_fw_octet_3.08.bin
+/lib/firmware/sl_cable_db.bin
 /usr/bin/slstat
 
 %files dkms -f dkms-files

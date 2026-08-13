@@ -85,6 +85,7 @@ $(SL_NAME)-y += \
 	media/data/sl_media_data_lgrp_trace.o   \
 	media/data/sl_media_data_jack.o         \
 	media/data/sl_media_data_cable_db_ops.o \
+	media/data/sl_media_cable_db_load.o     \
 	media/base/sl_media_eeprom.o
 
 $(SL_NAME)-y += \

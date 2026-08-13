@@ -24,8 +24,14 @@ Description: Slingshot Link drivers development support
 
 Package: sl-driver-test
 Architecture: any 
-Multi-Arch: same 
+Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Slingshot Link driver tests
  Provides tests for slingshot link driver
 
+Package: sl-driver-cable-db
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Description: Slingshot Link driver cable database binary
+ Provides the cable compatibility database firmware binary for the Slingshot Link driver.

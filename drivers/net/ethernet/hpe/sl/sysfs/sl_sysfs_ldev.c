@@ -3,6 +3,7 @@
 
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
+#include <linux/slab.h>
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -12,6 +13,9 @@
 #include "sl_ctrl_ldev.h"
 #include "sl_module.h"
 #include "data/sl_media_data_ldev.h"
+#include "sl_media_ldev.h"
+#include "sl_media_jack.h"
+#include "data/sl_media_cable_db_load.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -128,27 +132,35 @@ static struct kobj_type cable_vendors_info = {
 static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_ldev_cable_hpe_pn_kobj *hpe_pn_kobj;
+	struct sl_media_ldev                  *media_ldev;
+	struct sl_media_cable_attr             entry;
 
 	hpe_pn_kobj = container_of(kobj, struct sl_ctrl_ldev_cable_hpe_pn_kobj, kobj);
+	media_ldev  = sl_media_ldev_get(hpe_pn_kobj->ctrl_ldev->num);
+	sl_media_data_cable_db_entry_get_by_idx(media_ldev, hpe_pn_kobj->cable_idx, &entry);
 
 	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "length_cm show (ctrl_ldev = 0x%p, length_cm = %u)",
-		   hpe_pn_kobj->ctrl_ldev, cable_db[hpe_pn_kobj->cable_idx].length_cm);
+		   hpe_pn_kobj->ctrl_ldev, entry.length_cm);
 
-	return sysfs_emit(buf, "%u\n", cable_db[hpe_pn_kobj->cable_idx].length_cm);
+	return sysfs_emit(buf, "%u\n", entry.length_cm);
 }
 
 static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_ctrl_ldev_cable_hpe_pn_kobj *hpe_pn_kobj;
+	struct sl_media_ldev                  *media_ldev;
+	struct sl_media_cable_attr             entry;
 
 	hpe_pn_kobj = container_of(kobj, struct sl_ctrl_ldev_cable_hpe_pn_kobj, kobj);
+	media_ldev  = sl_media_ldev_get(hpe_pn_kobj->ctrl_ldev->num);
+	sl_media_data_cable_db_entry_get_by_idx(media_ldev, hpe_pn_kobj->cable_idx, &entry);
 
 	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "max_speed show (ctrl_ldev = 0x%p, max_speed = %s)",
-		   hpe_pn_kobj->ctrl_ldev, sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
+		   hpe_pn_kobj->ctrl_ldev, sl_media_speed_str(entry.max_speed));
 
-	return sysfs_emit(buf, "%s\n", sl_media_speed_str(cable_db[hpe_pn_kobj->cable_idx].max_speed));
+	return sysfs_emit(buf, "%s\n", sl_media_speed_str(entry.max_speed));
 }
 
 static struct kobj_attribute cable_hpe_pn_length_cm = __ATTR_RO(length_cm);
@@ -256,30 +268,41 @@ static int sl_sysfs_cable_vendors_create(struct sl_ctrl_ldev *ctrl_ldev)
 	return 0;
 }
 
-static void sl_sysfs_cable_db_delete(struct sl_ctrl_ldev *ctrl_ldev, int db_idx)
+static void sl_sysfs_cable_db_delete(struct sl_ctrl_ldev *ctrl_ldev, u32 db_idx)
 {
-	int k;
+	u32 k;
 
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db delete");
 
 	for (k = 0; k < db_idx; ++k) {
-		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db delete (idx = %d)", k);
+		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db delete (idx = %u)", k);
 		kobject_put(&ctrl_ldev->cable_hpe_pns_kobj[k].kobj);
 	}
 }
 
 static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 {
-	char hpe_pn[SL_MEDIA_HPE_PN_SIZE + SL_MEDIA_VENDOR_PN_SIZE];
-	int  i;
-	int  type_kobj_num;
-	int  rtn;
+	struct sl_media_ldev       *media_ldev;
+	struct sl_media_cable_attr  entry;
+	char                        hpe_pn[SL_MEDIA_HPE_PN_SIZE + SL_MEDIA_VENDOR_PN_SIZE];
+	u32                         i;
+	int                         type_kobj_num;
+	int                         rtn;
 
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db create");
 
-	for (i = 0; i < ARRAY_SIZE(cable_db); ++i) {
-		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db create (idx = %d)", i);
-		switch (cable_db[i].type) {
+	media_ldev = sl_media_ldev_get(ctrl_ldev->num);
+
+	ctrl_ldev->cable_hpe_pns_kobj = kcalloc(media_ldev->cable_db.count,
+						sizeof(*ctrl_ldev->cable_hpe_pns_kobj),
+						GFP_KERNEL);
+	if (!ctrl_ldev->cable_hpe_pns_kobj)
+		return -ENOMEM;
+
+	for (i = 0; i < media_ldev->cable_db.count; ++i) {
+		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db create (idx = %u)", i);
+		sl_media_data_cable_db_entry_get_by_idx(media_ldev, i, &entry);
+		switch (entry.type) {
 		case SL_MEDIA_TYPE_PEC:
 			type_kobj_num = SL_CABLE_TYPE_PEC;
 			break;
@@ -294,23 +317,26 @@ static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 			break;
 		default:
 			sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
-				   "unknown (type = %u)", cable_db[i].type);
+				   "db create unknown (type = %u)", entry.type);
 			continue;
 		}
 		ctrl_ldev->cable_hpe_pns_kobj[i].ctrl_ldev = ctrl_ldev;
 		ctrl_ldev->cable_hpe_pns_kobj[i].cable_idx = i;
-		snprintf(hpe_pn, sizeof(hpe_pn), "%u_%s", cable_db[i].hpe_pn, cable_db[i].vendor_pn_str);
-		rtn = kobject_init_and_add(&ctrl_ldev->cable_hpe_pns_kobj[i].kobj, &cable_hpe_pns_info,
-					   &ctrl_ldev->cable_vendors_kobj[type_kobj_num][cable_db[i].vendor - SL_MEDIA_VENDOR_TE],
+		snprintf(hpe_pn, sizeof(hpe_pn), "%u_%s", entry.hpe_pn, entry.vendor_pn_str);
+		rtn = kobject_init_and_add(&ctrl_ldev->cable_hpe_pns_kobj[i].kobj,
+					   &cable_hpe_pns_info,
+					   &ctrl_ldev->cable_vendors_kobj[type_kobj_num][entry.vendor - SL_MEDIA_VENDOR_TE],
 					   hpe_pn);
 		if (rtn) {
 			sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
-				   "hpe_pn create failed (idx = %d, type = 0x%X %s, vendor = %u %s, len = %ucm, hpe_pn = %u) [%d]",
-				   i, cable_db[i].type, sl_media_type_str(cable_db[i].type),
-				   cable_db[i].vendor, sl_media_vendor_str(cable_db[i].vendor),
-				   cable_db[i].length_cm, cable_db[i].hpe_pn, rtn);
+				   "db create failed (idx = %u, type = 0x%X %s, vendor = %u %s, len = %ucm, hpe_pn = %u) [%d]",
+				   i, entry.type, sl_media_type_str(entry.type),
+				   entry.vendor, sl_media_vendor_str(entry.vendor),
+				   entry.length_cm, entry.hpe_pn, rtn);
 			kobject_put(&ctrl_ldev->cable_hpe_pns_kobj[i].kobj);
 			sl_sysfs_cable_db_delete(ctrl_ldev, i);
+			kfree(ctrl_ldev->cable_hpe_pns_kobj);
+			ctrl_ldev->cable_hpe_pns_kobj = NULL;
 			sl_sysfs_cable_vendors_delete(ctrl_ldev, SL_CABLE_TYPES_NUM, SL_CABLE_VENDORS_NUM);
 			sl_sysfs_cable_types_delete(ctrl_ldev, SL_CABLE_TYPES_NUM);
 			return -ENOMEM;
@@ -327,7 +353,7 @@ static int sl_sysfs_cable_info_create(struct sl_ctrl_ldev *ctrl_ldev)
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "cable info create (ldev = 0x%p)", ctrl_ldev);
 
 	rtn = kobject_init_and_add(&ctrl_ldev->supported_cables_kobj, &supported_cables_info,
-			ctrl_ldev->parent_kobj, "supported_cables");
+				   ctrl_ldev->parent_kobj, "supported_cables");
 	if (rtn) {
 		sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME, "supported cables create failed [%d]", rtn);
 		kobject_put(&ctrl_ldev->supported_cables_kobj);
@@ -373,7 +399,7 @@ int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 
 	if (!sl_ctrl_ldev_kref_get_unless_zero(ctrl_ldev)) {
 		sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
-			"kref_get_unless_zero failed (ldev = 0x%p)", ctrl_ldev);
+			   "kref_get_unless_zero failed (ldev = 0x%p)", ctrl_ldev);
 		return -EBADRQC;
 	}
 
@@ -385,7 +411,7 @@ int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 	ctrl_ldev->parent_kobj = parent;
 	ctrl_ldev->is_sysfs_ok = false;
 
-	rtn = kobject_init_and_add(&(ctrl_ldev->sl_info_kobj), &sl_info, ctrl_ldev->parent_kobj, "sl_info");
+	rtn = kobject_init_and_add(&ctrl_ldev->sl_info_kobj, &sl_info, ctrl_ldev->parent_kobj, "sl_info");
 	if (rtn) {
 		sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME, "sl_info create failed [%d]", rtn);
 		kobject_put(&ctrl_ldev->sl_info_kobj);
@@ -416,6 +442,8 @@ out:
 void sl_sysfs_ldev_delete(struct sl_ctrl_ldev *ctrl_ldev)
 {
 #ifdef CONFIG_SYSFS
+	struct sl_media_ldev *media_ldev;
+
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "ldev delete (ldev = 0x%p)", ctrl_ldev);
 
 	if (!ctrl_ldev->parent_kobj)
@@ -423,7 +451,12 @@ void sl_sysfs_ldev_delete(struct sl_ctrl_ldev *ctrl_ldev)
 	if (!ctrl_ldev->is_sysfs_ok)
 		return;
 
-	sl_sysfs_cable_db_delete(ctrl_ldev, ARRAY_SIZE(cable_db));
+	media_ldev = sl_media_ldev_get(ctrl_ldev->num);
+	if (media_ldev)
+		sl_sysfs_cable_db_delete(ctrl_ldev, media_ldev->cable_db.count);
+	kfree(ctrl_ldev->cable_hpe_pns_kobj);
+	ctrl_ldev->cable_hpe_pns_kobj = NULL;
+
 	sl_sysfs_cable_vendors_delete(ctrl_ldev, SL_CABLE_TYPES_NUM, SL_CABLE_VENDORS_NUM);
 	sl_sysfs_cable_types_delete(ctrl_ldev, SL_CABLE_TYPES_NUM);
 

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_LDEV_H_
 #define _SL_MEDIA_LDEV_H_
@@ -20,6 +20,7 @@ enum {
 
 struct sl_uc_ops;
 struct sl_uc_accessor;
+struct sl_media_cable_attr;
 
 struct sl_media_ldev {
 	u32                      magic;
@@ -30,6 +31,13 @@ struct sl_media_ldev {
 	struct sl_uc_ops        *uc_ops;
 	struct sl_uc_accessor   *uc_accessor;
 	struct workqueue_struct *workqueue;
+
+	struct {
+		void *data;         /* raw binary record blob */
+		u32   data_version; /* record format version  */
+		u32   record_size;  /* size of one record     */
+		u32   count;        /* number of records      */
+	} cable_db;
 };
 
 int                   sl_media_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue);

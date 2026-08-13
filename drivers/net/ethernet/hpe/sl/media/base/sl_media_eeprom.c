@@ -14,7 +14,7 @@
 #include "sl_media_jack.h"
 #include "base/sl_media_log.h"
 #include "data/sl_media_data_jack.h"
-#include "data/sl_media_data_cable_db.h"
+#include "data/sl_media_cable_db_load.h"
 
 #define LOG_NAME SL_MEDIA_EEPROM_LOG_NAME
 
@@ -469,32 +469,37 @@ static void sl_media_eeprom_supported_flags_advertised_get(struct sl_media_jack 
 
 bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
+	struct sl_media_cable_attr entry;
+
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "is fw version supported (type = 0x%X %s, shape = %u %s, end = %u %s, idx = %d)",
 			 media_attr->type, sl_media_type_str(media_attr->type),
 			 media_attr->shape, sl_media_shape_str(media_attr->shape),
 			 media_jack->cable_end, sl_media_cable_end_str(media_jack->cable_end),
 			 media_jack->cable_db_idx);
+
+	sl_media_data_cable_db_entry_get(media_jack, &entry);
+
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "is fw version supported (fw_ver = %02X.%02X, db_fw_ver = %02X.%02X, db_split_fw_ver = %02X.%02X)",
 			 media_attr->fw_ver[0], media_attr->fw_ver[1],
-			 cable_db[media_jack->cable_db_idx].fw_ver.major,
-			 cable_db[media_jack->cable_db_idx].fw_ver.minor,
-			 cable_db[media_jack->cable_db_idx].fw_ver.split_major,
-			 cable_db[media_jack->cable_db_idx].fw_ver.split_minor);
+			 entry.fw_ver.major, entry.fw_ver.minor,
+			 entry.fw_ver.split_major, entry.fw_ver.split_minor);
 
 	if (media_attr->shape == SL_MEDIA_SHAPE_SPLITTER && media_jack->cable_end != SL_MEDIA_CABLE_END_DD)
-		return ((media_attr->fw_ver[0] > cable_db[media_jack->cable_db_idx].fw_ver.split_major) ||
-			((media_attr->fw_ver[0] == cable_db[media_jack->cable_db_idx].fw_ver.split_major) &&
-			(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.split_minor)));
+		return ((media_attr->fw_ver[0] > entry.fw_ver.split_major) ||
+			((media_attr->fw_ver[0] == entry.fw_ver.split_major) &&
+			(media_attr->fw_ver[1] >= entry.fw_ver.split_minor)));
 
-	return ((media_attr->fw_ver[0] > cable_db[media_jack->cable_db_idx].fw_ver.major) ||
-		((media_attr->fw_ver[0] == cable_db[media_jack->cable_db_idx].fw_ver.major) &&
-		(media_attr->fw_ver[1] >= cable_db[media_jack->cable_db_idx].fw_ver.minor)));
+	return ((media_attr->fw_ver[0] > entry.fw_ver.major) ||
+		((media_attr->fw_ver[0] == entry.fw_ver.major) &&
+		(media_attr->fw_ver[1] >= entry.fw_ver.minor)));
 }
 
 int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
 {
+	struct sl_media_cable_attr entry;
+
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "target fw ver get (idx = %u, type = 0x%X %s, shape = %u %s, end = %u %s, supported = %s)",
 			 media_jack->cable_db_idx,
@@ -521,17 +526,16 @@ int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char
 		return 0;
 	}
 
+	sl_media_data_cable_db_entry_get(media_jack, &entry);
+
 	if (media_jack->cable_info[0].media_attr.shape == SL_MEDIA_SHAPE_SPLITTER &&
 	    media_jack->cable_end != SL_MEDIA_CABLE_END_DD) {
 		snprintf(target_fw_str, target_fw_size, "%02X.%02X\n",
-			 cable_db[media_jack->cable_db_idx].fw_ver.split_major,
-			 cable_db[media_jack->cable_db_idx].fw_ver.split_minor);
+			 entry.fw_ver.split_major, entry.fw_ver.split_minor);
 		return 0;
 	}
 
-	snprintf(target_fw_str, target_fw_size, "%02X.%02X\n",
-		 cable_db[media_jack->cable_db_idx].fw_ver.major,
-		 cable_db[media_jack->cable_db_idx].fw_ver.minor);
+	snprintf(target_fw_str, target_fw_size, "%02X.%02X\n", entry.fw_ver.major, entry.fw_ver.minor);
 
 	return 0;
 }

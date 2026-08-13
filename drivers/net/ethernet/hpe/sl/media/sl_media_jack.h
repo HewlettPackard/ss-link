@@ -173,6 +173,8 @@ struct sl_media_cable_insert_entry {
 	struct sl_media_attr cable;
 };
 
+#define SL_MEDIA_DB_IDX_NONE -1
+
 #define SL_MEDIA_EEPROM_PAGE_SIZE 256
 #define SL_MEDIA_JACK_MAGIC       0xAD91C879
 struct sl_media_jack {

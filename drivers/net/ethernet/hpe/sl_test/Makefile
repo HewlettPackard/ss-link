@@ -6,7 +6,7 @@ include ../../../../../config.mak
 MOD_NAME ?= $(SL_TEST_NAME)
 SL_MOD_DIR  ?= sshot
 
-.PHONY: all default modules clean fw_clean stage_install stage_uninstall
+.PHONY: all default modules clean fw fw_clean cable_db cable_db_clean stage_install stage_uninstall
 
 INSTALL        := install -p
 TOUCH          := touch

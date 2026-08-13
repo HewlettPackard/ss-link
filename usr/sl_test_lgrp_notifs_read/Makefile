@@ -3,7 +3,7 @@
 
 include ../../config.mak
 
-.PHONY: default all test fw_clean
+.PHONY: default all test fw fw_clean cable_db cable_db_clean
 
 BINNAME  := sl_test_lgrp_notifs_read
 CC        = $(CROSS_COMPILE)gcc

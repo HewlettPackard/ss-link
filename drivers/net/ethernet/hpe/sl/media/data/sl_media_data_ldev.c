@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -13,6 +13,7 @@
 #include "data/sl_media_data_ldev.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_jack.h"
+#include "data/sl_media_cable_db_load.h"
 #include "sl_ctrl_ldev.h"
 
 static struct sl_media_ldev *media_ldevs[SL_ASIC_MAX_LDEVS];
@@ -50,9 +51,14 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 		}
 	}
 
+	rtn = sl_media_data_cable_db_load(media_ldev);
+	if (rtn)
+		sl_media_log_err(media_ldev, LOG_NAME, "cable_db_load failed [%d]", rtn);
+
 	rtn = sl_media_data_jack_scan(ldev_num);
 	if (rtn) {
 		sl_media_log_err(media_ldev, LOG_NAME, "jack scan failed [%d]", rtn);
+		sl_media_data_cable_db_unload(media_ldev);
 		for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num)
 			sl_media_data_jack_del(ldev_num, jack_num);
 		kfree(media_ldev);
@@ -89,6 +95,8 @@ void sl_media_data_ldev_del(u8 ldev_num)
 	spin_unlock(&media_ldevs_lock);
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "del (ldev = 0x%p)", media_ldev);
+
+	sl_media_data_cable_db_unload(media_ldev);
 
 	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num)
 		sl_media_data_lgrp_del(ldev_num, lgrp_num);

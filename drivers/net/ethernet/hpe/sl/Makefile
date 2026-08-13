@@ -6,7 +6,7 @@ include ../../../../../config.mak
 MOD_NAME ?= $(SL_NAME)
 SL_MOD_DIR ?= sshot
 
-.PHONY: all default modules clean stage_install fw fw_clean stage_uninstall
+.PHONY: all default modules clean stage_install fw fw_clean cable_db cable_db_clean stage_uninstall
 
 INSTALL        := install -p
 TOUCH          := touch
@@ -87,6 +87,9 @@ FW_OCTET_NAME=octet
 FW_OCTET_VER=3.08
 FW_PATH=core/hw/ucode
 
+CABLE_DB_NAME=sl_cable_db
+CABLE_DB_PATH=media/data
+
 default: all
 
 all: stage_install
@@ -106,7 +109,15 @@ fw_clean:
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin
 	$(RM) $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin
 
-stage_install: modules fw
+cable_db:
+	python3 $(MDIR)/../../../../../scripts/cable_db_to_bin.py \
+		$(MDIR)/$(CABLE_DB_PATH)/$(CABLE_DB_NAME).tsv \
+		$(MDIR)/$(CABLE_DB_PATH)/$(CABLE_DB_NAME).bin
+
+cable_db_clean:
+	$(RM) $(MDIR)/$(CABLE_DB_PATH)/$(CABLE_DB_NAME).bin
+
+stage_install: modules fw cable_db
 	$(INSTALL) -d $(STAGING_DIR)
 	$(INSTALL) -d $(KNL_MOD_DIR)
 	$(TOUCH) $(KNL_MOD_DIR)/modules.order
@@ -124,6 +135,7 @@ stage_install: modules fw
 	$(INSTALL) -d $(STAGING_DIR)/lib/firmware
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin   $(STAGING_DIR)/lib/firmware
 	$(INSTALL) -m 755 $(MDIR)/$(FW_PATH)/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin $(STAGING_DIR)/lib/firmware
+	$(INSTALL) -m 644 $(MDIR)/$(CABLE_DB_PATH)/$(CABLE_DB_NAME).bin $(STAGING_DIR)/lib/firmware
 
 stage_uninstall:
 	if [ -d "$(STAGING_DIR)" ]; then \
@@ -133,6 +145,7 @@ stage_uninstall:
 		$(RM) $(STAGING_DIR)/usr/bin/slstat; \
 		$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_QUAD_NAME)_$(FW_QUAD_VER).bin; \
 		$(RM) $(STAGING_DIR)/lib/firmware/sl_fw_$(FW_OCTET_NAME)_$(FW_OCTET_VER).bin; \
+		$(RM) $(STAGING_DIR)/lib/firmware/$(CABLE_DB_NAME).bin; \
 		if [ -d "$(STAGING_DIR)/lib/modules" ]; then \
 			find "$(STAGING_DIR)/lib/modules" -type f \
 			\( -name "$(MOD_NAME).ko*" -o -name "modules.*" -o -name "module.symvers.sl" \) \

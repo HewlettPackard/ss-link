@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_LDEV_H_
 #define _SL_CTRL_LDEV_H_
@@ -10,8 +10,6 @@
 
 #include <linux/hpe/sl/sl_ldev.h>
 #include <linux/hpe/sl/sl_media.h>
-
-#include "data/sl_media_data_cable_db.h"
 
 #define SL_CTRL_LDEV_MAGIC 0x736c6382
 #define SL_CTRL_LDEV_VER   2
@@ -47,30 +45,30 @@ struct sl_ctrl_ldev_cable_hpe_pn_kobj {
 };
 
 struct sl_ctrl_ldev {
-	u32                       magic;
-	u32                       ver;
+	u32                                    magic;
+	u32                                    ver;
 
-	u8                        num;
+	u8                                     num;
 
-	struct sl_ldev_attr       attr;
-	struct workqueue_struct  *workq;
-	struct workqueue_struct  *notif_workq;
-	bool                      create_workq;
-	u64                       lgrp_map;
+	struct sl_ldev_attr                    attr;
+	struct workqueue_struct               *workq;
+	struct workqueue_struct               *notif_workq;
+	bool                                   create_workq;
+	u64                                    lgrp_map;
 
-	struct kobject           *parent_kobj;
-	bool                      is_sysfs_ok;
-	struct kobject            sl_info_kobj;
+	struct kobject                        *parent_kobj;
+	bool                                   is_sysfs_ok;
+	struct kobject                         sl_info_kobj;
 
-	spinlock_t                data_lock;
+	spinlock_t                             data_lock; /* data lock */
 
-	struct kobject            supported_cables_kobj;
-	struct kobject            cable_types_kobj[SL_CABLE_TYPES_NUM];
-	struct kobject            cable_vendors_kobj[SL_CABLE_TYPES_NUM][SL_CABLE_VENDORS_NUM];
-	struct sl_ctrl_ldev_cable_hpe_pn_kobj cable_hpe_pns_kobj[ARRAY_SIZE(cable_db)];
+	struct kobject                         supported_cables_kobj;
+	struct kobject                         cable_types_kobj[SL_CABLE_TYPES_NUM];
+	struct kobject                         cable_vendors_kobj[SL_CABLE_TYPES_NUM][SL_CABLE_VENDORS_NUM];
+	struct sl_ctrl_ldev_cable_hpe_pn_kobj *cable_hpe_pns_kobj;
 
-	struct kref               ref_cnt;
-	struct completion         del_complete;
+	struct kref                            ref_cnt;
+	struct completion                      del_complete;
 };
 
 int                  sl_ctrl_ldev_new(u8 ldev_num,

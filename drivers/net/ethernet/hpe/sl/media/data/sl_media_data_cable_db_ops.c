@@ -8,8 +8,9 @@
 
 #include "sl_asic.h"
 #include "sl_media_jack.h"
+#include "sl_media_ldev.h"
 #include "sl_media_lgrp.h"
-#include "data/sl_media_data_cable_db.h"
+#include "data/sl_media_cable_db_load.h"
 #include "data/sl_media_data_cable_db_ops.h"
 #include "base/sl_media_log.h"
 
@@ -19,7 +20,9 @@
 
 int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, struct sl_media_jack *media_jack)
 {
-	int indexer;
+	struct sl_media_cable_attr entry;
+	struct sl_media_ldev      *media_ldev;
+	u32                        indexer;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "validate (hpe_part_num = %d %s, vendor = %d %s, type = %d %s)",
@@ -27,9 +30,6 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
 			 media_attr->type, sl_media_type_str(media_attr->type));
 
-	/*
-	 * Check for loopback module
-	 */
 	if (media_attr->vendor == SL_MEDIA_VENDOR_MULTILANE) {
 		media_attr->hpe_pn       = 1;
 		media_attr->type         = SL_MEDIA_TYPE_PEC;
@@ -40,29 +40,35 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 					   SL_MEDIA_SPEEDS_SUPPORT_BS_200G |
 					   SL_MEDIA_SPEEDS_SUPPORT_BJ_100G |
 					   SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
-		media_jack->cable_db_idx = -1;
+		media_jack->cable_db_idx = SL_MEDIA_DB_IDX_NONE;
 
 		media_jack->is_cable_unsupported = false;
 		return 0;
 	}
 
-	/*
-	 * Linear search through the cable_db array
-	 */
-	for (indexer = 0; indexer < ARRAY_SIZE(cable_db); ++indexer) {
-		if (cable_db[indexer].hpe_pn != media_attr->hpe_pn)
+	// FIXME: do we need this check?
+	media_ldev = media_jack->media_ldev;
+	if (!media_ldev || !media_ldev->cable_db.data) {
+		sl_media_log_err(NULL, LOG_NAME, "cable validate cable_db not loaded");
+		return -ENOENT;
+	}
+
+	for (indexer = 0; indexer < media_ldev->cable_db.count; ++indexer) {
+		sl_media_data_cable_db_entry_get_by_idx(media_ldev, indexer, &entry);
+
+		if (entry.hpe_pn != media_attr->hpe_pn)
 			continue;
-		if (cable_db[indexer].type != media_attr->type)
+		if (entry.type != media_attr->type)
 			continue;
 		if (media_attr->vendor == SL_MEDIA_VENDOR_LEONI ||
 		    media_attr->vendor == SL_MEDIA_VENDOR_BIZLINK)
-			if (cable_db[indexer].vendor != SL_MEDIA_VENDOR_LEONI &&
-			    cable_db[indexer].vendor != SL_MEDIA_VENDOR_BIZLINK)
+			if (entry.vendor != SL_MEDIA_VENDOR_LEONI &&
+			    entry.vendor != SL_MEDIA_VENDOR_BIZLINK)
 				continue;
 
-		media_attr->shape                    = cable_db[indexer].shape;
-		media_attr->max_speed                = cable_db[indexer].max_speed;
-		media_jack->is_supported_ss200_cable = cable_db[indexer].is_supported_ss200_cable;
+		media_attr->shape                    = entry.shape;
+		media_attr->max_speed                = entry.max_speed;
+		media_jack->is_supported_ss200_cable = entry.is_supported_ss200_cable;
 		media_jack->cable_db_idx             = indexer;
 		return 0;
 	}
@@ -75,9 +81,11 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 
 int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, u32 media_type, u32 flags)
 {
+	struct sl_media_cable_attr entry;
+
 	sl_media_log_dbg(media_jack, LOG_NAME,
-		"serdes settings get (media_type = 0x%X %s, flags = 0x%X)",
-		media_type, sl_media_type_str(media_type), flags);
+			 "serdes settings get (media_type = 0x%X %s, flags = 0x%X)",
+			 media_type, sl_media_type_str(media_type), flags);
 
 	if (flags & SL_MEDIA_TYPE_UNSUPPORTED) {
 		sl_media_log_warn_trace(media_jack, LOG_NAME, "serdes setting get unsuppported cable");
@@ -110,14 +118,16 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_jack->serdes_settings.cursor = 100;
 		media_jack->serdes_settings.post1  = 0;
 		media_jack->serdes_settings.post2  = 0;
+	} else if (media_jack->cable_db_idx == SL_MEDIA_DB_IDX_NONE) {
+		media_jack->serdes_settings.pre1   = 0;
+		media_jack->serdes_settings.pre2   = 0;
+		media_jack->serdes_settings.pre3   = 0;
+		media_jack->serdes_settings.cursor = 100;
+		media_jack->serdes_settings.post1  = 0;
+		media_jack->serdes_settings.post2  = 0;
 	} else {
-		if (media_jack->cable_db_idx < 0 || media_jack->cable_db_idx >= ARRAY_SIZE(cable_db)) {
-			sl_media_log_err_trace(media_jack, LOG_NAME,
-					       "serdes settings get invalid (idx = %d)",
-					       media_jack->cable_db_idx);
-			return -ENOENT;
-		}
-		media_jack->serdes_settings = cable_db[media_jack->cable_db_idx].serdes_settings;
+		sl_media_data_cable_db_entry_get(media_jack, &entry);
+		media_jack->serdes_settings = entry.serdes_settings;
 	}
 	media_jack->serdes_settings.media = SL_MEDIA_TYPE_SERDES;
 
