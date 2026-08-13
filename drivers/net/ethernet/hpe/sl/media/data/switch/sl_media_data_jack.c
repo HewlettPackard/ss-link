@@ -53,9 +53,9 @@ static int sl_media_data_jack_eeprom_page0_get(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define FLAT_MEM_OFFSET    2
-#define CMIS_FLAT_MEM_BIT  7
-#define SFF_FLAT_MEM_BIT   2
+#define SL_MEDIA_FLAT_MEM_OFFSET    2
+#define SL_MEDIA_CMIS_FLAT_MEM_BIT  7
+#define SL_MEDIA_SFF_FLAT_MEM_BIT   2
 static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack, u8 *format)
 {
 	int                  rtn;
@@ -65,15 +65,15 @@ static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack,
 	sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get");
 
 	if (*format == SL_MEDIA_MGMT_IF_CMIS) {
-		flat_mem_bit = CMIS_FLAT_MEM_BIT;
+		flat_mem_bit = SL_MEDIA_CMIS_FLAT_MEM_BIT;
 	} else if (*format == SL_MEDIA_MGMT_IF_SFF8636) {
-		flat_mem_bit = SFF_FLAT_MEM_BIT;
+		flat_mem_bit = SL_MEDIA_SFF_FLAT_MEM_BIT;
 	} else {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "unknown cable format, skipping page1");
 		return -EMEDIUMTYPE;
 	}
 
-	if ((media_jack->eeprom_page0[FLAT_MEM_OFFSET] & BIT(flat_mem_bit)) != 0) {
+	if ((media_jack->eeprom_page0[SL_MEDIA_FLAT_MEM_OFFSET] & BIT(flat_mem_bit)) != 0) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "no page1 in eeprom");
 		return 0;
 	}
@@ -96,7 +96,6 @@ static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack,
 	return 0;
 }
 
-// FIXME: need a better way to do this
 static inline u8 sl_media_data_jack_num_update(u8 physical_jack_num)
 {
 	if (physical_jack_num >= 201) /* GX backplanes */
@@ -269,8 +268,7 @@ static int sl_media_data_jack_cable_event(struct notifier_block *event_notifier,
 			 "cable event (events = 0x%08lX, physical_jack_num = %u)",
 			 events, physical_jack_num);
 
-	/*
-	 * FIXME: Currently servicing one event at a time as we erroneously
+	/* FIXME: Currently servicing one event at a time as we erroneously
 	 * get multiple events from hsnxcvr driver. In the future,
 	 * we should be servicing all events we get from hsnxcvr driver
 	 */
@@ -374,7 +372,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			continue;
 		}
 		media_jack->port_count = jack_data.port_count;
-		memcpy(&(media_jack->asic_port), &(jack_data.asic_port), sizeof(jack_data.asic_port));
+		memcpy(&media_jack->asic_port, &jack_data.asic_port, sizeof(jack_data.asic_port));
 
 		rtn = kstrtou8(jack_data.name + 1, 10, &physical_jack_num);
 		if (rtn) {
@@ -382,8 +380,10 @@ int sl_media_data_jack_scan(u8 ldev_num)
 			return -EFAULT;
 		}
 
-		/*
-		 * Don't use media_jack in the log messages before this point as they
+		sl_media_log_dbg(NULL, LOG_NAME, "scan (jack_num = %u, physical_jack_num = %u)",
+				 jack_num, physical_jack_num);
+
+		/* Don't use media_jack in the log messages before this point as they
 		 * don't have real physical numbers yet
 		 */
 		media_jack->physical_num = physical_jack_num;
@@ -409,8 +409,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 				 jack_data.name, jack_num, physical_jack_num, media_jack->hdl, status_data.flags);
 
 		if (status_data.flags & XCVR_PRESENT) {
-			/*
-			 * If the jack fails to come online, we set its state to Error and
+			/* If the jack fails to come online, we set its state to Error and
 			 * continue the scan
 			 */
 			rtn = sl_media_data_jack_online(hdl, ldev_num, jack_num);
@@ -443,8 +442,7 @@ int sl_media_data_jack_scan(u8 ldev_num)
 		return 0;
 	}
 
-	/*
-	 * Making sure we did not miss any remove or
+	/* Making sure we did not miss any remove or
 	 * online event during the window between
 	 * first scan and notification registration
 	 */
@@ -677,7 +675,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 				 jack_data.jack_type, jack_data.port_count, x, jack_data.asic_port[x]);
 
 	media_jack->port_count = jack_data.port_count;
-	memcpy(&(media_jack->asic_port), &(jack_data.asic_port), sizeof(jack_data.asic_port));
+	memcpy(&media_jack->asic_port, &jack_data.asic_port, sizeof(jack_data.asic_port));
 
 	rtn = hsnxcvr_status_get(media_jack->hdl, &status_data);
 	if (rtn) {
@@ -731,7 +729,6 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 			sl_media_data_jack_cable_attr_send(media_jack);
 			return rtn;
 		}
-
 
 		rtn = sl_media_eeprom_format_get(media_jack, &media_attr.format, &media_attr.version);
 		if (rtn) {
@@ -806,9 +803,7 @@ int sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num)
 				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
-			/*
-			 * disallow BJ100 speed on active cables
-			 */
+			/* disallow BJ100 speed on active cables */
 			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
 		}
 
@@ -968,13 +963,12 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 	return -EFAULT;
 }
 
-#define DATA_PATH_STATE_DEACTIVATED       0x1
-#define DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x00
-#define DATA_PATH_ID                      0x08
-#define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
-#define DATA_PATH_UPPER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE | DATA_PATH_ID)
-#define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
-// FIXME: add media format choices as needed
+#define SL_MEDIA_DATA_PATH_STATE_DEACTIVATED       0x1
+#define SL_MEDIA_DATA_PATH_EXPLICIT_CONTROL_ENABLE 0x00
+#define SL_MEDIA_DATA_PATH_ID                      0x08
+#define SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG       (SL_MEDIA_DATA_PATH_EXPLICIT_CONTROL_ENABLE)
+#define SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG       (SL_MEDIA_DATA_PATH_EXPLICIT_CONTROL_ENABLE | SL_MEDIA_DATA_PATH_ID)
+#define SL_MEDIA_DATA_PATH_LANES_DEACTIVATED       (SL_MEDIA_DATA_PATH_STATE_DEACTIVATED << 4 | SL_MEDIA_DATA_PATH_STATE_DEACTIVATED)
 int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int                  rtn;
@@ -984,9 +978,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
 
-	/*
-	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* Deinit all lanes (DataPathDeinit @ page 0x10 byte 128) */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1005,9 +997,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * enable low power mode
-	 */
+	/* enable low power mode */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET);
@@ -1017,18 +1007,17 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-152
+	/* Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-152
 	 * Config lanes 1 to 4
 	 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 145;
-	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1040,17 +1029,15 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(100);
 
-	/*
-	 * Config lanes 5 to 8
-	 */
+	/* Config lanes 5 to 8 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 149;
-	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1062,9 +1049,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(100);
 
-	/*
-	 * ApplyDPInitLane8-1
-	 */
+	/* ApplyDPInitLane8-1 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1080,9 +1065,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * enable high power mode
-	 */
+	/* enable high power mode */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET);
@@ -1092,9 +1075,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(8000); /* allow firmware load */
 
-	/*
-	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128) */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1112,9 +1093,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 		return rtn;
 	}
 
-	/*
-	 * waiting for firmware reload
-	 */
+	/* waiting for firmware reload */
 	msleep(3000);
 
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
@@ -1135,11 +1114,11 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable hw shift state get");
 
-	downshift_lower_lane_config = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	downshift_upper_lane_config = (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	downshift_lower_lane_config = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	downshift_upper_lane_config = (media_jack->appsel_num_200_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
 
-	upshift_lower_lane_config = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	upshift_upper_lane_config = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	upshift_lower_lane_config = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	upshift_upper_lane_config = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
 
 	i2c_data.addr   = 0;
 	i2c_data.page   = 0x10;
@@ -1150,7 +1129,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 1-4 - read failed [%d]", rtn);
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR;
 	}
 	memcpy(read_data_lower, i2c_data.data, sizeof(read_data_lower));
@@ -1164,7 +1143,7 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO);
 		sl_media_log_err_trace(media_jack, LOG_NAME,
-				 "SCS0 configuration - config lanes 5-8 - read failed [%d]", rtn);
+				       "SCS0 configuration - config lanes 5-8 - read failed [%d]", rtn);
 		return SL_MEDIA_JACK_CABLE_HW_SHIFT_IO_ERROR;
 	}
 	memcpy(read_data_upper, i2c_data.data, sizeof(read_data_upper));
@@ -1195,7 +1174,6 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN;
 }
 
-// FIXME: add media format choices as needed
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int                  rtn;
@@ -1205,9 +1183,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
 
-	/*
-	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* Deinit all lanes (DataPathDeinit @ page 0x10 byte 128) */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1226,9 +1202,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * enable low power mode
-	 */
+	/* enable low power mode */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET);
@@ -1238,18 +1212,17 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-152
+	/* Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-152
 	 * Config lanes 1 to 4
 	 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 145;
-	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_LOWER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1261,17 +1234,15 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(100);
 
-	/*
-	 * Config lanes 5 to 8
-	 */
+	/* Config lanes 5 to 8 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
 	i2c_data.offset  = 149;
-	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
-	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[0] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[1] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[2] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
+	i2c_data.data[3] = (media_jack->appsel_num_400_gaui << 4) | SL_MEDIA_DATA_PATH_UPPER_LANE_CONFIG;
 	i2c_data.len     = 4;
 	rtn = hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
 	if (rtn) {
@@ -1283,9 +1254,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(100);
 
-	/*
-	 * ApplyDPInitLane8-1
-	 */
+	/* ApplyDPInitLane8-1 */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1301,9 +1270,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * enable high power mode
-	 */
+	/* enable high power mode */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
@@ -1313,9 +1280,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(8000); /* allow firmware load */
 
-	/*
-	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128) */
 	i2c_data.addr    = 0;
 	i2c_data.page    = 0x10;
 	i2c_data.bank    = 0;
@@ -1333,9 +1298,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 		return rtn;
 	}
 
-	/*
-	 * waiting for firmware reload
-	 */
+	/* waiting for firmware reload */
 	msleep(3000);
 
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
@@ -1343,22 +1306,57 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	return 0;
 }
 
+#define SL_MEDIA_SFF_ENHANCED_OPTIONS_OFFSET         221
+#define SL_MEDIA_SFF_ENHANCED_OPTIONS_SOFT_RESET_BIT BIT(0)
+#define SL_MEDIA_SFF_SOFT_RESET_ADDR                 93
+#define SL_MEDIA_SFF_SOFT_RESET_BIT                  BIT(7)
 int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 {
-	struct xcvr_i2c_data i2c_data;
+	int rtn;
+	u8  read_data;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable soft reset");
 
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_BUSY);
 
-	/* reset is self clearing */
-	i2c_data.addr    = 0;
-	i2c_data.page    = 0;
-	i2c_data.bank    = 0;
-	i2c_data.offset  = 0x1a;
-	i2c_data.data[0] = 0x08;
-	i2c_data.len     = 1;
-	hsnxcvr_i2c_write(media_jack->hdl, &i2c_data);
+	if (!sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		// FIXME: this needs a getter
+		if (!(media_jack->eeprom_page0[SL_MEDIA_SFF_ENHANCED_OPTIONS_OFFSET] &
+		      SL_MEDIA_SFF_ENHANCED_OPTIONS_SOFT_RESET_BIT)) {
+			sl_media_log_dbg(media_jack, LOG_NAME,
+					 "cable soft reset not supported (enhanced_options = 0x%02X)",
+					 media_jack->eeprom_page0[SL_MEDIA_SFF_ENHANCED_OPTIONS_OFFSET]);
+			sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
+			return 0;
+		}
+
+		/* read-modify-write to trigger software reset, self-clearing */
+		rtn = sl_media_io_read8(media_jack, 0, SL_MEDIA_SFF_SOFT_RESET_ADDR, &read_data);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset read failed [%d]", rtn);
+			sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
+			return rtn;
+		}
+
+		rtn = sl_media_io_write8(media_jack, 0, SL_MEDIA_SFF_SOFT_RESET_ADDR,
+					 read_data | SL_MEDIA_SFF_SOFT_RESET_BIT);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset write failed [%d]", rtn);
+			sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
+			return rtn;
+		}
+	} else {
+		/* CMIS: reset is self clearing */
+		rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset write failed [%d]", rtn);
+			sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
+			return rtn;
+		}
+	}
 
 	/* wait for firmware reload */
 	msleep(8000);
@@ -1436,12 +1434,11 @@ int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define LED_OFF        XCVR_LED_OFF
-#define LED_ON_GRN     XCVR_LED_A_STEADY
-#define LED_FAST_GRN   XCVR_LED_A_FAST
-#define LED_ON_AMBER   XCVR_LED_B_STEADY
-#define LED_FAST_AMBER XCVR_LED_B_FAST
-// FIXME: check to make sure this function does the correct thing in all cases
+#define SL_MEDIA_LED_OFF        XCVR_LED_OFF
+#define SL_MEDIA_LED_ON_GRN     XCVR_LED_A_STEADY
+#define SL_MEDIA_LED_FAST_GRN   XCVR_LED_A_FAST
+#define SL_MEDIA_LED_ON_AMBER   XCVR_LED_B_STEADY
+#define SL_MEDIA_LED_FAST_AMBER XCVR_LED_B_FAST
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
 	int                   rtn;
@@ -1461,13 +1458,13 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
 	rtn = sl_media_data_jack_cable_temp_state_get(media_jack, &temperature_state);
-	if(rtn)
+	if (rtn)
 		sl_media_log_warn_trace(media_jack, LOG_NAME,
 					"led set cable_temp_state_get failed [%d]", rtn);
 
 	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "led set temperature_state HOT");
-		sl_media_io_led_set(media_jack, LED_ON_AMBER);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_ON_AMBER);
 		return;
 	}
 
@@ -1477,12 +1474,13 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 					"led set media_jack_state_get failed [%d]", rtn);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set (jack_state = %u)", jack_state);
+
 	switch (jack_state) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
-		sl_media_io_led_set(media_jack, LED_OFF);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_OFF);
 		return;
 	case SL_MEDIA_JACK_CABLE_ERROR:
-		sl_media_io_led_set(media_jack, LED_FAST_AMBER);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_FAST_AMBER);
 		return;
 	}
 
@@ -1538,11 +1536,11 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 	}
 
 	if (link_going_up)
-		sl_media_io_led_set(media_jack, LED_FAST_GRN);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_FAST_GRN);
 	else if (link_up)
-		sl_media_io_led_set(media_jack, LED_ON_GRN);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_ON_GRN);
 	else
-		sl_media_io_led_set(media_jack, LED_OFF);
+		sl_media_io_led_set(media_jack, SL_MEDIA_LED_OFF);
 }
 
 static int sl_media_data_jack_cable_hot_link_down(struct sl_media_jack *media_jack)
@@ -1745,7 +1743,7 @@ bool sl_media_data_jack_cable_is_cold_client_ready(struct sl_media_jack *media_j
 	return is_client_ready;
 }
 
-#define TEMPERATURE_CELSIUS_SLOPE 10
+#define SL_MEDIA_TEMPERATURE_CELSIUS_SLOPE 10
 int sl_media_data_jack_cable_temp_hw_check(struct sl_media_jack *media_jack)
 {
 	int rtn;
@@ -1771,11 +1769,11 @@ int sl_media_data_jack_cable_temp_hw_check(struct sl_media_jack *media_jack)
 	if (prev_temp_c < 0)
 		goto out;
 
-	if (current_temp_c < prev_temp_c - TEMPERATURE_CELSIUS_SLOPE ||
-	    current_temp_c > prev_temp_c + TEMPERATURE_CELSIUS_SLOPE) {
+	if (current_temp_c < prev_temp_c - SL_MEDIA_TEMPERATURE_CELSIUS_SLOPE ||
+	    current_temp_c > prev_temp_c + SL_MEDIA_TEMPERATURE_CELSIUS_SLOPE) {
 		sl_media_log_err_trace(media_jack, LOG_NAME,
 				       "temperature hw check slope failure (temperature = %dc, previous = %dc, slope = %dc)",
-				       current_temp_c, prev_temp_c, TEMPERATURE_CELSIUS_SLOPE);
+				       current_temp_c, prev_temp_c, SL_MEDIA_TEMPERATURE_CELSIUS_SLOPE);
 		return SL_MEDIA_JACK_TEMP_STATE_UNKNOWN_SLOPE;
 	}
 

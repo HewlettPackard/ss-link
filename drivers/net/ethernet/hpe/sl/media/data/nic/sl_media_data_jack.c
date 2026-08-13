@@ -57,7 +57,6 @@ void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 #define DATA_PATH_ID                      0x08
 #define DATA_PATH_LOWER_LANE_CONFIG       (DATA_PATH_EXPLICIT_CONTROL_ENABLE)
 #define DATA_PATH_LANES_DEACTIVATED       (DATA_PATH_STATE_DEACTIVATED << 4 | DATA_PATH_STATE_DEACTIVATED)
-// FIXME: add media format choices as needed
 int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int rtn;
@@ -189,7 +188,6 @@ int sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack
 	return SL_MEDIA_JACK_CABLE_HW_SHIFT_STATE_UNKNOWN;
 }
 
-// FIXME: add media format choices as needed
 int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version)
 {
 	int rtn;
@@ -281,13 +279,61 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	return 0;
 }
 
+#define SL_MEDIA_SFF_ENHANCED_OPTIONS_OFFSET         221
+#define SL_MEDIA_SFF_ENHANCED_OPTIONS_SOFT_RESET_BIT BIT(0)
+#define SL_MEDIA_SFF_SOFT_RESET_ADDR                 93
+#define SL_MEDIA_SFF_SOFT_RESET_BIT                  BIT(7)
 int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 {
-	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable soft reset");
+	int rtn;
+	u8  enhanced_options;
+	u8  read_data;
 
-	sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable soft reset");
 
+	if (!sl_media_data_jack_media_is_format_cmis(media_jack)) {
+		rtn = sl_media_io_read8(media_jack, 0, SL_MEDIA_SFF_ENHANCED_OPTIONS_OFFSET, &enhanced_options);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset read enhanced_options failed [%d]", rtn);
+			return rtn;
+		}
+
+		if (!(enhanced_options & SL_MEDIA_SFF_ENHANCED_OPTIONS_SOFT_RESET_BIT)) {
+			sl_media_log_dbg(media_jack, LOG_NAME,
+					 "cable soft reset not supported (enhanced_options = 0x%02X)", enhanced_options);
+			return 0;
+		}
+
+		/* read-modify-write to trigger software reset, self-clearing */
+		rtn = sl_media_io_read8(media_jack, 0, SL_MEDIA_SFF_SOFT_RESET_ADDR, &read_data);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset read failed [%d]", rtn);
+			return rtn;
+		}
+
+		rtn = sl_media_io_write8(media_jack, 0, SL_MEDIA_SFF_SOFT_RESET_ADDR,
+					 read_data | SL_MEDIA_SFF_SOFT_RESET_BIT);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset write failed [%d]", rtn);
+			return rtn;
+		}
+	} else {
+		/* CMIS: reset is self clearing */
+		rtn = sl_media_io_write8(media_jack, 0x00, 0x1a, 0x08);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME,
+					       "cable soft reset write failed [%d]", rtn);
+			return rtn;
+		}
+	}
+
+	/* wait for firmware reload */
 	msleep(8000);
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable soft reset done");
 
 	return 0;
 }

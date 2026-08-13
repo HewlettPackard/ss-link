@@ -95,6 +95,44 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	}
 }
 
+#define SFF_EXTENDED_SPEC_COMPLIANCE_CODE_OFFSET 192
+#define SFF_EXT_SPEC_COMP_256GFC_SW4             0x30
+#define SFF_EXT_SPEC_COMP_64GFC_SW4              0x31
+#define SFF_EXT_SPEC_COMP_200GBASE_SR4           0x32
+#define SFF_EXT_SPEC_COMP_50GBASE_LR             0x33
+#define SFF_EXT_SPEC_COMP_200GBASE_CR4           0x40
+static int sl_media_eeprom_sff_appsel_info_get(struct sl_media_jack *media_jack, unsigned long *speeds_map)
+{
+	u8 ext_spec_comp;
+
+	ext_spec_comp = media_jack->eeprom_page0[SFF_EXTENDED_SPEC_COMPLIANCE_CODE_OFFSET];
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "sff appsel info get (ext_spec_compliance = 0x%X)", ext_spec_comp);
+
+	switch (ext_spec_comp) {
+	case SFF_EXT_SPEC_COMP_200GBASE_CR4:
+		*speeds_map = SL_MEDIA_SPEEDS_SUPPORT_BS_200G |
+			      SL_MEDIA_SPEEDS_SUPPORT_CD_100G |
+			      SL_MEDIA_SPEEDS_SUPPORT_CD_50G  |
+			      SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
+		break;
+	case SFF_EXT_SPEC_COMP_256GFC_SW4:
+	case SFF_EXT_SPEC_COMP_64GFC_SW4:
+	case SFF_EXT_SPEC_COMP_200GBASE_SR4:
+	case SFF_EXT_SPEC_COMP_50GBASE_LR:
+		*speeds_map = SL_MEDIA_SPEEDS_SUPPORT_BS_200G |
+			      SL_MEDIA_SPEEDS_SUPPORT_CD_100G |
+			      SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
+		break;
+	default:
+		*speeds_map = 0;
+		break;
+	}
+
+	return 0;
+}
+
 #define APPSEL_PAGE0_START_OFFSET 86
 #define APPSEL_PAGE1_START_OFFSET 223
 #define APPSEL_STRIDE             4
@@ -102,11 +140,14 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 #define APPSEL_LAST_PAGE0         114
 #define APPSEL_LAST_PAGE1         247
 #define APPSEL_LANE_COUNT_OFFSET  2
-static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, unsigned long *speeds_map)
+static int sl_media_eeprom_appsel_info_get(struct sl_media_jack *media_jack, u8 format, unsigned long *speeds_map)
 {
 	u8  host_interface;
 	u8  appsel_curr;
 	u8  appsel_num;
+
+	if (format != SL_MEDIA_MGMT_IF_CMIS)
+		return sl_media_eeprom_sff_appsel_info_get(media_jack, speeds_map);
 
 	appsel_curr = APPSEL_PAGE0_START_OFFSET;
 	appsel_num = 1;
@@ -145,7 +186,7 @@ static int sl_media_eeprom_furcation_get(struct sl_media_jack *media_jack, u32 *
 #define CMIS_CONNECTOR_TYPE_OFFSET    203
 #define CMIS_CONNECTOR_POC_SR8        0x28
 #define CMIS_CONNECTOR_POC_SR4        0x0C
-#define SFF8436_CONNECTOR_TYPE_OFFSET 130
+#define SFF_CONNECTOR_TYPE_OFFSET     130
 #define SFF_CONNECTOR_AOC             0x23
 static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack, u8 format)
 {
@@ -160,7 +201,7 @@ static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack, u8 for
 	}
 
 	/* SFF */
-	switch (media_jack->eeprom_page0[SFF8436_CONNECTOR_TYPE_OFFSET]) {
+	switch (media_jack->eeprom_page0[SFF_CONNECTOR_TYPE_OFFSET]) {
 	case SFF_CONNECTOR_AOC:
 		return false;
 	default:
@@ -169,61 +210,35 @@ static bool sl_media_eeprom_is_type_poc(struct sl_media_jack *media_jack, u8 for
 }
 
 #define CMIS_TYPE_OFFSET    212
-#define CMIS_MEDIA_AOC      0x00
-#define CMIS_MEDIA_PEC      0x0A
-#define CMIS_MEDIA_AEC      0x0C
-#define CMIS_MEDIA_ACC      0x0F
-#define SFF8436_TYPE_OFFSET 147
-#define SFF_MEDIA_AOC       0x00
-#define SFF_MEDIA_PEC       0xA0
-#define SFF_MEDIA_AEC       0xC0
+#define SFF_TYPE_OFFSET     147
+#define MEDIA_AOC           0x09
+#define MEDIA_PEC_UNEQ      0x0A /* copper cable unequalized */
+#define MEDIA_PEC_EQ        0x0B /* copper cable equalized */
+#define MEDIA_AEC           0x0C /* copper cable, near and far end limiting active equalizers */
+#define MEDIA_ACC           0x0F /* copper cable, linear active equalizers */
 static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format, u32 vendor, u32 *type)
 {
 	u8 media;
 
-	if (format == SL_MEDIA_MGMT_IF_CMIS) {
-		media = media_jack->eeprom_page0[CMIS_TYPE_OFFSET];
-		switch (media) {
-		case CMIS_MEDIA_AOC:
-			if (sl_media_eeprom_is_type_poc(media_jack, format))
-				*type = SL_MEDIA_TYPE_POC;
-			else
-				*type = SL_MEDIA_TYPE_AOC;
-			break;
-		case CMIS_MEDIA_PEC:
-			*type = SL_MEDIA_TYPE_PEC;
-			break;
-		case CMIS_MEDIA_AEC:
+	if (format == SL_MEDIA_MGMT_IF_CMIS)
+		media = media_jack->eeprom_page0[CMIS_TYPE_OFFSET] & 0x0F;
+	else
+		media = media_jack->eeprom_page0[SFF_TYPE_OFFSET] >> 4;
+
+	if (media <= MEDIA_AOC)
+		*type = sl_media_eeprom_is_type_poc(media_jack, format) ? SL_MEDIA_TYPE_POC : SL_MEDIA_TYPE_AOC;
+	else if (media == MEDIA_PEC_UNEQ || media == MEDIA_PEC_EQ)
+		*type = SL_MEDIA_TYPE_PEC;
+	else if (media == MEDIA_AEC)
+		*type = SL_MEDIA_TYPE_AEC;
+	else if (media == MEDIA_ACC) {
+		/* compensate for Molex type programming issue */
+		if (vendor == SL_MEDIA_VENDOR_MOLEX)
 			*type = SL_MEDIA_TYPE_AEC;
-			break;
-		case CMIS_MEDIA_ACC:
-			/* compensate for Molex type programming issue */
-			if (vendor == SL_MEDIA_VENDOR_MOLEX)
-				*type = SL_MEDIA_TYPE_AEC;
-			else
-				*type = SL_MEDIA_TYPE_ACC;
-			break;
-		default:
-			*type = SL_MEDIA_TYPE_UNSUPPORTED;
-		}
+		else
+			*type = SL_MEDIA_TYPE_ACC;
 	} else {
-		media = media_jack->eeprom_page0[SFF8436_TYPE_OFFSET];
-		switch (media) {
-		case SFF_MEDIA_AOC:
-			if (sl_media_eeprom_is_type_poc(media_jack, format))
-				*type = SL_MEDIA_TYPE_POC;
-			else
-				*type = SL_MEDIA_TYPE_AOC;
-			break;
-		case SFF_MEDIA_PEC:
-			*type = SL_MEDIA_TYPE_PEC;
-			break;
-		case SFF_MEDIA_AEC:
-			*type = SL_MEDIA_TYPE_AEC;
-			break;
-		default:
-			*type = SL_MEDIA_TYPE_UNSUPPORTED;
-		}
+		*type = SL_MEDIA_TYPE_UNSUPPORTED;
 	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -234,7 +249,7 @@ static int sl_media_eeprom_type_get(struct sl_media_jack *media_jack, u8 format,
 }
 
 #define CMIS_VENDOR_OFFSET      129
-#define SFF8436_VENDOR_OFFSET   148
+#define SFF_VENDOR_OFFSET       148
 #define VENDOR_NAME_MAX_LEN     32
 struct vendor {
 	char name[VENDOR_NAME_MAX_LEN];
@@ -268,7 +283,7 @@ static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 forma
 	if (format == SL_MEDIA_MGMT_IF_CMIS)
 		vendor_ptr = &(media_jack->eeprom_page0[CMIS_VENDOR_OFFSET]);
 	else
-		vendor_ptr = &(media_jack->eeprom_page0[SFF8436_VENDOR_OFFSET]);
+		vendor_ptr = &(media_jack->eeprom_page0[SFF_VENDOR_OFFSET]);
 
 	for (x = 0; x < ARRAY_SIZE(vendor_list); ++x) {
 		if (strnstr(vendor_ptr, vendor_list[x].name, VENDOR_NAME_MAX_LEN) == NULL)
@@ -320,25 +335,43 @@ static int sl_media_eeprom_vendor_pn_str_get(struct sl_media_jack *media_jack, u
 	return 0;
 }
 
-#define HPE_PN_OFFSET 229
-static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u32 *hpe_pn, char *hpe_pn_str)
+#define COMPANY_NAME_OFFSET 224
+#define HPE_PN_OFFSET       228
+#define CRAY_PN_OFFSET      229
+static int sl_media_eeprom_hpe_pn_get(struct sl_media_jack *media_jack, u8 format, u32 *hpe_pn, char *hpe_pn_str)
 {
+	const char *company;
 	const char *pn_ptr;
+	int         pn_offset;
+	int         pn_size;
 	int         i;
 	int         counter;
 
+	company = &media_jack->eeprom_page0[COMPANY_NAME_OFFSET];
+	if (strncasecmp(company, "CRAY", 4) == 0) {
+		pn_offset = CRAY_PN_OFFSET;
+		pn_size   = SL_MEDIA_CRAY_PN_SIZE - 1;
+	} else if (strncasecmp(company, "HPE", 3) == 0) {
+		pn_offset = HPE_PN_OFFSET;
+		pn_size   = SL_MEDIA_HPE_PN_SIZE - 1;
+	} else {
+		hpe_pn_str[0] = '\0';
+		*hpe_pn = 0;
+		return 0;
+	}
+
+	pn_ptr  = &media_jack->eeprom_page0[pn_offset];
 	counter = 0;
-	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
-		if (is_valid_char(media_jack->eeprom_page0[HPE_PN_OFFSET + i])) {
-			hpe_pn_str[counter] = media_jack->eeprom_page0[HPE_PN_OFFSET + i];
-			counter++;
-		}
+	for (i = 0; i < pn_size; ++i) {
+		if (is_valid_char(pn_ptr[i]))
+			hpe_pn_str[counter++] = pn_ptr[i];
 	}
 	hpe_pn_str[counter] = '\0';
 
-	pn_ptr = &(media_jack->eeprom_page0[HPE_PN_OFFSET]);
-	for (i = 0; i < SL_MEDIA_HPE_PN_SIZE - 1; ++i) {
-		if (pn_ptr[i] < 48 || pn_ptr[i] > 57) /* if the PN character is not numeric, ignore it */
+	/* build numeric value by accumulating digit characters only */
+	*hpe_pn = 0;
+	for (i = 0; i < pn_size; ++i) {
+		if (pn_ptr[i] < '0' || pn_ptr[i] > '9') /* if the PN character is not numeric, ignore it */
 			continue;
 		*hpe_pn = *hpe_pn * 10 + (pn_ptr[i] - '0');
 	}
@@ -408,10 +441,15 @@ static int sl_media_eeprom_date_code_get(struct sl_media_jack *media_jack, u8 fo
 }
 
 #define FIRMWARE_VERSION_OFFSET 39
-static int sl_media_eeprom_fw_ver_get(struct sl_media_jack *media_jack, u8 *fw_ver)
+static int sl_media_eeprom_fw_ver_get(struct sl_media_jack *media_jack, u8 format, u8 *fw_ver)
 {
-	fw_ver[0] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET];
-	fw_ver[1] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET + 1];
+	if (format == SL_MEDIA_MGMT_IF_CMIS) {
+		fw_ver[0] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET];
+		fw_ver[1] = media_jack->eeprom_page0[FIRMWARE_VERSION_OFFSET + 1];
+	} else {
+		fw_ver[0] = 0;
+		fw_ver[1] = 0;
+	}
 
 	return 0;
 }
@@ -424,8 +462,8 @@ static int sl_media_eeprom_cable_end_get(struct sl_media_jack *media_jack)
 	return 0;
 }
 
-#define CMIS_LENGTH_OFFSET    202
-#define SFF8436_LENGTH_OFFSET 146
+#define CMIS_LENGTH_OFFSET  202
+#define SFF_LENGTH_OFFSET   146
 static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 format, u32 *length)
 {
 	if (format == SL_MEDIA_MGMT_IF_CMIS) {
@@ -448,7 +486,7 @@ static int sl_media_eeprom_length_get(struct sl_media_jack *media_jack, u8 forma
 			break;
 		}
 	} else {
-		*length = media_jack->eeprom_page0[SFF8436_LENGTH_OFFSET] * 100;
+		*length = media_jack->eeprom_page0[SFF_LENGTH_OFFSET] * 100;
 	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -548,13 +586,13 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_vendor_get(media_jack, media_attr->format, &(media_attr->vendor));
 	sl_media_eeprom_vendor_pn_str_get(media_jack, media_attr->format, media_attr->vendor_pn_str);
 	sl_media_eeprom_type_get(media_jack, media_attr->format, media_attr->vendor, &(media_attr->type));
-	sl_media_eeprom_hpe_pn_get(media_jack, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
+	sl_media_eeprom_hpe_pn_get(media_jack, media_attr->format, &(media_attr->hpe_pn), media_attr->hpe_pn_str);
 	sl_media_eeprom_serial_num_get(media_jack, media_attr->format, media_attr->serial_num_str);
 	sl_media_eeprom_date_code_get(media_jack, media_attr->format, media_attr->date_code_str);
-	sl_media_eeprom_fw_ver_get(media_jack, media_attr->fw_ver);
+	sl_media_eeprom_fw_ver_get(media_jack, media_attr->format, media_attr->fw_ver);
 	sl_media_eeprom_cable_end_get(media_jack);
 	sl_media_eeprom_length_get(media_jack, media_attr->format, &(media_attr->length_cm));
-	sl_media_eeprom_appsel_info_get(media_jack, &(media_attr->speeds_map));
+	sl_media_eeprom_appsel_info_get(media_jack, media_attr->format, &(media_attr->speeds_map));
 	sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation));
 	sl_media_eeprom_supported_flags_advertised_get(media_jack, media_attr->supported_flags_advertised);
 
