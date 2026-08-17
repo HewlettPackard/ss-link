@@ -319,9 +319,12 @@ struct sl_core_link_fecl_kobj {
 };
 
 #define PML_REC_DOWN_CAUSE_INVALID       0
-#define PML_REC_DOWN_CAUSE_LINK_DOWN     1
-#define PML_REC_DOWN_CAUSE_LOCAL_FAULT   2
-#define PML_REC_DOWN_CAUSE_REMOTE_FAULT  3
+#define PML_REC_DOWN_CAUSE_LINK_DOWN     BIT(1)
+#define PML_REC_DOWN_CAUSE_LOCAL_FAULT   BIT(2)
+#define PML_REC_DOWN_CAUSE_REMOTE_FAULT  BIT(3)
+
+#define PML_REC_DOWN_CAUSE_STR_SIZE     128
+#define PML_REC_DOWN_CAUSE_STR_SIZE_MIN 4
 
 #define SL_CORE_LINK_MAGIC 0x736c4C4E
 struct sl_core_link {
@@ -378,7 +381,8 @@ struct sl_core_link {
 		ktime_t                      pml_rec_attempt_start_time;
 		ktime_t                      pml_rec_attempts_total_time;
 		ktime_t                      pml_rec_poll_start_time;
-		u8                           pml_rec_last_down_cause;
+		u64                          pml_rec_last_down_cause_map;
+		time64_t                     pml_rec_last_down_time;
 		u64                          restart_lock_on_bad_cws_save;
 		u64                          restart_lock_on_bad_ams_save;
 	} pml_rec;
@@ -532,7 +536,6 @@ bool sl_core_link_is_degrade_state_active(struct sl_core_link *core_link);
 
 bool sl_core_link_config_is_enable_pml_recovery_set(struct sl_core_link *core_link);
 bool sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link);
-const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause);
 
 int  sl_core_link_is_pml_rec_running_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running);
 

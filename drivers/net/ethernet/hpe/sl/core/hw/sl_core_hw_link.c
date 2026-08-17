@@ -1631,6 +1631,7 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 	struct sl_ctrl_lgrp     *ctrl_lgrp;
 	union sl_lgrp_notif_info info;
 	int                      rtn;
+	u64                      pml_rec_last_down_cause_map;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
@@ -1648,17 +1649,23 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
 
-	if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT) {
+	sl_core_data_link_pml_rec_last_down_cause_map_get(core_link, &pml_rec_last_down_cause_map);
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LOCAL_FAULT) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
 		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
 			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
-	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN) {
+	}
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LINK_DOWN) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
 		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
 			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
-	} else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT) {
+	}
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_REMOTE_FAULT) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
 		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
@@ -1673,6 +1680,7 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 	struct sl_core_link *core_link;
 	ktime_t              current_time;
 	s64                  elapsed_time;
+	char                 cause_str[128];
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_PML_REC_POLL]);
 
@@ -1700,10 +1708,13 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 		if (sl_core_hw_pcs_is_pml_rec_success(core_link)) {
 
 			elapsed_time = ktime_ms_delta(current_time, core_link->pml_rec.pml_rec_attempt_start_time);
+
+			sl_core_data_link_pml_rec_down_cause_map_str(core_link->pml_rec.pml_rec_last_down_cause_map,
+								     cause_str, sizeof(cause_str));
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 					       "pml rec poll work successful (elapsed_time = %lldms, down_cause = %s)",
 					       elapsed_time,
-					       sl_core_link_pml_rec_down_cause_str(core_link->pml_rec.pml_rec_last_down_cause));
+					       cause_str);
 
 			atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_SUCCESSES]);
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
@@ -1717,17 +1728,15 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 		    core_link->config.pml_rec_timeout_ms) {
 
 			elapsed_time = ktime_ms_delta(current_time, core_link->pml_rec.pml_rec_attempt_start_time);
+
+			sl_core_data_link_pml_rec_down_cause_map_str(core_link->pml_rec.pml_rec_last_down_cause_map,
+								     cause_str, sizeof(cause_str));
 			sl_core_log_err_trace(core_link, LOG_NAME,
 					      "pml rec poll work timedout (elapsed_time = %lldms, down_cause = %s)",
 					      elapsed_time,
-					      sl_core_link_pml_rec_down_cause_str(core_link->pml_rec.pml_rec_last_down_cause));
+					      cause_str);
 
-			if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
-			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
-			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
+			sl_core_data_link_pml_rec_last_down_cause_cntr_inc(core_link);
 
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
 
@@ -1740,12 +1749,7 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 		    core_link->config.pml_rec_rate_limit_max_time_ms) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "pml rec poll work rate limit exceeded");
 
-			if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LOCAL_FAULT)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
-			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_LINK_DOWN)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
-			else if (core_link->pml_rec.pml_rec_last_down_cause == PML_REC_DOWN_CAUSE_REMOTE_FAULT)
-				atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
+			sl_core_data_link_pml_rec_last_down_cause_cntr_inc(core_link);
 
 			atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_RATE_LIMIT_EXCEEDED]);
 			atomic_set(&core_link->pml_rec.pml_rec_running, 0);
@@ -1924,13 +1928,17 @@ void sl_core_hw_link_fault_intr_work(struct work_struct *work)
 
 	if (local_fault) {
 		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_LOCAL_FAULT_CAUSE]);
-		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_LOCAL_FAULT;
-	} else if (link_down) {
+		sl_core_data_link_pml_rec_last_down_cause_map_set(core_link, PML_REC_DOWN_CAUSE_LOCAL_FAULT);
+	}
+
+	if (link_down) {
 		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_DOWN_CAUSE]);
-		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_LINK_DOWN;
-	} else if (remote_fault) {
+		sl_core_data_link_pml_rec_last_down_cause_map_set(core_link, PML_REC_DOWN_CAUSE_LINK_DOWN);
+	}
+
+	if (remote_fault) {
 		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters[SL_LINK_PML_REC_LINK_REMOTE_FAULT_CAUSE]);
-		core_link->pml_rec.pml_rec_last_down_cause = PML_REC_DOWN_CAUSE_REMOTE_FAULT;
+		sl_core_data_link_pml_rec_last_down_cause_map_set(core_link, PML_REC_DOWN_CAUSE_REMOTE_FAULT);
 	}
 
 	sl_core_hw_link_pml_recovery(core_link);

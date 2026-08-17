@@ -1282,3 +1282,123 @@ int sl_core_data_link_fec_up_ccw_limit_get(struct sl_core_link *core_link, s32 *
 
 	return 0;
 }
+
+void sl_core_data_link_pml_rec_last_down_cause_map_set(struct sl_core_link *core_link, u64 cause)
+{
+	unsigned long irq_flags;
+	u64           cause_map;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
+	core_link->pml_rec.pml_rec_last_down_cause_map |= cause;
+	cause_map = core_link->pml_rec.pml_rec_last_down_cause_map;
+	core_link->pml_rec.pml_rec_last_down_time = ktime_get_real_seconds();
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME, "pml rec last down cause map set (cause_map = 0x%016llX)", cause_map);
+}
+
+int sl_core_data_link_pml_rec_last_down_cause_map_get(struct sl_core_link *core_link, u64 *pml_rec_last_down_cause_map)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
+	*pml_rec_last_down_cause_map = core_link->pml_rec.pml_rec_last_down_cause_map;
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"pml rec last down cause map get (cause_map = 0x%016llX)", *pml_rec_last_down_cause_map);
+
+	return 0;
+}
+
+int sl_core_data_link_pml_rec_last_down_cause_map_info_get(struct sl_core_link *core_link,
+							   u64 *pml_rec_last_down_cause_map,
+							   time64_t *pml_rec_last_down_time)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&core_link->irq_data_lock, irq_flags);
+	*pml_rec_last_down_cause_map = core_link->pml_rec.pml_rec_last_down_cause_map;
+	*pml_rec_last_down_time = core_link->pml_rec.pml_rec_last_down_time;
+	spin_unlock_irqrestore(&core_link->irq_data_lock, irq_flags);
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"pml rec last down cause map get (cause_map = 0x%016llX)", *pml_rec_last_down_cause_map);
+
+	return 0;
+}
+
+void sl_core_data_link_pml_rec_last_down_cause_cntr_inc(struct sl_core_link *core_link)
+{
+	u64 pml_rec_last_down_cause_map;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "pml rec last down cause cntr inc");
+
+	sl_core_data_link_pml_rec_last_down_cause_map_get(core_link, &pml_rec_last_down_cause_map);
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LOCAL_FAULT)
+		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters
+			   [SL_LINK_PML_REC_LINK_LOCAL_FAULT_FAILED_CAUSE]);
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LINK_DOWN)
+		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters
+			   [SL_LINK_PML_REC_LINK_DOWN_FAILED_CAUSE]);
+
+	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_REMOTE_FAULT)
+		atomic_inc(&core_link->pml_rec.pml_rec_info.pml_rec_counters
+			   [SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
+}
+
+int sl_core_data_link_pml_rec_down_cause_map_str(unsigned long cause_map, char *cause_str, unsigned int cause_str_size)
+{
+	int rtn;
+	int str_pos;
+	int which;
+
+	if (!cause_str)
+		return -EINVAL;
+
+	if (cause_str_size < PML_REC_DOWN_CAUSE_STR_SIZE_MIN)
+		return -EINVAL;
+
+	if (cause_map == PML_REC_DOWN_CAUSE_INVALID) {
+		str_pos = snprintf(cause_str, cause_str_size, "none ");
+		goto out;
+	}
+
+	str_pos = 0;
+
+	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
+		switch (BIT(which)) {
+		case PML_REC_DOWN_CAUSE_LINK_DOWN:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");
+			break;
+		case PML_REC_DOWN_CAUSE_LOCAL_FAULT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
+			break;
+		case PML_REC_DOWN_CAUSE_REMOTE_FAULT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
+			break;
+		default:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
+			break;
+		}
+
+		if (rtn < 0) {
+			str_pos = snprintf(cause_str, cause_str_size, "error ");
+			goto out;
+		}
+		if (str_pos + rtn >= cause_str_size) {
+			cause_str[str_pos - 2] = '.';
+			cause_str[str_pos - 3] = '.';
+			cause_str[str_pos - 4] = '.';
+			break;
+		}
+		str_pos += rtn;
+	}
+
+out:
+	cause_str[str_pos - 1] = '\0';
+
+	return 0;
+}

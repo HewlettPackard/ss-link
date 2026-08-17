@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=20
+MINOR=21
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -593,8 +593,8 @@ function print_jack {
         printf " (max = ${max_speed})\n"
 
 	printf "           | error_info          = ${error_info}\n"
-	printf "           | last_io_fault_cause = ${last_io_fault_time}  ${last_io_fault_cause}\n"
-	printf "           | last_fault_cause    = ${last_fault_time}  ${last_fault_cause}\n"
+	printf "           | last_io_fault_cause = ${last_io_fault_time}   ${last_io_fault_cause}\n"
+	printf "           | last_fault_cause    = ${last_fault_time}   ${last_fault_cause}\n"
 
         cable_insert_time=$(cat ${LGRP_PATH}/media/last_cable_insert/time_0)
         cable_insert_vendor=$(cat ${LGRP_PATH}/media/last_cable_insert/cable_0/vendor)
@@ -706,8 +706,10 @@ function print_link {
         local pml_rec_down_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_down_failed_cause)
         local pml_rec_remote_fault_failed_cause=$(cat ${LINK_PATH}/pml_recovery/pml_rec_link_remote_fault_failed_cause)
         local pml_rec_rate_limit_exceeded=$(cat ${LINK_PATH}/pml_recovery/pml_rec_rate_limit_exceeded)
-	local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
-	local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
+        local pml_rec_last_down_cause_map=$(cat ${LINK_PATH}/pml_recovery/pml_rec_last_down_cause_map)
+        local pml_rec_last_down_time=$(cat ${LINK_PATH}/pml_recovery/pml_rec_last_down_time)
+        local degrade_config=$(cat ${LINK_PATH}/config/auto_lane_degrade)
+        local is_recoverable=$(cat ${LINK_PATH}/auto_lane_degrade/is_recoverable)
         local fec_mon_ccw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_down_limit)
         local fec_mon_ccw_warn_limit=$(cat ${LINK_PATH}/policies/fec_mon_ccw_warn_limit)
         local fec_mon_ucw_down_limit=$(cat ${LINK_PATH}/policies/fec_mon_ucw_down_limit)
@@ -716,7 +718,7 @@ function print_link {
 
         print_link_state
 
-        printf "    causes | last_autoneg_fail: ${an_fail_time} ${an_fail_cause}\n"
+        printf "    causes | last_autoneg_fail: ${an_fail_time}   ${an_fail_cause}\n"
         down_cause_map=$(cat ${LINK_PATH}/last_down/cause_map_0)
         down_time=$(cat ${LINK_PATH}/last_down/time_0)
         printf "           | last_down:     [0] ${down_time}   ${down_cause_map}\n"
@@ -750,15 +752,16 @@ function print_link {
         printf "           |          hpe   = ${caps_hpe}\n"
         printf "           |          fec   = ${caps_fec}\n"
         printf "           |          pause = ${caps_pause}\n"
-        printf "  recovery | attempts : ${pml_rec_attempts}\n"
-        printf "           | successes: ${pml_rec_successes}\n"
-        printf "           | rate_limit_exceeded      : ${pml_rec_rate_limit_exceeded}\n"
-        printf "           | link_down_cause          : ${pml_rec_down_cause}\n"
-        printf "           | link_down_failed_cause   : ${pml_rec_down_failed_cause}\n"
-        printf "           | local_fault_cause        : ${pml_rec_local_fault_cause}\n"
-        printf "           | local_fault_failed_cause : ${pml_rec_local_fault_failed_cause}\n"
-        printf "           | remote_fault_cause       : ${pml_rec_remote_fault_cause}\n"
-        printf "           | remote_fault_failed_cause: ${pml_rec_remote_fault_failed_cause}\n"
+        printf "  recovery | down_cause: ${pml_rec_last_down_time}   ${pml_rec_last_down_cause_map}\n"
+        printf "  counters |                  attempts = ${pml_rec_attempts}\n"
+        printf "           |                 successes = ${pml_rec_successes}\n"
+        printf "           |       rate_limit_exceeded = ${pml_rec_rate_limit_exceeded}\n"
+        printf "           |           link_down_cause = ${pml_rec_down_cause}\n"
+        printf "           |    link_down_failed_cause = ${pml_rec_down_failed_cause}\n"
+        printf "           |         local_fault_cause = ${pml_rec_local_fault_cause}\n"
+        printf "           |  local_fault_failed_cause = ${pml_rec_local_fault_failed_cause}\n"
+        printf "           |        remote_fault_cause = ${pml_rec_remote_fault_cause}\n"
+        printf "           | remote_fault_failed_cause = ${pml_rec_remote_fault_failed_cause}\n"
 
 	print_ald_state
 }

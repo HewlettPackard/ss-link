@@ -86,4 +86,15 @@ int sl_core_data_link_pml_rec_link_down_failed_cause_get(struct sl_core_link *co
 int sl_core_data_link_pml_rec_link_remote_fault_failed_cause_get(struct sl_core_link *core_link, int *remote_fault_failed_cause);
 int sl_core_data_link_pml_rec_rate_limit_exceeded_get(struct sl_core_link *core_link, int *rate_limit_exceeded);
 
+void sl_core_data_link_pml_rec_last_down_cause_map_set(struct sl_core_link *core_link, u64 bit_num);
+int  sl_core_data_link_pml_rec_last_down_cause_map_get(struct sl_core_link *core_link,
+						       u64 *pml_rec_last_down_cause_map);
+int  sl_core_data_link_pml_rec_last_down_cause_map_info_get(struct sl_core_link *core_link,
+							    u64 *pml_rec_last_down_cause_map,
+							    time64_t *pml_rec_last_down_time);
+void sl_core_data_link_pml_rec_last_down_cause_cntr_inc(struct sl_core_link *core_link);
+int  sl_core_data_link_pml_rec_down_cause_map_str(unsigned long cause_map, char *cause_str,
+						  unsigned int cause_str_size);
+
+
 #endif /* _SL_CORE_DATA_LINK_H_ */

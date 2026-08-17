@@ -173,6 +173,50 @@ static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kob
 	return sysfs_emit(buf, "%d\n", rate_limit_exceeded);
 }
 
+static ssize_t pml_rec_last_down_cause_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_core_link *core_link;
+	u64                  down_cause_map;
+	time64_t             down_time;
+	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	int		     rtn;
+
+	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
+
+	rtn = sl_core_data_link_pml_rec_last_down_cause_map_info_get(core_link, &down_cause_map, &down_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_core_data_link_pml_rec_down_cause_map_str(down_cause_map, cause_str, sizeof(cause_str));
+
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec last down cause map show (cause_map = 0x%llX %s)",
+		   down_cause_map, cause_str);
+
+	return sysfs_emit(buf, "%s\n", cause_str);
+}
+
+static ssize_t pml_rec_last_down_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_core_link *core_link;
+	u64                  down_cause_map;
+	time64_t             down_time;
+	int		     rtn;
+
+	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);
+
+	rtn = sl_core_data_link_pml_rec_last_down_cause_map_info_get(core_link, &down_cause_map, &down_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	if (down_cause_map == PML_REC_DOWN_CAUSE_INVALID)
+		return sysfs_emit(buf, "none\n");
+
+	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
+		   "pml rec last down time show (time = %lld %ptTt %ptTd)", down_time, &down_time, &down_time);
+
+	return sysfs_emit(buf, "%ptTt %ptTd\n", &down_time, &down_time);
+}
+
 static struct kobj_attribute link_pml_rec_attempts                       = __ATTR_RO(pml_rec_attempts);
 static struct kobj_attribute link_pml_rec_successes                      = __ATTR_RO(pml_rec_successes);
 static struct kobj_attribute link_pml_rec_link_fault_cause               = __ATTR_RO(pml_rec_link_fault_cause);
@@ -182,6 +226,8 @@ static struct kobj_attribute link_pml_rec_link_fault_failed_cause        = __ATT
 static struct kobj_attribute link_pml_rec_link_down_failed_cause         = __ATTR_RO(pml_rec_link_down_failed_cause);
 static struct kobj_attribute link_pml_rec_link_remote_fault_failed_cause = __ATTR_RO(pml_rec_link_remote_fault_failed_cause);
 static struct kobj_attribute link_pml_rec_rate_limit_exceeded            = __ATTR_RO(pml_rec_rate_limit_exceeded);
+static struct kobj_attribute link_pml_rec_last_down_cause_map            = __ATTR_RO(pml_rec_last_down_cause_map);
+static struct kobj_attribute link_pml_rec_last_down_time                 = __ATTR_RO(pml_rec_last_down_time);
 
 static struct attribute *link_pml_rec_attrs[] = {
 	&link_pml_rec_attempts.attr,
@@ -193,6 +239,8 @@ static struct attribute *link_pml_rec_attrs[] = {
 	&link_pml_rec_link_down_failed_cause.attr,
 	&link_pml_rec_link_remote_fault_failed_cause.attr,
 	&link_pml_rec_rate_limit_exceeded.attr,
+	&link_pml_rec_last_down_cause_map.attr,
+	&link_pml_rec_last_down_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link_pml_rec);

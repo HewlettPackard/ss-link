@@ -348,22 +348,6 @@ bool sl_core_link_is_pml_recovery_running(struct sl_core_link *core_link)
 	return false;
 }
 
-const char *sl_core_link_pml_rec_down_cause_str(u8 down_cause)
-{
-	switch (down_cause) {
-	case PML_REC_DOWN_CAUSE_INVALID:
-		return "invalid";
-	case PML_REC_DOWN_CAUSE_LINK_DOWN:
-		return "link-down";
-	case PML_REC_DOWN_CAUSE_LOCAL_FAULT:
-		return "local-fault";
-	case PML_REC_DOWN_CAUSE_REMOTE_FAULT:
-		return "remote-fault";
-	default:
-		return "unknown";
-	}
-}
-
 int sl_core_link_is_pml_rec_running_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running)
 {
 	return sl_core_hw_link_is_pml_rec_running(sl_core_link_get(ldev_num, lgrp_num, link_num), is_pml_rec_running);
@@ -442,14 +426,14 @@ int sl_core_link_last_down_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_
 void sl_core_link_last_up_fail_cause_map_set(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 up_fail_cause_map)
 {
 	sl_core_data_link_last_up_fail_cause_map_set(sl_core_link_get(ldev_num, lgrp_num, link_num),
-					             up_fail_cause_map);
+						     up_fail_cause_map);
 }
 
 int  sl_core_link_last_up_fail_cause_map_info_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u8 entry_num,
-					          u64 *up_fail_cause_map, time64_t *up_fail_time)
+						  u64 *up_fail_cause_map, time64_t *up_fail_time)
 {
 	return sl_core_data_link_last_up_fail_cause_map_info_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
-							         entry_num, up_fail_cause_map, up_fail_time);
+								 entry_num, up_fail_cause_map, up_fail_time);
 }
 
 int sl_core_link_ucw_warn_limit_crossed_get(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_limit_crossed,
