@@ -28,9 +28,10 @@ int  sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *core_link_
 int  sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map);
 int  sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down);
 
-void sl_ctrl_link_up_clock_start(struct sl_ctrl_link *ctrl_link);
-void sl_ctrl_link_up_clock_reset(struct sl_ctrl_link *ctrl_link);
-void sl_ctrl_link_up_clock_attempt_start(struct sl_ctrl_link *ctrl_link);
+void sl_ctrl_link_up_time_start(struct sl_ctrl_link *ctrl_link);
+void sl_ctrl_link_up_time_stop(struct sl_ctrl_link *ctrl_link);
+void sl_ctrl_link_up_time_reset(struct sl_ctrl_link *ctrl_link);
+void sl_ctrl_link_up_time_attempt_stop(struct sl_ctrl_link *ctrl_link);
 
 void sl_ctrl_link_config_get(struct sl_ctrl_link *ctrl_link, struct sl_link_config *link_config);
 void sl_ctrl_link_policy_get(struct sl_ctrl_link *ctrl_link, struct sl_link_policy *link_policy);

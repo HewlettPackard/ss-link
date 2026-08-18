@@ -62,13 +62,12 @@ struct sl_ctrl_link {
 
 	struct {
 		ktime_t              start;
-		ktime_t              elapsed;
+		ktime_t              stop;
 		u32                  attempt_count;
 		ktime_t              attempt_start;
-		ktime_t              attempt_elapsed;
-		ktime_t              up;
+		ktime_t              attempt_stop;
 		spinlock_t           lock;
-	} up_clock;
+	} up_time;
 
 	// FIXME: fec needs to go in a struct
 	struct sl_ctrl_link_fec_data  fec_data;
@@ -143,8 +142,8 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
-int sl_ctrl_link_up_clocks_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
-				s64 *attempt_time, s64 *total_time, s64 *up_time);
+int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+			     s64 *attempt_time, s64 *total_time, s64 *up_time);
 int sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *up_count);
 
 int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state);
@@ -158,5 +157,7 @@ u32 sl_ctrl_link_an_retry_count_get(struct sl_ctrl_link *ctrl_link, int *count);
 int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map);
 
 int sl_ctrl_link_is_pml_rec_running(u8 ldev_num, u8 lgrp_num, u8 link_num, bool *is_pml_rec_running);
+
+void sl_ctrl_link_up_time_attempt_start(struct sl_ctrl_link *ctrl_link);
 
 #endif /* _SL_CTRL_LINK_H_ */

@@ -155,65 +155,59 @@ static int sl_ctrl_link_down_req_notif_send(struct sl_ctrl_link *ctrl_link, u64 
 					  SL_LGRP_NOTIF_LINK_DOWN_REQ, &info, info_map);
 }
 
-void sl_ctrl_link_up_clock_start(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_up_time_start(struct sl_ctrl_link *ctrl_link)
 {
-	spin_lock(&ctrl_link->up_clock.lock);
-	ctrl_link->up_clock.start         = ktime_get();
-	ctrl_link->up_clock.elapsed       = ktime_set(0, 0);
-	ctrl_link->up_clock.attempt_count = 0;
-	spin_unlock(&ctrl_link->up_clock.lock);
+	spin_lock(&ctrl_link->up_time.lock);
+	ctrl_link->up_time.start         = ktime_get();
+	ctrl_link->up_time.stop          = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_start = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_stop  = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_count = 0;
+	spin_unlock(&ctrl_link->up_time.lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"clock start (time = %lld)", ctrl_link->up_clock.start);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up start (time = %lld)", ctrl_link->up_time.start);
 }
 
-static void sl_ctrl_link_up_clock_stop(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_up_time_stop(struct sl_ctrl_link *ctrl_link)
 {
-	spin_lock(&ctrl_link->up_clock.lock);
-	ctrl_link->up_clock.elapsed = ktime_sub(ktime_get(), ctrl_link->up_clock.start);
-	ctrl_link->up_clock.start   = ktime_set(0, 0);
-	ctrl_link->up_clock.up      = ktime_get();
-	spin_unlock(&ctrl_link->up_clock.lock);
+	spin_lock(&ctrl_link->up_time.lock);
+	ctrl_link->up_time.stop    = ktime_get();
+	spin_unlock(&ctrl_link->up_time.lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"clock stop (time = %lld)", ctrl_link->up_clock.elapsed);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up stop (time = %lld)", ctrl_link->up_time.stop);
 }
 
-void sl_ctrl_link_up_clock_reset(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_up_time_reset(struct sl_ctrl_link *ctrl_link)
 {
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "clock reset");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up reset");
 
-	spin_lock(&ctrl_link->up_clock.lock);
-	ctrl_link->up_clock.elapsed         = ktime_set(0, 0);
-	ctrl_link->up_clock.start           = ktime_set(0, 0);
-	ctrl_link->up_clock.attempt_count   = 0;
-	ctrl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
-	ctrl_link->up_clock.attempt_start   = ktime_set(0, 0);
-	ctrl_link->up_clock.up              = ktime_set(0, 0);
-	spin_unlock(&ctrl_link->up_clock.lock);
+	spin_lock(&ctrl_link->up_time.lock);
+	ctrl_link->up_time.start           = ktime_set(0, 0);
+	ctrl_link->up_time.stop            = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_count   = 0;
+	ctrl_link->up_time.attempt_start   = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_stop    = ktime_set(0, 0);
+	spin_unlock(&ctrl_link->up_time.lock);
 }
 
-void sl_ctrl_link_up_clock_attempt_start(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_up_time_attempt_start(struct sl_ctrl_link *ctrl_link)
 {
-	spin_lock(&ctrl_link->up_clock.lock);
-	ctrl_link->up_clock.attempt_start   = ktime_get();
-	ctrl_link->up_clock.attempt_elapsed = ktime_set(0, 0);
-	ctrl_link->up_clock.attempt_count++;
-	spin_unlock(&ctrl_link->up_clock.lock);
+	spin_lock(&ctrl_link->up_time.lock);
+	ctrl_link->up_time.attempt_start   = ktime_get();
+	ctrl_link->up_time.attempt_stop    = ktime_set(0, 0);
+	ctrl_link->up_time.attempt_count++;
+	spin_unlock(&ctrl_link->up_time.lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"clock attempt start (time = %lld)", ctrl_link->up_clock.attempt_start);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "attempt start (time = %lld)", ctrl_link->up_time.attempt_start);
 }
 
-static void sl_ctrl_link_up_clock_attempt_stop(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_up_time_attempt_stop(struct sl_ctrl_link *ctrl_link)
 {
-	spin_lock(&ctrl_link->up_clock.lock);
-	ctrl_link->up_clock.attempt_elapsed = ktime_sub(ktime_get(), ctrl_link->up_clock.attempt_start);
-	ctrl_link->up_clock.attempt_start   = ktime_set(0, 0);
-	spin_unlock(&ctrl_link->up_clock.lock);
+	spin_lock(&ctrl_link->up_time.lock);
+	ctrl_link->up_time.attempt_stop  = ktime_get();
+	spin_unlock(&ctrl_link->up_time.lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-		"clock attempt stop (time = %lld)", ctrl_link->up_clock.attempt_elapsed);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "attempt stop (time = %lld)", ctrl_link->up_time.attempt_stop);
 }
 
 static void sl_ctrl_link_state_stopping_set(struct sl_ctrl_link *ctrl_link)
@@ -268,17 +262,17 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 	sl_ctrl_link_last_up_fail_cause_map_clr(ctrl_link);
 	sl_ctrl_link_last_up_fail_cause_map_set(ctrl_link, core_link_up_info.cause_map);
 
-	sl_ctrl_link_up_clock_attempt_stop(ctrl_link);
+	sl_ctrl_link_up_time_attempt_stop(ctrl_link);
 
 	switch (core_link_up_info.state) {
 	case SL_CORE_LINK_STATE_UP:
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP);
-		sl_ctrl_link_up_clock_stop(ctrl_link);
+		sl_ctrl_link_up_time_stop(ctrl_link);
 
-		rtn = sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-						 ctrl_link->num, &attempt_time, &total_time, &up_time);
+		rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+					       ctrl_link->num, &attempt_time, &total_time, &up_time);
 		if (rtn)
-			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "link_up_clocks_get failed [%d]", rtn);
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "link_up_time_get failed [%d]", rtn);
 
 		rtn = sl_ctrl_link_up_count_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						ctrl_link->num, &up_count);
@@ -286,8 +280,8 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "link_up_count_get failed [%d]", rtn);
 
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"up callback (count = %d, attempt_time = %lldms, total_time = %lldms)",
-			up_count, attempt_time, total_time);
+				"up callback (count = %d, attempt_time = %lldms, total_time = %lldms)",
+				up_count, attempt_time, total_time);
 
 		sl_ctrl_link_fec_mon_start(ctrl_link);
 
@@ -297,7 +291,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			core_link_up_info.speed, core_link_up_info.fec_mode, core_link_up_info.fec_type);
 		if (rtn)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-				"up callback ctrl_link_up_notif_send failed [%d]", rtn);
+					       "up callback ctrl_link_up_notif_send failed [%d]", rtn);
 		return 0;
 
 	case SL_CORE_LINK_STATE_DOWN:
@@ -309,7 +303,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 		/* canceled */
 		if (sl_ctrl_link_is_canceled(ctrl_link)) {
-			sl_ctrl_link_up_clock_reset(ctrl_link);
+			sl_ctrl_link_up_time_reset(ctrl_link);
 
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up retry canceled");
 
@@ -339,7 +333,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "link_up_count_get failed [%d]", rtn);
 
 		if ((up_count >= max_up_tries) && (max_up_tries != SL_LINK_INFINITE_UP_TRIES)) {
-			sl_ctrl_link_up_clock_reset(ctrl_link);
+			sl_ctrl_link_up_time_reset(ctrl_link);
 
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback work out of up tries");
 
@@ -365,7 +359,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 		/* check fatal down causes */
 		if (sl_ctrl_link_is_last_up_fail_cause_set(ctrl_link, SL_LINK_DOWN_CAUSE_FATAL_MASK)) {
-			sl_ctrl_link_up_clock_reset(ctrl_link);
+			sl_ctrl_link_up_time_reset(ctrl_link);
 
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback work fatal down cause");
 
@@ -392,17 +386,17 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_RETRY);
 
-		sl_ctrl_link_up_clock_attempt_start(ctrl_link);
+		sl_ctrl_link_up_time_attempt_start(ctrl_link);
 
 		rtn = sl_core_link_up(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-			ctrl_link->num, sl_ctrl_link_up_callback, ctrl_link);
+				      ctrl_link->num, sl_ctrl_link_up_callback, ctrl_link);
 		if (rtn) {
-			sl_ctrl_link_up_clock_reset(ctrl_link);
+			sl_ctrl_link_up_time_reset(ctrl_link);
 
 			sl_ctrl_link_state_stopping_set(ctrl_link);
 
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-				"up callback work core_link_up failed [%d]", rtn);
+					      "up callback work core_link_up failed [%d]", rtn);
 
 			flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 			sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
@@ -411,10 +405,12 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 			info.error = rtn;
 			rtn = sl_ctrl_lgrp_notif_enqueue(ctrl_link->ctrl_lgrp, ctrl_link->num,
-				SL_LGRP_NOTIF_LINK_ERROR, &info, core_link_up_info.info_map);
+							 SL_LGRP_NOTIF_LINK_ERROR, &info,
+							 core_link_up_info.info_map);
 			if (rtn)
 				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-					"up callback work ctrl_lgrp_notif_enqueue failed [%d]", rtn);
+						       "up callback work ctrl_lgrp_notif_enqueue failed [%d]",
+						       rtn);
 
 
 			return info.error;
@@ -422,7 +418,7 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 		return 0;
 
 	default:
-		sl_ctrl_link_up_clock_reset(ctrl_link);
+		sl_ctrl_link_up_time_reset(ctrl_link);
 		sl_ctrl_link_state_stopping_set(ctrl_link);
 
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
@@ -491,7 +487,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 			"fault callback (core_state = %u %s, core_cause_map = 0x%llX, core_info_map = %s (0x%llx))",
 			core_state, sl_core_link_state_str(core_state), core_cause_map, core_imap_str, core_info_map);
 
-	sl_ctrl_link_up_clock_reset(ctrl_link);
+	sl_ctrl_link_up_time_reset(ctrl_link);
 
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
@@ -581,6 +577,8 @@ int sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u6
 		"down callback (core_state = %u %s, core_cause = 0x%llX %s, core_info_map = %llu)",
 		core_state, sl_core_link_state_str(core_state), core_cause_map, cause_str, core_info_map);
 
+	sl_ctrl_link_up_time_reset(ctrl_link);
+
 	switch (core_state) {
 	case SL_CORE_LINK_STATE_DOWN:
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN);
@@ -620,6 +618,8 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 			"async_down kref_get_unless_zero failed (ctrl_link = 0x%p)", ctrl_link);
 		return -EBADRQC;
 	}
+
+	sl_ctrl_link_up_time_reset(ctrl_link);
 
 	sl_link_down_cause_map_with_info_str(core_cause_map, cause_str, sizeof(cause_str));
 
@@ -672,8 +672,6 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
-
-	sl_ctrl_link_up_clock_reset(ctrl_link);
 
 	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;

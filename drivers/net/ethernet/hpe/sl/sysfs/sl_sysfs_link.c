@@ -194,8 +194,8 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return sysfs_emit(buf, "no-link\n");
 
-	rtn = sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-					 ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
+	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
@@ -224,8 +224,8 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return sysfs_emit(buf, "no-link\n");
 
-	rtn = sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-					 ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
+	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
@@ -254,8 +254,8 @@ static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *katt
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
 		return sysfs_emit(buf, "no-link\n");
 
-	rtn = sl_ctrl_link_up_clocks_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
-					 ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
+	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 

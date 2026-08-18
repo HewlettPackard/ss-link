@@ -3,6 +3,7 @@
 
 #include <linux/spinlock.h>
 
+#include "sl_ctrl_link.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
 #include "base/sl_core_log.h"
@@ -37,7 +38,8 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	core_link = sl_core_link_get(ldev_num, lgrp_num, link_num);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"up (link = 0x%p, flags = 0x%08X)", core_link, core_link->config.flags);
+			"up (link = 0x%p, flags = 0x%08X)",
+			core_link, core_link->config.flags);
 
 	if (!sl_core_ldev_serdes_is_ready(core_link->core_lgrp->core_ldev)) {
 		sl_core_log_dbg(core_link, LOG_NAME, "up serdes isn't ready");
@@ -60,16 +62,17 @@ int sl_core_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	case SL_CORE_LINK_STATE_DOWN:
 		sl_core_log_dbg(core_link, LOG_NAME, "up - going up");
 		core_link->link.state = is_flag_set(core_link->config.flags, SL_LINK_CONFIG_OPT_AUTONEG_ENABLE) ?
-			SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
+					SL_CORE_LINK_STATE_AN : SL_CORE_LINK_STATE_GOING_UP;
 		link_state = core_link->link.state;
 		spin_unlock(&core_link->link.state_lock);
 		sl_media_jack_led_set(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+		sl_ctrl_link_up_time_attempt_start(sl_ctrl_link_get(ldev_num, lgrp_num, link_num));
 		sl_core_hw_link_up_cmd(core_link, callback, tag);
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
-			"up - invalid (link_state = %u %s)",
-			link_state, sl_core_link_state_str(link_state));
+				"up - invalid (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
