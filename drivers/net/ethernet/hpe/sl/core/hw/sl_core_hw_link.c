@@ -991,6 +991,12 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UCW_UP_CHECK_MAP);
+
+		rtn = sl_ctrl_link_fec_up_history_add(ctrl_link, &fec_info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "UCW check fec up history add failed [%d]", rtn);
+
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);
@@ -1004,6 +1010,12 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_CCW_LIMIT_CROSSED);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_CCW_UP_CHECK_MAP);
+
+		rtn = sl_ctrl_link_fec_up_history_add(ctrl_link, &fec_info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "CCW check fec up history add failed [%d]", rtn);
+
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);

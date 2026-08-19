@@ -11,6 +11,7 @@
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_lgrp_notif.h"
 #include "sl_ctrl_link.h"
+#include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_ctrl_link_counters.h"
 #include "sl_ctrl_link_fec.h"
@@ -250,9 +251,16 @@ struct sl_fec_tail sl_ctrl_link_fec_data_tail_get(struct sl_ctrl_link *ctrl_link
 
 static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_link, s32 limit, struct sl_fec_info *info)
 {
+	int rtn;
+
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(limit, info)) {
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_UCW_LIMIT_CROSSED);
 		ctrl_link->fec_ucw_chance = ctrl_link->fec_ucw_chance + 1;
+
+		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "UCW check fec mon history add failed [%d]", rtn);
 	} else {
 		ctrl_link->fec_ucw_chance = 0;
 	}
@@ -265,9 +273,16 @@ static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_li
 
 static bool sl_ctrl_link_fec_ccw_chance_limit_check(struct sl_ctrl_link *ctrl_link, s32 limit, struct sl_fec_info *info)
 {
+	int rtn;
+
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(limit, info)) {
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_DOWN_CCW_LIMIT_CROSSED);
 		ctrl_link->fec_ccw_chance = ctrl_link->fec_ccw_chance + 1;
+
+		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "CCW check fec mon history add failed [%d]", rtn);
 	} else {
 		ctrl_link->fec_ccw_chance = 0;
 	}
@@ -313,6 +328,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			"UCW exceeded down limit (UCW = %llu, CCW = %llu, ucw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ucw_chance);
 		ctrl_link->fec_ucw_chance = 0;
+
 		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_UCW_MAP, false);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
@@ -327,6 +343,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			"CCW exceeded down limit (UCW = %llu, CCW = %llu, ccw_chance = %u)",
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ccw_chance);
 		ctrl_link->fec_ccw_chance = 0;
+
 		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_CCW_MAP, false);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
@@ -355,6 +372,11 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 		sl_core_link_ucw_warn_limit_crossed_set(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 			ctrl_link->ctrl_lgrp->num, ctrl_link->num, true);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UCW_WARN_CROSSED);
+
+		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, &fec_info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "UCW check fec mon history add failed [%d]", rtn);
 	}
 
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
@@ -376,6 +398,11 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 		sl_core_link_ccw_warn_limit_crossed_set(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 			ctrl_link->ctrl_lgrp->num, ctrl_link->num, true);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_CCW_WARN_CROSSED);
+
+		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, &fec_info);
+		if (rtn)
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "CCW check fec mon history add failed [%d]", rtn);
 	}
 
 	return 0;
@@ -548,4 +575,9 @@ u32 sl_ctrl_link_fec_limit_calc(struct sl_ctrl_link *ctrl_link, u32 mant, int ex
 		"fec limit calc (limit = %llu)", limit);
 
 	return limit;
+}
+
+int sl_ctrl_link_fec_up_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info)
+{
+	return sl_ctrl_data_link_fec_up_history_add(ctrl_link, fec_info);
 }

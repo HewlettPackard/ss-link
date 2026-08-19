@@ -98,6 +98,12 @@ struct sl_ctrl_link {
 
 		struct kobject                mon_check_kobj;
 
+		struct kobject                up_history_kobj;
+		struct sl_fec_info_history    up_history;
+
+		struct kobject                mon_history_kobj;
+		struct sl_fec_info_history    mon_history;
+
 		struct kobject                down_kobj;
 		struct kobject                down_lane_kobj;
 		struct sl_ctrl_link_fecl_kobj down_fecl_kobjs[SL_MAX_LANES];

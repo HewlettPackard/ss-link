@@ -419,3 +419,73 @@ int sl_ctrl_data_link_hpe_map_get(struct sl_ctrl_link *ctrl_link, u32 *hpe_map)
 
 	return 0;
 }
+
+static int sl_ctrl_data_link_fec_info_record_set(struct sl_fec_info_history *history, struct sl_fec_info *fec_info)
+{
+	u32 next_index;
+
+	spin_lock(&history->lock);
+
+	next_index = history->index;
+	history->records[next_index] = *fec_info;
+	history->timestamps[next_index] = ktime_get_real_seconds();
+
+	/* Update circular buffer state */
+	history->index = (next_index + 1) % SL_CTRL_NUM_FEC_DOWN_HISTORY;
+	if (history->count < SL_CTRL_NUM_FEC_DOWN_HISTORY)
+		history->count++;
+
+	spin_unlock(&history->lock);
+
+	return 0;
+}
+
+static int sl_ctrl_data_link_fec_info_record_get(struct sl_fec_info_history *history, u8 fec_info_record_index,
+						 struct sl_fec_info *fec_info, time64_t *record_timestamp)
+{
+	u8 actual_index;
+
+	spin_lock(&history->lock);
+	if (history->count == 0) {
+		spin_unlock(&history->lock);
+		return -ENOENT;
+	}
+
+	if (fec_info_record_index >= history->count) {
+		spin_unlock(&history->lock);
+		return -ENOENT;
+	}
+
+	actual_index = (history->index - 1 - fec_info_record_index + SL_CTRL_NUM_FEC_DOWN_HISTORY)
+		% SL_CTRL_NUM_FEC_DOWN_HISTORY;
+
+	*fec_info = history->records[actual_index];
+	*record_timestamp = history->timestamps[actual_index];
+	spin_unlock(&history->lock);
+
+	return 0;
+}
+
+int sl_ctrl_data_link_fec_mon_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info)
+{
+	return sl_ctrl_data_link_fec_info_record_set(&ctrl_link->fec.mon_history, fec_info);
+}
+
+int sl_ctrl_data_link_fec_up_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info)
+{
+	return sl_ctrl_data_link_fec_info_record_set(&ctrl_link->fec.up_history, fec_info);
+}
+
+int sl_ctrl_data_link_fec_mon_history_get(struct sl_ctrl_link *ctrl_link, u8 fec_info_record_index,
+					  struct sl_fec_info *fec_info, time64_t *record_timestamp)
+{
+	return sl_ctrl_data_link_fec_info_record_get(&ctrl_link->fec.mon_history, fec_info_record_index,
+						     fec_info, record_timestamp);
+}
+
+int sl_ctrl_data_link_fec_up_history_get(struct sl_ctrl_link *ctrl_link, u8 fec_info_record_index,
+					 struct sl_fec_info *fec_info, time64_t *record_timestamp)
+{
+	return sl_ctrl_data_link_fec_info_record_get(&ctrl_link->fec.up_history, fec_info_record_index,
+						     fec_info, record_timestamp);
+}

@@ -55,6 +55,16 @@ struct sl_ctrl_link_fec_cache {
 	spinlock_t                         lock;
 };
 
+#define SL_CTRL_NUM_FEC_DOWN_HISTORY 10
+
+struct sl_fec_info_history {
+	time64_t           timestamps[SL_CTRL_NUM_FEC_DOWN_HISTORY];
+	struct sl_fec_info records[SL_CTRL_NUM_FEC_DOWN_HISTORY];
+	u32                index;
+	u32                count;
+	spinlock_t         lock; /* Protects the history records */
+};
+
 void                sl_ctrl_link_fec_data_store(struct sl_ctrl_link *ctrl_link,
 						struct sl_core_link_fec_cw_cntrs *cw_cntrs,
 						struct sl_core_link_fec_lane_cntrs *lane_cntrs,
@@ -90,5 +100,6 @@ void sl_ctrl_link_fec_mon_timer(struct timer_list *timer);
 void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link);
 
 u32 sl_ctrl_link_fec_limit_calc(struct sl_ctrl_link *ctrl_link, u32 mant, int exp);
+int sl_ctrl_link_fec_up_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info);
 
 #endif /* _SL_CTRL_LINK_FEC_PRIV_H_ */

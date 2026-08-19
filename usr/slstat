@@ -994,13 +994,18 @@ function print_fec {
         local mon_ucw_down_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_down_limit)
         local mon_ucw_warn_limit=$(cat ${LINK_PATH}/fec/monitor_check/ucw_warn_limit)
 
-        printf "fec        | up_settle: wait = ${up_settle_wait} ms\n"
-        printf "           | up_check:  wait = ${up_check_wait} ms\n"
-	printf "           |            ccw_limit = ${up_check_ccw_limit} ms, ucw_limit = ${up_check_ucw_limit} ms\n"
+        printf "fec        | up:        up_settle_wait = ${up_settle_wait} ms\n"
+        printf "           |            up_check_wait  = ${up_check_wait} ms\n"
+	printf "           |            ccw_limit = ${up_check_ccw_limit}, ucw_limit = ${up_check_ucw_limit}\n"
+
+        print_fec_history "up_history"
+
         printf "           | monitor:   state  = ${mon_state}\n"
         printf "           |            period = ${mon_period} ms\n"
         printf "           |            ccw_warn_limit = ${mon_ccw_warn_limit}, ucw_warn_limit = ${mon_ucw_warn_limit}\n"
         printf "           |            ccw_down_limit = ${mon_ccw_down_limit}, ucw_down_limit = ${mon_ucw_down_limit}\n"
+
+        print_fec_history "monitor_history"
 }
 
 function print_fec_bins {
@@ -1064,6 +1069,35 @@ function print_fec_bins {
                 printf "\n"
         done
         printf "           |            +----------------------------------------------------------------\n"
+}
+
+function print_fec_history {
+        local hist_dir=$1
+        local hist_path="${LINK_PATH}/fec/${hist_dir}"
+
+        if [ ! -d "${hist_path}" ] ; then
+                return
+        fi
+
+        local rec_time=$(cat "${hist_path}/timestamp_0")
+        local rec_ccw=$(cat "${hist_path}/ccw_0")
+        local rec_ucw=$(cat "${hist_path}/ucw_0")
+        local rec_gcw=$(cat "${hist_path}/gcw_0")
+        local rec_period=$(cat "${hist_path}/period_ms_0")
+
+        printf "           |   record: [0] %s   ccw = %s, ucw = %s, gcw = %s, period_ms = %s\n" \
+               "${rec_time}" "${rec_ccw}" "${rec_ucw}" "${rec_gcw}" "${rec_period}"
+
+        for entry_num in {1..9} ; do
+                rec_time=$(cat "${hist_path}/timestamp_${entry_num}")
+                rec_ccw=$(cat "${hist_path}/ccw_${entry_num}")
+                rec_ucw=$(cat "${hist_path}/ucw_${entry_num}")
+                rec_gcw=$(cat "${hist_path}/gcw_${entry_num}")
+                rec_period=$(cat "${hist_path}/period_ms_${entry_num}")
+
+                printf "           |            [%d] %s   ccw = %s, ucw = %s, gcw = %s, period_ms = %s\n" \
+                       "${entry_num}" "${rec_time}" "${rec_ccw}" "${rec_ucw}" "${rec_gcw}" "${rec_period}"
+        done
 }
 
 function print_serdes_header {

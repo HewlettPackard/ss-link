@@ -16,6 +16,8 @@
 #include "sl_sysfs_link_fec_up_check.h"
 #include "sl_sysfs_link_fec_up.h"
 #include "sl_sysfs_link_fec_down.h"
+#include "sl_sysfs_link_fec_up_history.h"
+#include "sl_sysfs_link_fec_mon_history.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -119,6 +121,33 @@ int sl_sysfs_link_fec_create(struct sl_ctrl_link *ctrl_link)
 		return rtn;
 	}
 
+	rtn = sl_sysfs_link_fec_up_history_create(ctrl_link);
+	if (rtn) {
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
+			   "link fec up history create failed [%d]", rtn);
+		sl_sysfs_link_fec_current_delete(core_link);
+		sl_sysfs_link_fec_mon_check_delete(ctrl_link);
+		sl_sysfs_link_fec_up_check_delete(core_link);
+		sl_sysfs_link_fec_up_delete(ctrl_link);
+		sl_sysfs_link_fec_down_delete(ctrl_link);
+		kobject_put(&ctrl_link->fec.kobj);
+		return rtn;
+	}
+
+	rtn = sl_sysfs_link_fec_mon_history_create(ctrl_link);
+	if (rtn) {
+		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
+			   "link fec monitor history create failed [%d]", rtn);
+		sl_sysfs_link_fec_current_delete(core_link);
+		sl_sysfs_link_fec_mon_check_delete(ctrl_link);
+		sl_sysfs_link_fec_up_check_delete(core_link);
+		sl_sysfs_link_fec_up_delete(ctrl_link);
+		sl_sysfs_link_fec_down_delete(ctrl_link);
+		sl_sysfs_link_fec_up_history_delete(ctrl_link);
+		kobject_put(&ctrl_link->fec.kobj);
+		return rtn;
+	}
+
 	return 0;
 #else /* CONFIG_SYSFS */
 	return 0;
@@ -139,6 +168,8 @@ void sl_sysfs_link_fec_delete(struct sl_ctrl_link *ctrl_link)
 	sl_sysfs_link_fec_up_check_delete(core_link);
 	sl_sysfs_link_fec_up_delete(ctrl_link);
 	sl_sysfs_link_fec_down_delete(ctrl_link);
+	sl_sysfs_link_fec_up_history_delete(ctrl_link);
+	sl_sysfs_link_fec_mon_history_delete(ctrl_link);
 	kobject_put(&ctrl_link->fec.kobj);
 #endif /* CONFIG_SYSFS */
 }

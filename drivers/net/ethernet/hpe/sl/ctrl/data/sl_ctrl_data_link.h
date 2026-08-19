@@ -45,4 +45,11 @@ int sl_ctrl_data_link_config_options_get(struct sl_ctrl_link *ctrl_link, u32 *op
 int sl_ctrl_data_link_pause_map_get(struct sl_ctrl_link *ctrl_link, u32 *pause_map);
 int sl_ctrl_data_link_hpe_map_get(struct sl_ctrl_link *ctrl_link, u32 *hpe_map);
 
+int sl_ctrl_data_link_fec_mon_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info);
+int sl_ctrl_data_link_fec_mon_history_get(struct sl_ctrl_link *ctrl_link, u8 fec_info_record_index,
+					  struct sl_fec_info *fec_info, time64_t *record_timestamp);
+int sl_ctrl_data_link_fec_up_history_add(struct sl_ctrl_link *ctrl_link, struct sl_fec_info *fec_info);
+int sl_ctrl_data_link_fec_up_history_get(struct sl_ctrl_link *ctrl_link, u8 fec_info_record_index,
+					 struct sl_fec_info *fec_info, time64_t *record_timestamp);
+
 #endif /* _SL_CTRL_DATA_LINK_H_ */

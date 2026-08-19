@@ -102,6 +102,7 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 
 	spin_lock_init(&ctrl_link->fec_up_cache.lock);
 	spin_lock_init(&ctrl_link->fec_down_cache.lock);
+	spin_lock_init(&ctrl_link->fec.mon_history.lock);
 
 	ctrl_link->state = SL_LINK_STATE_DOWN;
 
