@@ -212,6 +212,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_RX_LOL                     BIT(38) /* RX Loss of Lock                            */
 #define SL_LINK_DOWN_CAUSE_TX_LOS                     BIT(39) /* TX Loss of Signal                          */
 #define SL_LINK_DOWN_CAUSE_RX_LOS                     BIT(40) /* RX Loss of Signal                          */
+#define SL_LINK_DOWN_CAUSE_FEC_CONFIG                 BIT(41) /* Invalid FEC configuration */
 
 #define SL_LINK_DOWN_RETRYABLE                        BIT(61) /* client retry possible                      */
 #define SL_LINK_DOWN_ORIGIN_ASYNC                     BIT(62) /* link down cause was asynchronous           */

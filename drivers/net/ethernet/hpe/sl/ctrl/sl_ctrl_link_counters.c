@@ -122,6 +122,7 @@ int sl_ctrl_link_cause_counters_init(struct sl_ctrl_link *ctrl_link)
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_RX_LOL);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_TX_LOS);
 	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_RX_LOS);
+	SL_CTRL_LINK_CAUSE_COUNTER_INIT(ctrl_link, LINK_CAUSE_FEC_CONFIG);
 
 	return 0;
 }
@@ -316,6 +317,9 @@ void sl_ctrl_link_cause_counter_inc(struct sl_ctrl_link *ctrl_link, u64 cause_ma
 			break;
 		case SL_LINK_DOWN_CAUSE_RX_LOS:
 			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_RX_LOS);
+			break;
+		case SL_LINK_DOWN_CAUSE_FEC_CONFIG:
+			SL_CTRL_LINK_CAUSE_COUNTER_INC(ctrl_link, LINK_CAUSE_FEC_CONFIG);
 			break;
 		case SL_LINK_DOWN_RETRYABLE:
 		case SL_LINK_DOWN_ORIGIN_ASYNC:

@@ -290,6 +290,18 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 		return;
 	}
 
+	if ((!core_link->config.fec_up_settle_wait_ms && core_link->config.fec_up_check_wait_ms) ||
+	    (core_link->config.fec_up_settle_wait_ms && !core_link->config.fec_up_check_wait_ms)) {
+		sl_core_log_err(core_link, LOG_NAME, "fec up invalid (settle_wait = %ums, check_wait = %ums)",
+				core_link->config.fec_up_settle_wait_ms, core_link->config.fec_up_check_wait_ms);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_FEC_CONFIG_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up start work link up fail failed [%d]", rtn);
+		return;
+	}
+
 	spin_lock(&core_link->data_lock);
 	spin_lock(&core_link->core_lgrp->data_lock);
 	core_link->core_lgrp->link_caps[core_link->num].tech_map  = core_link->core_lgrp->config.tech_map;

@@ -380,13 +380,6 @@ static int sl_ctrl_link_config_set_cmd(struct sl_ctrl_link *ctrl_link, struct sl
 	/* Admin bit is transient */
 	link_config->options &= ~SL_LINK_CONFIG_OPT_ADMIN;
 
-	if ((!link_config->fec_up_settle_wait_ms && link_config->fec_up_check_wait_ms) ||
-		(link_config->fec_up_settle_wait_ms && !link_config->fec_up_check_wait_ms)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "fec_up invalid (settle_wait = %ums, check_wait = %ums)",
-			link_config->fec_up_settle_wait_ms, link_config->fec_up_check_wait_ms);
-		return -EINVAL;
-	}
-
 	core_link_config.magic                = SL_CORE_LINK_CONFIG_MAGIC;
 	core_link_config.fault_start_callback = sl_ctrl_link_fault_start_callback;
 	core_link_config.fault_callback       = sl_ctrl_link_fault_callback;

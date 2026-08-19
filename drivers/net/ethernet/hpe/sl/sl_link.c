@@ -556,6 +556,9 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_RX_LOS:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rx-los ");
 			break;
+		case SL_LINK_DOWN_CAUSE_FEC_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "fec-config ");
+			break;
 
 		case SL_LINK_DOWN_RETRYABLE:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retryable ");

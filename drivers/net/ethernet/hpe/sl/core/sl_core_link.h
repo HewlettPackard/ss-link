@@ -177,6 +177,10 @@ struct work_struct;
 #define SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP (                \
 		SL_LINK_DOWN_CAUSE_MEDIA_HOT                  | \
 		SL_LINK_DOWN_ORIGIN_ASYNC)
+#define SL_LINK_DOWN_CAUSE_FEC_CONFIG_MAP (                     \
+		SL_LINK_DOWN_CAUSE_FEC_CONFIG                 | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
+		SL_LINK_DOWN_RETRYABLE)
 
 #define SL_LINK_DEGRADE_STATE_INVALID    0
 #define SL_LINK_DEGRADE_STATE_ACTIVE     1

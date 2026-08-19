@@ -71,6 +71,7 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_RX_LOL,                     /* RX Loss of Lock                            */
 	LINK_CAUSE_TX_LOS,                     /* TX Loss of Signal                          */
 	LINK_CAUSE_RX_LOS,                     /* RX Loss of Signal                          */
+	LINK_CAUSE_FEC_CONFIG,                 /* Invalid FEC configuration                  */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 

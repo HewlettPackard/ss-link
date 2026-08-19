@@ -1387,6 +1387,24 @@ static ssize_t an_cause_pages_decode_oui_invalid_show(struct kobject *kobj, stru
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
+static ssize_t cause_fec_config_show(struct kobject *kobj, struct kobj_attribute *kattr,
+				     char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_FEC_CONFIG, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down fec config show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
 static struct kobj_attribute link_up_cmd                    = __ATTR_RO(link_up_cmd);
 static struct kobj_attribute link_up_retry                  = __ATTR_RO(link_up_retry);
 static struct kobj_attribute link_up                        = __ATTR_RO(link_up);
@@ -1448,6 +1466,7 @@ static struct kobj_attribute link_cause_tx_lol                     = __ATTR_RO(c
 static struct kobj_attribute link_cause_rx_lol                     = __ATTR_RO(cause_rx_lol);
 static struct kobj_attribute link_cause_tx_los                     = __ATTR_RO(cause_tx_los);
 static struct kobj_attribute link_cause_rx_los                     = __ATTR_RO(cause_rx_los);
+static struct kobj_attribute link_cause_fec_config                 = __ATTR_RO(cause_fec_config);
 
 static struct kobj_attribute link_an_cause_lp_caps_serdes_link_up_fail =
 			     __ATTR_RO(an_cause_lp_caps_serdes_link_up_fail);
@@ -1536,6 +1555,7 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_rx_lol.attr,
 	&link_cause_tx_los.attr,
 	&link_cause_rx_los.attr,
+	&link_cause_fec_config.attr,
 	&link_an_cause_lp_caps_serdes_link_up_fail.attr,
 	&link_an_cause_lp_caps_not_complete.attr,
 	&link_an_cause_not_complete.attr,
