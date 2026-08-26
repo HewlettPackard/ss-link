@@ -52,9 +52,7 @@ static int sl_media_jack_cable_attr_set(struct sl_media_jack *media_jack, u8 lde
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr set");
 
-	/*
-	 * only first element is valid in cable_info since single lgrp on nic
-	 */
+	/* only first element is valid in cable_info since single lgrp on nic */
 	media_jack->cable_info[0].ldev_num = ldev_num;
 	media_jack->cable_info[0].lgrp_num = lgrp_num;
 
@@ -72,21 +70,17 @@ static void sl_media_jack_cable_attr_errors_update(struct sl_media_jack *media_j
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr errors update");
 
-	/*
-	 * only first element is valid in cable_info since single lgrp on nic
-	 */
+	/* only first element is valid in cable_info since single lgrp on nic */
 	media_jack->cable_info[0].media_attr.errors |= errors;
 }
 
-static void sl_media_data_jack_cable_attr_send(struct sl_media_jack *media_jack)
+void sl_media_data_jack_cable_attr_send(struct sl_media_jack *media_jack)
 {
 	struct sl_media_lgrp *media_lgrp;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable attr send");
 
-	/*
-	 * only first element is valid in cable_info since single lgrp on nic
-	 */
+	/* only first element is valid in cable_info since single lgrp on nic */
 	media_lgrp = sl_media_data_lgrp_get(media_jack->cable_info[0].ldev_num,
 					    media_jack->cable_info[0].lgrp_num);
 	if (media_lgrp)
@@ -185,9 +179,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 				media_attr.errors |= SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED;
 				media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			}
-			/*
-			 * disallow BJ100 speed on active cables
-			 */
+			/* disallow BJ100 speed on active cables */
 			media_attr.speeds_map &= ~SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
 		}
 
@@ -211,12 +203,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		return 0;
 	}
 
-	// FIXME: can we do flags better?
-	if (media_jack->is_cable_unsupported)
-		flags |= SL_MEDIA_TYPE_UNSUPPORTED;
-	if (media_attr.vendor == SL_MEDIA_VENDOR_MULTILANE)
-		flags |= SL_MEDIA_TYPE_LOOPBACK;
-	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, media_attr.type, flags);
+	rtn = sl_media_data_cable_db_ops_serdes_settings_get(media_jack, &media_attr);
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "serdes settings get failed [%d]", rtn);
 		sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
@@ -267,7 +254,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			sl_media_jack_cable_shift_state_set(media_jack, SL_MEDIA_JACK_CABLE_SHIFT_STATE_NOTSHIFTED);
 	}
 
-	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ONLINE);
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_INSERTED);
 	sl_media_data_jack_led_set(media_jack);
 
 	sl_media_data_jack_cable_attr_send(media_jack);
@@ -287,9 +274,7 @@ int sl_media_jack_cable_remove(u8 ldev_num, u8 lgrp_num, u8 jack_num)
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable remove");
 
-	/*
-	 * only first element is valid in cable_info since single lgrp on nic
-	 */
+	/* only first element is valid in cable_info since single lgrp on nic */
 	sl_media_data_jack_media_attr_clr(media_jack, &media_jack->cable_info[0]);
 	sl_media_data_cable_serdes_settings_clr(media_jack);
 	sl_media_data_jack_eeprom_clr(media_jack);

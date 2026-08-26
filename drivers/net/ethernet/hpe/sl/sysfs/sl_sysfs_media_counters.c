@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
@@ -74,7 +74,7 @@ static ssize_t cause_eeprom_jack_io_show(struct kobject *kobj, struct kobj_attri
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_online_status_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_jack_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -83,17 +83,17 @@ static ssize_t cause_online_status_get_show(struct kobject *kobj, struct kobj_at
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ONLINE_STATUS_GET, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_JACK_GET, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause online status get show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause jack get show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_online_timedout_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_jack_status_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -102,17 +102,17 @@ static ssize_t cause_online_timedout_show(struct kobject *kobj, struct kobj_attr
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ONLINE_TIMEDOUT, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_JACK_STATUS_GET, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause online timedout show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause jack status get show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_online_jack_io_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_cable_setup_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -121,17 +121,17 @@ static ssize_t cause_online_jack_io_show(struct kobject *kobj, struct kobj_attri
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ONLINE_JACK_IO, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_CABLE_SETUP, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause online jack io show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause cable setup show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_online_jack_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cause_active_cable_setup_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
@@ -140,12 +140,12 @@ static ssize_t cause_online_jack_get_show(struct kobject *kobj, struct kobj_attr
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
 
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ONLINE_JACK_GET, &counter);
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ACTIVE_CABLE_SETUP, &counter);
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause online jack get show (counter = %u)", counter);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause active cable setup show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
@@ -165,44 +165,6 @@ static ssize_t cause_serdes_settings_get_show(struct kobject *kobj, struct kobj_
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause serdes settings get show (counter = %u)", counter);
-
-	return sysfs_emit(buf, "%u\n", counter);
-}
-
-static ssize_t cause_scan_status_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u32                   counter;
-	u32                   rtn;
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
-
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SCAN_STATUS_GET, &counter);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause scan status get show (counter = %u)", counter);
-
-	return sysfs_emit(buf, "%u\n", counter);
-}
-
-static ssize_t cause_scan_jack_get_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u32                   counter;
-	u32                   rtn;
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
-
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SCAN_JACK_GET, &counter);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause scan jack get show (counter = %u)", counter);
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
@@ -390,25 +352,6 @@ static ssize_t cause_shift_state_jack_io_show(struct kobject *kobj, struct kobj_
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
-static ssize_t cause_offline_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	u32                   counter;
-	u32                   rtn;
-
-	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
-
-	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_OFFLINE, &counter);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause offline show (counter = %u)", counter);
-
-	return sysfs_emit(buf, "%u\n", counter);
-}
-
 static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -542,33 +485,24 @@ static ssize_t temperature_state_unknown_slope_show(struct kobject *kobj, struct
 
 	return sysfs_emit(buf, "%u\n", counter);
 }
-static struct kobj_attribute media_cause_eeprom_format_unsupported         =
-			     __ATTR_RO(cause_eeprom_format_unsupported);
-static struct kobj_attribute media_cause_eeprom_vendor_unsupported         =
-			     __ATTR_RO(cause_eeprom_vendor_unsupported);
+
+static struct kobj_attribute media_cause_eeprom_format_unsupported         = __ATTR_RO(cause_eeprom_format_unsupported);
+static struct kobj_attribute media_cause_eeprom_vendor_unsupported         = __ATTR_RO(cause_eeprom_vendor_unsupported);
 static struct kobj_attribute media_cause_eeprom_jack_io                    = __ATTR_RO(cause_eeprom_jack_io);
-static struct kobj_attribute media_cause_online_status_get                 = __ATTR_RO(cause_online_status_get);
-static struct kobj_attribute media_cause_online_timedout                   = __ATTR_RO(cause_online_timedout);
-static struct kobj_attribute media_cause_online_jack_io                    = __ATTR_RO(cause_online_jack_io);
-static struct kobj_attribute media_cause_online_jack_get                   = __ATTR_RO(cause_online_jack_get);
+static struct kobj_attribute media_cause_jack_get                          = __ATTR_RO(cause_jack_get);
+static struct kobj_attribute media_cause_jack_status_get                   = __ATTR_RO(cause_jack_status_get);
+static struct kobj_attribute media_cause_cable_setup                       = __ATTR_RO(cause_cable_setup);
+static struct kobj_attribute media_cause_active_cable_setup                = __ATTR_RO(cause_active_cable_setup);
 static struct kobj_attribute media_cause_serdes_settings_get               = __ATTR_RO(cause_serdes_settings_get);
-static struct kobj_attribute media_cause_scan_status_get                   = __ATTR_RO(cause_scan_status_get);
-static struct kobj_attribute media_cause_scan_jack_get                     = __ATTR_RO(cause_scan_jack_get);
 static struct kobj_attribute media_cause_media_attr_set                    = __ATTR_RO(cause_media_attr_set);
 static struct kobj_attribute media_cause_high_power_set_jack_io            = __ATTR_RO(cause_high_power_set_jack_io);
 static struct kobj_attribute media_cause_shift_down_jack_io                = __ATTR_RO(cause_shift_down_jack_io);
-static struct kobj_attribute media_cause_shift_down_jack_io_low_power_set  =
-			     __ATTR_RO(cause_shift_down_jack_io_low_power_set);
-static struct kobj_attribute media_cause_shift_down_jack_io_high_power_set =
-			     __ATTR_RO(cause_shift_down_jack_io_high_power_set);
+static struct kobj_attribute media_cause_shift_down_jack_io_low_power_set  = __ATTR_RO(cause_shift_down_jack_io_low_power_set);
+static struct kobj_attribute media_cause_shift_down_jack_io_high_power_set = __ATTR_RO(cause_shift_down_jack_io_high_power_set);
 static struct kobj_attribute media_cause_shift_up_jack_io                  = __ATTR_RO(cause_shift_up_jack_io);
-static struct kobj_attribute media_cause_shift_up_jack_io_low_power_set    =
-			     __ATTR_RO(cause_shift_up_jack_io_low_power_set);
-static struct kobj_attribute media_cause_shift_up_jack_io_high_power_set   =
-			     __ATTR_RO(cause_shift_up_jack_io_high_power_set);
-static struct kobj_attribute media_cause_shift_state_jack_io               =
-			     __ATTR_RO(cause_shift_state_jack_io);
-static struct kobj_attribute media_cause_offline                           = __ATTR_RO(cause_offline);
+static struct kobj_attribute media_cause_shift_up_jack_io_low_power_set    = __ATTR_RO(cause_shift_up_jack_io_low_power_set);
+static struct kobj_attribute media_cause_shift_up_jack_io_high_power_set   = __ATTR_RO(cause_shift_up_jack_io_high_power_set);
+static struct kobj_attribute media_cause_shift_state_jack_io               = __ATTR_RO(cause_shift_state_jack_io);
 static struct kobj_attribute media_cause_hot                               = __ATTR_RO(cause_hot);
 static struct kobj_attribute media_cause_warm                              = __ATTR_RO(cause_warm);
 static struct kobj_attribute media_temperature_state_cold                  = __ATTR_RO(temperature_state_cold);
@@ -581,13 +515,11 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_eeprom_format_unsupported.attr,
 	&media_cause_eeprom_vendor_unsupported.attr,
 	&media_cause_eeprom_jack_io.attr,
-	&media_cause_online_status_get.attr,
-	&media_cause_online_timedout.attr,
-	&media_cause_online_jack_io.attr,
-	&media_cause_online_jack_get.attr,
+	&media_cause_jack_get.attr,
+	&media_cause_jack_status_get.attr,
+	&media_cause_cable_setup.attr,
+	&media_cause_active_cable_setup.attr,
 	&media_cause_serdes_settings_get.attr,
-	&media_cause_scan_status_get.attr,
-	&media_cause_scan_jack_get.attr,
 	&media_cause_media_attr_set.attr,
 	&media_cause_high_power_set_jack_io.attr,
 	&media_cause_shift_down_jack_io.attr,
@@ -597,7 +529,6 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_shift_up_jack_io_low_power_set.attr,
 	&media_cause_shift_up_jack_io_high_power_set.attr,
 	&media_cause_shift_state_jack_io.attr,
-	&media_cause_offline.attr,
 	&media_cause_hot.attr,
 	&media_cause_warm.attr,
 	&media_temperature_state_cold.attr,

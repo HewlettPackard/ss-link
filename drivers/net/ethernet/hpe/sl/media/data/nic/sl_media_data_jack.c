@@ -4,9 +4,7 @@
 #include <linux/delay.h>
 
 #include "sl_asic.h"
-
 #include "base/sl_media_log.h"
-
 #include "sl_media_io.h"
 #include "sl_media_jack.h"
 #include "data/sl_media_data_jack.h"
@@ -26,19 +24,22 @@ enum sl_media_led_states {
 	LED_FAST_GRN_YEL = 8,
 };
 
-int sl_media_data_jack_scan(u8 ldev_num)
+int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 {
 	struct sl_media_jack *media_jack;
 
-	sl_media_log_dbg(NULL, LOG_NAME, "jack scan");
+	sl_media_log_dbg(media_ldev, LOG_NAME, "jack scan");
 
-	media_jack = sl_media_data_jack_get(ldev_num, 0);
-	media_jack->cable_info[0].ldev_num = ldev_num;
+	media_jack = sl_media_data_jack_get(media_ldev->num, 0);
+	media_jack->cable_info[0].ldev_num = media_ldev->num;
 	media_jack->cable_info[0].lgrp_num = 0; /* hardcoding 0 since only one lgrp*/
 
 	return 0;
 }
 
+void sl_media_data_jack_work_init(struct sl_media_jack *media_jack)
+{
+}
 
 int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *fake_media_attr)
@@ -49,7 +50,6 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info)
 {
-
 }
 
 #define DATA_PATH_STATE_DEACTIVATED       0x1
@@ -64,9 +64,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable downshift");
 
-	/*
-	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* Deinit all lanes */
 	if (version == 3)
 		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	else
@@ -78,9 +76,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * enable low power mode
-	 */
+	/* enable low power mode */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET);
@@ -89,10 +85,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-148
-	 * Config lanes 1 to 4
-	 */
+	/* Staged Control Set 0, Config lanes 1 to 4 */
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
 				        (media_jack->appsel_num_200_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
@@ -105,9 +98,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(100);
 
-	/*
-	 * ApplyDPInitLane8-1
-	 */
+	/* ApplyDPInitLane8-1 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO);
@@ -116,9 +107,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(500);
 
-	/*
-	 * enable high power mode
-	 */
+	/* enable high power mode */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET);
@@ -127,9 +116,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	}
 	msleep(8000);
 
-	/*
-	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* ReInit all lanes */
 	if (version == 3)
 		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	else
@@ -140,9 +127,7 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 		return rtn;
 	}
 
-	/*
-	 * waiting for firmware reload
-	 */
+	/* waiting for firmware reload */
 	msleep(3000);
 
 	return 0;
@@ -195,9 +180,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "data jack cable upshift");
 
-	/*
-	 * Deinit all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* Deinit all lanes */
 	if (version == 3)
 		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0x00);
 	else
@@ -209,9 +192,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * enable low power mode
-	 */
+	/* enable low power mode */
 	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET);
@@ -220,10 +201,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * Staged Control Set 0, Data Path Configuration bytes @ page 0x10 bytes 145-148
-	 * Config lanes 1 to 4
-	 */
+	/* Staged Control Set 0, Config lanes 1 to 4 */
 	for (i = 0; i < 4; ++i) {
 		rtn = sl_media_io_write8(media_jack, 0x10, 145 + i,
 					(media_jack->appsel_num_400_gaui << 4) | DATA_PATH_LOWER_LANE_CONFIG);
@@ -236,9 +214,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(100);
 
-	/*
-	 * ApplyDPInitLane8-1
-	 */
+	/* ApplyDPInitLane8-1 */
 	rtn = sl_media_io_write8(media_jack, 0x10, 143, 0xFF);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO);
@@ -247,9 +223,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(500);
 
-	/*
-	 * enable high power mode
-	 */
+	/* enable high power mode */
 	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
@@ -258,9 +232,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	}
 	msleep(8000);
 
-	/*
-	 * (Re)Init all lanes (DataPathDeinit @ page 0x10 byte 128)
-	 */
+	/* ReInit all lanes */
 	if (version == 3)
 		rtn = sl_media_io_write8(media_jack, 0x10, 128, 0xFF);
 	else
@@ -271,9 +243,7 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 		return rtn;
 	}
 
-	/*
-	 * waiting for firmware reload
-	 */
+	/* waiting for firmware reload */
 	msleep(3000);
 
 	return 0;
@@ -473,12 +443,13 @@ int sl_media_data_jack_cable_temp_down_limit_get(struct sl_media_jack *media_jac
 	return 0;
 }
 
+// FIXME: check to make sure this function does the correct thing in all cases
 void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 {
 	int                  rtn;
 	struct sl_core_link *core_link;
 	u32                  link_state;
-	u8                   state;
+	u8                   jack_state;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "led set");
 
@@ -494,11 +465,11 @@ void sl_media_data_jack_led_set(struct sl_media_jack *media_jack)
 		return;
 	}
 
-	rtn = sl_media_jack_state_get(media_jack, &state);
+	rtn = sl_media_jack_state_get(media_jack, &jack_state);
 	if (rtn)
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
 
-	switch (state) {
+	switch (jack_state) {
 	case SL_MEDIA_JACK_CABLE_REMOVED:
 		sl_media_io_led_set(media_jack, LED_OFF);
 		return;

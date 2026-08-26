@@ -53,7 +53,7 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -78,7 +78,7 @@ static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attrib
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp   = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -106,7 +106,7 @@ static ssize_t temperature_warn_limit_celsius_show(struct kobject *kobj, struct 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -137,7 +137,7 @@ static ssize_t temperature_down_limit_celsius_show(struct kobject *kobj, struct 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -168,7 +168,7 @@ static ssize_t temperature_state_show(struct kobject *kobj, struct kobj_attribut
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp   = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -198,7 +198,7 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -225,7 +225,7 @@ static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp  = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -255,7 +255,7 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -282,7 +282,7 @@ static ssize_t shape_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -308,7 +308,7 @@ static ssize_t cable_end_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -335,7 +335,7 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -361,7 +361,7 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -388,7 +388,7 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -417,7 +417,7 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -462,7 +462,7 @@ static ssize_t jack_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -492,7 +492,7 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -517,7 +517,7 @@ static ssize_t is_supported_cable_show(struct kobject *kobj, struct kobj_attribu
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -542,7 +542,7 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -571,7 +571,7 @@ static ssize_t firmware_version_hex_show(struct kobject *kobj, struct kobj_attri
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -598,7 +598,7 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -625,7 +625,7 @@ static ssize_t cable_speed_state_show(struct kobject *kobj, struct kobj_attribut
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -652,7 +652,7 @@ static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struc
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -679,7 +679,7 @@ static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct ko
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -706,7 +706,7 @@ static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct ko
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -732,7 +732,7 @@ static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struc
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -759,7 +759,7 @@ static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct ko
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -786,7 +786,7 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -1121,7 +1121,7 @@ static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(speed_kobj->media_lgrp->media_ldev->num, speed_kobj->media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(speed_kobj->media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(speed_kobj->media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -1152,7 +1152,7 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(speed_kobj->media_lgrp->media_ldev->num, speed_kobj->media_lgrp->num);
 
-	if (!sl_media_jack_is_cable_online(speed_kobj->media_lgrp->media_jack)) {
+	if (!sl_media_jack_is_cable_inserted(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(speed_kobj->media_lgrp->media_jack))
 			return sysfs_emit(buf, "unsupported-format\n");
 		return sysfs_emit(buf, "no-cable\n");
@@ -1250,17 +1250,11 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return rtn;
 	}
 
-	/*
-	 * This if condition will be false for nic here
-	 */
 	rtn = sl_media_jack_state_get(media_lgrp->media_jack, &state);
 	if (rtn)
 		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media_jack_state_get failed [%d]", rtn);
 
-	if (state == SL_MEDIA_JACK_CABLE_ONLINE) {
-		/*
-		 * kobj cleanup in the callee function
-		 */
+	if (state == SL_MEDIA_JACK_CABLE_INSERTED) {
 		rtn = sl_sysfs_media_speeds_create(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num);
 		if (rtn) {
 			sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media speeds create failed [%d]", rtn);

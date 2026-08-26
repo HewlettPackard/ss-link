@@ -120,7 +120,7 @@ int sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack, u8 *ca
 	return 0;
 }
 
-bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
+bool sl_media_jack_is_cable_inserted(struct sl_media_jack *media_jack)
 {
 	u8 state;
 
@@ -128,7 +128,7 @@ bool sl_media_jack_is_cable_online(struct sl_media_jack *media_jack)
 	state = media_jack->state;
 	spin_unlock(&media_jack->data_lock);
 
-	return (state == SL_MEDIA_JACK_CABLE_ONLINE);
+	return (state == SL_MEDIA_JACK_CABLE_INSERTED);
 }
 
 bool sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack)
@@ -226,7 +226,7 @@ static int sl_media_jack_cable_shift_checks(struct sl_media_lgrp *media_lgrp, u8
 	sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "cable shift checks");
 
 	spin_lock(&media_lgrp->media_jack->data_lock);
-	if (media_lgrp->media_jack->state != SL_MEDIA_JACK_CABLE_ONLINE) {
+	if (media_lgrp->media_jack->state != SL_MEDIA_JACK_CABLE_INSERTED) {
 		media_lgrp->media_jack->cable_shift_state = SL_MEDIA_JACK_CABLE_SHIFT_STATE_FAILED_NO_CABLE;
 		spin_unlock(&media_lgrp->media_jack->data_lock);
 		sl_media_log_dbg(media_lgrp->media_jack, LOG_NAME, "shift check failed - no online cable");
@@ -421,20 +421,16 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "eeprom-vendor-unsupported";
 	case SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO:
 		return "eeprom-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET:
-		return "online-status-get";
-	case SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT:
-		return "online-timedout";
-	case SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO:
-		return "online-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET:
-		return "online-jack-get";
+	case SL_MEDIA_FAULT_CAUSE_JACK_GET:
+		return "jack-get";
+	case SL_MEDIA_FAULT_CAUSE_JACK_STATUS_GET:
+		return "jack-status-get";
+	case SL_MEDIA_FAULT_CAUSE_CABLE_SETUP:
+		return "cable-setup";
+	case SL_MEDIA_FAULT_CAUSE_ACTIVE_CABLE_SETUP:
+		return "active-cable-setup";
 	case SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET:
 		return "serdes-settings-get";
-	case SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET:
-		return "scan-status-get";
-	case SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET:
-		return "scan-jack-get";
 	case SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET:
 		return "media-attr-set";
 	case SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO:
@@ -453,8 +449,6 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "up-jack-io-high-power-set";
 	case SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO:
 		return "state-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_OFFLINE:
-		return "offline";
 	case SL_MEDIA_FAULT_CAUSE_HOT:
 		return "hot";
 	case SL_MEDIA_FAULT_CAUSE_WARM:

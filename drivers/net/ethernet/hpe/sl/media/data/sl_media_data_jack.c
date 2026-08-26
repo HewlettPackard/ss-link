@@ -87,6 +87,8 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 
 	media_jack->media_ldev = media_ldev;
 
+	sl_media_data_jack_work_init(media_jack);
+
 	media_jack->state                  = SL_MEDIA_JACK_CABLE_REMOVED;
 	media_jack->lane_data.cache.cached = false;
 	media_jack->lane_data.read_state   = SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE;
@@ -207,7 +209,6 @@ void sl_media_data_jack_data_clr(struct sl_media_jack *media_jack)
 	media_jack->temperature_value_c         = -1;
 	media_jack->temperature_down_limit_c    = -1;
 	media_jack->temperature_warn_limit_c    = -1;
-	media_jack->state                       = SL_MEDIA_JACK_CABLE_REMOVED;
 	media_jack->is_cable_unsupported        = false;
 	media_jack->is_cable_format_unsupported = false;
 	media_jack->is_supported_ss200_cable    = false;

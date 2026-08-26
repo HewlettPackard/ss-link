@@ -18,19 +18,21 @@ $(SL_NAME)-$(SL_TEST) += \
 	sl_test_common.o
 
 $(SL_NAME)-$(SL_BUILD_SWITCH) += \
-	switch/sl_media.o                           \
-	switch/sl_ldev.o                            \
-	media/switch/sl_media_io.o                  \
-	media/switch/sl_media_jack.o                \
-	media/switch/sl_media_jack_fake.o           \
-	media/data/switch/sl_media_data_jack.o      \
-	media/data/switch/sl_media_data_jack_emu.o  \
-	core/hw/switch/sl_core_hw_fec.o             \
-	core/hw/switch/sl_core_hw_llr.o             \
-	core/hw/switch/sl_core_hw_an.o              \
-	core/hw/switch/sl_core_hw_mac.o             \
-	core/hw/switch/sl_core_hw_pcs.o             \
-	core/data/switch/sl_core_data_link.o        \
+	switch/sl_media.o                             \
+	switch/sl_ldev.o                              \
+	media/switch/sl_media_io.o                    \
+	media/switch/sl_media_jack.o                  \
+	media/switch/sl_media_jack_fake.o             \
+	media/data/switch/sl_media_data_jack.o        \
+	media/data/switch/sl_media_data_jack_scan.o   \
+	media/data/switch/sl_media_data_jack_event.o  \
+	media/data/switch/sl_media_data_jack_emu.o    \
+	core/hw/switch/sl_core_hw_fec.o               \
+	core/hw/switch/sl_core_hw_llr.o               \
+	core/hw/switch/sl_core_hw_an.o                \
+	core/hw/switch/sl_core_hw_mac.o               \
+	core/hw/switch/sl_core_hw_pcs.o               \
+	core/data/switch/sl_core_data_link.o          \
 	core/data/switch/sl_core_data_mac.o
 
 $(SL_NAME)-$(SL_BUILD_SWITCH_EMU) += \

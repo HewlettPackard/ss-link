@@ -25,7 +25,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	u32                        indexer;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "validate (hpe_part_num = %d %s, vendor = %d %s, type = %d %s)",
+			 "validate (hpe_part_num = %d %s, vendor = %d %s, type = 0x%X %s)",
 			 media_attr->hpe_pn, media_attr->hpe_pn_str,
 			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
 			 media_attr->type, sl_media_type_str(media_attr->type));
@@ -79,17 +79,17 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	return -ENOENT;
 }
 
-int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, u32 media_type, u32 flags)
+int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	struct sl_media_cable_attr entry;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "serdes settings get (media_type = 0x%X %s, flags = 0x%X)",
-			 media_type, sl_media_type_str(media_type), flags);
+			 "serdes settings get (media_type = 0x%X %s)",
+			 media_attr->type, sl_media_type_str(media_attr->type));
 
-	if (flags & SL_MEDIA_TYPE_UNSUPPORTED) {
+	if (media_jack->is_cable_unsupported) {
 		sl_media_log_warn_trace(media_jack, LOG_NAME, "serdes setting get unsuppported cable");
-		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_type)) {
+		if (SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(media_attr->type)) {
 			media_jack->serdes_settings.pre1   = -12;
 			media_jack->serdes_settings.pre2   = 0;
 			media_jack->serdes_settings.pre3   = 0;
@@ -104,14 +104,14 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 			media_jack->serdes_settings.post1  = 0;
 			media_jack->serdes_settings.post2  = 0;
 		}
-	} else if (flags & SL_MEDIA_TYPE_BACKPLANE) {
+	} else if (media_attr->jack_type == SL_MEDIA_JACK_TYPE_BACKPLANE) {
 		media_jack->serdes_settings.pre1   = 0;
 		media_jack->serdes_settings.pre2   = 0;
 		media_jack->serdes_settings.pre3   = 0;
 		media_jack->serdes_settings.cursor = 100;
 		media_jack->serdes_settings.post1  = 0;
 		media_jack->serdes_settings.post2  = 0;
-	} else if (flags & SL_MEDIA_TYPE_LOOPBACK) {
+	} else if (media_attr->vendor == SL_MEDIA_VENDOR_MULTILANE) {
 		media_jack->serdes_settings.pre1   = 0;
 		media_jack->serdes_settings.pre2   = 0;
 		media_jack->serdes_settings.pre3   = 0;

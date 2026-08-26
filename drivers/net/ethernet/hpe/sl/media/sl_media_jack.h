@@ -14,14 +14,9 @@
 #include "sl_asic.h"
 #include "sl_media_ldev.h"
 #include "sl_ctrl_media_counters.h"
-/*
- * These states reflect whether a physical module is inserted in
- * a jack or not. And if it is inserted, can it be talked to or not.
- */
+
 #define SL_MEDIA_JACK_CABLE_REMOVED          1
 #define SL_MEDIA_JACK_CABLE_INSERTED         2
-#define SL_MEDIA_JACK_CABLE_GOING_ONLINE     3
-#define SL_MEDIA_JACK_CABLE_ONLINE           4
 #define SL_MEDIA_JACK_CABLE_ERROR            5
 
 /*
@@ -180,9 +175,10 @@ struct sl_media_cable_insert_entry {
 struct sl_media_jack {
 	u32                                magic;
 	u8                                 num;
-	u8                                 physical_num; /* number printed on jack */
+	u16                                physical_num; /* number printed on jack */
 	u8                                 state;
 	struct sl_media_ldev              *media_ldev;
+	struct work_struct                 insert_work;
 
 	int                                cable_db_idx;
 	struct sl_media_lgrp_cable_info    cable_info[SL_MEDIA_MAX_LGRPS_PER_JACK];
@@ -229,6 +225,7 @@ struct sl_media_jack {
 	} lane_data;
 
 	void                              *hdl;
+	u8                                 jack_type;
 	u8                                 port_count;
 	u16                                asic_port[SL_MEDIA_MAX_LGRPS_PER_JACK];
 	u32                                status;
@@ -247,13 +244,11 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED         BIT(0)
 #define SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED         BIT(1)
 #define SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO                    BIT(2)
-#define SL_MEDIA_FAULT_CAUSE_ONLINE_STATUS_GET                 BIT(3)
-#define SL_MEDIA_FAULT_CAUSE_ONLINE_TIMEDOUT                   BIT(4)
-#define SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_IO                    BIT(5)
-#define SL_MEDIA_FAULT_CAUSE_ONLINE_JACK_GET                   BIT(6)
+#define SL_MEDIA_FAULT_CAUSE_JACK_GET                          BIT(3)
+#define SL_MEDIA_FAULT_CAUSE_JACK_STATUS_GET                   BIT(4)
+#define SL_MEDIA_FAULT_CAUSE_CABLE_SETUP                       BIT(5)
+#define SL_MEDIA_FAULT_CAUSE_ACTIVE_CABLE_SETUP                BIT(6)
 #define SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET               BIT(7)
-#define SL_MEDIA_FAULT_CAUSE_SCAN_STATUS_GET                   BIT(8)
-#define SL_MEDIA_FAULT_CAUSE_SCAN_JACK_GET                     BIT(9)
 #define SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET                    BIT(10)
 #define SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO            BIT(11)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO                BIT(12)
@@ -263,7 +258,6 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET    BIT(16)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET   BIT(17)
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(18)
-#define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(19)
 #define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(21)
 
@@ -276,7 +270,7 @@ int                   sl_media_jack_cable_end_get(struct sl_media_jack *media_ja
 bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_jack);
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
 int                   sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack, u8 *cable_shift_state);
-bool                  sl_media_jack_is_cable_online(struct sl_media_jack *media_jack);
+bool                  sl_media_jack_is_cable_inserted(struct sl_media_jack *media_jack);
 bool                  sl_media_jack_is_cable_format_unsupported(struct sl_media_jack *media_jack);
 
 int sl_media_jack_active_cable_200g_host_interface_get(struct sl_media_jack *media_jack, u8 *host_interface_200_gaui);

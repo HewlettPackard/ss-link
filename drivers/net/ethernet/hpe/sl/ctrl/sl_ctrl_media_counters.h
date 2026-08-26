@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2025,2026 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_CTRL_MEDIA_COUNTERS_H_
 #define _SL_CTRL_MEDIA_COUNTERS_H_
@@ -22,13 +22,11 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_EEPROM_FORMAT_UNSUPPORTED,         /* media eeprom format is unsupported            */
 	MEDIA_CAUSE_EEPROM_VENDOR_UNSUPPORTED,         /* media eeprom vendor is unsupported            */
 	MEDIA_CAUSE_EEPROM_JACK_IO,                    /* media eeprom jack io error                    */
-	MEDIA_CAUSE_ONLINE_STATUS_GET,                 /* media online status get error                 */
-	MEDIA_CAUSE_ONLINE_TIMEDOUT,                   /* media online timedout                         */
-	MEDIA_CAUSE_ONLINE_JACK_IO,                    /* media online jack io error                    */
-	MEDIA_CAUSE_ONLINE_JACK_GET,                   /* media online jack get error                   */
+	MEDIA_CAUSE_JACK_GET,                          /* failure to retrieve jack info                 */
+	MEDIA_CAUSE_JACK_STATUS_GET,                   /* failure to retrieve jack status               */
+	MEDIA_CAUSE_CABLE_SETUP,                       /* failure during cable setup                    */
+	MEDIA_CAUSE_ACTIVE_CABLE_SETUP,                /* failure during active cable setup             */
 	MEDIA_CAUSE_SERDES_SETTINGS_GET,               /* media serdes settings get error               */
-	MEDIA_CAUSE_SCAN_STATUS_GET,                   /* media scan status get error                   */
-	MEDIA_CAUSE_SCAN_JACK_GET,                     /* media scan jack get error                     */
 	MEDIA_CAUSE_MEDIA_ATTR_SET,                    /* media attribute set error                     */
 	MEDIA_CAUSE_HIGH_POWER_SET_JACK_IO,            /* media high power set error                    */
 	MEDIA_CAUSE_SHIFT_DOWN_JACK_IO,                /* media shift down jack io error                */
@@ -38,7 +36,6 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET,    /* media shift up jack io low power set error    */
 	MEDIA_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET,   /* media shift up jack io high power ser error   */
 	MEDIA_CAUSE_SHIFT_STATE_JACK_IO,               /* media shift state jack io error               */
-	MEDIA_CAUSE_OFFLINE,                           /* media is offline                              */
 	MEDIA_CAUSE_HOT,                               /* media hot detected                            */
 	MEDIA_CAUSE_WARM,                              /* media warm detected                           */
 	SL_CTRL_MEDIA_CAUSE_COUNTERS_COUNT

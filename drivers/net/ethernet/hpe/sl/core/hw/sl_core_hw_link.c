@@ -600,7 +600,7 @@ static bool sl_core_hw_link_is_media_present(struct sl_core_link *core_link)
 
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
-	return sl_media_jack_is_cable_online(media_lgrp->media_jack);
+	return sl_media_jack_is_cable_inserted(media_lgrp->media_jack);
 }
 
 static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,

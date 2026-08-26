@@ -55,7 +55,7 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	if (rtn)
 		sl_media_log_err(media_ldev, LOG_NAME, "cable_db_load failed [%d]", rtn);
 
-	rtn = sl_media_data_jack_scan(ldev_num);
+	rtn = sl_media_data_jack_scan(media_ldev);
 	if (rtn) {
 		sl_media_log_err(media_ldev, LOG_NAME, "jack scan failed [%d]", rtn);
 		sl_media_data_cable_db_unload(media_ldev);

@@ -55,10 +55,6 @@ const char *sl_media_state_str(u8 state)
 		return "removed";
 	case SL_MEDIA_JACK_CABLE_INSERTED:
 		return "inserted";
-	case SL_MEDIA_JACK_CABLE_GOING_ONLINE:
-		return "going-online";
-	case SL_MEDIA_JACK_CABLE_ONLINE:
-		return "online";
 	case SL_MEDIA_JACK_CABLE_ERROR:
 		return "error";
 	default:

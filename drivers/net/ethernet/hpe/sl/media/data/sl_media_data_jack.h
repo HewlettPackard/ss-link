@@ -8,9 +8,7 @@
 #include "sl_media_ldev.h"
 #include "sl_media_jack.h"
 
-/*
- * These states reflect the state of media attr for both real and fake cables
- */
+/* These states reflect the state of media attr for both real and fake cables */
 #define CABLE_MEDIA_ATTR_REMOVED  0
 #define CABLE_MEDIA_ATTR_ADDED    1
 #define CABLE_MEDIA_ATTR_STASHED  2
@@ -19,7 +17,6 @@ void                  sl_media_data_jack_del(u8 ldev_num, u8 jack_num);
 int                   sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 struct sl_media_jack *sl_media_data_jack_get(u8 ldev_num, u8 jack_num);
 
-void sl_media_data_jack_unregister_event_notifier(void);
 void sl_media_data_cable_serdes_settings_clr(struct sl_media_jack *media_jack);
 void sl_media_data_jack_eeprom_clr(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
@@ -39,15 +36,16 @@ int  sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jac
 int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version);
 
-int  sl_media_data_jack_scan(u8 ldev_num);
+int  sl_media_data_jack_cable_attr_set(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr);
+void sl_media_data_jack_cable_attr_errors_update(struct sl_media_jack *media_jack, u32 errors);
+void sl_media_data_jack_cable_attr_send(struct sl_media_jack *media_jack);
+
 int  sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp);
 
 int  sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info, struct sl_media_attr *fake_media_attr);
 void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info);
-
-int  sl_media_data_jack_online(void *hdl, u8 ldev_num, u8 jack_num);
 
 int  sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack);
 
@@ -93,5 +91,19 @@ bool sl_media_data_jack_is_headshell_busy(struct sl_media_jack *media_jack);
 void sl_media_data_jack_last_cable_insert_set(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr);
 int  sl_media_data_jack_last_cable_insert_get(struct sl_media_jack *media_jack, u8 entry_num,
 					      struct sl_media_cable_insert_entry *cable_insert_entry);
+
+
+void sl_media_data_jack_insert_status_map_init(u8 ldev_num);
+void sl_media_data_jack_insert_status_map_clr(u8 ldev_num, u8 bit_num);
+u32  sl_media_data_jack_insert_status_map_get(u8 ldev_num);
+int  sl_media_data_jack_insert(struct sl_media_jack *media_jack);
+void sl_media_data_jack_remove(struct sl_media_jack *media_jack);
+
+void sl_media_data_jack_event_ignore_set(bool val);
+int  sl_media_data_jack_event(struct notifier_block *event_notifier, unsigned long events, void *hdl);
+
+void sl_media_data_jack_work_init(struct sl_media_jack *media_jack);
+int  sl_media_data_jack_scan(struct sl_media_ldev *media_ldev);
+void sl_media_data_jack_unregister_event_notifier(void);
 
 #endif /* _SL_MEDIA_DATA_JACK_H_ */
