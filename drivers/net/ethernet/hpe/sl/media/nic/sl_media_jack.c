@@ -119,7 +119,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		media_attr.info          = SL_MEDIA_INFO_AUTONEG |
 					   SL_MEDIA_INFO_LINKTRAIN;
 		media_attr.length_cm     = 25;
-		media_attr.hpe_pn        = 60821555;
+		media_attr.hpe_pn        = 0x42434B50; /* "BCKP" in ASCII */
 		media_attr.furcation     = SL_MEDIA_FURCATION_X1;
 		media_attr.speeds_map    = SL_MEDIA_SPEEDS_SUPPORT_CK_400G |
 					   SL_MEDIA_SPEEDS_SUPPORT_CK_200G |
@@ -131,7 +131,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		media_attr.max_speed     = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 		media_attr.jack_type     = SL_MEDIA_JACK_TYPE_BACKPLANE;
 		strncpy(media_attr.serial_num_str, "AK20212120", sizeof(media_attr.serial_num_str));
-		strncpy(media_attr.hpe_pn_str, "PK60821-555", sizeof(media_attr.hpe_pn_str));
+		strncpy(media_attr.hpe_pn_str, "BACKPLANE", sizeof(media_attr.hpe_pn_str));
 		strncpy(media_attr.date_code_str, "08-19-21", sizeof(media_attr.date_code_str));
 		memset(media_attr.fw_ver, 0, sizeof(media_attr.fw_ver));
 	} else {
