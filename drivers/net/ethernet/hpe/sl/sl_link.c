@@ -487,6 +487,9 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_CANCELED:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "canceled ");
 			break;
+		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
+			break;
 		case SL_LINK_DOWN_CAUSE_COMMAND:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
 			break;
