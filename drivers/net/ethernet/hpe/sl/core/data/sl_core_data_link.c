@@ -727,17 +727,30 @@ void sl_core_data_link_last_down_cause_map_set(struct sl_core_link *core_link, u
 
 		core_link->link.is_last_down_new = false;
 	} else {
+		/* If last down map includes command we don't want to add any additional bits. Command cause
+		 * takes precedence over other bits. Any additional bits are not incremented in the counters.
+		 */
+		if (core_link->link.last_down_cause_map[core_link->link.last_down_entry_num] &
+		    SL_LINK_DOWN_CAUSE_COMMAND) {
+			sl_core_log_dbg(core_link, LOG_NAME,
+					"last down cause map set command bit set (num = %u)",
+					core_link->link.last_down_entry_num);
+			spin_unlock(&core_link->link.data_lock);
+			return;
+		}
+
 		core_link->link.last_down_cause_map[core_link->link.last_down_entry_num] |= down_cause_map;
 	}
+
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"last down cause map set (num = %u, down_cause_map = 0x%llX)",
+			core_link->link.last_down_entry_num, down_cause_map);
 
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_ctrl_link_cause_counter_inc(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
 							core_link->core_lgrp->num, core_link->num), down_cause_map);
 
-	sl_core_log_dbg(core_link, LOG_NAME,
-			"last down cause map set (num = %u, down_cause_map = 0x%llX)",
-			core_link->link.last_down_entry_num, down_cause_map);
 }
 
 int sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_link,

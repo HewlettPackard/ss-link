@@ -132,7 +132,7 @@ void sl_core_hw_link_up_callback(struct sl_core_link *core_link, struct sl_core_
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up callback (callback = 0x%p, state = %d %s)",
 			core_link->link.callbacks.up, core_link_up_info->state,
-			sl_link_state_str(core_link_up_info->state));
+			sl_core_link_state_str(core_link_up_info->state));
 
 	rtn = core_link->link.callbacks.up(core_link->link.tags.up, core_link_up_info);
 	if (rtn != 0)
@@ -1864,22 +1864,19 @@ static void sl_core_hw_link_pml_rec_fail(struct sl_core_link *core_link)
 	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LOCAL_FAULT) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	}
 
 	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_LINK_DOWN) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
 	if (pml_rec_last_down_cause_map & PML_REC_DOWN_CAUSE_REMOTE_FAULT) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 	}
 
 	sl_core_hw_link_fault_link_down(core_link);
@@ -2177,32 +2174,28 @@ link_down:
 		sl_core_log_err_trace(core_link, LOG_NAME, "llr replay max occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_REPLAY_MAX);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_MAP);
 	}
 
 	if (local_fault) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "local fault occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LOCAL_FAULT);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LF_MAP);
 	}
 
 	if (remote_fault) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "remote fault occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_REMOTE_FAULT);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_RF_MAP);
 	}
 
 	if (link_down) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "link down occurred");
 		sl_core_hw_link_fault_handling_start(core_link);
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_PCS_LINK_DOWN);
-		if (!(sl_core_data_link_last_down_cause_map_get(core_link) & SL_LINK_DOWN_CAUSE_COMMAND))
-			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
 	}
 
 	sl_core_hw_link_fault_link_down(core_link);
