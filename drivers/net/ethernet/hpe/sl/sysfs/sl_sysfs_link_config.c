@@ -254,26 +254,6 @@ static ssize_t autoneg_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	return sysfs_emit(buf, "disabled\n");
 }
 
-static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
-{
-	int                  rtn;
-	struct sl_ctrl_link *ctrl_link;
-	u32                  options;
-
-	ctrl_link = container_of(kobj, struct sl_ctrl_link, config_kobj);
-
-	rtn = sl_ctrl_data_link_config_options_get(ctrl_link, &options);
-	if (rtn)
-		return sysfs_emit(buf, "error\n");
-
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
-
-	if (is_flag_set(options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
-		return sysfs_emit(buf, "enabled-remote\n");
-
-	return sysfs_emit(buf, "disabled\n");
-}
-
 static ssize_t auto_lane_degrade_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	int                  rtn;
@@ -326,7 +306,6 @@ static struct kobj_attribute lock                  = __ATTR_RO(lock);
 static struct kobj_attribute pause_map             = __ATTR_RO(pause_map);
 static struct kobj_attribute hpe_map               = __ATTR_RO(hpe_map);
 static struct kobj_attribute autoneg               = __ATTR_RO(autoneg);
-static struct kobj_attribute loopback              = __ATTR_RO(loopback);
 static struct kobj_attribute auto_lane_degrade     = __ATTR_RO(auto_lane_degrade);
 static struct kobj_attribute pml_recovery          = __ATTR_RO(pml_recovery);
 
@@ -341,7 +320,6 @@ static struct attribute *link_config_attrs[] = {
 	&pause_map.attr,
 	&hpe_map.attr,
 	&autoneg.attr,
-	&loopback.attr,
 	&auto_lane_degrade.attr,
 	&pml_recovery.attr,
 	NULL

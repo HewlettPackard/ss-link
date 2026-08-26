@@ -201,7 +201,9 @@ struct work_struct;
 		SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH  | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \
 		SL_LINK_DOWN_RETRYABLE)
-
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON_MAP (              \
+		SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON          | \
+		SL_LINK_DOWN_ORIGIN_LINK_UP)
 
 #define SL_LINK_DEGRADE_STATE_INVALID    0
 #define SL_LINK_DEGRADE_STATE_ACTIVE     1
@@ -220,7 +222,11 @@ enum sl_core_info_map_bits {
 	SL_CORE_INFO_MAP_SERDES_START,            /* SerDes is starting */
 	SL_CORE_INFO_MAP_SERDES_CHECK,            /* SerDes is being checked */
 	SL_CORE_INFO_MAP_SERDES_OK,               /* SerDes check is complete */
-	SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON,      /* SerDes loopback is ON */
+
+	/* loopback */
+	SL_CORE_INFO_MAP_LOOPBACK_SERDES_ON,      /* loopback serdes is ON */
+	SL_CORE_INFO_MAP_LOOPBACK_HOST_ON,        /* loopback host is ON */
+	SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON,       /* loopback media is ON */
 
 	/* PCS */
 	SL_CORE_INFO_MAP_PCS_LOCAL_FAULT,         /* link is going down from a local fault interrupt */

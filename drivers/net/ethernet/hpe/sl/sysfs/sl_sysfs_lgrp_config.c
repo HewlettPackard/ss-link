@@ -188,8 +188,8 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE));
 	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE)
 		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE));
-
-	//TODO: Add media side loopback
+	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)
+		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE));
 
 	return sysfs_emit(buf, "disabled\n");
 }

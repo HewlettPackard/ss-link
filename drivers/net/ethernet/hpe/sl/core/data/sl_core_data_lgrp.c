@@ -275,7 +275,8 @@ int sl_core_data_lgrp_furcation_get(struct sl_core_lgrp *core_lgrp, u32 *lgrp_fu
 	*lgrp_furcation = core_lgrp->config.furcation;
 	spin_unlock(&core_lgrp->data_lock);
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "furcation get (furcation = %u)", *lgrp_furcation);
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "furcation get (furcation = %u %s)", *lgrp_furcation,
+			sl_lgrp_furcation_str(*lgrp_furcation));
 
 	return 0;
 }

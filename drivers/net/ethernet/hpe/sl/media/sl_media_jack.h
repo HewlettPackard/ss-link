@@ -98,8 +98,11 @@ enum sl_media_jack_lane_data_read_state {
 	SL_MEDIA_JACK_LANE_DATA_READ_STATE_BUSY,
 };
 
-//TODO: Add media side loopback capabilities here
-#define SL_MEDIA_JACK_LOOPBACK_HOST_CAP         BIT(3)
+#define SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA        BIT(1)
+#define SL_MEDIA_JACK_LOOPBACK_CAP_HOST         BIT(3)
+
+#define SL_MEDIA_JACK_LOOPBACK_CAPS_MAP (SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA | \
+					 SL_MEDIA_JACK_LOOPBACK_CAP_HOST)
 
 struct sl_media_jack_signal {
 	struct {
@@ -164,7 +167,6 @@ struct sl_media_lgrp_cable_info {
 	bool                 warm_notif_sent;
 	bool                 cold_client_ready;
 	bool                 cold_notif_sent;
-	bool                 loopback_enabled;
 };
 
 struct sl_media_cable_insert_entry {
@@ -335,10 +337,11 @@ int  sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_fau
 				   time64_t *io_fault_time, u32 *fault_cause, time64_t *fault_time);
 void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack);
 
-int  sl_media_jack_loopback_host_set(u8 ldev_num, u8 lgrp_num, u8 lane_map);
-int  sl_media_jack_loopback_config_is_enabled(u8 ldev_num, u8 lgrp_num, bool *is_enabled);
-void sl_media_jack_loopback_config(u8 ldev_num, u8 lgrp_num, u32 options);
-int  sl_media_jack_loopback_enable_get(u8 ldev_num, u8 lgrp_num, u8 port_id, bool *loopback_enabled,
-				       u8 *partner_lgrp_num);
+int sl_media_jack_loopback_host_set(u8 ldev_num, u8 lgrp_num, u8 lane_map);
+int sl_media_jack_loopback_media_set(u8 ldev_num, u8 lgrp_num, u8 lane_map);
+int sl_media_jack_loopback_mismatch_check(u8 ldev_num, u8 lgrp_num);
+
+int sl_media_jack_lgrp_num_by_port_id_get(u8 ldev_num, u8 lgrp_num, u8 port_id, u8 *partner_lgrp_num);
+u8  sl_media_jack_port_count_get(u8 ldev_num, u8 lgrp_num);
 
 #endif /* _SL_MEDIA_JACK_H_ */

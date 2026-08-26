@@ -6,6 +6,7 @@
 
 #include "sl_asic.h"
 #include "sl_core_link.h"
+#include "sl_core_lgrp.h"
 #include "sl_media_jack.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_io.h"
@@ -541,51 +542,76 @@ static const char *sl_media_jack_lane_dp_state_str(u8 dp_state)
 	}
 }
 
-int sl_media_jack_loopback_config_is_enabled(u8 ldev_num, u8 lgrp_num, bool *is_enabled)
+int sl_media_jack_loopback_mismatch_check(u8 ldev_num, u8 lgrp_num)
 {
-	struct sl_media_jack *media_jack;
+	int                   rtn;
 	u8                    port_num;
+	struct sl_media_jack *media_jack;
+	u32                   lgrp_options;
+	u32                   partner_lgrp_options;
+	u8                    partner_lgrp_num;
 
 	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config is enabled get");
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback mismatch check (ldev_num = %u, lgrp_num = %u)",
+			 ldev_num, lgrp_num);
 
-	*is_enabled = false;
-
-	for (port_num = 0; port_num < media_jack->port_count; ++port_num) {
-		spin_lock(&media_jack->data_lock);
-		if (media_jack->cable_info[port_num].loopback_enabled) {
-			spin_unlock(&media_jack->data_lock);
-			*is_enabled = true;
-			break;
-		}
-		spin_unlock(&media_jack->data_lock);
+	rtn = sl_core_lgrp_config_options_get(ldev_num, lgrp_num, &lgrp_options);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "lgrp config options get failed [%d]", rtn);
+		return rtn;
 	}
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config get (is_enabled = %u)", *is_enabled);
+	/* We only can have a mismatch when turning off loopback */
+	if (is_flag_set(lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE) ||
+	    is_flag_set(lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE))
+		return 0;
+
+	for (port_num = 0; port_num < media_jack->port_count; ++port_num) {
+		partner_lgrp_num = media_jack->cable_info[port_num].lgrp_num;
+		if (partner_lgrp_num == lgrp_num)
+			continue;
+
+		rtn = sl_core_lgrp_config_options_get(ldev_num, partner_lgrp_num, &partner_lgrp_options);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "lgrp config options get failed [%d]", rtn);
+			return rtn;
+		}
+
+		if ((is_flag_set(partner_lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE) !=
+		    is_flag_set(lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE)) ||
+		    (is_flag_set(partner_lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE) !=
+		    is_flag_set(lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE))) {
+			sl_media_log_dbg(media_jack, LOG_NAME,
+					 "loopback mismatch (ldev_num = %u, lgrp_num = %u, partner_lgrp_num = %u)",
+					 ldev_num, lgrp_num, partner_lgrp_num);
+			return -EBADRQC;
+		}
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback matches all partners");
 
 	return 0;
 }
 
-void sl_media_jack_loopback_config(u8 ldev_num, u8 lgrp_num, u32 options)
+#define SL_MEDIA_JACK_LOOPBACK_MEDIA_ENABLE_OFFSET 181
+int sl_media_jack_loopback_media_set(u8 ldev_num, u8 lgrp_num, u8 lane_map)
 {
-	struct sl_media_lgrp *media_lgrp;
+	int                   rtn;
 	struct sl_media_jack *media_jack;
 
-	media_lgrp   = sl_media_lgrp_get(ldev_num, lgrp_num);
-	media_jack   = media_lgrp->media_jack;
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config (ldev_num = %u, lgrp_num = %u, options = 0x%X)",
-			 ldev_num, lgrp_num, options);
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback media set (ldev_num = %u, lgrp_num = %u, lane_map = 0x%X)",
+			 ldev_num, lgrp_num, lane_map);
 
-	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
-		sl_media_log_dbg(media_jack, LOG_NAME, "loopback config - non-active cable");
-		return;
+	rtn = sl_media_io_write8(media_jack, 0x13, SL_MEDIA_JACK_LOOPBACK_MEDIA_ENABLE_OFFSET, lane_map);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_write8 failed [%d]", rtn);
+		return -EIO;
 	}
 
-	spin_lock(&media_jack->data_lock);
-	media_lgrp->cable_info->loopback_enabled = is_flag_set(options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE);
-	spin_unlock(&media_jack->data_lock);
+	return 0;
 }
 
 #define SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET 183
@@ -593,7 +619,6 @@ int sl_media_jack_loopback_host_set(u8 ldev_num, u8 lgrp_num, u8 lane_map)
 {
 	int                   rtn;
 	struct sl_media_jack *media_jack;
-	u8                    new_lane_map;
 
 	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
@@ -603,20 +628,6 @@ int sl_media_jack_loopback_host_set(u8 ldev_num, u8 lgrp_num, u8 lane_map)
 	rtn = sl_media_io_write8(media_jack, 0x13, SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET, lane_map);
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "media_io_write8 failed [%d]", rtn);
-		return -EIO;
-	}
-
-	/* Verify the trasnceiver set loopback host. Some transceivers will ignore the write so it is best to check. */
-	rtn = sl_media_io_read8(media_jack, 0x13, SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET, &new_lane_map);
-	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media_io_read8 failed [%d]", rtn);
-		return -EIO;
-	}
-
-	if (new_lane_map != lane_map) {
-		sl_media_log_err(media_jack, LOG_NAME,
-				 "loopback host set failed (lane_map = 0x%X, new_lane_map = 0x%X)",
-				 lane_map, new_lane_map);
 		return -EIO;
 	}
 
@@ -1230,34 +1241,33 @@ void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack)
 	spin_unlock(&media_jack->data_lock);
 }
 
-int sl_media_jack_loopback_enable_get(u8 ldev_num, u8 lgrp_num, u8 port_id, bool *loopback_enabled,
-				      u8 *partner_lgrp_num)
+int sl_media_jack_lgrp_num_by_port_id_get(u8 ldev_num, u8 lgrp_num, u8 port_id, u8 *partner_lgrp_num)
 {
-	struct sl_media_jack            *media_jack;
-	struct sl_media_lgrp_cable_info *cable_info;
+	struct sl_media_jack *media_jack;
 
 	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
-	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "loopback enable get (ldev_num = %u, lgrp_num = %u, port_id = %u)",
-			 ldev_num, lgrp_num, port_id);
-
 	if (port_id > SL_MEDIA_MAX_LGRPS_PER_JACK) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "invalid port_id (%u)", port_id);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "invalid (port_id = %u)", port_id);
 		return -EINVAL;
 	}
 
-	cable_info = &media_jack->cable_info[port_id];
+	if (port_id >= media_jack->port_count) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "invalid (port_id = %u > port_count = %u)", port_id,
+				 media_jack->port_count);
+		return -ENOENT;
+	}
 
-	*partner_lgrp_num = cable_info->lgrp_num;
-
-	spin_lock(&media_jack->data_lock);
-	*loopback_enabled = cable_info->loopback_enabled;
-	spin_unlock(&media_jack->data_lock);
-
-	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "loopback enable get (loopback_enabled = %s, partner_lgrp_num = %u)",
-			 *loopback_enabled ? "true" : "false", *partner_lgrp_num);
+	*partner_lgrp_num = media_jack->cable_info[port_id].lgrp_num;
 
 	return 0;
+}
+
+u8 sl_media_jack_port_count_get(u8 ldev_num, u8 lgrp_num)
+{
+	struct sl_media_jack *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	return media_jack->port_count;
 }

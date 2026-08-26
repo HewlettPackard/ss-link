@@ -586,11 +586,10 @@ static void sl_media_eeprom_loopback_caps_get(struct sl_media_jack *media_jack, 
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "loopback caps get (type = 0x%X %s)", type, sl_media_type_str(type));
 
-	*loopback_caps = 0;
-
 	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
 		sl_media_log_dbg(media_jack, LOG_NAME, "loopback caps get (type = 0x%X %s)",
 				 type, sl_media_type_str(type));
+		*loopback_caps = 0;
 		return;
 	}
 
@@ -598,6 +597,7 @@ static void sl_media_eeprom_loopback_caps_get(struct sl_media_jack *media_jack, 
 	if (rtn) {
 		sl_media_log_err_trace(media_jack, LOG_NAME, "media_io_read8 failed [%d]", rtn);
 		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO);
+		*loopback_caps = 0;
 		return;
 	}
 

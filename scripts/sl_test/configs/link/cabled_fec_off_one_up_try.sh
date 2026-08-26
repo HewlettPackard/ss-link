@@ -24,4 +24,3 @@ link_up_tries_max=1
 lock=0
 pause_map_asym_set=0
 pause_map_sym_set=0
-remote_loopback=0

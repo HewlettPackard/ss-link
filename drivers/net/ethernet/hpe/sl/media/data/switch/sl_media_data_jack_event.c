@@ -295,9 +295,9 @@ static int sl_media_data_jack_backplane_setup(struct sl_media_jack *media_jack, 
 				 SL_MEDIA_SPEEDS_SUPPORT_CD_50G;
 	media_attr->max_speed  = SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
 
-	strncpy(media_attr->serial_num_str, "AK20212120",  sizeof(media_attr->serial_num_str));
-	strncpy(media_attr->hpe_pn_str,     "BACKPLANE", sizeof(media_attr->hpe_pn_str));
-	strncpy(media_attr->date_code_str,  "08-19-21",    sizeof(media_attr->date_code_str));
+	strncpy(media_attr->serial_num_str, "AK20212120", sizeof(media_attr->serial_num_str));
+	strncpy(media_attr->hpe_pn_str,     "BACKPLANE",  sizeof(media_attr->hpe_pn_str));
+	strncpy(media_attr->date_code_str,  "08-19-21",   sizeof(media_attr->date_code_str));
 
 	memset(media_attr->fw_ver, 0, sizeof(media_attr->fw_ver));
 

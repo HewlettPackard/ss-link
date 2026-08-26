@@ -463,7 +463,8 @@ static int sl_core_hw_link_loopback_config_check(struct sl_core_link *core_link,
 	u32 lgrp_furcation;
 
 	if (hweight_long(lgrp_options & SL_LGRP_CONFIG_OPT_LOOPBACK_MASK) > 1) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "invalid loopback config (lgrp_flags = 0x%X)", lgrp_options);
+		sl_core_log_err_trace(core_link, LOG_NAME, "invalid loopback config (lgrp_options = 0x%X)",
+				      lgrp_options);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG_MAP);
 		return -EOPNOTSUPP;
 	}
@@ -477,8 +478,8 @@ static int sl_core_hw_link_loopback_config_check(struct sl_core_link *core_link,
 
 	if (lgrp_furcation != SL_MEDIA_FURCATION_X1) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "loopback config check failed - furcation not supported (lgrp_furcation = %u)",
-				      lgrp_furcation);
+				      "loopback config check failed - furcation not supported (lgrp_furcation = %u %s)",
+				      lgrp_furcation, sl_lgrp_furcation_str(lgrp_furcation));
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG_MAP);
 		return -EOPNOTSUPP;
 	}
@@ -488,14 +489,12 @@ static int sl_core_hw_link_loopback_config_check(struct sl_core_link *core_link,
 
 static int sl_core_hw_link_loopback_config(struct sl_core_link *core_link)
 {
-	int  rtn;
-	u8   ldev_num;
-	u8   lgrp_num;
-	u8   link_num;
-	u32  lgrp_options;
-	bool loopback_host;
-	bool is_config_enabled;
-	u8   loopback_caps;
+	int rtn;
+	u8  ldev_num;
+	u8  lgrp_num;
+	u8  link_num;
+	u32 lgrp_flags;
+	u8  loopback_caps;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "loopback config (link = 0x%p)", core_link);
 
@@ -503,82 +502,121 @@ static int sl_core_hw_link_loopback_config(struct sl_core_link *core_link)
 	lgrp_num = core_link->core_lgrp->num;
 	link_num = core_link->num;
 
-	lgrp_options  = sl_core_data_lgrp_config_flags_get(core_link->core_lgrp);
-	loopback_host = is_flag_set(lgrp_options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE);
+	lgrp_flags = sl_core_data_lgrp_config_flags_get(core_link->core_lgrp);
 
-	sl_core_log_dbg(core_link, LOG_NAME, "loopback config (loopback_host = %d)", loopback_host);
+	sl_core_log_dbg(core_link, LOG_NAME,
+			"loopback config (loopback_host_enabled = %d, loopback_media_enabled = %d)",
+			is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE),
+			is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE));
 
-	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
-		if (loopback_host) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "loopback host set on non-active media");
-			sl_core_data_link_last_up_fail_cause_map_set(core_link,
-								     SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
-			return -EOPNOTSUPP;
-		}
-
-		sl_core_log_dbg(core_link, LOG_NAME, "non-active media, loopback ignored");
-		return 0;
-	}
-
-	rtn = sl_core_hw_link_loopback_config_check(core_link, lgrp_options);
-	if (rtn) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_config_check failed [%d]", rtn);
-		return rtn;
-	}
-
-	rtn = sl_media_lgrp_loopback_caps_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num,
-					      &loopback_caps);
+	rtn = sl_media_lgrp_loopback_caps_get(ldev_num, lgrp_num, &loopback_caps);
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_caps_get failed [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
 		return -EOPNOTSUPP;
 	}
 
-	if (!is_flag_set(loopback_caps, SL_MEDIA_JACK_LOOPBACK_HOST_CAP)) {
-		if (loopback_host) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "loopback not supported (loopback_caps = 0x%x)", loopback_caps);
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "loopback media set on non-active media");
 			sl_core_data_link_last_up_fail_cause_map_set(core_link,
 								     SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
 			return -EOPNOTSUPP;
 		}
 
-		/* OK for cables that don't support loopback to leave config off. However we don't want to continue to
-		 * write the config to HW.
-		 */
+		if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE)) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "loopback host set on non-active media");
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								     SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
+			return -EOPNOTSUPP;
+		}
+
+		sl_core_log_dbg(core_link, LOG_NAME, "non-active media and no loopback set (lgrp_flags = 0x%x)",
+				lgrp_flags);
 		return 0;
 	}
 
-	if (loopback_host) {
+	/* Nothing to do if the cable doesn't support loopback and we aren't trying to use it. */
+	if (!(loopback_caps & SL_MEDIA_JACK_LOOPBACK_CAPS_MAP) &&
+	    !(lgrp_flags & SL_LGRP_CONFIG_OPT_TRANSCEIVER_LOOPBACK_MASK)) {
+		sl_core_log_dbg(core_link, LOG_NAME,
+				"loopback no support and no request (loopback_caps = 0x%x, lgrp_flags = 0x%x)",
+				loopback_caps, lgrp_flags);
+		return 0;
+	}
+
+	rtn = sl_core_hw_link_loopback_config_check(core_link, lgrp_flags);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_config_check failed [%d]", rtn);
+		return rtn;
+	}
+
+	if (!is_flag_set(loopback_caps, SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA) &&
+	    is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "loopback not supported (loopback_caps = 0x%x)",
+				      loopback_caps);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
+
+		return -EOPNOTSUPP;
+	}
+
+	if (!is_flag_set(loopback_caps, SL_MEDIA_JACK_LOOPBACK_CAP_HOST) &&
+	    is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE)) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "loopback not supported (loopback_caps = 0x%x)",
+				      loopback_caps);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_MAP);
+
+		return -EOPNOTSUPP;
+	}
+
+	rtn = sl_media_jack_loopback_mismatch_check(ldev_num, lgrp_num);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_mismatch_check failed [%d]", rtn);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_MAP);
+		return rtn;
+	}
+
+	if (lgrp_flags & SL_LGRP_CONFIG_OPT_TRANSCEIVER_LOOPBACK_MASK) {
 		rtn = sl_ctrl_link_down_partners(ldev_num, lgrp_num, link_num);
 		if (rtn)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
-					       "loopback_config_check down_partners failed [%d]", rtn);
-
-	} else {
-		rtn = sl_media_jack_loopback_config_is_enabled(ldev_num, lgrp_num, &is_config_enabled);
-		if (rtn) {
-			sl_core_log_err_trace(core_link, LOG_NAME, "loopback_config_is_enabled failed [%d]", rtn);
-			sl_core_data_link_last_up_fail_cause_map_set(core_link,
-								     SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_MAP);
-			return rtn;
-		}
-
-		if (is_config_enabled) {
-			sl_core_log_err_trace(core_link, LOG_NAME,
-					      "loopback config mismatch (loopback_host = %d, is_config_enabled = %d)",
-					      loopback_host, is_config_enabled);
-			sl_core_data_link_last_up_fail_cause_map_set(core_link,
-								     SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_MAP);
-			return -EOPNOTSUPP;
-		}
+					       "down_partners failed [%d]", rtn);
 	}
 
-	rtn = sl_media_jack_loopback_host_set(ldev_num, lgrp_num, loopback_host ? 0xFF : 0x00);
+	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE))
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON);
+	else
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON);
+
+	rtn = sl_media_jack_loopback_media_set(ldev_num, lgrp_num,
+					       is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE) ?
+					       0xFF : 0x00);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_media_set failed [%d]", rtn);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_IO_MAP);
+		return rtn;
+	}
+
+	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE))
+		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LOOPBACK_HOST_ON);
+	else
+		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_LOOPBACK_HOST_ON);
+
+	rtn = sl_media_jack_loopback_host_set(ldev_num, lgrp_num,
+					      is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE) ?
+					      0xFF : 0x00);
 	if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "loopback_host_set failed [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_IO_MAP);
 		return rtn;
+	}
+
+	/* When in loopback media the link will not go up. */
+	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "media loopback on");
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON_MAP);
+		return -ENOLINK;
 	}
 
 	return 0;
@@ -654,7 +692,17 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	}
 
 	rtn = sl_core_hw_link_loopback_config(core_link);
-	if (rtn) {
+	switch (rtn) {
+	case 0:
+		break;
+	case -ENOLINK:
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up work loopback config failed in loopback media");
+		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME, "up work link_up_fail failed [%d]", rtn);
+		return;
+	default:
 		sl_core_log_err_trace(core_link, LOG_NAME, "up work loopback config failed [%d]", rtn);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		rtn = sl_core_link_up_fail(core_link);

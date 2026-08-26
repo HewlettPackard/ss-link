@@ -698,7 +698,6 @@ function print_link {
         local caps_tech=$(cat ${LINK_PATH}/caps/tech_map)
         local caps_fec=$(cat ${LINK_PATH}/caps/fec_map)
         local caps_hpe=$(cat ${LINK_PATH}/caps/hpe_map)
-        local loopback=$(cat ${LINK_PATH}/config/loopback)
         local pml_rec_config=$(cat ${LINK_PATH}/config/pml_recovery)
         local pml_rec_attempts=$(cat ${LINK_PATH}/pml_recovery/pml_rec_attempts)
         local pml_rec_successes=$(cat ${LINK_PATH}/pml_recovery/pml_rec_successes)
@@ -747,7 +746,6 @@ function print_link {
         printf "           |              ccw_down_limit = ${fec_mon_ccw_down_limit}, ucw_down_limit = ${fec_mon_ucw_down_limit}\n"
         printf "    config | hpe               = ${hpe_map}\n"
         printf "           | autoneg           = ${autoneg}\n"
-        printf "           | loopback          = ${loopback}\n"
         printf "           | pause             = ${pause_map}\n"
         printf "           | pml_recovery      = ${pml_rec_config}\n"
         printf "           | auto_lane_degrade = ${degrade_config}\n"

@@ -380,8 +380,6 @@ const char *sl_link_config_opt_str(u32 option)
 		return "autoneg-enable";
 	case SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE:
 		return "autoneg-continuous";
-	case SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE:
-		return "loopback-remote-enable";
 	default:
 		return "unknown";
 	}
@@ -574,6 +572,9 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 			break;
 		case SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "partner-loopback-mismatch ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-media-on ");
 			break;
 
 		case SL_LINK_DOWN_RETRYABLE:

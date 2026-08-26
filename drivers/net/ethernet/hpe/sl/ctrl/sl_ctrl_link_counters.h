@@ -77,6 +77,7 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_LOOPBACK_UNSUPPORTED,       /* loopback unsupported                       */
 	LINK_CAUSE_PARTNER_LOOPBACK_ON,        /* Forced down, partner in loopback           */
 	LINK_CAUSE_PARTNER_LOOPBACK_MISMATCH,  /* Forced down, partner loopback mismatch     */
+	LINK_CAUSE_LOOPBACK_MEDIA_ON,          /* loopback media on, local link up prevented */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 

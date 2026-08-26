@@ -96,8 +96,6 @@ int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgr
 		goto out;
 	}
 
-	sl_media_jack_loopback_config(ldev_num, lgrp_num, lgrp_config->options);
-
 	sl_core_data_lgrp_config_set(core_lgrp, lgrp_config);
 
 	rtn = 0;
@@ -633,6 +631,13 @@ int sl_core_lgrp_sbus_pmi_wr_result_get(struct sl_core_lgrp *core_lgrp, int *res
 	spin_lock(&core_lgrp->data_lock);
 	*result = core_lgrp->sbus_pmi.wr.result;
 	spin_unlock(&core_lgrp->data_lock);
+
+	return 0;
+}
+
+int sl_core_lgrp_config_options_get(u8 ldev_num, u8 lgrp_num, u32 *lgrp_options)
+{
+	*lgrp_options = sl_core_data_lgrp_config_flags_get(sl_core_lgrp_get(ldev_num, lgrp_num));
 
 	return 0;
 }

@@ -133,6 +133,7 @@ struct sl_core_lgrp *sl_core_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
 int sl_core_lgrp_hw_attr_set(u8 ldev_num, u8 lgrp_num, struct sl_hw_attr *hw_attr);
 int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgrp_config);
+int sl_core_lgrp_config_options_get(u8 ldev_num, u8 lgrp_num, u32 *lgrp_options);
 
 int sl_core_lgrp_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre1);
 int sl_core_lgrp_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_num, s16 *pre2);

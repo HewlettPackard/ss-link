@@ -375,6 +375,8 @@ const char *sl_lgrp_config_opt_str(u32 option)
 		return "serdes";
 	case SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE:
 		return "host";
+	case SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE:
+		return "media";
 	default:
 		return "unknown";
 	}

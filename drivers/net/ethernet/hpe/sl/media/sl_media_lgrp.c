@@ -495,13 +495,7 @@ bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num)
 
 int sl_media_lgrp_loopback_caps_get(u8 ldev_num, u8 lgrp_num, u8 *loopback_caps)
 {
-	struct sl_media_lgrp *media_lgrp;
-
-	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
-
-	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "loopback caps get");
-
-	return sl_media_data_lgrp_loopback_caps_get(media_lgrp, loopback_caps);
+	return sl_media_data_lgrp_loopback_caps_get(sl_media_data_lgrp_get(ldev_num, lgrp_num), loopback_caps);
 }
 
 int sl_media_lgrp_loopback_caps_str(unsigned long loopback_caps, char *caps_str, unsigned int caps_str_size)
@@ -520,10 +514,12 @@ int sl_media_lgrp_loopback_caps_str(unsigned long loopback_caps, char *caps_str,
 
 	for_each_set_bit(which, &loopback_caps, BITS_PER_LONG) {
 		switch (BIT(which)) {
-		case SL_MEDIA_JACK_LOOPBACK_HOST_CAP:
+		case SL_MEDIA_JACK_LOOPBACK_CAP_HOST:
 			strlcat(caps_str, "host ", caps_str_size);
 			break;
-		//TODO: Add media side loopback capabilities here
+		case SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA:
+			strlcat(caps_str, "media ", caps_str_size);
+			break;
 		default:
 			break;
 		}

@@ -22,7 +22,10 @@ static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
 	[SL_CORE_INFO_MAP_SERDES_START]            = { .desc = "serdes-start"           },
 	[SL_CORE_INFO_MAP_SERDES_CHECK]            = { .desc = "serdes-check"           },
 	[SL_CORE_INFO_MAP_SERDES_OK]               = { .desc = "serdes-ok"              },
-	[SL_CORE_INFO_MAP_SERDES_LOOPBACK_ON]      = { .desc = "serdes-loopback-on"     },
+
+	[SL_CORE_INFO_MAP_LOOPBACK_SERDES_ON]      = { .desc = "loopback-serdes-on"     },
+	[SL_CORE_INFO_MAP_LOOPBACK_HOST_ON]        = { .desc = "loopback-host-on"       },
+	[SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON]       = { .desc = "loopback-media-on"      },
 
 	[SL_CORE_INFO_MAP_PCS_LOCAL_FAULT]         = { .desc = "pcs-local-fault"        },
 	[SL_CORE_INFO_MAP_PCS_REMOTE_FAULT]        = { .desc = "pcs-remote-fault"       },

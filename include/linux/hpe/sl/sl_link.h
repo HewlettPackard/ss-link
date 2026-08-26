@@ -96,7 +96,6 @@ struct sl_link_config {
 
 #define SL_LINK_CONFIG_OPT_AUTONEG_ENABLE            BIT(0) /* Autoneg                     */
 #define SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE BIT(1) /* Continuous autoneg attempts */
-#define SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE    BIT(3) /* Remote loopback             */
 #define SL_LINK_CONFIG_OPT_ALD_ENABLE                BIT(4) /* Auto Lane Degrade           */
 #define SL_LINK_CONFIG_OPT_LOS_LOL_UP_FAIL_HIDE      BIT(5) /* Hide los and lol reporting  */
 #define SL_LINK_CONFIG_OPT_PML_REC_ENABLE            BIT(6) /* PML Recovery                */
@@ -217,6 +216,7 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON        BIT(44) /* Forced down, partner in loopback           */
 #define SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG            BIT(45) /* Invalid loopback configuration             */
 #define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH  BIT(46) /* Partner loopback config mismatch           */
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON          BIT(47) /* Media in loopback link up impossible       */
 
 #define SL_LINK_DOWN_RETRYABLE                        BIT(61) /* client retry possible                      */
 #define SL_LINK_DOWN_ORIGIN_ASYNC                     BIT(62) /* link down cause was asynchronous           */
