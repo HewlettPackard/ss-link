@@ -380,8 +380,6 @@ const char *sl_link_config_opt_str(u32 option)
 		return "autoneg-enable";
 	case SL_LINK_CONFIG_OPT_AUTONEG_CONTINUOUS_ENABLE:
 		return "autoneg-continuous";
-	case SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE:
-		return "loopback-headshell-enable";
 	case SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE:
 		return "loopback-remote-enable";
 	default:
@@ -561,6 +559,21 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 			break;
 		case SL_LINK_DOWN_CAUSE_FEC_CONFIG:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "fec-config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LOOPBACK_IO:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-io ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-unsupported ");
+			break;
+		case SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "partner-loopback-on ");
+			break;
+		case SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-config ");
+			break;
+		case SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "partner-loopback-mismatch ");
 			break;
 
 		case SL_LINK_DOWN_RETRYABLE:

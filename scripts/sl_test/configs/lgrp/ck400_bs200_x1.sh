@@ -12,6 +12,7 @@ lock=0
 mfs=9216
 r1_partner=0
 serdes_loopback=0
+loopback_host=0
 tech_map_ck400g_set=1
 tech_map_ck200g_set=0
 tech_map_ck100g_set=0

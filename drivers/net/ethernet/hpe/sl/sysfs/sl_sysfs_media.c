@@ -15,6 +15,7 @@
 #include "sl_media_lgrp.h"
 #include "sl_media_ldev.h"
 #include "sl_media_jack.h"
+#include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_jack.h"
 #include "base/sl_media_eeprom.h"
 #include "sl_sysfs_media_last_cable.h"
@@ -1024,6 +1025,29 @@ static ssize_t error_info_show(struct kobject *kobj, struct kobj_attribute *katt
 	return sysfs_emit(buf, "%s\n", error_str);
 }
 
+static ssize_t loopback_caps_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	int                   rtn;
+	struct sl_media_lgrp *media_lgrp;
+	char                  caps_str[SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE];
+	u8                    loopback_caps;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
+
+	rtn = sl_media_data_lgrp_loopback_caps_get(media_lgrp, &loopback_caps);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	rtn = sl_media_lgrp_loopback_caps_str(loopback_caps, caps_str, sizeof(caps_str));
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
+		   "loopback host supported show (loopback_caps = 0x%x %s)", loopback_caps, caps_str);
+
+	return sysfs_emit(buf, "%s\n", caps_str);
+}
+
 static struct kobj_attribute media_state                            = __ATTR_RO(state);
 static struct kobj_attribute media_jack_power_state                 = __ATTR_RO(jack_power_state);
 static struct kobj_attribute media_temperature_celsius              = __ATTR_RO(temperature_celsius);
@@ -1061,6 +1085,7 @@ static struct kobj_attribute media_is_supported_ss200_cable         = __ATTR_RO(
 static struct kobj_attribute media_jack_part                        = __ATTR_RO(jack_part);
 static struct kobj_attribute media_signal_cache_time                = __ATTR_RO(signal_cache_time);
 static struct kobj_attribute media_error_info                       = __ATTR_RO(error_info);
+static struct kobj_attribute media_loopback_caps                    = __ATTR_RO(loopback_caps);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -1100,6 +1125,7 @@ static struct attribute *media_attrs[] = {
 	&media_jack_part.attr,
 	&media_signal_cache_time.attr,
 	&media_error_info.attr,
+	&media_loopback_caps.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(media);

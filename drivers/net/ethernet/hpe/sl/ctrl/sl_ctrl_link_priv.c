@@ -6,6 +6,8 @@
 #include <linux/hpe/sl/sl_link.h>
 
 #include "base/sl_ctrl_log.h"
+#include "sl_media_lgrp.h"
+#include "data/sl_ctrl_data_lgrp.h"
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_lgrp_notif.h"
@@ -846,6 +848,100 @@ int sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"last up fail time show (cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
 			*last_up_fail_cause_map, *last_up_fail_time, last_up_fail_time, last_up_fail_time);
+
+	return 0;
+}
+
+/* sl_ctrl_link_down_partners - Down links in link groups sharing the same cable. */
+int sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+	int                  port_num;
+	struct {
+		bool                 loopback_enabled;
+		u8                   lgrp_num;
+		struct sl_ctrl_link *ctrl_link;
+		u32                  link_state;
+	} partner;
+
+	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "link down partners");
+
+	for (port_num = 0; port_num < SL_MEDIA_MAX_LGRPS_PER_JACK; ++port_num) {
+		rtn = sl_media_jack_loopback_enable_get(ldev_num, lgrp_num, port_num, &partner.loopback_enabled,
+							&partner.lgrp_num);
+		if (rtn) {
+			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+					      "loopback_enable_get failed (port = %u) [%d]", port_num, rtn);
+			return rtn;
+		}
+
+		if (lgrp_num == partner.lgrp_num)
+			continue;
+
+		if (partner.loopback_enabled)
+			continue;
+
+		/* Link partners are assumed to be unfurcated. This check is made as part of
+		 * sl_core_hw_link_loopback_config_check().
+		 */
+		partner.ctrl_link = sl_ctrl_link_get(ldev_num, partner.lgrp_num, 0);
+		if (!partner.ctrl_link) {
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+					"link down partners - partner link not found (partner_lgrp = %u)",
+					partner.lgrp_num);
+			continue;
+		}
+
+		if (!sl_ctrl_link_kref_get_unless_zero(partner.ctrl_link)) {
+			sl_ctrl_log_err(ctrl_link, LOG_NAME,
+					"link down partners bad ref (partner_ctrl_link = 0x%p)",
+					partner.ctrl_link);
+			return -EBADRQC;
+		}
+
+		partner.link_state = sl_ctrl_link_state_get(partner.ctrl_link);
+
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+				"down partner (partner_lgrp_num = %u, partner_link_state = %u %s)",
+				partner.lgrp_num, partner.link_state, sl_link_state_str(partner.link_state));
+
+		switch (partner.link_state) {
+		case SL_LINK_STATE_AN:
+		case SL_LINK_STATE_STARTING:
+		case SL_LINK_STATE_UP:
+			rtn = sl_ctrl_link_async_down(partner.ctrl_link, SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_MAP,
+						      true);
+			if (rtn) {
+				sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+						      "partner down failed (lgrp_num = %u) [%d]",
+						      partner.lgrp_num, rtn);
+
+				if (sl_ctrl_link_put(partner.ctrl_link))
+					sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+							"link down partners - link removed (link = 0x%p)",
+							partner.ctrl_link);
+				return rtn;
+			}
+
+			if (sl_ctrl_link_put(partner.ctrl_link))
+				sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+						"link down partners - link removed (link = 0x%p)",
+						partner.ctrl_link);
+			return 0;
+		case SL_LINK_STATE_UP_DOWN_REQ:
+		case SL_LINK_STATE_INVALID:
+		case SL_LINK_STATE_DOWN:
+		case SL_LINK_STATE_STOPPING:
+		default:
+			if (sl_ctrl_link_put(partner.ctrl_link))
+				sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "link down partners - link removed (link = 0x%p)",
+						partner.ctrl_link);
+			return 0;
+		}
+	}
 
 	return 0;
 }

@@ -599,6 +599,8 @@ function sl_test_lgrp_config_set {
 			return 1
 		fi
 
+		sl_test_debug_log "${FUNCNAME}" "config.${item} = ${!item}"
+
 		echo ${!item} > ${filename}
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then
@@ -708,6 +710,8 @@ function sl_test_lgrp_policy_set {
 			sl_test_error_log "${FUNCNAME}" "lgrp_policy failed"
 			return 1
 		fi
+
+		sl_test_debug_log "${FUNCNAME}" "policy.${item} = ${!item}"
 
 		echo ${!item} > ${filename}
 		rtn=$?

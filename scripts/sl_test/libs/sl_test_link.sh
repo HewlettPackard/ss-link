@@ -1019,7 +1019,7 @@ function sl_test_link_config_set {
 			return 1
 		fi
 
-		sl_test_info_log "${FUNCNAME}" "config.${item} = ${!item}"
+		sl_test_debug_log "${FUNCNAME}" "config.${item} = ${!item}"
 
 		echo ${!item} > ${filename}
 		rtn=$?
@@ -1250,6 +1250,8 @@ function sl_test_link_policy_set {
 			sl_test_error_log "${FUNCNAME}" "link_policy failed"
 			return 1
 		fi
+
+		sl_test_debug_log "${FUNCNAME}" "policy.${item} = ${!item}"
 
 		echo ${!item} > ${filename}
 		rtn=$?

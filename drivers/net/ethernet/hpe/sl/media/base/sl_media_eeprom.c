@@ -9,6 +9,7 @@
 
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
+#include "sl_media_io.h"
 #include "sl_media_eeprom.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
@@ -578,6 +579,31 @@ int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char
 	return 0;
 }
 
+#define LOOPBACK_CAPABILITIES_OFFSET 128
+static void sl_media_eeprom_loopback_caps_get(struct sl_media_jack *media_jack, u32 type, u8 *loopback_caps)
+{
+	int rtn;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback caps get (type = 0x%X %s)", type, sl_media_type_str(type));
+
+	*loopback_caps = 0;
+
+	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "loopback caps get (type = 0x%X %s)",
+				 type, sl_media_type_str(type));
+		return;
+	}
+
+	rtn = sl_media_io_read8(media_jack, 0x13, LOOPBACK_CAPABILITIES_OFFSET, loopback_caps);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media_io_read8 failed [%d]", rtn);
+		sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO);
+		return;
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "get (loopback_caps = 0x%X)", *loopback_caps);
+}
+
 void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "parse");
@@ -595,6 +621,7 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_appsel_info_get(media_jack, media_attr->format, &(media_attr->speeds_map));
 	sl_media_eeprom_furcation_get(media_jack, &(media_attr->furcation));
 	sl_media_eeprom_supported_flags_advertised_get(media_jack, media_attr->supported_flags_advertised);
+	sl_media_eeprom_loopback_caps_get(media_jack, media_attr->type, &media_attr->loopback_caps);
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "parse (format = %u, vendor = %u %s, vendor_pn_str = %s, fw = %02X.%02X)",

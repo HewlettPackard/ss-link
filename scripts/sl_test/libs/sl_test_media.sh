@@ -3,25 +3,18 @@
 # Copyright 2025 Hewlett Packard Enterprise Development LP. All rights reserved.
 #
 
-function __sl_test_media_wb_connections_map_get {
+function __sl_test_media_db_file_create {
 	local ldev_num
 	local pgrps
-	local -n connections_map
 	local media_type
 	local jack_type
 	local supported
-	local media_type_filter
-	local num_connections
-	local connection_num
 	local ldev_sysfs_dir
-	local found
 
-	connection_num=0
-	pgrps=({0..63})
 	ldev_num=$1
-	connections_map=$2
-	media_type_filter=$3
-	num_connections=$4
+	media_info_file=$2
+
+	pgrps=({0..63})
 
 	__sl_test_ldev_sysfs_parent_set ${ldev_num} ldev_sysfs_dir
 	rtn=$?
@@ -29,8 +22,6 @@ function __sl_test_media_wb_connections_map_get {
 		sl_test_error_log "${FUNCNAME}" "ldev_sysfs_parent_set failed [${rtn}]"
 		return ${rtn}
 	fi
-
-	media_info_file=$(mktemp)
 
 	for i in "${pgrps[@]}"; do
 		serial_num=$(cut -d '-' -f1 ${ldev_sysfs_dir}/pgrp/${i}/media/serial_num)
@@ -50,10 +41,64 @@ function __sl_test_media_wb_connections_map_get {
 			continue
 		fi
 
-		if [[ "${media_type_filter}" == "all" || "${media_type}" == "${media_type_filter}" ]]; then
-			echo "${serial_num} ${i} ${media_type} ${jack_type} ${supported}" >> ${media_info_file}
-		fi
+		echo "${serial_num} ${i} ${media_type} ${jack_type} ${supported}" >> ${media_info_file}
 	done
+
+	return 0
+}
+
+function __sl_test_media_active_map_get {
+
+	local ldev_num
+	local media_info_file
+	local -n pgrps_array
+
+	ldev_num=$1
+	pgrps_array=$2
+
+	media_info_file=$(mktemp)
+	__sl_test_media_db_file_create ${ldev_num} ${media_info_file}
+	rtn=$?
+	if [[ "${rtn}" != 0 ]]; then
+		sl_test_error_log "${FUNCNAME}" "media_db_file_create failed [${rtn}]"
+		return ${rtn}
+	fi
+
+	while IFS=' ' read -r sn pgrp type jtype support; do
+		if [[ "${type}" == "AOC" ]] || [[ "${type}" == "AEC" ]] || [[ "${type}" == "ACC" ]]; then
+			pgrps_array+=(${pgrp})
+		fi
+	done < ${media_info_file}
+
+	rm ${media_info_file}
+
+	return 0
+}
+
+function __sl_test_media_wb_connections_map_get {
+
+	local ldev_num
+	local -n connections_map
+	local media_type_filter
+	local num_connections
+	local connection_num
+	local media_info_file
+
+	ldev_num=$1
+	connections_map=$2
+	media_type_filter=$3
+	num_connections=$4
+
+	connection_num=0
+	media_info_file=$(mktemp)
+
+	__sl_test_media_db_file_create ${ldev_num} ${media_info_file}
+
+	# Filter media_info_file to only include lines matching media_type_filter
+	if [[ "${media_type_filter}" != "all" ]]; then
+		grep " ${media_type_filter} " ${media_info_file} > ${media_info_file}.filtered
+		mv ${media_info_file}.filtered ${media_info_file}
+	fi
 
 	uniq_serial_nums=($(awk '{print $1}' ${media_info_file} | sort -u))
 
@@ -181,6 +226,7 @@ function sl_test_media_wb_connections_map_show {
 	fi
 
 	num_connections=$3
+	media_wb_connections_map=""
 
 	__sl_test_media_wb_connections_map_get ${ldev_num} media_wb_connections_map "${media_type}" "${num_connections}"
 	rtn=$?

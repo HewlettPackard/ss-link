@@ -1037,6 +1037,91 @@ static ssize_t cause_rx_los_show(struct kobject *kobj, struct kobj_attribute *ka
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
+static ssize_t cause_loopback_io_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_LOOPBACK_IO, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause loopback io show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_loopback_config_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_LOOPBACK_CONFIG, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause loopback config show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_loopback_unsupported_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_LOOPBACK_UNSUPPORTED, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause loopback unsupported show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_partner_loopback_on_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_PARTNER_LOOPBACK_ON, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause partner loopback on show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_partner_loopback_mismatch_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_PARTNER_LOOPBACK_MISMATCH, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link cause partner loopback mismatch show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
 static ssize_t an_cause_lp_caps_serdes_link_up_fail_show(struct kobject *kobj,
 							 struct kobj_attribute *kattr, char *buf)
 {
@@ -1467,6 +1552,11 @@ static struct kobj_attribute link_cause_rx_lol                     = __ATTR_RO(c
 static struct kobj_attribute link_cause_tx_los                     = __ATTR_RO(cause_tx_los);
 static struct kobj_attribute link_cause_rx_los                     = __ATTR_RO(cause_rx_los);
 static struct kobj_attribute link_cause_fec_config                 = __ATTR_RO(cause_fec_config);
+static struct kobj_attribute link_cause_loopback_io                = __ATTR_RO(cause_loopback_io);
+static struct kobj_attribute link_cause_loopback_config            = __ATTR_RO(cause_loopback_config);
+static struct kobj_attribute link_cause_loopback_unsupported       = __ATTR_RO(cause_loopback_unsupported);
+static struct kobj_attribute link_cause_partner_loopback_on        = __ATTR_RO(cause_partner_loopback_on);
+static struct kobj_attribute link_cause_partner_loopback_mismatch  = __ATTR_RO(cause_partner_loopback_mismatch);
 
 static struct kobj_attribute link_an_cause_lp_caps_serdes_link_up_fail =
 			     __ATTR_RO(an_cause_lp_caps_serdes_link_up_fail);
@@ -1556,6 +1646,11 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_tx_los.attr,
 	&link_cause_rx_los.attr,
 	&link_cause_fec_config.attr,
+	&link_cause_loopback_io.attr,
+	&link_cause_loopback_config.attr,
+	&link_cause_loopback_unsupported.attr,
+	&link_cause_partner_loopback_on.attr,
+	&link_cause_partner_loopback_mismatch.attr,
 	&link_an_cause_lp_caps_serdes_link_up_fail.attr,
 	&link_an_cause_lp_caps_not_complete.attr,
 	&link_an_cause_not_complete.attr,

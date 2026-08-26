@@ -268,3 +268,14 @@ int sl_core_data_lgrp_io_trace_set(struct sl_core_lgrp *core_lgrp, bool io_trace
 
 	return 0;
 }
+
+int sl_core_data_lgrp_furcation_get(struct sl_core_lgrp *core_lgrp, u32 *lgrp_furcation)
+{
+	spin_lock(&core_lgrp->data_lock);
+	*lgrp_furcation = core_lgrp->config.furcation;
+	spin_unlock(&core_lgrp->data_lock);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "furcation get (furcation = %u)", *lgrp_furcation);
+
+	return 0;
+}

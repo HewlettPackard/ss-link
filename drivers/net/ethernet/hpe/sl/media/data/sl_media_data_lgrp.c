@@ -123,3 +123,23 @@ int sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp, b
 
 	return 0;
 }
+
+int sl_media_data_lgrp_loopback_caps_get(struct sl_media_lgrp *media_lgrp, u8 *loopback_caps)
+{
+	sl_media_log_dbg(media_lgrp, LOG_NAME, "loopback caps get");
+
+	spin_lock(&media_lgrp->media_jack->data_lock);
+	switch (media_lgrp->cable_info->real_cable_status) {
+	case CABLE_MEDIA_ATTR_ADDED:
+		*loopback_caps = media_lgrp->cable_info->media_attr.loopback_caps;
+		break;
+	case CABLE_MEDIA_ATTR_STASHED:
+	default:
+		*loopback_caps = 0;
+	}
+	spin_unlock(&media_lgrp->media_jack->data_lock);
+
+	sl_media_log_dbg(media_lgrp, LOG_NAME, "get (loopback_caps = 0x%X)", *loopback_caps);
+
+	return 0;
+}

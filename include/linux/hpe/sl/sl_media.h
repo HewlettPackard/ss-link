@@ -161,6 +161,7 @@ struct sl_media_attr {
 		struct sl_media_qsfp qsfp;
 	} jack_type_info;
 	u8            supported_flags_advertised[SL_MEDIA_SUPPORTED_FLAGS_ADVERTISED_SIZE];
+	u8            loopback_caps;
 	u32           info;
 	u32           errors;
 };

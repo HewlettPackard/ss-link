@@ -45,4 +45,5 @@ int  sl_ctrl_link_last_up_fail_cause_map_get(struct sl_ctrl_link *ctrl_link, u64
 int  sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64 *last_up_fail_cause_map,
 	time64_t *last_up_fail_time);
 
+int  sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num);
 #endif /* _SL_CTRL_LINK_PRIV_H_ */

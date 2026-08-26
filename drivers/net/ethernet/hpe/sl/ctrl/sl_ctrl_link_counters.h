@@ -72,6 +72,11 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_TX_LOS,                     /* TX Loss of Signal                          */
 	LINK_CAUSE_RX_LOS,                     /* RX Loss of Signal                          */
 	LINK_CAUSE_FEC_CONFIG,                 /* Invalid FEC configuration                  */
+	LINK_CAUSE_LOOPBACK_IO,                /* loopback io config failure                 */
+	LINK_CAUSE_LOOPBACK_CONFIG,            /* loopback configuration failure             */
+	LINK_CAUSE_LOOPBACK_UNSUPPORTED,       /* loopback unsupported                       */
+	LINK_CAUSE_PARTNER_LOOPBACK_ON,        /* Forced down, partner in loopback           */
+	LINK_CAUSE_PARTNER_LOOPBACK_MISMATCH,  /* Forced down, partner loopback mismatch     */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 

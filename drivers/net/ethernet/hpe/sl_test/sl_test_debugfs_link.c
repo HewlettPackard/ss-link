@@ -258,7 +258,6 @@ static struct kobj_type sl_test_port_num_kobj_type = {
 
 STATIC_CONFIG_OPT_ENTRY(lock,                 LOCK);
 STATIC_CONFIG_OPT_ENTRY(autoneg,              AUTONEG_ENABLE);
-STATIC_CONFIG_OPT_ENTRY(headshell_loopback,   HEADSHELL_LOOPBACK_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(remote_loopback,      REMOTE_LOOPBACK_ENABLE);
 
 STATIC_POLICY_OPT_ENTRY(lock,                      LOCK);
@@ -424,13 +423,6 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
 			"link config autoneg debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("headshell_loopback", 0644, config_dir, &config_option_headshell_loopback);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link config headshell_loopback debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

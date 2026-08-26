@@ -492,3 +492,44 @@ bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num)
 	       (media_attr.supported_flags_advertised[1] & SL_MEDIA_ADVERTISED_FLAGS_RX_LOS) ||
 	       (media_attr.supported_flags_advertised[1] & SL_MEDIA_ADVERTISED_FLAGS_RX_LOL);
 }
+
+int sl_media_lgrp_loopback_caps_get(u8 ldev_num, u8 lgrp_num, u8 *loopback_caps)
+{
+	struct sl_media_lgrp *media_lgrp;
+
+	media_lgrp = sl_media_data_lgrp_get(ldev_num, lgrp_num);
+
+	sl_media_log_dbg(media_lgrp, SL_MEDIA_LGRP_LOG_NAME, "loopback caps get");
+
+	return sl_media_data_lgrp_loopback_caps_get(media_lgrp, loopback_caps);
+}
+
+int sl_media_lgrp_loopback_caps_str(unsigned long loopback_caps, char *caps_str, unsigned int caps_str_size)
+{
+	int which;
+
+	if (!caps_str || caps_str_size < SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE)
+		return -EINVAL;
+
+	if (!loopback_caps) {
+		strscpy(caps_str, "none", caps_str_size);
+		return 0;
+	}
+
+	strscpy(caps_str, "", caps_str_size);
+
+	for_each_set_bit(which, &loopback_caps, BITS_PER_LONG) {
+		switch (BIT(which)) {
+		case SL_MEDIA_JACK_LOOPBACK_HOST_CAP:
+			strlcat(caps_str, "host ", caps_str_size);
+			break;
+		//TODO: Add media side loopback capabilities here
+		default:
+			break;
+		}
+	}
+
+	strim(caps_str);
+
+	return 0;
+}

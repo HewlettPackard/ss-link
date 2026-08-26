@@ -15,6 +15,7 @@
 #include "base/sl_media_log.h"
 
 #define SL_MEDIA_MAX_SUPPORTED_SPEEDS 9
+#define SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE 16
 
 struct sl_media_serdes_settings;
 
@@ -105,5 +106,8 @@ int  sl_media_lgrp_date_code_str_get(struct sl_media_lgrp *media_lgrp, char *dat
 int  sl_media_lgrp_fw_ver_str_get(struct sl_media_lgrp *media_lgrp, u8 *fw_ver);
 
 bool sl_media_lgrp_is_signal_status_supported(u8 ldev_num, u8 lgrp_num);
+
+int  sl_media_lgrp_loopback_caps_get(u8 ldev_num, u8 lgrp_num, u8 *loopback_caps);
+int  sl_media_lgrp_loopback_caps_str(unsigned long loopback_caps, char *caps_str, unsigned int caps_str_size);
 
 #endif /* _SL_MEDIA_LGRP_H_ */

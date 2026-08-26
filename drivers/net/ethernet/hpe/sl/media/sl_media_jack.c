@@ -541,6 +541,88 @@ static const char *sl_media_jack_lane_dp_state_str(u8 dp_state)
 	}
 }
 
+int sl_media_jack_loopback_config_is_enabled(u8 ldev_num, u8 lgrp_num, bool *is_enabled)
+{
+	struct sl_media_jack *media_jack;
+	u8                    port_num;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config is enabled get");
+
+	*is_enabled = false;
+
+	for (port_num = 0; port_num < media_jack->port_count; ++port_num) {
+		spin_lock(&media_jack->data_lock);
+		if (media_jack->cable_info[port_num].loopback_enabled) {
+			spin_unlock(&media_jack->data_lock);
+			*is_enabled = true;
+			break;
+		}
+		spin_unlock(&media_jack->data_lock);
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config get (is_enabled = %u)", *is_enabled);
+
+	return 0;
+}
+
+void sl_media_jack_loopback_config(u8 ldev_num, u8 lgrp_num, u32 options)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_media_jack *media_jack;
+
+	media_lgrp   = sl_media_lgrp_get(ldev_num, lgrp_num);
+	media_jack   = media_lgrp->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback config (ldev_num = %u, lgrp_num = %u, options = 0x%X)",
+			 ldev_num, lgrp_num, options);
+
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "loopback config - non-active cable");
+		return;
+	}
+
+	spin_lock(&media_jack->data_lock);
+	media_lgrp->cable_info->loopback_enabled = is_flag_set(options, SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE);
+	spin_unlock(&media_jack->data_lock);
+}
+
+#define SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET 183
+int sl_media_jack_loopback_host_set(u8 ldev_num, u8 lgrp_num, u8 lane_map)
+{
+	int                   rtn;
+	struct sl_media_jack *media_jack;
+	u8                    new_lane_map;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "loopback host set (ldev_num = %u, lgrp_num = %u, lane_map = 0x%X)",
+			 ldev_num, lgrp_num, lane_map);
+
+	rtn = sl_media_io_write8(media_jack, 0x13, SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET, lane_map);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_write8 failed [%d]", rtn);
+		return -EIO;
+	}
+
+	/* Verify the trasnceiver set loopback host. Some transceivers will ignore the write so it is best to check. */
+	rtn = sl_media_io_read8(media_jack, 0x13, SL_MEDIA_JACK_LOOPBACK_HOST_ENABLE_OFFSET, &new_lane_map);
+	if (rtn) {
+		sl_media_log_err(media_jack, LOG_NAME, "media_io_read8 failed [%d]", rtn);
+		return -EIO;
+	}
+
+	if (new_lane_map != lane_map) {
+		sl_media_log_err(media_jack, LOG_NAME,
+				 "loopback host set failed (lane_map = 0x%X, new_lane_map = 0x%X)",
+				 lane_map, new_lane_map);
+		return -EIO;
+	}
+
+	return 0;
+}
+
 /* Swap the lanes in the lane data structure. See sl_core_lgrp_media_lane_data_swap
  * for more details.
  */
@@ -1146,4 +1228,36 @@ void sl_media_jack_fault_cause_clr(struct sl_media_jack *media_jack)
 	media_jack->fault_cause = 0;
 	media_jack->fault_time = 0;
 	spin_unlock(&media_jack->data_lock);
+}
+
+int sl_media_jack_loopback_enable_get(u8 ldev_num, u8 lgrp_num, u8 port_id, bool *loopback_enabled,
+				      u8 *partner_lgrp_num)
+{
+	struct sl_media_jack            *media_jack;
+	struct sl_media_lgrp_cable_info *cable_info;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "loopback enable get (ldev_num = %u, lgrp_num = %u, port_id = %u)",
+			 ldev_num, lgrp_num, port_id);
+
+	if (port_id > SL_MEDIA_MAX_LGRPS_PER_JACK) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "invalid port_id (%u)", port_id);
+		return -EINVAL;
+	}
+
+	cable_info = &media_jack->cable_info[port_id];
+
+	*partner_lgrp_num = cable_info->lgrp_num;
+
+	spin_lock(&media_jack->data_lock);
+	*loopback_enabled = cable_info->loopback_enabled;
+	spin_unlock(&media_jack->data_lock);
+
+	sl_media_log_dbg(media_jack, LOG_NAME,
+			 "loopback enable get (loopback_enabled = %s, partner_lgrp_num = %u)",
+			 *loopback_enabled ? "true" : "false", *partner_lgrp_num);
+
+	return 0;
 }

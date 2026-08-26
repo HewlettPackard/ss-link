@@ -17,4 +17,5 @@ int                   sl_media_data_lgrp_err_trace_enable_set(struct sl_media_lg
 int                   sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp,
 							       bool warn_trace_enable);
 
+int		      sl_media_data_lgrp_loopback_caps_get(struct sl_media_lgrp *media_lgrp, u8 *loopback_caps);
 #endif

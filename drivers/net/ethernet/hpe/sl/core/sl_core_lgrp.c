@@ -6,6 +6,7 @@
 #include <linux/hpe/sl/sl_lgrp.h>
 
 #include "sl_core_lgrp.h"
+#include "sl_media_jack.h"
 #include "data/sl_core_data_lgrp.h"
 #include "hw/sl_core_hw_serdes_lane.h"
 
@@ -94,6 +95,8 @@ int sl_core_lgrp_config_set(u8 ldev_num, u8 lgrp_num, struct sl_lgrp_config *lgr
 		rtn = -EBADRQC;
 		goto out;
 	}
+
+	sl_media_jack_loopback_config(ldev_num, lgrp_num, lgrp_config->options);
 
 	sl_core_data_lgrp_config_set(core_lgrp, lgrp_config);
 

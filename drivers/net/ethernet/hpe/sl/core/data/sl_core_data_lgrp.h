@@ -22,5 +22,6 @@ int  sl_core_data_lgrp_warn_trace_enable_set(struct sl_core_lgrp *core_lgrp, boo
 int  sl_core_data_lgrp_io_trace_set(struct sl_core_lgrp *core_lgrp, bool io_trace);
 
 u32  sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp);
+int  sl_core_data_lgrp_furcation_get(struct sl_core_lgrp *core_lgrp, u32 *lgrp_furcation);
 
 #endif /* _SL_CORE_DATA_LGRP_H_ */

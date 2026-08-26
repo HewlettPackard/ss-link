@@ -268,9 +268,6 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
 
-	if (is_flag_set(options, SL_LINK_CONFIG_OPT_HEADSHELL_LOOPBACK_ENABLE))
-		return sysfs_emit(buf, "enabled-headshell\n");
-
 	if (is_flag_set(options, SL_LINK_CONFIG_OPT_REMOTE_LOOPBACK_ENABLE))
 		return sysfs_emit(buf, "enabled-remote\n");
 

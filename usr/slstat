@@ -525,6 +525,8 @@ function print_jack {
 	local temp_state=$(cat ${LGRP_PATH}/media/temperature_state)
 	local temp_warn_limit_c=$(cat ${LGRP_PATH}/media/temperature_warn_limit_celsius)
 	local temp_down_limit_c=$(cat ${LGRP_PATH}/media/temperature_down_limit_celsius)
+        local loopback_caps=$(cat ${LGRP_PATH}/media/loopback_caps)
+
 
 	if [ "${length}" == "unsupported-format" ] || [ "${length}" == "no-cable" ] ; then
 		local units="";
@@ -592,6 +594,7 @@ function print_jack {
 	fi
         printf " (max = ${max_speed})\n"
 
+        printf "           | cable_loopback_caps = ${loopback_caps}\n"
 	printf "           | error_info          = ${error_info}\n"
 	printf "           | last_io_fault_cause = ${last_io_fault_time}   ${last_io_fault_cause}\n"
 	printf "           | last_fault_cause    = ${last_fault_time}   ${last_fault_cause}\n"
