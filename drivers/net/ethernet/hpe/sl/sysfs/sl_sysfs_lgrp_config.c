@@ -184,8 +184,8 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
 
-	if (options & SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)
-		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE));
+	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)
+		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE));
 	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE)
 		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE));
 	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)

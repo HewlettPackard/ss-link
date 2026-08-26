@@ -58,8 +58,8 @@ int sl_core_hw_serdes_swizzles(struct sl_core_lgrp *core_lgrp)
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles");
 
-	if (is_flag_set(core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles setting for loopback");
+	if (is_flag_set(core_lgrp->config.options, SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
+		sl_core_log_dbg(core_lgrp, LOG_NAME, "swizzles setting for loopback serdes");
 		core_lgrp->serdes.dt.lane_info[0].tx_source = 0;
 		core_lgrp->serdes.dt.lane_info[1].tx_source = 1;
 		core_lgrp->serdes.dt.lane_info[2].tx_source = 2;

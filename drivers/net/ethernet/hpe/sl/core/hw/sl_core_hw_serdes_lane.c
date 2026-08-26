@@ -779,8 +779,8 @@ int sl_core_hw_serdes_lanes_up(struct sl_core_link *core_link, bool is_autoneg)
 			}
 		}
 
-		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-			sl_core_log_dbg(core_link, LOG_NAME, "loopback off so check quality");
+		if (!is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
+			sl_core_log_dbg(core_link, LOG_NAME, "loopback serdes off so check quality");
 			for_each_set_bit(serdes_lane_num, &lane_map, SL_MAX_SERDES_LANES) {
 				rtn = sl_core_hw_serdes_lane_up_quality_check(core_link, serdes_lane_num);
 				if (rtn) {

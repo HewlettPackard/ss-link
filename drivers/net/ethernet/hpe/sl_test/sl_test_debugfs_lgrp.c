@@ -539,7 +539,7 @@ STATIC_OPT_ENTRY(lock, LOCK);
 
 STATIC_CONFIG_OPT_ENTRY(fabric_link,     FABRIC);
 STATIC_CONFIG_OPT_ENTRY(r1_partner,      R1);
-STATIC_CONFIG_OPT_ENTRY(serdes_loopback, SERDES_LOOPBACK_ENABLE);
+STATIC_CONFIG_OPT_ENTRY(loopback_serdes, LOOPBACK_SERDES_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(loopback_host,   LOOPBACK_HOST_ENABLE);
 STATIC_CONFIG_OPT_ENTRY(loopback_media,  LOOPBACK_MEDIA_ENABLE);
 
@@ -670,10 +670,10 @@ int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 		return -ENOMEM;
 	}
 
-	rtn = sl_test_debugfs_create_opt("serdes_loopback", 0644, config_dir, &config_option_serdes_loopback);
+	rtn = sl_test_debugfs_create_opt("loopback_serdes", 0644, config_dir, &config_option_loopback_serdes);
 	if (rtn) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config serdes_loopback debugfs_create_file failed");
+			"lgrp config loopback_serdes debugfs_create_file failed");
 		return -ENOMEM;
 	}
 

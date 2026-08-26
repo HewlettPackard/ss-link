@@ -104,13 +104,12 @@ struct sl_lgrp_config;
 
 #define SL_LGRP_CONFIG_OPT_FABRIC                 BIT(0) /* fabric link                     */
 #define SL_LGRP_CONFIG_OPT_R1                     BIT(1) /* connected to R1                 */
-#define SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE BIT(2) /* serdes loopback                 */
+#define SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE BIT(2) /* serdes loopback                 */
 #define SL_LGRP_CONFIG_OPT_LONG_PREAMBLE          BIT(3) /* 8 byte preamble                 */
 #define SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE   BIT(4) /* hostside transceiver loopback   */
 #define SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE  BIT(5) /* media side transceiver loopback */
 
-//TODO: Add media side loopback to mask
-#define SL_LGRP_CONFIG_OPT_LOOPBACK_MASK (SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE | \
+#define SL_LGRP_CONFIG_OPT_LOOPBACK_MASK (SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE | \
 					  SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE   | \
 					  SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)
 

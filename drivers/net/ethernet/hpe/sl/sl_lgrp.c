@@ -371,7 +371,7 @@ EXPORT_SYMBOL(sl_lgrp_notif_str);
 const char *sl_lgrp_config_opt_str(u32 option)
 {
 	switch (option) {
-	case SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE:
+	case SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE:
 		return "serdes";
 	case SL_LGRP_CONFIG_OPT_LOOPBACK_HOST_ENABLE:
 		return "host";

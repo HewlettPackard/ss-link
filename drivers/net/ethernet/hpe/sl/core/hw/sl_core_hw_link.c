@@ -171,8 +171,8 @@ static int sl_core_hw_link_media_check(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "media check (link = 0x%p)", core_link);
 
 	if (is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "media check skipping serdes loopback set");
+			SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "media check skipping loopback serdes set");
 		return 0;
 	}
 
@@ -778,9 +778,9 @@ static bool sl_core_hw_link_is_media_present(struct sl_core_link *core_link)
 
 	flags = sl_core_data_lgrp_config_flags_get(core_link->core_lgrp);
 
-	if (is_flag_set(flags, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (is_flag_set(flags, SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
 		sl_core_log_dbg(core_link, LOG_NAME,
-				"is media present serdes loopback set (flags = %u)", flags);
+				"is media present loopback serdes set (flags = %u)", flags);
 		return true;
 	}
 
@@ -798,9 +798,9 @@ static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
 	sl_core_log_dbg(core_link, LOG_NAME, "media signal get");
 
 	lgrp_flags = sl_core_data_lgrp_config_flags_get(core_link->core_lgrp);
-	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+	if (is_flag_set(lgrp_flags, SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
 		sl_core_log_dbg(core_link, LOG_NAME,
-				"media signal get serdes loopback set (flags = %u)", lgrp_flags);
+				"media signal get loopback serdes set (flags = %u)", lgrp_flags);
 		memset(media_signal, 0, sizeof(*media_signal));
 		return 0;
 	}
@@ -1010,7 +1010,7 @@ void sl_core_hw_link_up_check_work(struct work_struct *work)
 
 	if (!sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num) ||
 	    is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-			SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE))
+			SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE))
 		goto out;
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK);
@@ -1759,7 +1759,7 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	if (!sl_core_hw_link_is_media_present(core_link))
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
 	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
-							    SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
+							    SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
 		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);

@@ -117,8 +117,8 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 			core_link->config.flags, core_link->pcs.settings.pcs_mode,
 			sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num) ? "yes" : " no");
 
-	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_SERDES_LOOPBACK_ENABLE)) {
-		sl_core_log_dbg(core_link, LOG_NAME, "link up settings loopback");
+	if (is_flag_set(core_link->core_lgrp->config.options, SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
+		sl_core_log_dbg(core_link, LOG_NAME, "link up settings loopback serdes");
 		SL_CORE_HW_SERDES_LOOPBACK_SERDES_SETTINGS_SET(core_link);
 	} else {
 		sl_core_log_dbg(core_link, LOG_NAME, "link up settings normal");
