@@ -654,10 +654,12 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format, u8 
 	is_cmis    = ((identifier == 0x18) || (identifier == 0x19) || (identifier >= 0x1E && identifier <= 0x25)) &&
 		     ((revision & 0xF0) >= 0x30 && (revision & 0xF0) <= 0x50);
 
+	sl_media_log_dbg(media_jack, LOG_NAME, "format get (id = 0x%X, rev = 0x%X)", identifier, revision);
+
 	if (is_sff) {
 		*version = 0;
 		*format  = SL_MEDIA_MGMT_IF_SFF8636;
-		sl_media_log_dbg(media_jack, LOG_NAME, "format SFF8636 (id = 0x%X, rev = 0x%X)", identifier, revision);
+		sl_media_log_dbg(media_jack, LOG_NAME, "format SFF (id = 0x%X, rev = 0x%X)", identifier, revision);
 		return 0;
 	}
 
@@ -668,10 +670,8 @@ int sl_media_eeprom_format_get(struct sl_media_jack *media_jack, u8 *format, u8 
 		return 0;
 	}
 
-	media_jack->is_cable_format_unsupported = true;
-	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED);
-	sl_media_log_err_trace(media_jack, LOG_NAME, "unsupported format (id = 0x%X, rev = 0x%X)",
-			       identifier, revision);
+	*version = 0;
+	*format  = 0;
 
 	return -EMEDIUMTYPE;
 }
@@ -684,4 +684,13 @@ int sl_media_eeprom_media_interface_get(struct sl_media_jack *media_jack, u8 *me
 	spin_unlock(&media_jack->data_lock);
 
 	return 0;
+}
+
+bool sl_media_eeprom_is_cmis(struct sl_media_jack *media_jack)
+{
+	u8 format;
+	u8 version;
+
+	sl_media_eeprom_format_get(media_jack, &format, &version);
+	return (format == SL_MEDIA_MGMT_IF_CMIS);
 }

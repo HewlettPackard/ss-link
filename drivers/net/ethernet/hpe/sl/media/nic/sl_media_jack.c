@@ -20,23 +20,23 @@
 #define FLAT_MEM_OFFSET    2
 #define CMIS_FLAT_MEM_BIT  7
 #define SFF_FLAT_MEM_BIT   2
-static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack, u8 *format, u8 *eeprom_page1)
+static int sl_media_data_jack_eeprom_page1_get(struct sl_media_jack *media_jack, u8 *eeprom_page1)
 {
 	u8 flat_mem_bit;
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get");
 
-	if (*format == SL_MEDIA_MGMT_IF_CMIS) {
+	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
 		flat_mem_bit = CMIS_FLAT_MEM_BIT;
-	} else if (*format == SL_MEDIA_MGMT_IF_SFF8636) {
+	} else if (!sl_media_data_jack_media_is_format_cmis(media_jack)) {
 		flat_mem_bit = SFF_FLAT_MEM_BIT;
 	} else {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "unknown cable format, skipping page1");
+		sl_media_log_err_trace(media_jack, LOG_NAME, "eeprom page1 get unknown cable format");
 		return -EMEDIUMTYPE;
 	}
 
 	if ((media_jack->eeprom_page0[FLAT_MEM_OFFSET] & BIT(flat_mem_bit)) != 0) {
-		sl_media_log_dbg(media_jack, LOG_NAME, "no page1 in eeprom");
+		sl_media_log_dbg(media_jack, LOG_NAME, "eeprom page1 get no page1");
 		return 0;
 	}
 
@@ -141,6 +141,8 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		if (rtn) {
 			sl_media_log_warn_trace(media_jack, LOG_NAME, "eeprom format unsupported");
 			memset(&media_attr, 0, sizeof(struct sl_media_attr));
+			media_jack->is_cable_format_unsupported = true;
+			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED);
 			media_attr.errors |= SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED;
 			media_attr.errors |= SL_MEDIA_ERROR_TRYABLE;
 			rtn = sl_media_jack_cable_attr_set(media_jack, ldev_num, lgrp_num, &media_attr);
@@ -150,7 +152,7 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 			return 0;
 		}
 
-		sl_media_data_jack_eeprom_page1_get(media_jack, &media_attr.format, eeprom_page1);
+		sl_media_data_jack_eeprom_page1_get(media_jack, eeprom_page1);
 
 		sl_media_eeprom_parse(media_jack, &media_attr);
 

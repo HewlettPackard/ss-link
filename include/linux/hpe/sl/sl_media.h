@@ -118,7 +118,7 @@ enum sl_media_shape {
 
 enum sl_media_mgmt_if {
 	SL_MEDIA_MGMT_IF_UNKNOWN = 0,
-	SL_MEDIA_MGMT_IF_SFF8636,
+	SL_MEDIA_MGMT_IF_SFF8636, // FIXME: need to remove the number
 	SL_MEDIA_MGMT_IF_CMIS,
 };
 

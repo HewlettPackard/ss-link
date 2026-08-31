@@ -219,13 +219,7 @@ void sl_media_data_jack_data_clr(struct sl_media_jack *media_jack)
 
 bool sl_media_data_jack_media_is_format_cmis(struct sl_media_jack *media_jack)
 {
-	bool is_cmis;
-
-	spin_lock(&media_jack->data_lock);
-	is_cmis = (media_jack->cable_info[0].media_attr.format == SL_MEDIA_MGMT_IF_CMIS);
-	spin_unlock(&media_jack->data_lock);
-
-	return is_cmis;
+	return sl_media_eeprom_is_cmis(media_jack);
 }
 
 void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp)
