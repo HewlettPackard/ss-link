@@ -499,7 +499,7 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 	u8                        jack_num;
 	struct sl_media_jack     *media_jack;
 
-	sl_media_log_dbg(NULL, LOG_NAME, "event (events = 0x%08lX)", events);
+	sl_media_log_info(NULL, LOG_NAME, "event (events = 0x%08lX)", events);
 
 	if (ignore_events) {
 		sl_media_log_dbg(NULL, LOG_NAME, "event ignore set");

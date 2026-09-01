@@ -69,6 +69,9 @@ static int sl_media_data_jack_scan_done_check(struct sl_media_ldev *media_ldev, 
 	return 0;
 }
 
+#define SL_MEDIA_JACK_STATUS_MASK  (XCVR_PRESENT | XCVR_JACK_POWERED | XCVR_OFFLINE)
+#define SL_MEDIA_JACK_STATUS_READY (XCVR_PRESENT | XCVR_JACK_POWERED)
+
 int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 {
 	u8                          jack_count;
@@ -108,7 +111,7 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 		rtn = hsnxcvr_jack_v3_get(media_jack->hdl, &jack_data);
 		if (rtn) {
 			sl_media_log_err(media_ldev, LOG_NAME,
-					 "insert jack_get failed [%d] (jack_num = %u)", rtn, media_jack->num);
+					 "scan jack_get failed [%d] (jack_num = %u)", rtn, media_jack->num);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_JACK_GET);
 			sl_media_data_jack_led_set(media_jack);
@@ -117,7 +120,7 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 			ret = sl_media_data_jack_cable_attr_set(media_jack, &media_attr);
 			if (ret)
 				sl_media_log_warn_trace(media_ldev, LOG_NAME,
-							"insert cable_attr_set failed [%d] (jack_num = %u)",
+							"scan cable_attr_set failed [%d] (jack_num = %u)",
 							ret, media_jack->num);
 			sl_media_data_jack_cable_attr_send(media_jack);
 			goto next;
@@ -126,14 +129,14 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 		media_jack->port_count = jack_data.port_count;
 		if (jack_data.port_count > SL_MEDIA_MAX_LGRPS_PER_JACK)
 			sl_media_log_warn(media_ldev, LOG_NAME,
-					  "insert port_count invalid (actual = %u, limit = %u)",
+					  "scan port_count invalid (actual = %u, limit = %u)",
 					  jack_data.port_count, SL_MEDIA_MAX_LGRPS_PER_JACK);
 		memcpy(&(media_jack->asic_port), &(jack_data.asic_port), sizeof(jack_data.asic_port));
 
 		rtn = kstrtou8(jack_data.name + 1, 10, &physical_jack_num);
 		if (rtn) {
 			sl_media_log_err(media_ldev, LOG_NAME,
-					 "insert kstrtou8 failed [%d] (jack_num = %u)", rtn, media_jack->num);
+					 "scan kstrtou8 failed [%d] (jack_num = %u)", rtn, media_jack->num);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_JACK_GET);
 			sl_media_data_jack_led_set(media_jack);
@@ -143,7 +146,7 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 			ret = sl_media_data_jack_cable_attr_set(media_jack, &media_attr);
 			if (ret)
 				sl_media_log_warn_trace(media_ldev, LOG_NAME,
-							"insert cable_attr_set failed [%d] (jack_num = %u)",
+							"scan cable_attr_set failed [%d] (jack_num = %u)",
 							ret, media_jack->num);
 			sl_media_data_jack_cable_attr_send(media_jack);
 			goto next;
@@ -171,13 +174,13 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 			sl_media_data_jack_cable_attr_send(media_jack);
 			goto next;
 		}
-		media_jack->status = status_data.flags;
 
 		sl_media_log_dbg(media_ldev, LOG_NAME,
 				 "scan (jack_num = %u, status = 0x%X)",
 				 jack_count, media_jack->status);
 
-		if ((status_data.flags & (XCVR_PRESENT | XCVR_JACK_POWERED)) == (XCVR_PRESENT | XCVR_JACK_POWERED)) {
+		if ((status_data.flags & SL_MEDIA_JACK_STATUS_MASK) == SL_MEDIA_JACK_STATUS_READY) {
+			media_jack->status = status_data.flags;
 			sl_media_data_jack_insert_status_map_clr(media_ldev->num, media_jack->num);
 			done_check |= BIT(jack_count);
 			queue_work(media_ldev->workqueue, &media_jack->insert_work);
@@ -222,8 +225,8 @@ next:
 			continue;
 		}
 
-		if ((status_data.flags & (XCVR_PRESENT | XCVR_JACK_POWERED)) == (XCVR_PRESENT | XCVR_JACK_POWERED)) {
-			if ((media_jack->status & (XCVR_PRESENT | XCVR_JACK_POWERED)) == (XCVR_PRESENT | XCVR_JACK_POWERED)) {
+		if ((status_data.flags & SL_MEDIA_JACK_STATUS_MASK) == SL_MEDIA_JACK_STATUS_READY) {
+			if ((media_jack->status & SL_MEDIA_JACK_STATUS_MASK) == SL_MEDIA_JACK_STATUS_READY) {
 				continue;
 			} else {
 				media_jack->status = status_data.flags;
@@ -232,7 +235,7 @@ next:
 				queue_work(media_ldev->workqueue, &media_jack->insert_work);
 			}
 		} else {
-			if ((media_jack->status & (XCVR_PRESENT | XCVR_JACK_POWERED)) != (XCVR_PRESENT | XCVR_JACK_POWERED)) {
+			if ((media_jack->status & SL_MEDIA_JACK_STATUS_MASK) != SL_MEDIA_JACK_STATUS_READY) {
 				continue;
 			} else {
 				sl_media_data_jack_remove(media_jack);

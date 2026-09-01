@@ -154,9 +154,10 @@ int sl_media_data_jack_media_attr_set(struct sl_media_jack *media_jack,
 	spin_lock(&media_jack->data_lock);
 
 	if (cable_info->real_cable_status == CABLE_MEDIA_ATTR_ADDED) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "media attr already set");
+		sl_media_log_warn_trace(media_jack, LOG_NAME, "media attr already set");
+		cable_info->media_attr = *media_attr;
 		spin_unlock(&media_jack->data_lock);
-		return -EEXIST;
+		return 0;
 	}
 
 	if (cable_info->fake_cable_status == CABLE_MEDIA_ATTR_ADDED) {
