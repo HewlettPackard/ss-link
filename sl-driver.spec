@@ -26,7 +26,7 @@
 %define release_extra 0
 
 Name:           sl-driver
-Version:        1.20.18
+Version:        1.20.19
 Release:        %(echo ${BUILD_METADATA})
 Summary:        HPE Slingshot Link driver
 License:        GPL-2.0
@@ -75,8 +75,8 @@ Summary:    DKMS package for Slingshot Link driver
 BuildArch:  noarch
 Requires:   dkms
 Requires:   cray-cassini-headers-user
-Conflicts:  kmod-%name
-Conflicts:  %name-kmp
+Conflicts:  kmod-%{name}
+Conflicts:  %{name}-kmp
 
 %description dkms
 DKMS support for Slingshot Link driver
@@ -192,7 +192,8 @@ echo "${dkms_source_dir}" >> dkms-files
 
 %pre dkms
 
-%post dkms
+# DKMS build/install runs in the posttrans scriptlet so the old module is removed first on upgrade.
+%posttrans dkms
 if [ -f /usr/libexec/dkms/common.postinst ] && [ -x /usr/libexec/dkms/common.postinst ]
 then
     postinst=/usr/libexec/dkms/common.postinst
@@ -238,6 +239,9 @@ ${postinst} %{name} %{version}-%{release}
 %exclude /lib/modules/modules.order
 
 %changelog
+* Wed Sep 02 2026 Patrick Bueb <patrick.bueb@hpe.com> 1.20.19
+- Move the DKMS build/install to the posttrans scriptlet so the old module is removed first on upgrade.
+- Standardize kmod/dkms Conflicts.
 * Tue Jan 20 2026 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.18
 
 %{_git_hash}
