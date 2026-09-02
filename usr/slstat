@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=21
+MINOR=22
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -136,10 +136,11 @@ function print_header {
 
         local ver=$(cat ${LDEV_PATH}/sl_info/mod_ver)
         local hash=$(cat ${LDEV_PATH}/sl_info/mod_hash)
+        local header_date=$(date '+%Y-%m-%d %H:%M:%S')
 
-        echo "-------------------------------------------------------------------------------------------"
-        printf " %-19s SL %-19s %45s\n" "${cmd} v${MAJOR}.${MINOR}" "${ver}" "hash: ${hash}"
-        echo "-----------+-------------------------------------------------------------------------------"
+        echo "---------------------------------------------------------------------------------------------------------"
+        printf " %-16s SL %-13s %-23s %-46s\n" "${cmd} v${MAJOR}.${MINOR}" "${ver}" "${header_date}" "hash: ${hash}"
+        echo "-----------+---------------------------------------------------------------------------------------------"
 }
 
 function print_supported_db {
