@@ -212,9 +212,9 @@ static ssize_t pml_rec_last_down_time_show(struct kobject *kobj, struct kobj_att
 		return sysfs_emit(buf, "none\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
-		   "pml rec last down time show (time = %lld %ptTt %ptTd)", down_time, &down_time, &down_time);
+		   "pml rec last down time show (time = %lld %ptTd %ptTt)", down_time, &down_time, &down_time);
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &down_time, &down_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &down_time, &down_time);
 }
 
 static struct kobj_attribute link_pml_rec_attempts                       = __ATTR_RO(pml_rec_attempts);

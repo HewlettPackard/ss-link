@@ -777,7 +777,7 @@ int sl_core_data_link_last_down_cause_map_info_get(struct sl_core_link *core_lin
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-			"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTt %ptTd)",
+			"last down cause map info get (down_cause_map = 0x%llX, down_time = %lld %ptTd %ptTt)",
 			*down_cause_map, *down_time, down_time, down_time);
 
 	return 0;
@@ -855,7 +855,7 @@ int sl_core_data_link_last_up_fail_cause_map_info_get(struct sl_core_link *core_
 	spin_unlock(&core_link->link.data_lock);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-			"last up_fail cause map info get (up_fail_cause_map = 0x%llX, up_fail_time = %lld %ptTt %ptTd)",
+			"last up_fail cause map info get (up_fail_cause_map = 0x%llX, up_fail_time = %lld %ptTd %ptTt)",
 			*up_fail_cause_map, *up_fail_time, up_fail_time, up_fail_time);
 
 	return 0;

@@ -39,10 +39,10 @@ static ssize_t last_cable_time(struct kobject *kobj, struct kobj_attribute *katt
 		return sysfs_emit(buf, "none\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
-		   "last cable time show (time = %lld %ptTt %ptTd)", cable_insert_entry.timestamp,
+		   "last cable time show (time = %lld %ptTd %ptTt)", cable_insert_entry.timestamp,
 		   &cable_insert_entry.timestamp, &cable_insert_entry.timestamp);
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &cable_insert_entry.timestamp, &cable_insert_entry.timestamp);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &cable_insert_entry.timestamp, &cable_insert_entry.timestamp);
 }
 
 #define media_last_cable_time(_num)                                                                             \

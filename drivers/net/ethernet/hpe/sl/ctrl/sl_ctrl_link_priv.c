@@ -851,7 +851,7 @@ int sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64
 	spin_unlock(&ctrl_link->data_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"last up fail time show (cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
+			"last up fail time show (cause_map = 0x%llX, time = %lld %ptTd %ptTt)",
 			*last_up_fail_cause_map, *last_up_fail_time, last_up_fail_time, last_up_fail_time);
 
 	return 0;

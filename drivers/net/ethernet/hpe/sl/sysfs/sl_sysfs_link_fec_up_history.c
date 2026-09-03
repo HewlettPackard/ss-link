@@ -32,10 +32,10 @@ static ssize_t fec_up_history_timestamp_show(struct kobject *kobj, struct kobj_a
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		   "fec up history timestamp show (num = %u, time = %lld %ptTt %ptTd)",
+		   "fec up history timestamp show (num = %u, time = %lld %ptTd %ptTt)",
 		   num, record.ucw, &record_timestamp, &record_timestamp);
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &record_timestamp, &record_timestamp);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &record_timestamp, &record_timestamp);
 }
 
 static ssize_t fec_up_history_ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf, u8 num)

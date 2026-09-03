@@ -55,14 +55,14 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 		sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
-		   "last fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+		   "last fail time show (cause = %u %s, time = %lld %ptTd %ptTt)",
 		   llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause),
 		   llr_fail_time, &llr_fail_time, &llr_fail_time);
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
 		return sysfs_emit(buf, "no-fail\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &llr_fail_time, &llr_fail_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_fail_time, &llr_fail_time);
 }
 
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)

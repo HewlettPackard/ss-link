@@ -104,13 +104,13 @@ static ssize_t ccw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ccw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTt %ptTd)",
+		"ccw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTd %ptTt)",
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
 		return sysfs_emit(buf, "not-crossed\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &limit_crossed_time, &limit_crossed_time);
 }
 
 static ssize_t ucw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -149,13 +149,13 @@ static ssize_t ucw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		"ucw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTt %ptTd)",
+		"ucw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTd %ptTt)",
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
 		return sysfs_emit(buf, "not-crossed\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &limit_crossed_time, &limit_crossed_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &limit_crossed_time, &limit_crossed_time);
 }
 
 static ssize_t up_count_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -320,13 +320,13 @@ static ssize_t last_autoneg_fail_time_show(struct kobject *kobj, struct kobj_att
 	if (rtn)
 		return sysfs_emit(buf, "error\n");
 
-	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail time show (cause = %u %s, time = %lld %ptTt %ptTd)",
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail time show (cause = %u %s, time = %lld %ptTd %ptTt)",
 		   fail_cause, sl_core_link_an_fail_cause_str(fail_cause), fail_time, &fail_time, &fail_time);
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
 		return sysfs_emit(buf, "no-fail\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &fail_time, &fail_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &fail_time, &fail_time);
 }
 
 static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -449,13 +449,13 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		   "last down time show (num = %u, cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
+		   "last down time show (num = %u, cause_map = 0x%llX, time = %lld %ptTd %ptTt)",
 		   num, down_cause_map, down_time, &down_time, &down_time);
 
 	if (down_cause_map == SL_LINK_DOWN_CAUSE_NONE)
 		return sysfs_emit(buf, "none\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &down_time, &down_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &down_time, &down_time);
 }
 
 #define link_last_down_time(_num)                                                                               \
@@ -560,13 +560,13 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
-		   "last up_fail time show (num = %u, cause_map = 0x%llX, time = %lld %ptTt %ptTd)",
+		   "last up_fail time show (num = %u, cause_map = 0x%llX, time = %lld %ptTd %ptTt)",
 		   num, up_fail_cause_map, up_fail_time, &up_fail_time, &up_fail_time);
 
 	if (up_fail_cause_map == SL_LINK_DOWN_CAUSE_NONE)
 		return sysfs_emit(buf, "none\n");
 
-	return sysfs_emit(buf, "%ptTt %ptTd\n", &up_fail_time, &up_fail_time);
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &up_fail_time, &up_fail_time);
 }
 
 #define link_last_up_fail_time(_num)                                                                                    \
