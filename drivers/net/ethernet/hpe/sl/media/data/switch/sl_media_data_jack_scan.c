@@ -22,7 +22,7 @@
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
-void sl_media_data_jack_insert_start_work(struct work_struct *work)
+static void sl_media_data_jack_insert_start_work(struct work_struct *work)
 {
 	struct sl_media_jack *media_jack;
 
