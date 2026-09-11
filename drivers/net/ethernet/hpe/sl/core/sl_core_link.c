@@ -111,7 +111,7 @@ int sl_core_link_up_fail(struct sl_core_link *core_link)
 }
 
 int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
-		      sl_core_link_down_callback_t callback, void *tag)
+			sl_core_link_down_callback_t callback, void *tag)
 {
 	u32                  link_state;
 	struct sl_core_link *core_link;
@@ -134,6 +134,10 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_core_log_dbg(core_link, LOG_NAME, "cancel - already going down");
 		spin_unlock(&core_link->link.state_lock);
 		return 0;
+	case SL_CORE_LINK_STATE_DOWN:
+		sl_core_log_dbg(core_link, LOG_NAME, "cancel - already down");
+		spin_unlock(&core_link->link.state_lock);
+		return 0;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
 		sl_core_log_dbg(core_link, LOG_NAME, "canceling");
@@ -146,8 +150,8 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return 0;
 	default:
 		sl_core_log_err(core_link, LOG_NAME,
-			"cancel - invalid (link_state = %u %s)",
-			link_state, sl_core_link_state_str(link_state));
+				"cancel - invalid (link_state = %u %s)",
+				link_state, sl_core_link_state_str(link_state));
 		spin_unlock(&core_link->link.state_lock);
 		return -EBADRQC;
 	}
