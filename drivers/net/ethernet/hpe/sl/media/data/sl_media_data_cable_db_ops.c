@@ -70,6 +70,9 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 		media_attr->max_speed                = entry.max_speed;
 		media_jack->is_supported_ss200_cable = entry.is_supported_ss200_cable;
 		media_jack->cable_db_idx             = indexer;
+
+		media_jack->is_cable_unsupported = false;
+		sl_media_log_dbg(media_jack, LOG_NAME, "validate found");
 		return 0;
 	}
 
