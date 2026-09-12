@@ -179,14 +179,15 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 				 "scan (jack_num = %u, status = 0x%X)",
 				 jack_count, media_jack->status);
 
-		if ((status_data.flags & SL_MEDIA_JACK_STATUS_MASK) == SL_MEDIA_JACK_STATUS_READY) {
+		if (((status_data.flags & SL_MEDIA_JACK_STATUS_MASK) == SL_MEDIA_JACK_STATUS_READY) ||
+		    (media_jack->jack_type == XCVR_JACK_BACKPLANE)) {
 			media_jack->status = status_data.flags;
 			sl_media_data_jack_insert_status_map_clr(media_ldev->num, media_jack->num);
 			done_check |= BIT(jack_count);
 			queue_work(media_ldev->workqueue, &media_jack->insert_work);
 		} else {
 			sl_media_log_info(media_jack, LOG_NAME,
-					  "no cable (status = 0x%X)", status_data.flags);
+					  "not ready (status = 0x%X)", status_data.flags);
 		}
 
 next:

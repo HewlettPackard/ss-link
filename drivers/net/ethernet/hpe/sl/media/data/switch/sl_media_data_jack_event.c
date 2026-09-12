@@ -499,7 +499,7 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 	u8                        jack_num;
 	struct sl_media_jack     *media_jack;
 
-	sl_media_log_info(NULL, LOG_NAME, "event (events = 0x%08lX)", events);
+	sl_media_log_dbg(NULL, LOG_NAME, "event (events = 0x%08lX)", events);
 
 	if (ignore_events) {
 		sl_media_log_dbg(NULL, LOG_NAME, "event ignore set");
@@ -528,7 +528,7 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 	// FIXME: ldev num hardcoded to 0
 	media_jack = sl_media_data_jack_get(0, jack_num);
 
-	sl_media_log_dbg(media_jack, LOG_NAME, "event (jack_num = %u)", jack_num);
+	sl_media_log_info(media_jack, LOG_NAME, "event (events = 0x%08lX)", events);
 
 	if ((events & SL_MEDIA_XCVR_REMOVED) == SL_MEDIA_XCVR_REMOVED)
 		sl_media_data_jack_remove(media_jack);
