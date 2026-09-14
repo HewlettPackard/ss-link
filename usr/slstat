@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=24
+MINOR=25
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -24,6 +24,8 @@ function usage {
         echo "    sbus_pmi     = print sbus_pmi info for the target"
         echo "    serdes       = print serdes info for the target"
         echo "    fec          = print fec info for the target"
+        echo "    fec_up       = print fec up info for the target"
+        echo "    fec_down     = print fec down info for the target"
         echo "    cable        = print cable info for the target"
         echo "    counters     = print non-zero counters for a link target (requires #:#:#)"
         echo "    counters_all = print all counters for a link target (requires #:#:#)"
@@ -66,6 +68,12 @@ elif [ "$#" -eq 2 ] ; then
                         ;;
                 fec )
                         option=fec
+                        ;;
+                fec_up )
+                        option=fec_up
+                        ;;
+                fec_down )
+                        option=fec_down
                         ;;
                 cable )
                         option=cable
@@ -1114,6 +1122,42 @@ function print_fec_bins {
         printf "           |            +----------------------------------------------------------------\n"
 }
 
+function print_fec_info {
+        local dir=$1
+
+        if [ ! -e ${LINK_PATH}/fec/${dir} ] ; then
+                return
+        fi
+
+        local ccw=$(cat ${LINK_PATH}/fec/${dir}/ccw)
+        local ucw=$(cat ${LINK_PATH}/fec/${dir}/ucw)
+                printf "%-10s | ccw = %d, ucw = %d\n" "fec-${dir}" "$((ccw))" "$((ucw))"
+        local count=$(cat ${LINK_PATH}/fec/${dir}/tail/bin00)
+                printf "           | bins: [00] $((count))\n"
+
+        for bin in {1..9} ; do
+                count=$(cat ${LINK_PATH}/fec/${dir}/tail/bin0${bin})
+                        printf "           |       [0${bin}] $((count))\n"
+        done
+        for bin in {10..14} ; do
+                count=$(cat ${LINK_PATH}/fec/${dir}/tail/bin${bin})
+                        printf "           |       [${bin}] $((count))\n"
+        done
+
+        printf "           | fecls:                 fecl0           fecl1           fecl2           fecl3\n"
+        printf "           |            +----------------------------------------------------------------\n"
+        local fecl_count
+        for lane in {0..3} ; do
+                printf "           | %10s | " "lane${lane}"
+                for fecl in {0..3} ; do
+                        fecl_count=$(cat ${LINK_PATH}/fec/${dir}/lane/${lane}/fecl${fecl})
+                                printf "%15s " $((fecl_count))
+                done
+                printf "\n"
+        done
+        printf "           |            +----------------------------------------------------------------\n"
+}
+
 function print_fec_history {
         local hist_dir=$1
         local hist_path="${LINK_PATH}/fec/${hist_dir}"
@@ -1266,6 +1310,18 @@ case $option in
                         print_header
                         print_fec
                         print_fec_bins
+		fi
+		;;
+        fec_up )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_header
+                        print_fec_info up
+		fi
+		;;
+        fec_down )
+                if [ ${num_args} -ge 3 ] ; then
+                        print_header
+                        print_fec_info down
 		fi
 		;;
         cable )
