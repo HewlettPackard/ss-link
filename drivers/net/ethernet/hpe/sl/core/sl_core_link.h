@@ -400,6 +400,9 @@ struct sl_core_link {
 		time64_t                              last_ccw_warn_limit_crossed_time;
 		bool                                  is_ucw_warn_limit_crossed;
 		time64_t                              last_ucw_warn_limit_crossed_time;
+		time64_t                              high_ser_time;
+		time64_t                              llr_max_starvation_time;
+		time64_t                              llr_starved_time;
 	} link;
 
 	struct kobject			     pml_rec_kobj;
@@ -595,5 +598,10 @@ bool sl_core_link_policy_is_ignore_media_errors_set(struct sl_core_link *core_li
 
 struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_link,
 						      struct sl_core_link_up_info *link_up_info);
+
+int sl_core_link_high_ser_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num, time64_t *high_ser_time);
+int sl_core_link_llr_max_starvation_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
+					     time64_t *llr_max_starvation_time);
+int sl_core_link_llr_starved_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num, time64_t *llr_starved_time);
 
 #endif /* _SL_CORE_LINK_H_ */

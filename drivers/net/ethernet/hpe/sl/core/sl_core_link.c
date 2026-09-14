@@ -529,3 +529,21 @@ struct sl_core_link_up_info *sl_core_link_up_info_get(struct sl_core_link *core_
 
 	return link_up_info;
 }
+
+int sl_core_link_high_ser_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num, time64_t *high_ser_time)
+{
+	return sl_core_data_link_high_ser_time_get(sl_core_link_get(ldev_num, lgrp_num, link_num), high_ser_time);
+}
+
+int sl_core_link_llr_max_starvation_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num, time64_t *llr_max_starvation_time)
+{
+	return sl_core_data_link_llr_max_starvation_time_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+							     llr_max_starvation_time);
+}
+
+int sl_core_link_llr_starved_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num, time64_t *llr_starved_time)
+{
+	return sl_core_data_link_llr_starved_time_get(sl_core_link_get(ldev_num, lgrp_num, link_num),
+						      llr_starved_time);
+}
+

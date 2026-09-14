@@ -100,6 +100,7 @@ static void sl_core_hw_link_high_ser_intr_work_priv(struct sl_core_link *core_li
 	sl_core_log_dbg(core_link, LOG_NAME, "high SER intr work priv");
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_HIGH_SER);
+	sl_core_data_link_high_ser_time_set(core_link);
 
 	sl_core_log_warn_trace(core_link, LOG_NAME, "high symbol error ratio occurred");
 
@@ -232,6 +233,10 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 	int rtn;
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_NUM_BITS);
+
+	sl_core_data_link_high_ser_time_clr(core_link);
+	sl_core_data_link_llr_max_starvation_time_clr(core_link);
+	sl_core_data_link_llr_starved_time_clr(core_link);
 
 	sl_core_data_link_is_last_down_new_set(core_link, true);
 	sl_core_data_link_is_last_up_fail_new_set(core_link, true);
@@ -1629,6 +1634,7 @@ void sl_core_hw_link_llr_max_starvation_intr_work(struct work_struct *work)
 	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_MAX_STARVATION);
+	sl_core_data_link_llr_max_starvation_time_set(core_link);
 
 	sl_core_log_warn_trace(core_link, LOG_NAME, "llr max starvation occurred");
 
@@ -1673,6 +1679,7 @@ void sl_core_hw_link_llr_starved_intr_work(struct work_struct *work)
 	}
 
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_LLR_STARVED);
+	sl_core_data_link_llr_starved_time_set(core_link);
 
 	sl_core_log_warn_trace(core_link, LOG_NAME, "llr starved occurred");
 

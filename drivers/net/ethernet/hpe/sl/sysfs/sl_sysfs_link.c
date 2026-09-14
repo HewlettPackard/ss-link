@@ -354,6 +354,72 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	return sysfs_emit(buf, "%s\n", info_map_str);
 }
 
+static ssize_t high_ser_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	time64_t             high_ser_time;
+	int		     rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
+
+	rtn = sl_core_link_high_ser_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+					     ctrl_link->num, &high_ser_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "high ser time show (time = %lld %ptTd %ptTt)",
+		   high_ser_time, &high_ser_time, &high_ser_time);
+
+	if (!high_ser_time)
+		return sysfs_emit(buf, "none\n");
+
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &high_ser_time, &high_ser_time);
+}
+
+static ssize_t llr_max_starvation_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	time64_t             llr_max_starvation_time;
+	int		     rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
+
+	rtn = sl_core_link_llr_max_starvation_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+						       ctrl_link->num, &llr_max_starvation_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "llr max starvation time show (time = %lld %ptTd %ptTt)",
+		   llr_max_starvation_time, &llr_max_starvation_time, &llr_max_starvation_time);
+
+	if (!llr_max_starvation_time)
+		return sysfs_emit(buf, "none\n");
+
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_max_starvation_time, &llr_max_starvation_time);
+}
+
+static ssize_t llr_starved_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	time64_t             llr_starved_time;
+	int		     rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
+
+	rtn = sl_core_link_llr_starved_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
+						ctrl_link->num, &llr_starved_time);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "llr starve time show (time = %lld %ptTd %ptTt)",
+		   llr_starved_time, &llr_starved_time, &llr_starved_time);
+
+	if (!llr_starved_time)
+		return sysfs_emit(buf, "none\n");
+
+	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_starved_time, &llr_starved_time);
+}
+
 static struct kobj_attribute link_state                            = __ATTR_RO(state);
 static struct kobj_attribute link_speed                            = __ATTR_RO(speed);
 static struct kobj_attribute link_ccw_warn_limit_crossed           = __ATTR_RO(ccw_warn_limit_crossed);
@@ -368,6 +434,9 @@ static struct kobj_attribute link_lp_caps_state                    = __ATTR_RO(l
 static struct kobj_attribute link_last_autoneg_fail_cause          = __ATTR_RO(last_autoneg_fail_cause);
 static struct kobj_attribute link_last_autoneg_fail_time           = __ATTR_RO(last_autoneg_fail_time);
 static struct kobj_attribute link_info_map                         = __ATTR_RO(info_map);
+static struct kobj_attribute link_high_ser_time                    = __ATTR_RO(high_ser_time);
+static struct kobj_attribute link_llr_max_starvation_time          = __ATTR_RO(llr_max_starvation_time);
+static struct kobj_attribute link_llr_starved_time                 = __ATTR_RO(llr_starved_time);
 
 static struct attribute *link_attrs[] = {
 	&link_state.attr,
@@ -384,6 +453,9 @@ static struct attribute *link_attrs[] = {
 	&link_last_autoneg_fail_cause.attr,
 	&link_last_autoneg_fail_time.attr,
 	&link_info_map.attr,
+	&link_high_ser_time.attr,
+	&link_llr_max_starvation_time.attr,
+	&link_llr_starved_time.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(link);

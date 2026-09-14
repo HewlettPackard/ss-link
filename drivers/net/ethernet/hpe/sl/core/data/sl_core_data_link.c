@@ -1415,3 +1415,96 @@ out:
 
 	return 0;
 }
+
+void sl_core_data_link_high_ser_time_set(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.high_ser_time = ktime_get_real_seconds();
+	sl_core_log_dbg(core_link, LOG_NAME, "high ser time set (time = %lld %ptTd %ptTt)",
+			core_link->link.high_ser_time, &core_link->link.high_ser_time, &core_link->link.high_ser_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+void sl_core_data_link_high_ser_time_clr(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.high_ser_time = 0;
+	sl_core_log_dbg(core_link, LOG_NAME, "high ser time clr (time = %lld %ptTd %ptTt)",
+			core_link->link.high_ser_time, &core_link->link.high_ser_time, &core_link->link.high_ser_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+int sl_core_data_link_high_ser_time_get(struct sl_core_link *core_link, time64_t *high_ser_time)
+{
+	spin_lock(&core_link->link.data_lock);
+	*high_ser_time = core_link->link.high_ser_time;
+	sl_core_log_dbg(core_link, LOG_NAME, "high ser time get (time = %lld %ptTd %ptTt)",
+			core_link->link.high_ser_time, &core_link->link.high_ser_time, &core_link->link.high_ser_time);
+	spin_unlock(&core_link->link.data_lock);
+
+	return 0;
+}
+
+void sl_core_data_link_llr_max_starvation_time_set(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.llr_max_starvation_time = ktime_get_real_seconds();
+	sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation time set (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_max_starvation_time, &core_link->link.llr_max_starvation_time,
+			&core_link->link.llr_max_starvation_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+void sl_core_data_link_llr_max_starvation_time_clr(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.llr_max_starvation_time = 0;
+	sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation time clr (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_max_starvation_time, &core_link->link.llr_max_starvation_time,
+			&core_link->link.llr_max_starvation_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+int sl_core_data_link_llr_max_starvation_time_get(struct sl_core_link *core_link, time64_t *llr_max_starvation_time)
+{
+	spin_lock(&core_link->link.data_lock);
+	*llr_max_starvation_time = core_link->link.llr_max_starvation_time;
+	sl_core_log_dbg(core_link, LOG_NAME, "llr max starvation time get (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_max_starvation_time, &core_link->link.llr_max_starvation_time,
+			&core_link->link.llr_max_starvation_time);
+	spin_unlock(&core_link->link.data_lock);
+
+	return 0;
+}
+
+void sl_core_data_link_llr_starved_time_set(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.llr_starved_time = ktime_get_real_seconds();
+	sl_core_log_dbg(core_link, LOG_NAME, "llr starve time set (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_starved_time, &core_link->link.llr_starved_time,
+			&core_link->link.llr_starved_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+void sl_core_data_link_llr_starved_time_clr(struct sl_core_link *core_link)
+{
+	spin_lock(&core_link->link.data_lock);
+	core_link->link.llr_starved_time = 0;
+	sl_core_log_dbg(core_link, LOG_NAME, "llr starve time clr (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_starved_time, &core_link->link.llr_starved_time,
+			&core_link->link.llr_starved_time);
+	spin_unlock(&core_link->link.data_lock);
+}
+
+int sl_core_data_link_llr_starved_time_get(struct sl_core_link *core_link, time64_t *llr_starved_time)
+{
+	spin_lock(&core_link->link.data_lock);
+	*llr_starved_time = core_link->link.llr_starved_time;
+	sl_core_log_dbg(core_link, LOG_NAME, "llr starve time get (time = %lld %ptTd %ptTt)",
+			core_link->link.llr_starved_time, &core_link->link.llr_starved_time,
+			&core_link->link.llr_starved_time);
+	spin_unlock(&core_link->link.data_lock);
+
+	return 0;
+}

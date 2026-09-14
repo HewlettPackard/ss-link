@@ -96,5 +96,16 @@ void sl_core_data_link_pml_rec_last_down_cause_cntr_inc(struct sl_core_link *cor
 int  sl_core_data_link_pml_rec_down_cause_map_str(unsigned long cause_map, char *cause_str,
 						  unsigned int cause_str_size);
 
+void sl_core_data_link_high_ser_time_set(struct sl_core_link *core_link);
+void sl_core_data_link_high_ser_time_clr(struct sl_core_link *core_link);
+int  sl_core_data_link_high_ser_time_get(struct sl_core_link *core_link, time64_t *high_ser_time);
+
+void sl_core_data_link_llr_max_starvation_time_set(struct sl_core_link *core_link);
+void sl_core_data_link_llr_max_starvation_time_clr(struct sl_core_link *core_link);
+int  sl_core_data_link_llr_max_starvation_time_get(struct sl_core_link *core_link, time64_t *llr_max_starvation_time);
+
+void sl_core_data_link_llr_starved_time_set(struct sl_core_link *core_link);
+void sl_core_data_link_llr_starved_time_clr(struct sl_core_link *core_link);
+int  sl_core_data_link_llr_starved_time_get(struct sl_core_link *core_link, time64_t *llr_starved_time);
 
 #endif /* _SL_CORE_DATA_LINK_H_ */
