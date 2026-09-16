@@ -212,7 +212,7 @@ while true; do
 			exit 0
 			;;
 		-m | --max_num_media)
-			__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "all" ${2}
+			__sl_test_media_wb_connections_map_get ${ldev_num} tmp_lgrp_nums "PEC" ${2}
 			lgrp_nums=(${tmp_lgrp_nums//;/ })
 			shift 2
 			;;

@@ -615,7 +615,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -638,7 +639,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -661,7 +663,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -684,7 +687,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -707,7 +711,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -730,7 +735,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -753,7 +759,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -776,7 +783,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -799,7 +807,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -937,7 +946,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -960,7 +970,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -983,7 +994,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -1006,7 +1018,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -1029,7 +1042,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -1052,7 +1066,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -1075,7 +1090,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "failing"
     ],
     "requires": [
       "cabled"
@@ -1098,7 +1114,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1121,7 +1138,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1144,7 +1162,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1167,7 +1186,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1190,7 +1210,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1213,7 +1234,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
@@ -1236,7 +1258,8 @@
     "tags": [
       "link-up",
       "notif",
-      "autoneg"
+      "autoneg",
+      "passing"
     ],
     "requires": [
       "cabled"
