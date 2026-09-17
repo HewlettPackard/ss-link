@@ -1443,5 +1443,29 @@
       }
     },
     "brief": "Test link-up notification is received for ck400g tech mode."
+  },
+  {
+    "id": 62,
+    "file": "sl_run_slstat_link_up_down.sh",
+    "tags": [
+      "slstat",
+      "link-up",
+      "link-down",
+      "cabled"
+    ],
+    "requires": [
+      "cabled"
+    ],
+    "scale": {
+      "quick": {
+        "lgrp_nums": "",
+        "arguments": "-m 1"
+      },
+      "full": {
+        "lgrp_nums": "",
+        "arguments": "-m 32"
+      }
+    },
+    "brief": "Test slstat output is captured when a cabled link is commanded up and then down."
   }
 ]
