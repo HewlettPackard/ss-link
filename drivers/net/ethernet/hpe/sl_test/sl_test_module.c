@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 #include <linux/init.h>
@@ -9,6 +9,7 @@
 
 #include "sl_module.h"
 #include "sl_test.h"
+#include "sl_test_pdev.h"
 #include "sl_test_debugfs.h"
 #include "sl_test_debugfs_ldev.h"
 
@@ -43,10 +44,18 @@ static int __init sl_test_init(void)
 	pr_info("%s: init v" SL_TEST_VERSION_STR "\n", module_name(THIS_MODULE));
 	pr_info("%s: hash " SL_TEST_GIT_HASH_STR "\n", module_name(THIS_MODULE));
 
+	rtn = sl_test_pdev_create();
+	if (rtn != 0) {
+		pr_err("%s: sl_test_pdev_create failed [%d]\n",
+		       module_name(THIS_MODULE), rtn);
+		return rtn;
+	}
+
 	rtn = sl_test_debugfs_create();
 	if (rtn != 0) {
 		pr_err("%s: sl_test_debugfs_create failed [%d]\n",
 			module_name(THIS_MODULE), rtn);
+		sl_test_pdev_remove();
 		return rtn;
 	}
 
@@ -61,6 +70,7 @@ static void __exit sl_test_exit(void)
 	sl_test_debugfs_destroy();
 
 	sl_test_ldev_exit();
+	sl_test_pdev_remove();
 }
 module_exit(sl_test_exit);
 

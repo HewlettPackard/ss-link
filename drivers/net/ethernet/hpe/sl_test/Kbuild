@@ -16,7 +16,8 @@ $(SL_TEST_NAME)-y := \
 	sl_test_debugfs_link.o                      \
 	sl_test_debugfs_llr.o                       \
 	sl_test_debugfs_mac.o                       \
-	sl_test_debugfs_serdes.o
+	sl_test_debugfs_serdes.o                    \
+	sl_test_pdev.o
 
 ccflags-y := -I$(M)/../sl
 ccflags-$(SL_BUILD_NIC)        += -I$(M)/../sl/nic

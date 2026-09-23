@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/err.h>
 #include <linux/debugfs.h>
 #include <linux/kobject.h>
 
@@ -14,9 +15,9 @@
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
-#include "sl_test_debugfs_link.h"
 #include "sl_test_debugfs_mac.h"
 #include "sl_test_common.h"
+#include "sl_test_pdev.h"
 
 #define LOG_BLOCK "mac"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
@@ -241,47 +242,54 @@ void sl_test_mac_remove(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 		return;
 	}
 
-	rtn = sl_test_port_num_entry_put(lgrp_num, mac_num);
+	rtn = sl_test_pdev_port_kobj_put(ldev_num, lgrp_num, mac_num);
 	if (rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_sysfs_put failed [%d]", rtn);
+				 "sl_test_pdev_port_kobj_put failed [%d]", rtn);
 }
 
 int sl_test_mac_new(void)
 {
 	u8              mac_num;
 	int             rtn;
+	int             put_rtn;
 	struct sl_lgrp *lgrp;
+	struct sl_mac  *new_mac;
 	struct kobject *port_num_kobj;
 
-	lgrp = sl_test_lgrp_get();
-	mac_num = sl_test_debugfs_mac_num_get();
+	lgrp     = sl_test_lgrp_get();
+	mac_num  = sl_test_debugfs_mac_num_get();
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-		"mac new (lgrp_num = %u, mac_num = %u)",
-		lgrp->num, mac_num);
+		   "mac new (ldev_num = %u, lgrp_num = %u, mac_num = %u)",
+		   lgrp->ldev_num, lgrp->num, mac_num);
 
-	rtn = sl_test_port_num_entry_init(lgrp->num, mac_num);
-	switch (rtn) {
-	case 0:
-		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, mac_num);
-		break;
-	case -EALREADY:
-		sl_test_port_num_entry_get_unless_zero(lgrp->num, mac_num);
-		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, mac_num);
-		break;
-	default:
+	port_num_kobj = sl_test_pdev_port_kobj_get(lgrp->ldev_num, lgrp->num, mac_num);
+	if (!port_num_kobj) {
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_entry_init failed [%d]", rtn);
+				 "sl_test_pdev_port_kobj_get failed");
+		return -ENODEV;
+	}
+
+	new_mac = sl_mac_new(lgrp, mac_num, port_num_kobj);
+	if (IS_ERR(new_mac)) {
+		rtn = PTR_ERR(new_mac);
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+				 "sl_mac_new failed [%d]", rtn);
+		put_rtn = sl_test_pdev_port_kobj_put(lgrp->ldev_num, lgrp->num, mac_num);
+		if (put_rtn)
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+					 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 		return rtn;
 	}
 
-	return IS_ERR(sl_mac_new(lgrp, mac_num, port_num_kobj));
+	return 0;
 }
 
 int sl_test_mac_del(void)
 {
 	int            rtn;
+	int            put_rtn;
 	struct sl_mac *sl_mac;
 
 	sl_mac = sl_test_mac_get();
@@ -293,12 +301,10 @@ int sl_test_mac_del(void)
 		return rtn;
 	}
 
-	rtn = sl_test_port_num_entry_put(sl_mac->lgrp_num, sl_mac->num);
-	if (rtn) {
+	put_rtn = sl_test_pdev_port_kobj_put(sl_mac->ldev_num, sl_mac->lgrp_num, sl_mac->num);
+	if (put_rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_entry_put failed [%d]", rtn);
-		return rtn;
-	}
+				 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 
 	return rtn;
 }

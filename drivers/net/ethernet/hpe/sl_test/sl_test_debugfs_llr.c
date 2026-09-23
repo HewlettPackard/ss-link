@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/err.h>
 #include <linux/debugfs.h>
 #include <linux/kobject.h>
 
@@ -14,9 +15,9 @@
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
-#include "sl_test_debugfs_link.h"
 #include "sl_test_debugfs_llr.h"
 #include "sl_test_common.h"
+#include "sl_test_pdev.h"
 
 #define LOG_BLOCK "llr"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
@@ -329,47 +330,54 @@ void sl_test_llr_remove(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		return;
 	}
 
-	rtn = sl_test_port_num_entry_put(lgrp_num, llr_num);
+	rtn = sl_test_pdev_port_kobj_put(ldev_num, lgrp_num, llr_num);
 	if (rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_entry_put failed [%d]", rtn);
+				 "sl_test_pdev_port_kobj_put failed [%d]", rtn);
 }
 
 int sl_test_llr_new(void)
 {
 	u8              llr_num;
 	int             rtn;
+	int             put_rtn;
 	struct sl_lgrp *lgrp;
+	struct sl_llr  *new_llr;
 	struct kobject *port_num_kobj;
 
-	lgrp = sl_test_lgrp_get();
-	llr_num = sl_test_debugfs_llr_num_get();
+	lgrp     = sl_test_lgrp_get();
+	llr_num  = sl_test_debugfs_llr_num_get();
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-		"llr new (lgrp_num = %u, llr_num = %u)",
-		lgrp->num, llr_num);
+		   "llr new (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+		   lgrp->ldev_num, lgrp->num, llr_num);
 
-	rtn = sl_test_port_num_entry_init(lgrp->num, llr_num);
-	switch (rtn) {
-	case 0:
-		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, llr_num);
-		break;
-	case -EALREADY:
-		sl_test_port_num_entry_get_unless_zero(lgrp->num, llr_num);
-		port_num_kobj = sl_test_port_num_sysfs_get(lgrp->num, llr_num);
-		break;
-	default:
+	port_num_kobj = sl_test_pdev_port_kobj_get(lgrp->ldev_num, lgrp->num, llr_num);
+	if (!port_num_kobj) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_entry_init failed [%d]", rtn);
+			   "sl_test_pdev_port_kobj_get failed");
+		return -ENODEV;
+	}
+
+	new_llr = sl_llr_new(lgrp, llr_num, port_num_kobj);
+	if (IS_ERR(new_llr)) {
+		rtn = PTR_ERR(new_llr);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			   "sl_llr_new failed [%d]", rtn);
+		put_rtn = sl_test_pdev_port_kobj_put(lgrp->ldev_num, lgrp->num, llr_num);
+		if (put_rtn)
+			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
+					 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 		return rtn;
 	}
 
-	return IS_ERR(sl_llr_new(lgrp, llr_num, port_num_kobj));
+	return 0;
 }
 
 int sl_test_llr_del(void)
 {
 	int            rtn;
+	int            put_rtn;
 	struct sl_llr *llr;
 
 	llr = sl_test_llr_get();
@@ -381,12 +389,10 @@ int sl_test_llr_del(void)
 		return rtn;
 	}
 
-	rtn = sl_test_port_num_entry_put(llr->lgrp_num, llr->num);
-	if (rtn) {
+	put_rtn = sl_test_pdev_port_kobj_put(llr->ldev_num, llr->lgrp_num, llr->num);
+	if (put_rtn)
 		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_test_port_num_entry_put failed [%d]", rtn);
-		return rtn;
-	}
+				 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 
 	return rtn;
 }
