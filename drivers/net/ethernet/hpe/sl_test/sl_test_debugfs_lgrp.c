@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/debugfs.h>
@@ -15,6 +15,7 @@
 
 #include "sl_asic.h"
 #include "sl_lgrp.h"
+#include "sl_test_pdev.h"
 #include "log/sl_log.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
@@ -33,7 +34,6 @@ static struct dentry         *lgrp_dir;
 static struct sl_lgrp         lgrp;
 static struct sl_lgrp_config  lgrp_config;
 static struct sl_lgrp_policy  lgrp_policy;
-static struct kobject        *lgrp_port_dir[SL_ASIC_MAX_LGRPS];
 
 struct lgrp_notif_event {
 	struct sl_lgrp_notif_msg msg;
@@ -729,90 +729,61 @@ u8 sl_test_debugfs_lgrp_num_get(void)
 	return lgrp.num;
 }
 
-static int sl_test_port_sysfs_init(u8 lgrp_num)
-{
-	struct kobject *kobj;
-
-	if (lgrp_port_dir[lgrp_num])
-		return 0;
-
-	kobj = sl_test_lgrp_kobj_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
-
-	lgrp_port_dir[lgrp_num] = kobject_create_and_add("test_port", kobj);
-	if (!lgrp_port_dir[lgrp_num]) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd kobject_create_and_add failed\n");
-		return -ENOMEM;
-	}
-
-	return 0;
-}
-
-static void sl_test_port_sysfs_remove(u8 lgrp_num)
-{
-	if (lgrp_port_dir[lgrp_num]) {
-		kobject_put(lgrp_port_dir[lgrp_num]);
-		lgrp_port_dir[lgrp_num] = NULL;
-	}
-}
-
-void sl_test_port_sysfs_exit(u8 ldev_num)
-{
-	u8 lgrp_num;
-	u8 link_num;
-
-	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
-		for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
-			sl_test_llr_remove(ldev_num, lgrp_num, link_num);
-			sl_test_mac_remove(ldev_num, lgrp_num, link_num);
-			sl_test_link_remove(ldev_num, lgrp_num, link_num);
-		}
-
-		sl_test_port_sysfs_remove(lgrp_num);
-	}
-}
-
-struct kobject *sl_test_port_sysfs_kobj_get(u8 lgrp_num)
-{
-	return lgrp_port_dir[lgrp_num];
-}
-
+/**
+ * sl_test_lgrp_new - Create a new link group.
+ *
+ * Clients create link groups. Register the test sysfs hierarchy after
+ * confirming the link group exists.
+ *
+ * Return: 0 on success, negative error code on failure
+ */
 int sl_test_lgrp_new(void)
 {
 	int                  rtn;
+	u8                   ldev_num;
 	u8                   lgrp_num;
 	struct sl_ctrl_lgrp *ctrl_lgrp;
 
+	ldev_num = sl_test_debugfs_ldev_num_get();
 	lgrp_num = sl_test_debugfs_lgrp_num_get();
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new (lgrp_num = %u)", lgrp_num);
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		   "lgrp_new (ldev_num = %u, lgrp_num = %u)", ldev_num,
+		   lgrp_num);
 
-	ctrl_lgrp = sl_test_ctrl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
+	ctrl_lgrp = sl_test_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new ctrl_lgrp_get failed");
 		return -ENODEV;
 	}
 
-	rtn = sl_test_port_sysfs_init(lgrp_num);
-	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_port_sysfs_init failed [%d]", rtn);
-		return rtn;
-	}
+	rtn = sl_test_pdev_pgrp_add(ldev_num, lgrp_num);
+	if (rtn)
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			   "sl_test_pdev_pgrp_add failed [%d]", rtn);
 
-	return 0;
+	return rtn;
 }
 
+/**
+ * sl_test_lgrp_del - Delete a link group.
+ *
+ * Today this is just a placeholder. Clients are in control of deleting link groups. We only log which one is being
+ * deleted.
+ *
+ * Return: 0 on success, negative error code on failure
+ */
 int sl_test_lgrp_del(void)
 {
+	u8                   ldev_num;
 	u8                   lgrp_num;
 	struct sl_ctrl_lgrp *ctrl_lgrp;
 
+	ldev_num = sl_test_debugfs_ldev_num_get();
 	lgrp_num = sl_test_debugfs_lgrp_num_get();
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_del (lgrp_num = %u)", lgrp_num);
 
-	sl_test_port_sysfs_remove(lgrp_num);
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_del (ldev_num = %u, lgrp_num = %u)", ldev_num, lgrp_num);
 
-	/* Currently we don't want to delete the link group as the client driver created it */
-	ctrl_lgrp = sl_test_ctrl_lgrp_get(sl_test_debugfs_ldev_num_get(), lgrp_num);
+	ctrl_lgrp = sl_test_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (ctrl_lgrp) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp_del device found (ctrl_lgrp = %p)",
 			ctrl_lgrp);

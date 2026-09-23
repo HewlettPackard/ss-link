@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kernel.h>
 #include <linux/debugfs.h>
@@ -10,6 +10,9 @@
 #include "sl_test_common.h"
 #include "sl_test_debugfs_ldev.h"
 #include "sl_test_debugfs_lgrp.h"
+#include "sl_test_debugfs_link.h"
+#include "sl_test_debugfs_llr.h"
+#include "sl_test_debugfs_mac.h"
 
 #define LOG_BLOCK "ldev"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
@@ -186,9 +189,18 @@ int sl_test_ldev_del(void)
 int sl_test_ldev_exit(void)
 {
 	u8 ldev_num;
+	u8 lgrp_num;
+	u8 link_num;
 
-	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num)
-		sl_test_port_sysfs_exit(ldev_num);
+	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num) {
+		for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
+			for (link_num = 0; link_num < SL_ASIC_MAX_LINKS; ++link_num) {
+				sl_test_llr_remove(ldev_num, lgrp_num, link_num);
+				sl_test_mac_remove(ldev_num, lgrp_num, link_num);
+				sl_test_link_remove(ldev_num, lgrp_num, link_num);
+			}
+		}
+	}
 
 	return 0;
 }
