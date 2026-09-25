@@ -15,14 +15,16 @@ LOG_LEVELS=([0]="error" [1]="warn" [2]="info" [3]="debug")
 function log {
 	local LEVEL
         local FUNCTION
+	local message
 
         LEVEL=${1}
         FUNCTION=${2}
         shift 2
+	message="$*"
 
 	if [ ${SL_TEST_LOG_LEVEL} -ge ${LEVEL} ]; then
                 printf "%-25s %-10s %-48s: %s\n" "$(date '+%Y-%m-%d %H:%M:%S.%5N')" \
-                        "(${LOG_LEVELS[$LEVEL]})" "${FUNCTION}" "$@" | tee -a ${SL_TEST_LOG_FILE}
+			"(${LOG_LEVELS[$LEVEL]})" "${FUNCTION}" "${message}" | tee -a "${SL_TEST_LOG_FILE}"
 	fi
 }
 

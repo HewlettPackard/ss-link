@@ -5,7 +5,7 @@
 
 function sl_test_sw_kill_services {
 
-        sl_test_debug_log "${FUNCNAME}"
+        sl_test_debug_log "${FUNCNAME}" "start"
 
         services=(fabric-agent-host rossw_daemon hsnd)
         disable_services=(fabric-agent-host)
@@ -77,7 +77,7 @@ function sl_test_sw_unload {
 
 function sl_test_sw_unload_modules {
 
-        sl_test_debug_log "${FUNCNAME}"
+        sl_test_debug_log "${FUNCNAME}" "start"
 
         modules=(rosnic rossw roscore sl)
 
@@ -108,7 +108,7 @@ function sl_test_sw_unload_modules {
 
 function sl_test_sw_load_modules
 {
-        sl_test_debug_log "${FUNCNAME}"
+        sl_test_debug_log "${FUNCNAME}" "start"
 
 	depmod -a
 
@@ -142,7 +142,7 @@ function sl_test_sw_init {
         max_hsn_active_checks=10
         hsn_active_poll_s=1
 
-        sl_test_debug_log "${FUNCNAME}"
+        sl_test_debug_log "${FUNCNAME}" "start"
 
         sl_test_sw_kill_services
         rtn=$?
@@ -187,7 +187,7 @@ function sl_test_sw_init {
 
 function sl_test_sw_exit {
 
-        sl_test_debug_log "${FUNCNAME}"
+        sl_test_debug_log "${FUNCNAME}" "start"
 
         sl_test_sw_kill_services
         rtn=$?
