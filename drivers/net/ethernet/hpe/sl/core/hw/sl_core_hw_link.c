@@ -840,6 +840,8 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 
 	sl_media_jack_fault_cause_clr(media_lgrp->media_jack);
 
+	sl_core_hw_intr_flgs_clr_all(core_link);
+
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 	if (rtn == -EAGAIN) {
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);

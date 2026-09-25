@@ -176,6 +176,22 @@ void sl_core_hw_intr_flgs_clr(struct sl_core_link *core_link, u32 intr_num)
 	sl_core_flush64(core_link, SS2_PORT_PML_ERR_CLR);
 }
 
+void sl_core_hw_intr_flgs_clr_all(struct sl_core_link *core_link)
+{
+	int x;
+	u64 addr;
+	u32 port;
+
+	port = core_link->core_lgrp->num;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "flgs clr all (port = %d)", port);
+
+	addr = SS2_PORT_PML_ERR_CLR;
+	for (x = 0; x < SL_CORE_HW_INTR_FLGS_COUNT; ++x, addr += 8)
+		sl_core_write64(core_link, addr, ~0ULL);
+	sl_core_flush64(core_link, SS2_PORT_PML_ERR_CLR);
+}
+
 int sl_core_hw_intr_flgs_enable(struct sl_core_link *core_link, u32 intr_num)
 {
 	int rtn;

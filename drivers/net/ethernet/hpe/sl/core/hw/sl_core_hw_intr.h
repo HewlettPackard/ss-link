@@ -44,6 +44,7 @@ void sl_core_hw_intr_hdlr_unregister(struct sl_core_link *link);
 
 void sl_core_hw_intr_flgs_check(struct sl_core_link *link, u32 which);
 void sl_core_hw_intr_flgs_clr(struct sl_core_link *link, u32 which);
+void sl_core_hw_intr_flgs_clr_all(struct sl_core_link *link);
 int  sl_core_hw_intr_flgs_enable(struct sl_core_link *link, u32 which);
 int  sl_core_hw_intr_flgs_disable(struct sl_core_link *link, u32 which);
 
