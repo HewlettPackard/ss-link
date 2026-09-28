@@ -7,6 +7,8 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"
+#include "sl_media_lgrp.h"
+#include "sl_platform.h"
 #include "base/sl_core_log.h"
 #include "hw/sl_core_hw_serdes_lane.h"
 #include "hw/sl_core_hw_io.h"
@@ -87,6 +89,15 @@ int sl_core_hw_serdes_lane_pre1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u16 data16;
 	u8  serdes_lane_num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*pre1 = media_serdes_settings.pre1;
+		return 0;
+	}
+
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
@@ -107,6 +118,15 @@ int sl_core_hw_serdes_lane_pre2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	int rtn;
 	u16 data16;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*pre2 = media_serdes_settings.pre2;
+		return 0;
+	}
 
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
@@ -129,6 +149,15 @@ int sl_core_hw_serdes_lane_pre3_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u16 data16;
 	u8  serdes_lane_num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*pre3 = media_serdes_settings.pre3;
+		return 0;
+	}
+
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
@@ -149,6 +178,15 @@ int sl_core_hw_serdes_lane_cursor_get(struct sl_core_lgrp *core_lgrp, u8 asic_la
 	int rtn;
 	u16 data16;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*cursor = media_serdes_settings.cursor;
+		return 0;
+	}
 
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
@@ -171,6 +209,15 @@ int sl_core_hw_serdes_lane_post1_get(struct sl_core_lgrp *core_lgrp, u8 asic_lan
 	u16 data16;
 	u8  serdes_lane_num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*post1 = media_serdes_settings.post1;
+		return 0;
+	}
+
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
@@ -191,6 +238,15 @@ int sl_core_hw_serdes_lane_post2_get(struct sl_core_lgrp *core_lgrp, u8 asic_lan
 	int rtn;
 	u16 data16;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		struct sl_media_serdes_settings media_serdes_settings;
+
+		sl_media_lgrp_media_serdes_settings_get(core_lgrp->core_ldev->num, core_lgrp->num,
+							&media_serdes_settings);
+		*post2 = media_serdes_settings.post2;
+		return 0;
+	}
 
 	serdes_lane_num = sl_core_hw_serdes_tx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
@@ -231,6 +287,11 @@ int sl_core_hw_serdes_lane_osr_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_
 
 	port = core_lgrp->num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*osr = SL_CORE_HW_SERDES_OSR_OSX2; // FIXME: get this from core
+		return 0;
+	}
+
 	sl_core_lgrp_read64(core_lgrp, SS2_PORT_PML_CFG_SERDES_TX(asic_lane_num), &data64);
 
 	*osr = (SS2_PORT_PML_CFG_SERDES_TX_PMD_TX_OSR_MODE_GET(data64) & 0x3F);
@@ -247,6 +308,11 @@ int sl_core_hw_serdes_lane_encoding_get(struct sl_core_lgrp *core_lgrp, u8 asic_
 	u32 port;
 	u16 data16;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*encoding = SL_CORE_HW_SERDES_ENCODING_PAM4_NR; // FIXME: get this from core
+		return 0;
+	}
 
 	port = core_lgrp->num;
 
@@ -329,6 +395,11 @@ int sl_core_hw_serdes_lane_dfe_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane_
 	u16 data16;
 	u8  serdes_lane_num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*dfe = SL_CORE_HW_SERDES_DFE_DISABLE; // FIXME: get this from core
+		return 0;
+	}
+
 	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
 	SL_CORE_HW_PMI_RD(core_lgrp, core_lgrp->serdes.dt.dev_id, serdes_lane_num, 0,
@@ -346,6 +417,11 @@ int sl_core_hw_serdes_lane_scramble_dis_get(struct sl_core_lgrp *core_lgrp, u8 a
 	int rtn;
 	u16 data16;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*scramble_dis = SL_CORE_HW_SERDES_SCRAMBLE_DIS_NOTSET; // FIXME: get this from core
+		return 0;
+	}
 
 	serdes_lane_num = sl_core_hw_serdes_rx_serdes_lane_num_get(core_lgrp, asic_lane_num);
 
@@ -940,6 +1016,11 @@ int sl_core_hw_serdes_eye_upper_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	u32 addr;
 	u8  serdes_lane_num;
 
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*eye_upper = 55; // FIXME: what to do here?
+		return 0;
+	}
+
 	if (!sl_core_ldev_serdes_is_ready(core_lgrp->core_ldev))
 		return -EIO;
 
@@ -965,6 +1046,11 @@ int sl_core_hw_serdes_eye_lower_get(struct sl_core_lgrp *core_lgrp, u8 asic_lane
 	int rtn;
 	u32 addr;
 	u8  serdes_lane_num;
+
+	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
+		*eye_lower = 55; // FIXME: what to do here?
+		return 0;
+	}
 
 	if (!sl_core_ldev_serdes_is_ready(core_lgrp->core_ldev))
 		return -EIO;

@@ -31,7 +31,7 @@ void sl_ctrl_link_fec_data_store(struct sl_ctrl_link *ctrl_link,
 {
 	struct sl_ctrl_link_fec_cntrs *tmp_cntrs_ptr;
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "data_store");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "data store");
 
 	spin_lock(&ctrl_link->fec_data.lock);
 
@@ -61,7 +61,7 @@ void sl_ctrl_link_fec_up_cache_store(struct sl_ctrl_link *ctrl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up_cache_store");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up cache store");
 
 	spin_lock(&ctrl_link->fec_up_cache.lock);
 	ctrl_link->fec_up_cache.cw_cntrs   = *cw_cntrs;
@@ -84,7 +84,7 @@ void sl_ctrl_link_fec_down_cache_store(struct sl_ctrl_link *ctrl_link,
 	struct sl_core_link_fec_lane_cntrs *lane_cntrs,
 	struct sl_core_link_fec_tail_cntrs *tail_cntrs)
 {
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down_cache_store");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down cache store");
 
 	spin_lock(&ctrl_link->fec_down_cache.lock);
 	ctrl_link->fec_down_cache.cw_cntrs   = *cw_cntrs;
@@ -97,7 +97,7 @@ static void sl_ctrl_link_fec_mon_limits_calc(struct sl_ctrl_link *ctrl_link)
 {
 	struct sl_link_policy link_policy;
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "mon limits calc");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor limits calc");
 
 	spin_lock(&ctrl_link->fec_data.lock);
 
@@ -169,7 +169,10 @@ void sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
 {
 	u32 period;
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "mon_start");
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor start");
+
+	if (SL_PLATFORM_IS_NETSIM(sl_core_ldev_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num)))
+		return;
 
 	sl_ctrl_link_fec_mon_limits_calc(ctrl_link);
 

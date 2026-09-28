@@ -1089,15 +1089,17 @@ out:
 		core_link->pcs.settings.underrun_clr);
 	sl_core_write64(core_link, SS2_PORT_PML_ERR_INFO_PCS_TX_DP, data64);
 
-	if (core_link->fec.settings.up_settle_wait_ms) {
+	if (core_link->fec.settings.up_settle_wait_ms && SL_PLATFORM_IS_HARDWARE(core_link->core_lgrp->core_ldev)) {
 		sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_SETTLE_START);
 		sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 		return;
 	}
 
 	rtn = sl_core_hw_link_up_ald(core_link);
-	if (rtn)
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "up check work link_up_ald failed [%d]", rtn);
 		return;
+	}
 
 	sl_core_hw_link_up_success(core_link);
 }
@@ -1188,7 +1190,7 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(core_link->fec.settings.up_ucw_limit, &fec_info)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fec check UCW exceeded up limit (UCW = %llu, CCW = %llu)",
+				      "up fec check work UCW exceeded up limit (UCW = %llu, CCW = %llu)",
 				      fec_info.ucw, fec_info.ccw);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_UCW_LIMIT_CROSSED);
 		sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_OK);
@@ -1202,13 +1204,13 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(core_link->fec.settings.up_ccw_limit, &fec_info)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-				      "up fec check CCW exceeded up limit (UCW = %llu, CCW = %llu)",
+				      "up fec check work CCW exceeded up limit (UCW = %llu, CCW = %llu)",
 				      fec_info.ucw, fec_info.ccw);
 		SL_CTRL_LINK_COUNTER_INC(ctrl_link, LINK_UP_FAIL_CCW_LIMIT_CROSSED);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -1221,14 +1223,18 @@ void sl_core_hw_link_up_fec_check_work(struct work_struct *work)
 
 		rtn = sl_core_link_up_fail(core_link);
 		if (rtn)
-			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check link_up_fail failed [%d]", rtn);
+			sl_core_log_err_trace(core_link, LOG_NAME, "up fec check work link_up_fail failed [%d]", rtn);
 		return;
 	}
 
 	sl_core_data_link_info_map_clr(core_link, SL_CORE_INFO_MAP_FEC_CHECK);
 	sl_core_data_link_info_map_set(core_link, SL_CORE_INFO_MAP_FEC_OK);
 
-	sl_core_hw_link_up_ald(core_link);
+	rtn = sl_core_hw_link_up_ald(core_link);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "up fec check work link_up_ald failed [%d]", rtn);
+		return;
+	}
 
 	sl_core_hw_link_up_success(core_link);
 }
