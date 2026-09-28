@@ -10,6 +10,7 @@
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_llr.h"
+#include "sl_media_lgrp.h"
 #include "base/sl_core_work_llr.h"
 #include "base/sl_core_timer_llr.h"
 #include "base/sl_core_log.h"
@@ -402,11 +403,44 @@ void sl_core_hw_llr_setup_cmd(struct sl_core_llr *core_llr,
 	queue_work(core_llr->core_lgrp->core_ldev->workqueue, &(core_llr->work[SL_CORE_WORK_LLR_SETUP]));
 }
 
+static void sl_core_hw_llr_setup_done(struct sl_core_llr *core_llr)
+{
+	u32 llr_state;
+
+	sl_core_hw_llr_capacity_set(core_llr);
+
+	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
+
+	spin_lock(&core_llr->data_lock);
+	llr_state = core_llr->state;
+	switch (llr_state) {
+	case SL_CORE_LLR_STATE_SETTING_UP:
+		sl_core_log_dbg(core_llr, LOG_NAME, "setup done - setting up");
+		core_llr->state = SL_CORE_LLR_STATE_SETUP;
+		clear_bit(SL_CORE_INFO_MAP_LLR_SETTING_UP, (unsigned long *)&(core_llr->info_map));
+		set_bit(SL_CORE_INFO_MAP_LLR_SETUP, (unsigned long *)&(core_llr->info_map));
+		spin_unlock(&core_llr->data_lock);
+
+		sl_core_hw_llr_setup_callback(core_llr);
+
+		return;
+	default:
+		sl_core_log_err(core_llr, LOG_NAME, "setup done - invalid state (llr_state = %u %s)",
+				llr_state, sl_core_llr_state_str(llr_state));
+		spin_unlock(&core_llr->data_lock);
+		return;
+	}
+}
+
+#define SL_LLR_FIXED_LOOP_TIME_BKP_NS 215
 void sl_core_hw_llr_setup_work(struct work_struct *work)
 {
-	int                 rtn;
-	struct sl_core_llr *core_llr;
-	u32                 llr_state;
+	int                   rtn;
+	struct sl_core_llr   *core_llr;
+	u32                   llr_state;
+	struct sl_llr_policy  llr_policy;
+	u32                   type;
+	int                   x;
 
 	core_llr = container_of(work, struct sl_core_llr, work[SL_CORE_WORK_LLR_SETUP]);
 
@@ -421,9 +455,30 @@ void sl_core_hw_llr_setup_work(struct work_struct *work)
 
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-				      "setup work invalid state (link_state = %u %s)",
+				      "setup work invalid state (llr_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
+	}
+
+	llr_policy.options = 0;
+	rtn = sl_core_data_llr_policy_get(core_llr, &llr_policy);
+	if (rtn)
+		sl_core_log_warn_trace(core_llr, LOG_NAME,
+				       "setup work llr_policy_get failed [%d]", rtn);
+	if (llr_policy.options & SL_LLR_POLICY_OPT_FIXED_LOOP_TIME) {
+		rtn = sl_media_lgrp_type_get(sl_media_lgrp_get(core_llr->core_lgrp->core_ldev->num, core_llr->core_lgrp->num), &type);
+		if (rtn)
+			sl_core_log_warn_trace(core_llr, LOG_NAME,
+					       "setup work media_type_get failed [%d]", rtn);
+		if (type == SL_MEDIA_TYPE_BKP) {
+			sl_core_log_warn(core_llr, LOG_NAME,
+					 "setup work set fixed loop time = %dns", SL_LLR_FIXED_LOOP_TIME_BKP_NS);
+			for (x = 0; x < SL_CORE_LLR_MAX_LOOP_TIME_COUNT; ++x)
+				core_llr->loop_time[x] = SL_LLR_FIXED_LOOP_TIME_BKP_NS;
+			sl_core_hw_llr_ordered_sets_start(core_llr);
+			sl_core_hw_llr_setup_done(core_llr);
+			return;
+		}
 	}
 
 	sl_core_hw_intr_llr_flgs_clr(core_llr, SL_CORE_HW_INTR_LLR_SETUP_UNEXP_LOOP_TIME);
@@ -473,7 +528,8 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 	}
 
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
-		sl_core_log_err_trace(core_llr, LOG_NAME, "loop time intr work - invalid state (link_state = %u %s)",
+		sl_core_log_err_trace(core_llr, LOG_NAME,
+				      "loop time intr work - invalid state (llr_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -510,29 +566,7 @@ void sl_core_hw_llr_setup_loop_time_intr_work(struct work_struct *work)
 		++x;
 	}
 
-	sl_core_hw_llr_capacity_set(core_llr);
-
-	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
-
-	spin_lock(&core_llr->data_lock);
-	llr_state = core_llr->state;
-	switch (llr_state) {
-	case SL_CORE_LLR_STATE_SETTING_UP:
-		sl_core_log_dbg(core_llr, LOG_NAME, "setup loop time - setup");
-		core_llr->state = SL_CORE_LLR_STATE_SETUP;
-		clear_bit(SL_CORE_INFO_MAP_LLR_SETTING_UP, (unsigned long *)&(core_llr->info_map));
-		set_bit(SL_CORE_INFO_MAP_LLR_SETUP, (unsigned long *)&(core_llr->info_map));
-		spin_unlock(&core_llr->data_lock);
-
-		sl_core_hw_llr_setup_callback(core_llr);
-
-		return;
-	default:
-		sl_core_log_err(core_llr, LOG_NAME, "setup loop time - invalid state (link_state = %u %s)",
-				llr_state, sl_core_llr_state_str(llr_state));
-		spin_unlock(&core_llr->data_lock);
-		return;
-	}
+	sl_core_hw_llr_setup_done(core_llr);
 }
 
 void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
@@ -554,7 +588,7 @@ void sl_core_hw_llr_setup_unexp_loop_time_intr_work(struct work_struct *work)
 
 	if (llr_state != SL_CORE_LLR_STATE_SETTING_UP) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-				      "unexpected loop time intr work - invalid state (link_state = %u %s)",
+				      "unexpected loop time intr work - invalid state (llr_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -692,7 +726,7 @@ void sl_core_hw_llr_start_work(struct work_struct *work)
 
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-				      "start work invalid state (link_state = %u %s)",
+				      "start work invalid state (llr_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -737,7 +771,7 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 
 	if (llr_state != SL_CORE_LLR_STATE_STARTING) {
 		sl_core_log_err_trace(core_llr, LOG_NAME,
-				      "start init complete intr work - invalid state (link_state = %u %s)",
+				      "start init complete intr work - invalid state (llr_state = %u %s)",
 				      llr_state, sl_core_llr_state_str(llr_state));
 		return;
 	}
@@ -776,7 +810,7 @@ void sl_core_hw_llr_start_init_complete_intr_work(struct work_struct *work)
 		sl_core_hw_llr_start_callback(core_llr);
 		return;
 	default:
-		sl_core_log_err(core_llr, LOG_NAME, "start init complete - invalid state (link_state = %u %s)",
+		sl_core_log_err(core_llr, LOG_NAME, "start init complete - invalid state (llr_state = %u %s)",
 				llr_state, sl_core_llr_state_str(llr_state));
 		spin_unlock(&core_llr->data_lock);
 		return;

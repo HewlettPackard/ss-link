@@ -30,6 +30,7 @@ struct sl_llr_config {
 };
 
 #define SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES BIT(0)
+#define SL_LLR_POLICY_OPT_FIXED_LOOP_TIME        BIT(1)
 
 #define SL_LLR_POLICY_MAGIC 0x636c6c72
 #define SL_LLR_POLICY_VER   1
