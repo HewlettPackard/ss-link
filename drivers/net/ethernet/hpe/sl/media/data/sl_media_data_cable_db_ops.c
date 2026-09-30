@@ -60,6 +60,8 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 			continue;
 		if (entry.type != media_attr->type)
 			continue;
+		if (entry.vendor != media_attr->vendor)
+			continue;
 		if (media_attr->vendor == SL_MEDIA_VENDOR_LEONI ||
 		    media_attr->vendor == SL_MEDIA_VENDOR_BIZLINK)
 			if (entry.vendor != SL_MEDIA_VENDOR_LEONI &&
@@ -72,7 +74,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 		media_jack->cable_db_idx             = indexer;
 
 		media_jack->is_cable_unsupported = false;
-		sl_media_log_dbg(media_jack, LOG_NAME, "validate found");
+		sl_media_log_dbg(media_jack, LOG_NAME, "validate found (idx = %u)", indexer);
 		return 0;
 	}
 
