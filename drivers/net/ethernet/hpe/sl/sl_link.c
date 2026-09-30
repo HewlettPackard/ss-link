@@ -576,6 +576,21 @@ static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *caus
 		case SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-media-on ");
 			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-not-ready ");
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-fault ");
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-transition ");
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-io ");
+			break;
+		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE:
+			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-invalid-state ");
+			break;
 
 		case SL_LINK_DOWN_RETRYABLE:
 			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retryable ");

@@ -30,8 +30,6 @@ bool sl_media_data_jack_media_is_format_cmis(struct sl_media_jack *media_jack);
 void sl_media_data_jack_cable_if_present_send(struct sl_media_lgrp *media_lgrp);
 void sl_media_data_jack_cable_if_not_present_send(struct sl_media_lgrp *media_lgrp);
 
-int  sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack);
-int  sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_hw_shift_state_get(struct sl_media_jack *media_jack);
 int  sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version);
 int  sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 version);

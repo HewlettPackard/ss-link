@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=25
+MINOR=488
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -534,8 +534,7 @@ function print_jack {
 	local shape=$(cat ${LGRP_PATH}/media/shape)
 	local cable_end=$(cat ${LGRP_PATH}/media/cable_end)
         local speed=$(cat ${LGRP_PATH}/media/cable_speed_state)
-## FIXME: this is really cable power state isn't it?
-	local power=$(cat ${LGRP_PATH}/media/jack_power_state)
+	local cable_state=$(cat ${LGRP_PATH}/media/cable_state)
 	local temp_c=$(cat ${LGRP_PATH}/media/temperature_celsius)
 	local temp_state=$(cat ${LGRP_PATH}/media/temperature_state)
 	local temp_warn_limit_c=$(cat ${LGRP_PATH}/media/temperature_warn_limit_celsius)
@@ -564,7 +563,7 @@ function print_jack {
         printf "           | length    = %-20s fw_ver_hex      = ${fw_ver} (target = ${target_fw_ver})\n" "${length}${units}"
         printf "           | furcation = ${furcation}\n"
        	printf "           | speed     = ${speed}\n"
-       	printf "           | power     = ${power}\n"
+       	printf "           | state     = ${cable_state}\n"
 	printf "           | temperature_state   = ${temp_state}\n"
 	printf "           | temperature         = ${temp_c}${temp_units} (warn_limit = ${temp_warn_limit_c}${temp_units}, down_limit = ${temp_down_limit_c}${temp_units})\n"
         printf "           | is_supported        = ${is_supported_cable}\n"

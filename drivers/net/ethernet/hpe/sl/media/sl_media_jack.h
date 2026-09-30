@@ -40,6 +40,17 @@
 #define SL_MEDIA_SS2_HOST_INTERFACE_400GBASE_CR4     0x48
 #define SL_MEDIA_SS2_HOST_INTERFACE_800GBASE_CR8     0x49 /* SS2 PEC default */
 
+/* Module State encodings */
+#define SL_MEDIA_CABLE_STATE_INVALID 0x0
+#define SL_MEDIA_CABLE_STATE_LOW_PWR 0x1
+#define SL_MEDIA_CABLE_STATE_PWR_UP  0x2
+#define SL_MEDIA_CABLE_STATE_READY   0x3
+#define SL_MEDIA_CABLE_STATE_PWR_DN  0x4
+#define SL_MEDIA_CABLE_STATE_FAULT   0x5
+
+/* upper bound for module power state transition deadline */
+#define SL_MEDIA_POWER_CHANGE_DEFAULT_WAIT_TIME_MS 10000
+
 /*
  * These states reflect the state of cable shifting for active cables.
  * For non-active cables, the cable shift state always reflects "invalid"
@@ -201,10 +212,8 @@ struct sl_media_jack {
 	bool                               is_cable_unsupported;
 	bool                               is_cable_format_unsupported;
 	bool                               is_supported_ss200_cable;
-	bool                               is_high_powered;
 	u8                                 temperature_state;
 	u8                                 temperature_prev_state;
-	unsigned long                      cable_high_power_wait_time_end;
 	u32                                io_fault_cause;
 	u32                                fault_cause;
 	time64_t                           io_fault_time;
@@ -266,6 +275,7 @@ struct sl_media_jack {
 #define SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO               BIT(18)
 #define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(20)
 #define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(21)
+#define SL_MEDIA_FAULT_CAUSE_CABLE_FAULT                       BIT(22) /* Specific cable status read from HW */
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -273,7 +283,6 @@ struct sl_media_jack *sl_media_jack_get(u8 ldev_num, u8 jack_num);
 void                  sl_media_jack_state_set(struct sl_media_jack *media_jack, u8 state);
 int                   sl_media_jack_state_get(struct sl_media_jack *media_jack, u8 *state);
 int                   sl_media_jack_cable_end_get(struct sl_media_jack *media_jack, u8 *cable_end);
-bool                  sl_media_jack_is_high_powered(struct sl_media_jack *media_jack);
 void                  sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state);
 int                   sl_media_jack_cable_shift_state_get(struct sl_media_jack *media_jack, u8 *cable_shift_state);
 bool                  sl_media_jack_is_cable_inserted(struct sl_media_jack *media_jack);
@@ -286,7 +295,6 @@ int sl_media_jack_active_cable_400g_host_interface_get(struct sl_media_jack *med
 int sl_media_jack_active_cable_400g_appsel_num_get(struct sl_media_jack *media_jack, u8 *appsel_num_400_gaui);
 int sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_jack, u8 *lane_count_400_gaui);
 
-int  sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num);
 int  sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int  sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
@@ -308,8 +316,6 @@ void sl_media_jack_cable_cold_notif_sent_set(struct sl_media_jack *media_jack,
 
 const char *sl_media_fault_cause_str(u32 fault_cause);
 const char *sl_media_temp_state_str(u8 temperature_state);
-
-int  sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);
 
@@ -343,5 +349,10 @@ int sl_media_jack_loopback_mismatch_check(u8 ldev_num, u8 lgrp_num);
 
 int sl_media_jack_lgrp_num_by_port_id_get(u8 ldev_num, u8 lgrp_num, u8 port_id, u8 *partner_lgrp_num);
 u8  sl_media_jack_port_count_get(u8 ldev_num, u8 lgrp_num);
+
+const char *sl_media_jack_cable_state_str(u8 state);
+int         sl_media_jack_cable_state_get(u8 ldev_num, u8 lgrp_num, u8 *state);
+int         sl_media_jack_cable_power_low_set(u8 ldev_num, u8 lgrp_num);
+int         sl_media_jack_cable_power_high_set(u8 ldev_num, u8 lgrp_num);
 
 #endif /* _SL_MEDIA_JACK_H_ */

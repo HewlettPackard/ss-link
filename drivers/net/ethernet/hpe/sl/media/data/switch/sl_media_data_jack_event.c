@@ -12,6 +12,7 @@
 #include "sl_asic.h"
 #include "base/sl_media_log.h"
 #include "base/sl_media_eeprom.h"
+#include "hw/sl_media_hw_power.h"
 #include "sl_media_jack.h"
 #include "sl_media_io.h"
 #include "data/sl_media_data_jack.h"
@@ -343,9 +344,10 @@ static int sl_media_data_jack_active_cable_setup(struct sl_media_jack *media_jac
 	}
 
 	/* must be after the cable reset */
-	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+	rtn = sl_media_hw_power_high_set(media_jack);
 	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "active cable setup cable_high_power_set failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME,
+				       "active cable setup hw power high set failed [%d]", rtn);
 		media_attr->errors |= SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT;
 		return rtn;
 	}

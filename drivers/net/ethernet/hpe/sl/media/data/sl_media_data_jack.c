@@ -213,7 +213,6 @@ void sl_media_data_jack_data_clr(struct sl_media_jack *media_jack)
 	media_jack->is_cable_unsupported        = false;
 	media_jack->is_cable_format_unsupported = false;
 	media_jack->is_supported_ss200_cable    = false;
-	media_jack->is_high_powered             = false;
 
 	spin_unlock(&media_jack->data_lock);
 }

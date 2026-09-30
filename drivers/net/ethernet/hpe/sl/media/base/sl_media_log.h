@@ -19,6 +19,8 @@
 #define SL_MEDIA_EEPROM_LOG_NAME    "eeprom"
 #define SL_MEDIA_TEST_LOG_NAME      "test"
 #define SL_MEDIA_IO_LOG_NAME        "media-io"
+#define SL_MEDIA_HW_POWER_LOG_NAME  "hw-power"
+#define SL_MEDIA_HW_CABLE_LOG_NAME  "hw-cable"
 
 #define sl_media_log_dbg(_ptr, _name, _text, ...) \
 	sl_log_dbg((_ptr), SL_MEDIA_LOG_BLOCK, (_name), (_text), ##__VA_ARGS__)

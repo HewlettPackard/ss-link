@@ -45,11 +45,12 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	return sysfs_emit(buf, "%s\n", sl_media_state_str(state));
 }
 
-static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+static ssize_t cable_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
+	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
-	bool                  is_high_powered;
+	u8                    cable_state;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
@@ -60,13 +61,14 @@ static ssize_t jack_power_state_show(struct kobject *kobj, struct kobj_attribute
 		return sysfs_emit(buf, "no-cable\n");
 	}
 
-	is_high_powered = sl_media_jack_is_high_powered(media_lgrp->media_jack);
+	rtn = sl_media_jack_cable_state_get(media_lgrp->media_ldev->num, media_lgrp->num, &cable_state);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
 
-	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
-		   "power state show (media_lgrp = 0x%p, state = %s)",
-		   media_lgrp, is_high_powered ? "high" : "low");
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "cable state show (cable_state = 0x%X %s)", cable_state,
+		   sl_media_jack_cable_state_str(cable_state));
 
-	return sysfs_emit(buf, "%s\n", is_high_powered ? "high" : "low");
+	return sysfs_emit(buf, "%s\n", sl_media_jack_cable_state_str(cable_state));
 }
 
 static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -1049,7 +1051,7 @@ static ssize_t loopback_caps_show(struct kobject *kobj, struct kobj_attribute *k
 }
 
 static struct kobj_attribute media_state                            = __ATTR_RO(state);
-static struct kobj_attribute media_jack_power_state                 = __ATTR_RO(jack_power_state);
+static struct kobj_attribute media_cable_state                      = __ATTR_RO(cable_state);
 static struct kobj_attribute media_temperature_celsius              = __ATTR_RO(temperature_celsius);
 static struct kobj_attribute media_temperature_warn_limit_celsius   = __ATTR_RO(temperature_warn_limit_celsius);
 static struct kobj_attribute media_temperature_down_limit_celsius   = __ATTR_RO(temperature_down_limit_celsius);
@@ -1089,7 +1091,7 @@ static struct kobj_attribute media_loopback_caps                    = __ATTR_RO(
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
-	&media_jack_power_state.attr,
+	&media_cable_state.attr,
 	&media_temperature_celsius.attr,
 	&media_temperature_warn_limit_celsius.attr,
 	&media_temperature_down_limit_celsius.attr,

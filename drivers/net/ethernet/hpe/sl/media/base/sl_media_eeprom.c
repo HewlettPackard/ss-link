@@ -604,6 +604,61 @@ static void sl_media_eeprom_loopback_caps_get(struct sl_media_jack *media_jack, 
 	sl_media_log_dbg(media_jack, LOG_NAME, "get (loopback_caps = 0x%X)", *loopback_caps);
 }
 
+/* State Duration Encoding upper bounds in ms. Nibble index. */
+static const u32 sl_media_state_duration_ms[] = {
+	1,       /* 1 ms   */
+	5,       /* 5 ms   */
+	10,	 /* 10 ms  */
+	50,	 /* 50 ms  */
+	100,	 /* 100 ms */
+	500,     /* 500 ms */
+	1000,    /* 1 s    */
+	5000,    /* 5 s    */
+	10000,   /* 10 s   */
+};
+
+#define SL_MEDIA_DURATIONS_ADV_MODULE_PWR_ADDR 167
+static int sl_media_eeprom_module_pwr_duration_ms_get(struct sl_media_jack *media_jack, u8 mask, u8 shift,
+						      u32 *duration_ms)
+{
+	u8 code;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "module pwr duration get (mask = 0x%X, shift = %u)", mask, shift);
+
+	code = (media_jack->eeprom_page1[SL_MEDIA_DURATIONS_ADV_MODULE_PWR_ADDR] & mask) >> shift;
+
+	if (code >= ARRAY_SIZE(sl_media_state_duration_ms)) {
+		sl_media_log_warn_trace(media_jack, LOG_NAME, "module pwr duration invalid (code = %u) [%d]",
+					code, -EINVAL);
+		*duration_ms = SL_MEDIA_POWER_CHANGE_DEFAULT_WAIT_TIME_MS;
+		goto out;
+	}
+
+	*duration_ms = sl_media_state_duration_ms[code];
+
+out:
+	sl_media_log_dbg(media_jack, LOG_NAME, "module pwr duration get (code = %u, duration_ms = %u)",
+			 code, *duration_ms);
+
+	return 0;
+}
+
+#define SL_MEDIA_MODULE_PWR_UP_DURATION_MASK  0x0F
+#define SL_MEDIA_MODULE_PWR_UP_DURATION_SHIFT 0
+int sl_media_eeprom_module_pwr_up_duration_ms_get(struct sl_media_jack *media_jack, u32 *duration_ms)
+{
+	return sl_media_eeprom_module_pwr_duration_ms_get(media_jack, SL_MEDIA_MODULE_PWR_UP_DURATION_MASK,
+							  SL_MEDIA_MODULE_PWR_UP_DURATION_SHIFT, duration_ms);
+}
+
+#define SL_MEDIA_MODULE_PWR_DN_DURATION_MASK   0xF0
+#define SL_MEDIA_MODULE_PWR_DN_DURATION_SHIFT  4
+int sl_media_eeprom_module_pwr_dn_duration_ms_get(struct sl_media_jack *media_jack, u32 *duration_ms)
+{
+	return sl_media_eeprom_module_pwr_duration_ms_get(media_jack, SL_MEDIA_MODULE_PWR_DN_DURATION_MASK,
+							  SL_MEDIA_MODULE_PWR_DN_DURATION_SHIFT, duration_ms);
+}
+
 void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	sl_media_log_dbg(media_jack, LOG_NAME, "parse");

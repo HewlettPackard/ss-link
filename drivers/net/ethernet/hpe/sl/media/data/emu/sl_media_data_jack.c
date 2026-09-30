@@ -51,16 +51,6 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	return 0;
 }
 
-int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
-{
-	return 0;
-}
-
-int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
-{
-	return 0;
-}
-
 int sl_media_data_jack_cable_temp_get(struct sl_media_jack *media_jack, u8 *temp)
 {
 	*temp = 24;

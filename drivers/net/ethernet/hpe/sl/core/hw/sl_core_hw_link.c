@@ -45,19 +45,22 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	struct sl_media_lgrp *media_lgrp;
 	u8 		      temperature_state;
 	int 		      rtn;
+	u8                    ldev_num;
+	u8                    lgrp_num;
+	u8                    link_num;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link off");
 
-	core_mac = sl_core_mac_get(core_link->core_lgrp->core_ldev->num,
-				   core_link->core_lgrp->num, core_link->num);
-	core_llr = sl_core_llr_get(core_link->core_lgrp->core_ldev->num,
-				   core_link->core_lgrp->num, core_link->num);
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
-				       core_link->core_lgrp->num);
+	ldev_num = core_link->core_lgrp->core_ldev->num;
+	lgrp_num = core_link->core_lgrp->num;
+	link_num = core_link->num;
+
+	core_mac   = sl_core_mac_get(ldev_num, lgrp_num, link_num);
+	core_llr   = sl_core_llr_get(ldev_num, lgrp_num, link_num);
+	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 
 	if (core_llr)
-		sl_core_llr_stop(core_link->core_lgrp->core_ldev->num,
-				 core_link->core_lgrp->num, core_link->num);
+		sl_core_llr_stop(ldev_num, lgrp_num, link_num);
 
 	msleep(100);
 
@@ -79,8 +82,11 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "link off cable_temp_state_get failed [%d]", rtn);
 
-	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT)
-		sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
+	if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
+		rtn = sl_media_jack_cable_power_low_set(ldev_num, lgrp_num);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME, "link off cable_power_low_set failed [%d]", rtn);
+	}
 
 	/* resetting the link resets the LLR which is needed to reset ordered sets */
 	sl_core_hw_reset_link(core_link);
@@ -271,16 +277,102 @@ void sl_core_hw_link_up_cmd(struct sl_core_link *core_link,
 		queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[SL_CORE_WORK_LINK_UP_START]);
 }
 
+static int sl_core_hw_link_up_start_active_cable(struct sl_core_link *core_link)
+{
+	int rtn;
+	u8  ldev_num;
+	u8  lgrp_num;
+	u8  cable_state;
+
+	ldev_num = core_link->core_lgrp->core_ldev->num;
+	lgrp_num = core_link->core_lgrp->num;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "up start active cable");
+
+	cable_state = SL_MEDIA_CABLE_STATE_INVALID;
+	rtn = sl_media_jack_cable_state_get(ldev_num, lgrp_num, &cable_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "up start active cable cable_state_get failed [%d]", rtn);
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "up start active cable link_up_fail failed [%d]", rtn);
+		return rtn;
+	}
+
+	switch (cable_state) {
+	case SL_MEDIA_CABLE_STATE_LOW_PWR:
+		sl_core_log_dbg(core_link, LOG_NAME,
+				"up start active cable power high set (cable_state = %u %s)",
+				cable_state, sl_media_jack_cable_state_str(cable_state));
+		rtn = sl_media_jack_cable_power_high_set(ldev_num, lgrp_num);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME,
+					      "up start active cable high power set failed [%d]", rtn);
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY_MAP);
+			rtn = sl_core_link_up_fail(core_link);
+			if (rtn)
+				sl_core_log_warn_trace(core_link, LOG_NAME,
+						       "up start active cable link_up_fail failed [%d]", rtn);
+			return rtn;
+		}
+
+		return 0;
+	case SL_MEDIA_CABLE_STATE_PWR_UP:
+	case SL_MEDIA_CABLE_STATE_PWR_DN:
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "up start active cable power transition (cable_state = %u %s)",
+				      cable_state, sl_media_jack_cable_state_str(cable_state));
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "up start active cable link_up_fail failed [%d]", rtn);
+		return -EBUSY;
+	case SL_MEDIA_CABLE_STATE_READY:
+		sl_core_log_dbg(core_link, LOG_NAME, "up start active cable already ready - high power");
+		return 0;
+	case SL_MEDIA_CABLE_STATE_FAULT:
+		sl_core_log_err_trace(core_link, LOG_NAME, "up start active cable fault");
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn_trace(core_link, LOG_NAME,
+					       "up start active cable link_up_fail failed [%d]", rtn);
+		return -EIO;
+	case SL_MEDIA_CABLE_STATE_INVALID:
+	default:
+		sl_core_log_err(core_link, LOG_NAME,
+				"up start active cable invalid state (cable_state = %u %s)",
+				cable_state, sl_media_jack_cable_state_str(cable_state));
+		sl_core_data_link_last_up_fail_cause_map_set(core_link,
+							     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_warn(core_link, LOG_NAME,
+					 "up start active cable link_up_fail failed [%d]", rtn);
+		return -EBADRQC;
+	}
+}
+
 void sl_core_hw_link_up_start_work(struct work_struct *work)
 {
-	int                   rtn;
-	struct sl_media_lgrp *media_lgrp;
-	struct sl_core_link  *core_link;
-	u32                   link_state;
+	int                  rtn;
+	struct sl_core_link *core_link;
+	u32                  link_state;
+	u8                   ldev_num;
+	u8                   lgrp_num;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP_START]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up start work (link = 0x%p)", core_link);
+
+	ldev_num = core_link->core_lgrp->core_ldev->num;
+	lgrp_num = core_link->core_lgrp->num;
 
 	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
@@ -363,14 +455,10 @@ void sl_core_hw_link_up_start_work(struct work_struct *work)
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_LLR_STARVED);
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
 
-	if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
-					       core_link->core_lgrp->num)) {
-		media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
-					       core_link->core_lgrp->num);
-		if (time_before(jiffies, media_lgrp->media_jack->cable_high_power_wait_time_end)) {
-			core_link->timers[SL_CORE_TIMER_LINK_UP_HIGH_POWER].data.timeout_ms =
-				jiffies_to_msecs(media_lgrp->media_jack->cable_high_power_wait_time_end - jiffies);
-			sl_core_timer_link_begin(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
+	if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		rtn = sl_core_hw_link_up_start_active_cable(core_link);
+		if (rtn) {
+			sl_core_log_err_trace(core_link, LOG_NAME, "up start work active cable failed [%d]", rtn);
 			return;
 		}
 	}
@@ -631,12 +719,20 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 {
 	int                   rtn;
 	struct sl_core_link  *core_link;
+	struct sl_media_jack *media_jack;
 	u32                   link_state;
-	struct sl_media_lgrp *media_lgrp;
+	u8                    ldev_num;
+	u8                    lgrp_num;
+	u8                    link_num;
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_UP]);
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up work (link = 0x%p)", core_link);
+
+	ldev_num   = core_link->core_lgrp->core_ldev->num;
+	lgrp_num   = core_link->core_lgrp->num;
+	link_num   = core_link->num;
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
 	sl_core_data_link_state_get(core_link, &link_state);
 	if (link_state != SL_CORE_LINK_STATE_GOING_UP) {
@@ -654,11 +750,10 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 
 	sl_core_hw_pcs_config(core_link);
 
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
-	if ((media_lgrp->media_jack->is_supported_ss200_cable) &&
-		((core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G) ||
-		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G)  ||
-		(core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G))) {
+	if (media_jack->is_supported_ss200_cable &&
+	    (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G ||
+	    core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G  ||
+	    core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G)) {
 		sl_core_log_err_trace(core_link, LOG_NAME, "up work link_up failed speed unsupported [%d]", rtn);
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP);
@@ -671,8 +766,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	sl_core_log_dbg(core_link, LOG_NAME, "up work (speed = %d)", core_link->pcs.settings.pcs_mode);
 
 	if (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_BS_200G) {
-		rtn = sl_media_jack_cable_downshift(core_link->core_lgrp->core_ldev->num,
-						    core_link->core_lgrp->num, core_link->num);
+		rtn = sl_media_jack_cable_downshift(ldev_num, lgrp_num, link_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "up work downshift failed [%d]", rtn);
 			sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -683,8 +777,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 			return;
 		}
 	} else {
-		rtn = sl_media_jack_cable_upshift(core_link->core_lgrp->core_ldev->num,
-						  core_link->core_lgrp->num, core_link->num);
+		rtn = sl_media_jack_cable_upshift(ldev_num, lgrp_num, link_num);
 		if (rtn) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "up work upshift failed [%d]", rtn);
 			sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
@@ -792,6 +885,28 @@ static bool sl_core_hw_link_is_media_present(struct sl_core_link *core_link)
 	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 
 	return sl_media_jack_is_cable_inserted(media_lgrp->media_jack);
+}
+
+static bool sl_core_hw_link_is_cable_state_fault(struct sl_core_link *core_link)
+{
+	int rtn;
+	u8  ldev_num;
+	u8  lgrp_num;
+	u8  cable_state;
+
+	ldev_num = core_link->core_lgrp->core_ldev->num;
+	lgrp_num = core_link->core_lgrp->num;
+
+	sl_core_log_dbg(core_link, LOG_NAME, "is cable state fault");
+
+	rtn = sl_media_jack_cable_state_get(ldev_num, lgrp_num, &cable_state);
+	if (rtn) {
+		sl_core_log_err_trace(core_link, LOG_NAME,
+				      "cable state get failed [%d]", rtn);
+		return false;
+	}
+
+	return cable_state == SL_MEDIA_CABLE_STATE_FAULT;
 }
 
 static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
@@ -1294,7 +1409,6 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work - except for timeout work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
@@ -1328,6 +1442,10 @@ void sl_core_hw_link_up_timeout_work(struct work_struct *work)
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
+		if (sl_core_hw_link_is_cable_state_fault(core_link))
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+
 		/* Check signal before turning the link off */
 		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
 		if (rtn)
@@ -1378,7 +1496,6 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
@@ -1413,6 +1530,10 @@ void sl_core_hw_link_up_cancel_work(struct work_struct *work)
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
+		if (sl_core_hw_link_is_cable_state_fault(core_link))
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+
 		/* Check signal before turning the link off */
 		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
 		if (rtn)
@@ -1466,7 +1587,6 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_CHECK);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_SETTLE);
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_FEC_CHECK);
-	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP_HIGH_POWER);
 
 	/* cancel work */
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_AN_UP_START]));
@@ -1501,6 +1621,10 @@ void sl_core_hw_link_up_fail_work(struct work_struct *work)
 
 	/* Check media */
 	if (sl_core_hw_link_is_media_present(core_link)) {
+		if (sl_core_hw_link_is_cable_state_fault(core_link))
+			sl_core_data_link_last_up_fail_cause_map_set(core_link,
+								     SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+
 		/* Check signal before turning the link off */
 		rtn = sl_core_hw_link_media_signal_get(core_link, &media_signal);
 		if (rtn)
@@ -1588,6 +1712,10 @@ void sl_core_hw_link_down_work(struct work_struct *work)
 	/* Check media */
 	if (!sl_core_hw_link_is_media_present(core_link))
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
+	else
+		if (sl_core_hw_link_is_cable_state_fault(core_link))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+
 
 	sl_core_hw_link_off(core_link);
 
@@ -1746,14 +1874,21 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 	struct sl_media_lgrp               *media_lgrp;
 	u8                                  temperature_state;
+	u8                                  ldev_num;
+	u8                                  lgrp_num;
+	u8                                  link_num;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "fault link down");
+
+	ldev_num = core_link->core_lgrp->core_ldev->num;
+	lgrp_num = core_link->core_lgrp->num;
+	link_num = core_link->num;
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LINK_UP);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
 				       "fault link down link up disable failed [%d]", rtn);
-	if (core_link->num == 0) {
+	if (link_num == 0) {
 		rtn = sl_core_hw_intr_flgs_disable(core_link, SL_CORE_HW_INTR_LANE_DEGRADE);
 		if (rtn != 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
@@ -1773,22 +1908,28 @@ static void sl_core_hw_link_fault_link_down(struct sl_core_link *core_link)
 
 	if (!sl_core_hw_link_is_media_present(core_link))
 		sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_NO_MEDIA);
+	else
+		if (sl_core_hw_link_is_cable_state_fault(core_link))
+			sl_core_data_link_last_down_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_MAP);
+
 	if (!is_flag_set(sl_core_data_lgrp_config_flags_get(core_link->core_lgrp),
 							    SL_LGRP_CONFIG_OPT_LOOPBACK_SERDES_ENABLE)) {
-		if (sl_media_lgrp_media_type_is_active(core_link->core_lgrp->core_ldev->num,
-						       core_link->core_lgrp->num)) {
+		if (sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
 			media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
 			rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
 			if (rtn)
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 						       "fault link down cable_temp_state_get failed [%d]", rtn);
 
-			if (temperature_state ==   SL_MEDIA_JACK_TEMP_STATE_HOT) {
+			if (temperature_state == SL_MEDIA_JACK_TEMP_STATE_HOT) {
 				sl_core_log_warn_trace(core_link, LOG_NAME,
 						       "fault link down cable hot detected");
 				sl_core_data_link_last_down_cause_map_set(core_link,
 									  SL_LINK_DOWN_CAUSE_MEDIA_HOT_FAULT_MAP);
-				sl_media_jack_cable_low_power_set(media_lgrp->media_jack);
+				rtn = sl_media_jack_cable_power_low_set(ldev_num, lgrp_num);
+				if (rtn)
+					sl_core_log_warn_trace(core_link, LOG_NAME,
+							       "fault link down cable_low_power_set failed [%d]", rtn);
 			}
 		}
 	}

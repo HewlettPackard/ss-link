@@ -78,6 +78,11 @@ enum sl_ctrl_link_cause_counters {
 	LINK_CAUSE_PARTNER_LOOPBACK_ON,        /* Forced down, partner in loopback           */
 	LINK_CAUSE_PARTNER_LOOPBACK_MISMATCH,  /* Forced down, partner loopback mismatch     */
 	LINK_CAUSE_LOOPBACK_MEDIA_ON,          /* loopback media on, local link up prevented */
+	LINK_CAUSE_MEDIA_CABLE_NOT_READY,      /* Media cable not ready (low power)          */
+	LINK_CAUSE_MEDIA_CABLE_FAULT,          /* Media cable fault                          */
+	LINK_CAUSE_MEDIA_CABLE_TRANSITION,     /* Media cable in power transition            */
+	LINK_CAUSE_MEDIA_CABLE_IO,             /* Media cable IO error                       */
+	LINK_CAUSE_MEDIA_CABLE_INVALID_STATE,  /* Media cable invalid state                  */
 	SL_CTRL_LINK_CAUSE_COUNTERS_COUNT
 };
 

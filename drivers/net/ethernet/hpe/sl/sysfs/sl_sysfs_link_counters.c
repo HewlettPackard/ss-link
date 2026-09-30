@@ -1507,6 +1507,92 @@ static ssize_t cause_fec_config_show(struct kobject *kobj, struct kobj_attribute
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
+static ssize_t cause_media_cable_not_ready_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_CABLE_NOT_READY, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down media cable not ready show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_media_cable_fault_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_CABLE_FAULT, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down media cable fault show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_media_cable_transition_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_CABLE_TRANSITION, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down media cable transition show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_media_cable_io_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_CABLE_IO, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "link down media cable io show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
+static ssize_t cause_media_cable_invalid_state_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_ctrl_link *ctrl_link;
+	u32                  counter;
+	int                  rtn;
+
+	ctrl_link = container_of(kobj, struct sl_ctrl_link, counters_kobj);
+
+	rtn = sl_ctrl_link_cause_counters_get(ctrl_link, LINK_CAUSE_MEDIA_CABLE_INVALID_STATE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
+		   "media cable invalid state show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
 static struct kobj_attribute link_up_cmd                    = __ATTR_RO(link_up_cmd);
 static struct kobj_attribute link_up_retry                  = __ATTR_RO(link_up_retry);
 static struct kobj_attribute link_up                        = __ATTR_RO(link_up);
@@ -1574,7 +1660,12 @@ static struct kobj_attribute link_cause_loopback_config            = __ATTR_RO(c
 static struct kobj_attribute link_cause_loopback_unsupported       = __ATTR_RO(cause_loopback_unsupported);
 static struct kobj_attribute link_cause_partner_loopback_on        = __ATTR_RO(cause_partner_loopback_on);
 static struct kobj_attribute link_cause_partner_loopback_mismatch  = __ATTR_RO(cause_partner_loopback_mismatch);
-static struct kobj_attribute link_cause_loopback_media_on             = __ATTR_RO(cause_loopback_media_on);
+static struct kobj_attribute link_cause_loopback_media_on          = __ATTR_RO(cause_loopback_media_on);
+static struct kobj_attribute link_cause_media_cable_not_ready      = __ATTR_RO(cause_media_cable_not_ready);
+static struct kobj_attribute link_cause_media_cable_fault          = __ATTR_RO(cause_media_cable_fault);
+static struct kobj_attribute link_cause_media_cable_transition     = __ATTR_RO(cause_media_cable_transition);
+static struct kobj_attribute link_cause_media_cable_io             = __ATTR_RO(cause_media_cable_io);
+static struct kobj_attribute link_cause_media_cable_invalid_state  = __ATTR_RO(cause_media_cable_invalid_state);
 
 static struct kobj_attribute link_an_cause_lp_caps_serdes_link_up_fail =
 			     __ATTR_RO(an_cause_lp_caps_serdes_link_up_fail);
@@ -1670,6 +1761,11 @@ static struct attribute *link_counters_attrs[] = {
 	&link_cause_partner_loopback_on.attr,
 	&link_cause_partner_loopback_mismatch.attr,
 	&link_cause_loopback_media_on.attr,
+	&link_cause_media_cable_not_ready.attr,
+	&link_cause_media_cable_fault.attr,
+	&link_cause_media_cable_transition.attr,
+	&link_cause_media_cable_io.attr,
+	&link_cause_media_cable_invalid_state.attr,
 	&link_an_cause_lp_caps_serdes_link_up_fail.attr,
 	&link_an_cause_lp_caps_not_complete.attr,
 	&link_an_cause_not_complete.attr,

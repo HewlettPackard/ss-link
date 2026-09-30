@@ -210,13 +210,18 @@ struct sl_link_pml_rec_info {
 #define SL_LINK_DOWN_CAUSE_RX_LOL                     BIT(38) /* RX Loss of Lock                            */
 #define SL_LINK_DOWN_CAUSE_TX_LOS                     BIT(39) /* TX Loss of Signal                          */
 #define SL_LINK_DOWN_CAUSE_RX_LOS                     BIT(40) /* RX Loss of Signal                          */
-#define SL_LINK_DOWN_CAUSE_FEC_CONFIG                 BIT(41) /* Invalid FEC configuration */
+#define SL_LINK_DOWN_CAUSE_FEC_CONFIG                 BIT(41) /* Invalid FEC configuration                  */
 #define SL_LINK_DOWN_CAUSE_LOOPBACK_IO                BIT(42) /* IO error setting loopback in media         */
 #define SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED       BIT(43) /* Loopback configuration not supported       */
 #define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON        BIT(44) /* Forced down, partner in loopback           */
 #define SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG            BIT(45) /* Invalid loopback configuration             */
 #define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH  BIT(46) /* Partner loopback config mismatch           */
 #define SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON          BIT(47) /* Media in loopback link up impossible       */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY      BIT(48) /* Media cable not ready (low power)          */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT          BIT(49) /* Media cable fault                          */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION     BIT(50) /* Media cable in power transition            */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO             BIT(51) /* Media cable IO error                       */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE  BIT(52) /* Media cable invalid state                  */
 
 #define SL_LINK_DOWN_RETRYABLE                        BIT(61) /* client retry possible                      */
 #define SL_LINK_DOWN_ORIGIN_ASYNC                     BIT(62) /* link down cause was asynchronous           */

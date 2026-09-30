@@ -15,6 +15,8 @@
 #include "sl_media_jack.h"
 #include "sl_media_io.h"
 #include "data/sl_media_data_jack.h"
+#include "hw/sl_media_hw_power.h"
+#include "hw/sl_media_hw_cable.h"
 #include "data/sl_media_data_ldev.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
@@ -183,14 +185,13 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	msleep(500);
 
 	/* enable low power mode */
-	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
+	rtn = sl_media_hw_power_low_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "power low set failed [%d]", rtn);
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(500);
 
 	/* Staged Control Set 0, Config lanes 1 to 4 */
 	i2c_data.addr    = 0;
@@ -249,14 +250,13 @@ int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 vers
 	msleep(500);
 
 	/* enable high power mode */
-	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+	rtn = sl_media_hw_power_high_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "power high set failed [%d]", rtn);
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(8000); /* allow firmware load */
 
 	/* ReInit all lanes */
 	i2c_data.addr    = 0;
@@ -386,14 +386,13 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	msleep(500);
 
 	/* enable low power mode */
-	rtn = sl_media_data_jack_cable_low_power_set(media_jack);
+	rtn = sl_media_hw_power_low_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "low power mode - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "power low set failed [%d]", rtn);
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(500);
 
 	/* Staged Control Set 0, Config lanes 1 to 4 */
 	i2c_data.addr    = 0;
@@ -452,14 +451,13 @@ int sl_media_data_jack_cable_upshift(struct sl_media_jack *media_jack, u8 versio
 	msleep(500);
 
 	/* enable high power mode */
-	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
+	rtn = sl_media_hw_power_high_set(media_jack);
 	if (rtn) {
 		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "high power mode - write failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "power high set failed [%d]", rtn);
 		sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 		return rtn;
 	}
-	msleep(8000); /* allow firmware load */
 
 	/* ReInit all lanes */
 	i2c_data.addr    = 0;
@@ -545,72 +543,6 @@ int sl_media_data_jack_cable_soft_reset(struct sl_media_jack *media_jack)
 	sl_media_data_jack_headshell_busy_set(media_jack, SL_MEDIA_JACK_HEADSHELL_IDLE);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "cable soft reset done");
-
-	return 0;
-}
-
-#define SL_MEDIA_POWER_UP_PAGE      0x00
-#define SL_MEDIA_CMIS_POWER_UP_ADDR 0x1a
-#define SL_MEDIA_CMIS_POWER_UP_DATA 0x00
-#define SL_MEDIA_SFF_POWER_UP_ADDR  0x5D
-#define SL_MEDIA_SFF_POWER_UP_DATA  0x0D
-int sl_media_data_jack_cable_high_power_set(struct sl_media_jack *media_jack)
-{
-	int rtn;
-	u8  addr;
-	u8  data;
-
-	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
-		addr = SL_MEDIA_CMIS_POWER_UP_ADDR;
-		data = SL_MEDIA_CMIS_POWER_UP_DATA;
-	} else {
-		addr = SL_MEDIA_SFF_POWER_UP_ADDR;
-		data = SL_MEDIA_SFF_POWER_UP_DATA;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "high power set (addr = 0x%X, data = 0x%X)", addr, data);
-
-	rtn = sl_media_io_write8(media_jack, SL_MEDIA_POWER_UP_PAGE, addr, data);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "high power set write8 failed [%d]", rtn);
-		return -EIO;
-	}
-
-	media_jack->is_high_powered = true;
-
-	return 0;
-}
-
-#define SL_MEDIA_POWER_DOWN_PAGE      0x00
-#define SL_MEDIA_CMIS_POWER_DOWN_ADDR 0x1a
-#define SL_MEDIA_CMIS_POWER_DOWN_DATA 0x10
-#define SL_MEDIA_SFF_POWER_DOWN_ADDR  0x5D
-#define SL_MEDIA_SFF_POWER_DOWN_DATA  0x00
-int sl_media_data_jack_cable_low_power_set(struct sl_media_jack *media_jack)
-{
-	int rtn;
-	u8  addr;
-	u8  data;
-
-	if (sl_media_data_jack_media_is_format_cmis(media_jack)) {
-		addr = SL_MEDIA_CMIS_POWER_DOWN_ADDR;
-		data = SL_MEDIA_CMIS_POWER_DOWN_DATA;
-	} else {
-		addr = SL_MEDIA_SFF_POWER_DOWN_ADDR;
-		data = SL_MEDIA_SFF_POWER_DOWN_DATA;
-	}
-
-	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "low power set (addr = 0x%X, data = 0x%X)", addr, data);
-
-	rtn = sl_media_io_write8(media_jack, SL_MEDIA_POWER_DOWN_PAGE, addr, data);
-	if (rtn) {
-		sl_media_log_err_trace(media_jack, LOG_NAME, "low power set write8 failed [%d]", rtn);
-		return -EIO;
-	}
-
-	media_jack->is_high_powered = false;
 
 	return 0;
 }
@@ -768,6 +700,7 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 	u8                    jack_num;
 	u8                    prev_temp_state;
 	u8                    curr_temp_state;
+	u8                    cable_state;
 	struct sl_media_jack *media_jack;
 	struct sl_media_ldev *media_ldev;
 	struct delayed_work  *delayed_work_ptr;
@@ -812,16 +745,29 @@ static void sl_media_data_jack_cable_monitor_temp_delayed_work(struct work_struc
 				continue;
 			}
 
-			if (!sl_media_jack_is_high_powered(media_jack)) {
-				rtn = sl_media_jack_cable_high_power_set(media_jack->media_ldev->num, media_jack->num);
+			rtn = sl_media_hw_cable_state_get(media_jack, &cable_state);
+			if (rtn) {
+				sl_media_log_err_trace(media_jack, LOG_NAME,
+						       "cable monitor temp work cable_state_get failed [%d]", rtn);
+				sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+				sl_media_data_jack_cable_attr_errors_update(media_jack,
+									    SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
+				sl_media_data_jack_cable_attr_send(media_jack);
+				continue;
+			}
+
+			if (cable_state != SL_MEDIA_CABLE_STATE_READY) {
+				rtn = sl_media_hw_power_high_set(media_jack);
 				if (rtn) {
 					sl_media_log_err_trace(media_jack, LOG_NAME,
-							       "cable monitor temp work high power set failed [%d]", rtn);
+							       "cable monitor temp work power high set failed [%d]",
+							       rtn);
 					sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 					sl_media_data_jack_led_set(media_jack);
 					sl_media_data_jack_cable_attr_errors_update(media_jack,
 										    SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
 					sl_media_data_jack_cable_attr_send(media_jack);
+					continue;
 				}
 			}
 

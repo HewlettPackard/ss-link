@@ -2,9 +2,13 @@
 /* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
+#include <linux/errno.h>
+#include <linux/spinlock.h>
+#include <linux/jiffies.h>
 #include <linux/delay.h>
 
 #include "sl_asic.h"
+#include "sl_platform.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
 #include "sl_media_jack.h"
@@ -16,6 +20,8 @@
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_ldev.h"
 #include "base/sl_media_log.h"
+#include "hw/sl_media_hw_power.h"
+#include "hw/sl_media_hw_cable.h"
 
 #define LOG_NAME SL_MEDIA_JACK_LOG_NAME
 
@@ -88,17 +94,6 @@ int sl_media_jack_cable_end_get(struct sl_media_jack *media_jack, u8 *cable_end)
 	spin_unlock(&media_jack->data_lock);
 
 	return 0;
-}
-
-bool sl_media_jack_is_high_powered(struct sl_media_jack *media_jack)
-{
-	bool is_high_powered;
-
-	spin_lock(&media_jack->data_lock);
-	is_high_powered = media_jack->is_high_powered;
-	spin_unlock(&media_jack->data_lock);
-
-	return is_high_powered;
 }
 
 void sl_media_jack_cable_shift_state_set(struct sl_media_jack *media_jack, u8 state)
@@ -193,29 +188,6 @@ int sl_media_jack_active_cable_400g_lane_count_get(struct sl_media_jack *media_j
 	spin_lock(&media_jack->data_lock);
 	*lane_count_400_gaui = media_jack->lane_count_400_gaui;
 	spin_unlock(&media_jack->data_lock);
-
-	return 0;
-}
-
-#define SL_MEDIA_HIGH_POWER_WAIT_TIME 10000
-int sl_media_jack_cable_high_power_set(u8 ldev_num, u8 jack_num)
-{
-	int                   rtn;
-	struct sl_media_jack *media_jack;
-
-	media_jack = sl_media_jack_get(ldev_num, jack_num);
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "high power set");
-
-	rtn = sl_media_data_jack_cable_high_power_set(media_jack);
-	if (rtn) {
-		sl_media_jack_io_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO);
-		sl_media_log_err_trace(media_jack, LOG_NAME, "high power set failed [%d]", rtn);
-		return -EIO;
-	}
-
-	media_jack->cable_high_power_wait_time_end = jiffies +
-		msecs_to_jiffies(SL_MEDIA_HIGH_POWER_WAIT_TIME);
 
 	return 0;
 }
@@ -454,6 +426,8 @@ const char *sl_media_fault_cause_str(u32 fault_cause)
 		return "hot";
 	case SL_MEDIA_FAULT_CAUSE_WARM:
 		return "warm";
+	case SL_MEDIA_FAULT_CAUSE_CABLE_FAULT:
+		return "cable-fault";
 	default:
 		return "unknown";
 	}
@@ -502,11 +476,6 @@ int sl_media_jack_cable_temp_down_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_d
 {
 	return sl_media_data_jack_cable_temp_down_limit_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack,
 							     temp_down_limit_c);
-}
-
-int sl_media_jack_cable_low_power_set(struct sl_media_jack *media_jack)
-{
-	return sl_media_data_jack_cable_low_power_set(media_jack);
 }
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num)
@@ -1270,4 +1239,118 @@ u8 sl_media_jack_port_count_get(u8 ldev_num, u8 lgrp_num)
 	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
 
 	return media_jack->port_count;
+}
+
+const char *sl_media_jack_cable_state_str(u8 state)
+{
+	switch (state) {
+	case SL_MEDIA_CABLE_STATE_LOW_PWR:
+		return "not-ready-low-power";
+	case SL_MEDIA_CABLE_STATE_PWR_UP:
+		return "powering-up";
+	case SL_MEDIA_CABLE_STATE_READY:
+		return "ready-high-power";
+	case SL_MEDIA_CABLE_STATE_PWR_DN:
+		return "powering-down";
+	case SL_MEDIA_CABLE_STATE_FAULT:
+		return "fault";
+	case SL_MEDIA_CABLE_STATE_INVALID:
+		return "invalid";
+	default:
+		return "unknown";
+	}
+}
+
+int sl_media_jack_cable_power_high_set(u8 ldev_num, u8 lgrp_num)
+{
+	int                   rtn;
+	struct sl_media_jack *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable power high set");
+
+	if (!SL_PLATFORM_IS_HARDWARE(sl_core_ldev_get(ldev_num))) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not hardware platform");
+		return 0;
+	}
+
+	/* ready high power only available on active cables */
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "media type not active");
+		return 0;
+	}
+
+	rtn = sl_media_hw_power_high_set(media_jack);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "hw power high set failed [%d]", rtn);
+		return rtn;
+	}
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable power high set complete");
+
+	return 0;
+}
+
+#define SL_MEDIA_JACK_CABLE_POWER_LOW_MAX_TRIES 3
+int sl_media_jack_cable_power_low_set(u8 ldev_num, u8 lgrp_num)
+{
+	int                   rtn;
+	u8                    attempt;
+	struct sl_media_jack *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable power low set");
+
+	if (!SL_PLATFORM_IS_HARDWARE(sl_core_ldev_get(ldev_num))) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not hardware platform");
+		return 0;
+	}
+
+	/* low power only available on active cables */
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "media type not active");
+		return 0;
+	}
+
+	for (attempt = 0; attempt < SL_MEDIA_JACK_CABLE_POWER_LOW_MAX_TRIES; ++attempt) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "hw power low set (attempt = %u)", attempt);
+
+		rtn = sl_media_hw_power_low_set(media_jack);
+		if (rtn) {
+			sl_media_log_warn_trace(media_jack, LOG_NAME, "hw power low set failed (attempt = %u) [%d]",
+						attempt, rtn);
+			continue;
+		}
+
+		/* successfully set low power */
+		return 0;
+	}
+
+	sl_media_log_err(media_jack, LOG_NAME, "cable power low set failed (attempt = %u) [%d]", attempt, rtn);
+	return -EIO;
+}
+
+int sl_media_jack_cable_state_get(u8 ldev_num, u8 lgrp_num, u8 *cable_state)
+{
+	struct sl_media_jack *media_jack;
+
+	media_jack = sl_media_lgrp_get(ldev_num, lgrp_num)->media_jack;
+
+	sl_media_log_dbg(media_jack, LOG_NAME, "cable state get");
+
+	if (!SL_PLATFORM_IS_HARDWARE(sl_core_ldev_get(ldev_num))) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "not hardware platform");
+		*cable_state = SL_MEDIA_CABLE_STATE_READY;
+		return 0;
+	}
+
+	if (!sl_media_lgrp_media_type_is_active(ldev_num, lgrp_num)) {
+		sl_media_log_dbg(media_jack, LOG_NAME, "media type not active");
+		*cable_state = SL_MEDIA_CABLE_STATE_READY;
+		return 0;
+	}
+
+	return sl_media_hw_cable_state_get(media_jack, cable_state);
 }

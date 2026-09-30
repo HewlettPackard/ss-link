@@ -12,6 +12,7 @@
 #include "data/sl_media_data_jack.h"
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_cable_db_ops.h"
+#include "hw/sl_media_hw_power.h"
 #include "base/sl_media_log.h"
 #include "base/sl_media_eeprom.h"
 
@@ -227,9 +228,9 @@ int sl_media_jack_cable_insert(u8 ldev_num, u8 lgrp_num, u8 jack_num,
 		}
 
 		/* must be last in the sequence because it needs time to load firmware */
-		rtn = sl_media_jack_cable_high_power_set(ldev_num, jack_num);
+		rtn = sl_media_jack_cable_power_high_set(ldev_num, lgrp_num);
 		if (rtn) {
-			sl_media_log_err_trace(media_jack, LOG_NAME, "cable high power set failed [%d]", rtn);
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable power high set failed [%d]", rtn);
 			sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
 			sl_media_data_jack_led_set(media_jack);
 			sl_media_jack_cable_attr_errors_update(media_jack, SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT);
