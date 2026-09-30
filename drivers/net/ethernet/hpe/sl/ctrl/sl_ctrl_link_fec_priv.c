@@ -431,6 +431,14 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work");
 
+	spin_lock(&ctrl_link->fec_mon_timer_lock);
+	stop = ctrl_link->fec_mon_timer_stop;
+	spin_unlock(&ctrl_link->fec_mon_timer_lock);
+	if (stop) {
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work stopped");
+		return;
+	}
+
 	spin_lock(&ctrl_link->fec_data.lock);
 	period = ctrl_link->fec_data.info.monitor.period_ms;
 	spin_unlock(&ctrl_link->fec_data.lock);
@@ -446,14 +454,6 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 		ctrl_link->fec_mon_refresh_data = true;
 		spin_unlock(&ctrl_link->fec_data.lock);
 		goto start_mon;
-	}
-
-	spin_lock(&ctrl_link->fec_mon_timer_lock);
-	stop = ctrl_link->fec_mon_timer_stop;
-	spin_unlock(&ctrl_link->fec_mon_timer_lock);
-	if (stop) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work stopped");
-		return;
 	}
 
 	rtn = sl_ctrl_link_fec_data_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
@@ -484,6 +484,7 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 		return;
 	}
 
+start_mon:
 	spin_lock(&ctrl_link->fec_data.lock);
 	period = ctrl_link->fec_data.info.monitor.period_ms;
 	spin_unlock(&ctrl_link->fec_data.lock);
@@ -500,7 +501,6 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 		return;
 	}
 
-start_mon:
 	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work started");
 }

@@ -511,6 +511,7 @@ int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
 				"fault callback invalid (core_state = %u)", core_state);
 
+		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 		flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 		sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
 
