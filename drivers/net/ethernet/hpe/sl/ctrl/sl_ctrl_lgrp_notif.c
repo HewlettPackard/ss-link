@@ -34,16 +34,19 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	int                   rtn;
 	struct sl_ctrl_lgrp  *ctrl_lgrp;
 	u8                    reg_idx;
+	u8                    tries;
 	u8                    counter;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
-		sl_ctrl_log_err(NULL, LOG_NAME, "NULL ctrl_lgrp");
+		sl_ctrl_log_err(NULL, LOG_NAME, "notif callback reg NULL ctrl_lgrp");
 		return -EBADRQC;
 	}
 
 	if (!sl_ctrl_lgrp_kref_get_unless_zero(ctrl_lgrp)) {
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
+		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME,
+				"notif callback reg kref_get_unless_zero failed (ctrl_lgrp = 0x%p)",
+				ctrl_lgrp);
 		return -EBADRQC;
 	}
 
@@ -51,12 +54,21 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 			"notif callback reg (types = 0x%X, tag = 0x%p)",
 			types, tag);
 
+	tries = 0;
+
+wait_idle:
+	if (++tries > 3) {
+		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif callback reg list busy");
+		rtn = -EBUSY;
+		goto out;
+	}
+
 	counter = 0;
 	while (sl_ctrl_lgrp_notif_list_state_get(ctrl_lgrp) == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
 		msleep(20);
 		counter++;
 		if (counter >= 10) {
-			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "registration timed out");
+			sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif callback reg timed out");
 			rtn = -ETIMEDOUT;
 			goto out;
 		}
@@ -64,10 +76,9 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 
 	spin_lock(&ctrl_lgrp->ctrl_notif.lock);
 	if (ctrl_lgrp->ctrl_notif.list_state == SL_CTRL_LGRP_NOTIF_LIST_STATE_SENDING) {
+		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "notif callback reg list busy");
 		spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif list is currently being used");
-		rtn = -EBUSY;
-		goto out;
+		goto wait_idle;
 	}
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(ctrl_lgrp->ctrl_notif.reg_entry); ++reg_idx) {
 		if (ctrl_lgrp->ctrl_notif.reg_entry[reg_idx].types == 0) {
@@ -80,7 +91,7 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	spin_unlock(&ctrl_lgrp->ctrl_notif.lock);
 
 	if (reg_idx >= ARRAY_SIZE(ctrl_lgrp->ctrl_notif.reg_entry)) {
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "registration list is full");
+		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "notif callback reg list full");
 		rtn = -ENOSPC;
 		goto out;
 	}
@@ -103,7 +114,8 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	rtn = 0;
 out:
 	if (sl_ctrl_lgrp_put(ctrl_lgrp))
-		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "notif callback reg - lgrp removed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
+		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
+				"notif callback reg lgrp removed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
 
 	return rtn;
 }
