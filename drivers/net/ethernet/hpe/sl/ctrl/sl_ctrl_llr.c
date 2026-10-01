@@ -169,19 +169,19 @@ int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_
 	rtn = sl_ctrl_llr_counters_init(ctrl_llr);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "ctrl_llr_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_free;
 	}
 
 	rtn = sl_ctrl_llr_cause_counters_init(ctrl_llr);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "ctrl_llr_cause_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_llr_counters_del;
 	}
 
 	rtn = sl_core_llr_new(ldev_num, lgrp_num, llr_num);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "core_llr_new failed [%d]", rtn);
-		goto out;
+		goto out_llr_cause_counters_del;
 	}
 
 	if (sysfs_parent) {
@@ -190,7 +190,7 @@ int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_
 		rtn = sl_sysfs_llr_create(ctrl_llr);
 		if (rtn) {
 			sl_ctrl_log_err(ctrl_llr, LOG_NAME, "sysfs_llr_create failed [%d]", rtn);
-			goto out;
+			goto out_llr_del;
 		}
 	}
 
@@ -202,7 +202,13 @@ int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_
 
 	return 0;
 
-out:
+out_llr_del:
+	sl_core_llr_del(ldev_num, lgrp_num, llr_num);
+out_llr_cause_counters_del:
+	sl_ctrl_llr_cause_counters_del(ctrl_llr);
+out_llr_counters_del:
+	sl_ctrl_llr_counters_del(ctrl_llr);
+out_free:
 	kfree(ctrl_llr);
 	return -ENOMEM;
 }

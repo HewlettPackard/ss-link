@@ -53,13 +53,13 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 	rtn = sl_ctrl_mac_counters_init(ctrl_mac);
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "ctrl_mac_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_free;
 	}
 
 	rtn = sl_core_mac_new(ldev_num, lgrp_num, mac_num);
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "core_mac_new failed [%d]", rtn);
-		goto out;
+		goto out_mac_counters_del;
 	}
 
 	if (sysfs_parent) {
@@ -68,7 +68,7 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 		rtn = sl_sysfs_mac_create(ctrl_mac);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_mac, LOG_NAME, "sysfs_mac_create failed [%d]", rtn);
-			goto out;
+			goto out_mac_del;
 		}
 	}
 
@@ -80,7 +80,11 @@ int sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_
 
 	return 0;
 
-out:
+out_mac_del:
+	sl_core_mac_del(ldev_num, lgrp_num, mac_num);
+out_mac_counters_del:
+	sl_ctrl_mac_counters_del(ctrl_mac);
+out_free:
 	kfree(ctrl_mac);
 	return -ENOMEM;
 }

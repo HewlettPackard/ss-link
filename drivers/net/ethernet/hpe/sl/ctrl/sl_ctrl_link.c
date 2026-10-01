@@ -69,21 +69,21 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
 			"ctrl_link_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_free;
 	}
 
 	rtn = sl_ctrl_link_cause_counters_init(ctrl_link);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
 				"ctrl_link_cause_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_link_counters_del;
 	}
 
 	rtn = sl_ctrl_link_an_cause_counters_init(ctrl_link);
 	if (rtn) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,
 				"ctrl_link_an_cause_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_link_cause_counters_del;
 	}
 
 	ctrl_link->up_time.start           = ktime_set(0, 0);
@@ -110,7 +110,7 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 	if (rtn) {
 		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 			"core_link_new failed [%d]", rtn);
-		goto out;
+		goto out_an_cause_counters_del;
 	}
 
 	if (sysfs_parent) {
@@ -120,7 +120,7 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 				"sysfs_link_create failed [%d]", rtn);
-			goto out;
+			goto out_core_link_del;
 		}
 	}
 
@@ -132,7 +132,15 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 
 	return 0;
 
-out:
+out_core_link_del:
+	sl_core_link_del(ldev_num, lgrp_num, link_num);
+out_an_cause_counters_del:
+	sl_ctrl_link_an_cause_counters_del(ctrl_link);
+out_link_cause_counters_del:
+	sl_ctrl_link_cause_counters_del(ctrl_link);
+out_link_counters_del:
+	sl_ctrl_link_counters_del(ctrl_link);
+out_free:
 	kfree(ctrl_link);
 	return rtn;
 }
