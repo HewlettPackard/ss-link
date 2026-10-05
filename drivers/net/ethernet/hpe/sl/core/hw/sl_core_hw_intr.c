@@ -85,6 +85,18 @@ void sl_core_hw_intr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, void *d
 	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[info->work_num]);
 }
 
+static int sl_core_hw_intr_unregister_num(struct sl_core_link *core_link, u32 intr_num)
+{
+	sl_core_log_dbg(core_link, LOG_NAME, "unregister num (intr = %u)", intr_num);
+
+	if (intr_num == SL_CORE_HW_INTR_AN_PAGE_RECV)
+		return sl_core_hw_intr_unregister(core_link, core_link->intrs[intr_num].flgs,
+						  sl_core_hw_an_intr_hdlr);
+
+	return sl_core_hw_intr_unregister(core_link, core_link->intrs[intr_num].flgs,
+					  sl_core_hw_intr_hdlr);
+}
+
 int sl_core_hw_intr_hdlr_register(struct sl_core_link *core_link)
 {
 	int rtn;
@@ -102,13 +114,18 @@ int sl_core_hw_intr_hdlr_register(struct sl_core_link *core_link)
 			rtn = sl_core_hw_intr_register(core_link, core_link->intrs[x].flgs,
 				sl_core_hw_intr_hdlr, &(core_link->intrs[x].data));
 		if (rtn != 0) {
-			sl_core_log_err(core_link, LOG_NAME,
-				"register - %d failed [%d]", x, rtn);
-			return rtn;
+			sl_core_log_err(core_link, LOG_NAME, "register - %d failed [%d]", x, rtn);
+			goto unwind;
 		}
 	}
 
 	return 0;
+
+unwind:
+	while (x-- > 0)
+		sl_core_hw_intr_unregister_num(core_link, x);
+
+	return rtn;
 }
 
 void sl_core_hw_intr_hdlr_unregister(struct sl_core_link *core_link)
@@ -119,12 +136,7 @@ void sl_core_hw_intr_hdlr_unregister(struct sl_core_link *core_link)
 	sl_core_log_dbg(core_link, LOG_NAME, "unregister");
 
 	for (x = 0; x < SL_CORE_HW_INTR_COUNT; ++x) {
-		if (x == SL_CORE_HW_INTR_AN_PAGE_RECV)
-			rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[x].flgs,
-				sl_core_hw_an_intr_hdlr);
-		else
-			rtn = sl_core_hw_intr_unregister(core_link, core_link->intrs[x].flgs,
-				sl_core_hw_intr_hdlr);
+		rtn = sl_core_hw_intr_unregister_num(core_link, x);
 		if (rtn != 0)
 			sl_core_log_warn_trace(core_link, LOG_NAME,
 				"unregister - %d failed [%d]", x, rtn);

@@ -265,8 +265,10 @@ int sl_core_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_map)
 		*info_map |= sl_core_data_mac_info_map_get(core_mac);
 
 	core_llr  = sl_core_llr_get(ldev_num, lgrp_num, link_num);
-	if (!core_llr)
+	if (!core_llr) {
+		rtn = 0;
 		goto out;
+	}
 
 	rtn = sl_core_data_llr_info_map_get(core_llr, &llr_info_map);
 	if (rtn) {

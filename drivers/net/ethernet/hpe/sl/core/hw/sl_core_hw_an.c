@@ -461,7 +461,13 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 	hpe_map = 0;
 	for (x = 1; x < core_link->an.rx_count; ++x) {
 		if (AN_IS_OUI_HPE_EXTD(core_link->an.rx_pages[x])) {
-			x++;
+			if (++x >= core_link->an.rx_count) {
+				sl_core_log_err_trace(core_link, LOG_NAME,
+						      "rx pages decode incomplete oui");
+				sl_core_data_link_an_fail_cause_set(core_link,
+								    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
+				return -EIO;
+			}
 			switch (AN_OUI_VER_GET(core_link->an.rx_pages[x])) {
 			case SL_CORE_HW_AN_NP_OUI_VER_0_2:
 				sl_core_log_dbg(core_link, LOG_NAME, "rx pages decode v2 oui");

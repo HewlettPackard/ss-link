@@ -131,7 +131,6 @@ void sl_core_data_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	core_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&core_llrs_lock);
 
-
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_SETUP);
 	sl_core_timer_llr_end(core_llr, SL_CORE_TIMER_LLR_START);
 

@@ -73,7 +73,6 @@ int sl_core_data_ldev_new(u8 ldev_num, struct sl_accessors *accessors,
 void sl_core_data_ldev_del(u8 ldev_num)
 {
 	struct sl_core_ldev *core_ldev;
-	int                  lgrp_num;
 
 	core_ldev = sl_core_ldev_get(ldev_num);
 	if (!core_ldev) {
@@ -86,9 +85,6 @@ void sl_core_data_ldev_del(u8 ldev_num)
 	spin_unlock(&core_ldevs_lock);
 
 	sl_core_log_dbg(core_ldev, LOG_NAME, "del (ldev = 0x%p)", core_ldev);
-
-	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num)
-		sl_core_data_lgrp_del(ldev_num, lgrp_num);
 
 	kfree(core_ldev);
 }

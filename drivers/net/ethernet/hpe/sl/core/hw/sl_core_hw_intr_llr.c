@@ -62,7 +62,7 @@ void sl_core_hw_intr_llr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, voi
 int sl_core_hw_intr_llr_hdlr_register(struct sl_core_llr *core_llr)
 {
 	int rtn;
-	int x;
+	u8  x;
 
 	sl_core_log_dbg(core_llr, LOG_NAME, "register");
 
@@ -71,11 +71,17 @@ int sl_core_hw_intr_llr_hdlr_register(struct sl_core_llr *core_llr)
 			sl_core_hw_intr_llr_hdlr, &(core_llr->intrs[x].data));
 		if (rtn != 0) {
 			sl_core_log_err_trace(core_llr, LOG_NAME, "register - %d failed [%d]", x, rtn);
-			return rtn;
+			goto unwind;
 		}
 	}
 
 	return 0;
+
+unwind:
+	while (x-- > 0)
+		sl_core_hw_intr_llr_unregister(core_llr, core_llr->intrs[x].flgs, sl_core_hw_intr_llr_hdlr);
+
+	return rtn;
 }
 
 void sl_core_hw_intr_llr_hdlr_unregister(struct sl_core_llr *core_llr)

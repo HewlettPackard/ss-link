@@ -240,6 +240,7 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
 		if (rtn != 0) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "intr register degrade failed [%d]", rtn);
+			sl_core_hw_intr_hdlr_unregister(core_link);
 			kfree(core_link);
 			return rtn;
 		}
@@ -254,6 +255,7 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 			SL_CORE_HW_FEC_CNTRS_SIZE);
 		if (rtn) {
 			sl_core_log_err(core_link, LOG_NAME, "dmac_alloc failed [%d]", rtn);
+			sl_core_hw_intr_hdlr_unregister(core_link);
 			kfree(core_link);
 			return rtn;
 		}
@@ -308,6 +310,8 @@ static void sl_core_data_link_free(struct sl_core_link *core_link)
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_FAULT_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_LANE_DEGRADE_INTR]));
 	cancel_work_sync(&(core_link->work[SL_CORE_WORK_LINK_PML_REC_POLL]));
+
+	sl_core_hw_intr_hdlr_unregister(core_link);
 }
 
 void sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -342,8 +346,6 @@ void sl_core_data_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	sl_core_log_dbg(core_link, LOG_NAME, "del (link = 0x%p)", core_link);
 
 	sl_core_data_link_free(core_link);
-
-	sl_core_hw_intr_hdlr_unregister(core_link);
 
 	if (core_ldev->ops.dmac_free)
 		core_ldev->ops.dmac_free(core_ldev->accessors.dmac);

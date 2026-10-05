@@ -754,7 +754,7 @@ void sl_core_hw_link_up_work(struct work_struct *work)
 	    (core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_400G ||
 	    core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_200G  ||
 	    core_link->pcs.settings.pcs_mode == SL_CORE_HW_PCS_MODE_CK_100G)) {
-		sl_core_log_err_trace(core_link, LOG_NAME, "up work link_up failed speed unsupported [%d]", rtn);
+		sl_core_log_err_trace(core_link, LOG_NAME, "up work link_up failed speed unsupported");
 		sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_MAP);
 		rtn = sl_core_link_up_fail(core_link);

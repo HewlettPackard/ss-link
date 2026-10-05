@@ -124,6 +124,7 @@ static inline int sl_core_pmi_rd(struct sl_core_lgrp *core_lgrp, u32 addr, u16 *
 {
 	int rtn;
 
+	*data = 0;
 	rtn = core_lgrp->core_ldev->ops.pmi_op(core_lgrp->core_ldev->accessors.pmi,
 					       core_lgrp->num, SL_PMI_OP_RD, addr, data, 0, 0);
 
@@ -165,6 +166,7 @@ static inline int sl_core_sbus_rd(struct sl_core_lgrp *core_lgrp, u32 dev_addr, 
 {
 	int rtn;
 
+	*data = 0;
 	rtn = core_lgrp->core_ldev->ops.sbus_op(core_lgrp->core_ldev->accessors.sbus, SL_SBUS_OP_RD,
 						core_lgrp->serdes.dt.sbus_ring, dev_addr, reg, data, 0);
 
