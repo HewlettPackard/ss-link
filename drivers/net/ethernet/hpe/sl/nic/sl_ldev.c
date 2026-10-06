@@ -31,6 +31,10 @@ int sl_ldev_attr_check(struct sl_ldev_attr *ldev_attr)
 		return -EINVAL;
 	}
 
+	if (!ldev_attr->ops) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops");
+		return -EINVAL;
+	}
 	if (!ldev_attr->ops->read64) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL ops read64");
 		return -EINVAL;
@@ -84,6 +88,10 @@ int sl_ldev_attr_check(struct sl_ldev_attr *ldev_attr)
 		return -EINVAL;
 	}
 
+	if (!ldev_attr->accessors) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL accessors");
+		return -EINVAL;
+	}
 	if (!ldev_attr->accessors->pci) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "NULL accessor PCI");
 		return -EINVAL;

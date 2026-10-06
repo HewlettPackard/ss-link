@@ -12,11 +12,11 @@
 #define PMI_LANE_SHIFT   16
 #define PMI_ADDR_MASK    0xFFFF
 
-#define PMI_ADDR32(_dev_id, _sel, _lane, _addr)              \
-	(((_dev_id & PMI_DEV_ID_MASK) << PMI_DEV_ID_SHIFT) | \
-	 ((_sel    & PMI_SEL_MASK)    << PMI_SEL_SHIFT)    | \
-	 ((_lane   & PMI_LANE_MASK)   << PMI_LANE_SHIFT)   | \
-	  (_addr   & PMI_ADDR_MASK))
+#define PMI_ADDR32(_dev_id, _sel, _lane, _addr)                       \
+	(((((u32)(_dev_id)) & PMI_DEV_ID_MASK) << PMI_DEV_ID_SHIFT) | \
+	 ((((u32)(_sel))    & PMI_SEL_MASK)    << PMI_SEL_SHIFT)    | \
+	 ((((u32)(_lane))   & PMI_LANE_MASK)   << PMI_LANE_SHIFT)   | \
+	 (((u32)(_addr))    & PMI_ADDR_MASK))
 
 #define SL_CORE_HW_PMI_RD(_lgrp, _dev_id, _lane, _sel, _addr, _data)                 \
 	do {                                                                         \

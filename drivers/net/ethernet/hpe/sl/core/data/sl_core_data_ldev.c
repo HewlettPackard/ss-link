@@ -52,6 +52,7 @@ int sl_core_data_ldev_new(u8 ldev_num, struct sl_accessors *accessors,
 					 &core_ldev->revision, &proto);
 	if (rtn) {
 		sl_core_log_err(core_ldev, LOG_NAME, "mb_info_get failed [%d]", rtn);
+		kfree(core_ldev);
 		return -EIO;
 	}
 

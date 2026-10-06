@@ -67,10 +67,33 @@ int sl_core_hw_uc_ram_rd_blk(struct sl_core_lgrp *core_lgrp, u8 dev_addr,
 	SL_CORE_HW_PMI_WR(core_lgrp, dev_id, 0xFF, 0,
 		addrs[SERDES_MICRO_A_COM_AHB_RDADDR_LSW], (start_addr & 0xFFFE), 0xFFFF); /* micro_ra_rdaddr_lsw */
 
-	// FIXME: assume aligned address for now
 	// FIXME: assume from the same block for now
+
+	/* The micro is set up for 16-bit auto-incrementing reads starting at the even address at or below start_addr
+	 * (notice 0xFFFE). Each RDDATA_LSW read returns the next little-endian 16-bit word (low byte = lower address)
+	 * and advances the read address by 2.
+	 *
+	 * 1. Odd start - read the first word and keep only its high byte.
+	 *   Example:
+	 *     Read 16-bit word at 0x04: 0xBBAA
+	 *     start_addr = 0x05 (odd) we keep the high byte 0xBB
+	 * 2. Continue reading 16 bit words while at least 2 bytes remain in rd_size.
+	 * 3. If we have a byte left read once more and keep the low byte.
+	 *   Example:
+	 *     Read 16-bit word at 0x06: 0xDDEE
+	 *     rd_size = 1 (one byte left) we keep the low byte 0xEE
+	 */
 	idx = 0;
-	while (rd_size > 0) {
+	if ((start_addr & 0x1) && rd_size) {
+		SL_CORE_HW_PMI_RD(core_lgrp, dev_id, 0xFF, 0,
+				  addrs[SERDES_MICRO_A_COM_AHB_RDDATA_LSW], &data16); /* micro_ra_rddata_lsw */
+
+		rd_buff[idx] = ((data16 >> 8) & 0xFF);
+		rd_size--;
+		idx++;
+	}
+
+	while (rd_size >= 2) {
 		SL_CORE_HW_PMI_RD(core_lgrp, dev_id, 0xFF, 0,
 			addrs[SERDES_MICRO_A_COM_AHB_RDDATA_LSW], &data16); /* micro_ra_rddata_lsw */
 
@@ -78,6 +101,13 @@ int sl_core_hw_uc_ram_rd_blk(struct sl_core_lgrp *core_lgrp, u8 dev_addr,
 		rd_buff[idx + 1] = ((data16 >> 8) & 0xFF);
 		rd_size -= 2;
 		idx += 2;
+	}
+
+	if (rd_size) {
+		SL_CORE_HW_PMI_RD(core_lgrp, dev_id, 0xFF, 0,
+				  addrs[SERDES_MICRO_A_COM_AHB_RDDATA_LSW], &data16); /* micro_ra_rddata_lsw */
+
+		rd_buff[idx] = (data16 & 0xFF);
 	}
 
 	rtn = 0;

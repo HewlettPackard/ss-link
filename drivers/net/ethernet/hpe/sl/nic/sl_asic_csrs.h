@@ -187,7 +187,7 @@
 #define SS2_PORT_PML_STS_SERDES_PMD_RX_DATA_VLD_GET(a)                               SL_CSR_GET(a, ss2_port_pml_sts_serdes, pmd_rx_data_vld)
 #define SS2_PORT_PML_STS_SERDES_PMD_RX_CLK_VLD_GET(a)                                SL_CSR_GET(a, ss2_port_pml_sts_serdes, pmd_rx_clk_vld)
 #define SS2_PORT_PML_STS_SERDES_PMD_RX_LOCK_GET(a)                                   SL_CSR_GET(a, ss2_port_pml_sts_serdes, pmd_rx_lock)
-#define SS2_PORT_PML_STS_SERDES_PMD_SIGNAL_DETECTGET(a)                              SL_CSR_GET(a, ss2_port_pml_sts_serdes, pmd_signal_detect)
+#define SS2_PORT_PML_STS_SERDES_PMD_SIGNAL_DETECT_GET(a)                             SL_CSR_GET(a, ss2_port_pml_sts_serdes, pmd_signal_detect)
 
 #define SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_DISCARD                                   C2_HNI_PML_LD_DISCARD
 #define SS2_PORT_PML_LINK_DN_BEHAVIOR_T_LD_BLOCK                                     C2_HNI_PML_LD_BLOCK

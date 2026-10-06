@@ -9,6 +9,7 @@
 
 #include "sl_asic.h"
 #include "sl_platform.h"
+#include "sl_common.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
 #include "sl_media_jack.h"
@@ -293,9 +294,10 @@ int sl_media_jack_cable_downshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
+	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+
 	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
-		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED) {
+		if (media_attr.errors & BIT(SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED)) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME,
 					       "can't downshift - cable firmware unsupported");
 			return 0;
@@ -360,9 +362,10 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return 0;
 	}
 
+	sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
+
 	if (!sl_core_link_policy_is_ignore_media_errors_set(core_link)) {
-		sl_media_lgrp_media_attr_get(ldev_num, lgrp_num, &media_attr);
-		if (media_attr.errors & SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED) {
+		if (media_attr.errors & BIT(SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED)) {
 			sl_media_log_err_trace(media_lgrp->media_jack, LOG_NAME,
 					       "can't upshift - cable firmware unsupported");
 			return 0;

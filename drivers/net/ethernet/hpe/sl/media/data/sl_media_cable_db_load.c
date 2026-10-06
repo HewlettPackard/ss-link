@@ -2,6 +2,7 @@
 /* Copyright 2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/firmware.h>
+#include <linux/overflow.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 
@@ -77,6 +78,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	u32                              count;
 	u32                              hdr_size;
 	u32                              record_size;
+	u32                              blob_size;
 	u32                              expected_size;
 	void                            *blob;
 	int                              rtn;
@@ -134,7 +136,11 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		goto out_release;
 	}
 
-	expected_size = hdr_size + count * record_size;
+	if (check_mul_overflow(count, record_size, &blob_size) ||
+	    check_add_overflow(hdr_size, blob_size, &expected_size)) {
+		rtn = -EOVERFLOW;
+		goto out_release;
+	}
 
 	if (fw->size < expected_size) {
 		sl_media_log_err(media_ldev, LOG_NAME,
@@ -145,14 +151,13 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	}
 
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "cable db load size (actual = %lu, exptected = %u)", fw->size, expected_size);
+			 "cable db load size (actual = %zu, expected = %u)", fw->size, expected_size);
 
-	blob = kmalloc(count * record_size, GFP_KERNEL);
+	blob = kmemdup(fw->data + hdr_size, blob_size, GFP_KERNEL);
 	if (!blob) {
 		rtn = -ENOMEM;
 		goto out_release;
 	}
-	memcpy(blob, fw->data + hdr_size, count * record_size);
 
 	media_ldev->cable_db.data         = blob;
 	media_ldev->cable_db.data_version = data_version;

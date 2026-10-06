@@ -38,7 +38,7 @@ int sl_media_fake_headshell_remove(struct sl_lgrp *lgrp)
 	rtn = sl_lgrp_check(lgrp);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "fake headshell remove fail");
-		return -EINVAL;
+		return rtn;
 	}
 
 	sl_media_jack_fake_cable_remove(lgrp->ldev_num, lgrp->num);

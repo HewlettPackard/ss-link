@@ -228,7 +228,7 @@ int sl_ctrl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id
 	}
 
 	spin_lock_irqsave(&ctrl_lgrp->log_lock, irq_flags);
-	strncpy(ctrl_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
+	strscpy(ctrl_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
 	spin_unlock_irqrestore(&ctrl_lgrp->log_lock, irq_flags);
 
 	sl_media_lgrp_connect_id_set(ldev_num, lgrp_num, connect_id);

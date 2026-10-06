@@ -30,6 +30,7 @@ int sbus_pmi_rd(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
 		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 				      "SBUS PMI RD (dev = 0x%02X, dev_id = 0x%02X, addr = 0x%04X, mask = 0x%04X)",
 				      dev_addr, dev_id, addr, mask);
+		*data = 0;
 		goto out;
 	}
 
@@ -38,6 +39,7 @@ int sbus_pmi_rd(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
 		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 				      "SBUS PMI RD (dev = 0x%02X, dev_id = 0x%02X, addr = 0x%04X, mask = 0x%04X)",
 				      dev_addr, dev_id, addr, mask);
+		*data = 0;
 		goto out;
 	}
 
@@ -45,6 +47,7 @@ int sbus_pmi_rd(struct sl_core_lgrp *core_lgrp, u8 dev_addr, u8 dev_id, u8 lane,
 		sl_core_log_err_trace(core_lgrp, LOG_NAME,
 				      "SBUS PMI RD (dev = 0x%02X, dev_id = 0x%02X, addr = 0x%04X, mask = 0x%04X)",
 				      dev_addr, dev_id, addr, mask);
+		*data = 0;
 		rtn = -EIO;
 		goto out;
 	}

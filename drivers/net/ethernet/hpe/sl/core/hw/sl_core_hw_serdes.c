@@ -3,8 +3,16 @@
 
 #include <linux/types.h>
 #include <linux/umh.h>
+#include <linux/version.h>
+
+#if KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE
+#include <asm/unaligned.h>
+#else
+#include <linux/unaligned.h>
+#endif
 
 #include "sl_asic.h"
+#include "sl_common.h"
 #include "sl_platform.h"
 #include "sl_core_link.h"
 #include "sl_core_lgrp.h"
@@ -146,7 +154,7 @@ int sl_core_hw_serdes_hw_info_get(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_UC_RAM_RD_BLK(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
 
-	hw_info->num_micros = (*(u32 *)&rd_buff[FW_INFO_NUM_MICROS_OFFSET] & 0xF);
+	hw_info->num_micros = (get_unaligned_le32(&rd_buff[FW_INFO_NUM_MICROS_OFFSET]) & 0xF);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "num_micros = %d", hw_info->num_micros);
 
 	rtn = 0;
@@ -169,15 +177,15 @@ int sl_core_hw_serdes_fw_info_get(struct sl_core_lgrp *core_lgrp)
 
 	SL_CORE_HW_UC_RAM_RD_BLK(core_lgrp, core_lgrp->serdes.dt.dev_addr, core_lgrp->serdes.dt.dev_id, 0x100, sizeof(rd_buff), rd_buff);
 
-	fw_info->signature = (*(u32 *)rd_buff & 0xFFFFFF);
-	fw_info->version   = ((*(u32 *)rd_buff >> 24) & 0xFF);
+	fw_info->signature = (get_unaligned_le32(rd_buff) & 0xFFFFFF);
+	fw_info->version   = ((get_unaligned_le32(rd_buff) >> 24) & 0xFF);
 
-	fw_info->lane_static_var_ram_base = *(u32 *)&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_BASE_OFFSET];
-	fw_info->lane_static_var_ram_size = *(u32 *)&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_SIZE_OFFSET];
-	fw_info->lane_var_ram_base        = *(u32 *)&rd_buff[FW_INFO_LANE_MEM_PTR_OFFSET];
-	fw_info->lane_var_ram_size        = (*(u32 *)&rd_buff[FW_INFO_LANE_MEM_SIZE_OFFSET] >> 16) & 0xFFFF;
-	fw_info->grp_ram_size             = *(u32 *)&rd_buff[FW_INFO_GRP_RAM_SIZE_OFFSET] & 0xFFFF;
-	fw_info->lane_count               = *(u32 *)&rd_buff[FW_INFO_NUM_LANES_OFFSET] & 0xFF;
+	fw_info->lane_static_var_ram_base = get_unaligned_le32(&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_BASE_OFFSET]);
+	fw_info->lane_static_var_ram_size = get_unaligned_le32(&rd_buff[FW_INFO_LANE_STATIC_VAR_RAM_SIZE_OFFSET]);
+	fw_info->lane_var_ram_base        = get_unaligned_le32(&rd_buff[FW_INFO_LANE_MEM_PTR_OFFSET]);
+	fw_info->lane_var_ram_size        = (get_unaligned_le32(&rd_buff[FW_INFO_LANE_MEM_SIZE_OFFSET]) >> 16) & 0xFFFF;
+	fw_info->grp_ram_size             = get_unaligned_le32(&rd_buff[FW_INFO_GRP_RAM_SIZE_OFFSET]) & 0xFFFF;
+	fw_info->lane_count               = get_unaligned_le32(&rd_buff[FW_INFO_NUM_LANES_OFFSET]) & 0xFF;
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "signature           = 0x%08X", fw_info->signature);
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "version             = 0x%02X", fw_info->version);

@@ -9,6 +9,7 @@
 #include <linux/hpe/sl/sl_media.h>
 
 #include "base/sl_core_log.h"
+#include "sl_common.h"
 #include "sl_core_mac.h"
 #include "sl_core_str.h"
 #include "hw/sl_core_hw_intr.h"

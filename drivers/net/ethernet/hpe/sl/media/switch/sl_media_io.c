@@ -46,40 +46,40 @@ int sl_media_io_read(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 *d
 	sl_media_log_dbg(media_jack, LOG_NAME, "io read (page = 0x%x, offset = 0x%x, len = %zu)",
 			 page, offset, len);
 
+	if (len > sizeof(i2c_data.data)) {
+		sl_media_log_err(media_jack, LOG_NAME, "io read len (len = %zu, max = %zu)",
+				 len, sizeof(i2c_data.data));
+		return -E2BIG;
+	}
+
 	i2c_data.addr   = 0;
 	i2c_data.page   = page;
 	i2c_data.bank   = 0;
 	i2c_data.offset = offset;
 	i2c_data.len    = len;
 
-	read_attempt = 0;
-	do {
+	for (read_attempt = 0; read_attempt < SL_MEDIA_IO_MAX_RETRY; read_attempt++) {
 		rtn = hsnxcvr_i2c_read(media_jack->hdl, &i2c_data);
-		if (rtn == -EAGAIN) {
-			sl_media_log_warn_trace(media_jack, LOG_NAME,
-						"io read retrying (read_attempt = %d)", read_attempt);
-			continue;
+		if (rtn == 0) {
+			memcpy(data, i2c_data.data, len);
+			return 0;
 		}
 
-		if (rtn) {
+		if (rtn != -EAGAIN) {
+			memset(data, 0, len);
 			sl_media_log_err_trace(media_jack, LOG_NAME, "io read i2c_read failed [%d]", rtn);
-			return -EIO;
+			return rtn;
 		}
 
-	} while (rtn == -EAGAIN && ++read_attempt < SL_MEDIA_IO_MAX_RETRY);
-
-	sl_media_log_dbg(media_jack, LOG_NAME, "io read (read_attempt = %u)", read_attempt);
-
-	if (read_attempt >= SL_MEDIA_IO_MAX_RETRY) {
-		sl_media_log_err_trace(media_jack, LOG_NAME,
-				       "io read exceeded tries (read_attempt = %u, SL_MEDIA_IO_MAX_RETRY = %u)",
-				       read_attempt, SL_MEDIA_IO_MAX_RETRY);
-		return -EIO;
+		sl_media_log_warn_trace(media_jack, LOG_NAME,
+					"io read retrying (read_attempt = %u)", read_attempt + 1);
 	}
 
-	memcpy(data, i2c_data.data, len);
-
-	return 0;
+	memset(data, 0, len);
+	sl_media_log_err_trace(media_jack, LOG_NAME,
+			       "io read exceeded tries (read_attempt = %u, SL_MEDIA_IO_MAX_RETRY = %u)",
+			       read_attempt, SL_MEDIA_IO_MAX_RETRY);
+	return -EIO;
 }
 
 int sl_media_io_read8(struct sl_media_jack *media_jack, u8 page, u8 offset, u8 *data)

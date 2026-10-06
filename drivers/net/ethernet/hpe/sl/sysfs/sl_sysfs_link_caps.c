@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "sl_ctrl_link.h"
 #include "sl_core_link.h"
@@ -75,6 +76,9 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);
@@ -124,6 +128,9 @@ static ssize_t pause_map_show(struct kobject *kobj, struct kobj_attribute *kattr
 	if (is_flag_set(pause_map, SL_LINK_CONFIG_PAUSE_SYM))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_pause_str(SL_LINK_CONFIG_PAUSE_SYM));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);
@@ -173,6 +180,9 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);
@@ -240,6 +250,9 @@ static ssize_t hpe_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	if (is_flag_set(hpe_map, SL_LINK_CONFIG_HPE_LLR))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_link_config_hpe_str(SL_LINK_CONFIG_HPE_LLR));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);

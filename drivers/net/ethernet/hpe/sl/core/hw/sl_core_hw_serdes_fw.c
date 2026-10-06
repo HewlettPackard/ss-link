@@ -137,13 +137,19 @@ int sl_core_hw_serdes_fw_write(struct sl_core_lgrp *core_lgrp)
 	if (!SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev))
 		return 0;
 
+	if (fw->size % sizeof(data32)) {
+		sl_core_log_err_trace(core_lgrp, LOG_NAME,
+				      "fw write not 32-bit aligned (size = %lu bytes)", fw->size);
+		return -EINVAL;
+	}
+
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "fw write (size = %lu bytes)", fw->size);
 
 	for (x = 0; x < fw->size; x += 4) {
-		data32 = (fw->data[x] |
-			(fw->data[x+1] << 8) |
-			(fw->data[x+2] << 16) |
-			(fw->data[x+3] << 24));
+		data32 = ((u32)fw->data[x] |
+			((u32)fw->data[x + 1] << 8) |
+			((u32)fw->data[x + 2] << 16) |
+			((u32)fw->data[x + 3] << 24));
 		SL_CORE_HW_SBUS_WR(core_lgrp, 0xFA, 10, data32);
 	}
 

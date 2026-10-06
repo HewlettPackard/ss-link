@@ -7,6 +7,7 @@
 #include <linux/hpe/sl/sl_media.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_lgrp.h"

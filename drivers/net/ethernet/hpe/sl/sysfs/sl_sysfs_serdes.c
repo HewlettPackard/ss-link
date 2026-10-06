@@ -154,7 +154,7 @@ int sl_sysfs_serdes_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 {
 #ifdef CONFIG_SYSFS
 	int rtn;
-	int asic_lane_num;
+	u8  asic_lane_num;
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "serdes create (lgrp = 0x%p)", ctrl_lgrp);
 
@@ -249,7 +249,9 @@ out_swizzle:
 out_lanes:
 	kobject_put(&(ctrl_lgrp->serdes_lane_kobjs[asic_lane_num]));
 out_all:
-	for (asic_lane_num = asic_lane_num - 1; asic_lane_num >= 0; --asic_lane_num) {
+	while (asic_lane_num > 0) {
+		/* The current lane failed setup; unwind prior lanes. */
+		--asic_lane_num;
 		sl_sysfs_serdes_lane_los_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_lol_delete(ctrl_lgrp, asic_lane_num);
 		sl_sysfs_serdes_lane_eye_delete(ctrl_lgrp, asic_lane_num);

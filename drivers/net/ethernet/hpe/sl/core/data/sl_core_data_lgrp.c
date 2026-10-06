@@ -99,7 +99,7 @@ void sl_core_data_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *conn
 	core_lgrp = sl_core_lgrp_get(ldev_num, lgrp_num);
 
 	spin_lock_irqsave(&(core_lgrp->log_lock), irq_flags);
-	strncpy(core_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
+	strscpy(core_lgrp->log_connect_id, connect_id, SL_LOG_CONNECT_ID_LEN);
 	spin_unlock_irqrestore(&(core_lgrp->log_lock), irq_flags);
 
 	sl_core_log_dbg(core_lgrp, LOG_NAME, "connect_id = %s", connect_id);

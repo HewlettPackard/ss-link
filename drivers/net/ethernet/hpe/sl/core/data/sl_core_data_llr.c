@@ -10,6 +10,7 @@
 #include <linux/hpe/sl/sl_media.h>
 
 #include "base/sl_core_log.h"
+#include "sl_common.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_llr.h"
 #include "sl_core_str.h"
@@ -29,7 +30,7 @@ static DEFINE_SPINLOCK(core_llrs_lock);
 		(_llr)->timers[_timer_num].data.core_llr   = _llr;       \
 		(_llr)->timers[_timer_num].data.timer_num  = _timer_num; \
 		(_llr)->timers[_timer_num].data.work_num   = _work_num;  \
-		strncpy((_llr)->timers[_timer_num].data.log,             \
+		strscpy((_llr)->timers[_timer_num].data.log,             \
 			_log, SL_CORE_TIMER_LLR_LOG_SIZE);               \
 	} while (0)
 #define SL_CORE_INTR_LLR_INIT(_llr, _intr_num, _work_num, _log)           \
@@ -39,7 +40,7 @@ static DEFINE_SPINLOCK(core_llrs_lock);
 		(_llr)->intrs[_intr_num].data.core_llr = _llr;            \
 		(_llr)->intrs[_intr_num].data.intr_num = _intr_num;       \
 		(_llr)->intrs[_intr_num].data.work_num = _work_num;       \
-		strncpy((_llr)->intrs[_intr_num].data.log,                \
+		strscpy((_llr)->intrs[_intr_num].data.log,                \
 			_log, SL_CORE_HW_INTR_LLR_LOG_SIZE);              \
 	} while (0)
 

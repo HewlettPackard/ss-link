@@ -25,8 +25,6 @@
 
 struct work_struct;
 
-#define is_flag_set(_flags, _flag) ((_flags & _flag) == _flag)
-
 #define SL_LINK_DOWN_CAUSE_SERDES_PLL_MAP (                     \
 		SL_LINK_DOWN_CAUSE_SERDES_PLL                 | \
 		SL_LINK_DOWN_ORIGIN_LINK_UP                   | \

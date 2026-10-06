@@ -4,6 +4,7 @@
 #include <linux/types.h>
 #include <linux/delay.h>
 
+#include "sl_common.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"

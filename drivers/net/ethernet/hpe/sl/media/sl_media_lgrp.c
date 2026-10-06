@@ -253,10 +253,11 @@ int sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vend
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(vendor_pn_str, media_lgrp->cable_info->media_attr.vendor_pn_str, SL_MEDIA_VENDOR_PN_SIZE);
+		strscpy(vendor_pn_str, media_lgrp->cable_info->media_attr.vendor_pn_str, SL_MEDIA_VENDOR_PN_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(vendor_pn_str, media_lgrp->cable_info->stashed_media_attr.vendor_pn_str, SL_MEDIA_VENDOR_PN_SIZE);
+		strscpy(vendor_pn_str, media_lgrp->cable_info->stashed_media_attr.vendor_pn_str,
+			SL_MEDIA_VENDOR_PN_SIZE);
 		break;
 	default:
 		memset(vendor_pn_str, '0', SL_MEDIA_VENDOR_PN_SIZE - 2);
@@ -344,11 +345,11 @@ int sl_media_lgrp_serial_num_str_get(struct sl_media_lgrp *media_lgrp, char *ser
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(serial_num_str,
+		strscpy(serial_num_str,
 			media_lgrp->cable_info->media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(serial_num_str,
+		strscpy(serial_num_str,
 			media_lgrp->cable_info->stashed_media_attr.serial_num_str, SL_MEDIA_SERIAL_NUM_SIZE);
 		break;
 	default:
@@ -365,10 +366,10 @@ int sl_media_lgrp_hpe_pn_str_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(hpe_pn_str, media_lgrp->cable_info->media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
+		strscpy(hpe_pn_str, media_lgrp->cable_info->media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(hpe_pn_str, media_lgrp->cable_info->stashed_media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
+		strscpy(hpe_pn_str, media_lgrp->cable_info->stashed_media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
 		break;
 	default:
 		memset(hpe_pn_str, '0', SL_MEDIA_HPE_PN_SIZE - 2);
@@ -449,10 +450,11 @@ int sl_media_lgrp_date_code_str_get(struct sl_media_lgrp *media_lgrp, char *date
 	spin_lock(&media_lgrp->media_jack->data_lock);
 	switch (media_lgrp->cable_info->real_cable_status) {
 	case CABLE_MEDIA_ATTR_ADDED:
-		strncpy(date_code_str, media_lgrp->cable_info->media_attr.date_code_str, SL_MEDIA_DATE_CODE_SIZE);
+		strscpy(date_code_str, media_lgrp->cable_info->media_attr.date_code_str, SL_MEDIA_DATE_CODE_SIZE);
 		break;
 	case CABLE_MEDIA_ATTR_STASHED:
-		strncpy(date_code_str, media_lgrp->cable_info->stashed_media_attr.date_code_str, SL_MEDIA_DATE_CODE_SIZE);
+		strscpy(date_code_str, media_lgrp->cable_info->stashed_media_attr.date_code_str,
+			SL_MEDIA_DATE_CODE_SIZE);
 		break;
 	default:
 		memset(date_code_str, '0', SL_MEDIA_DATE_CODE_SIZE - 2);

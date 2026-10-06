@@ -8,6 +8,7 @@
 #include <linux/ktime.h>
 
 #include "sl_platform.h"
+#include "sl_common.h"
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_core_link.h"

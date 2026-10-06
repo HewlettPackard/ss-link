@@ -10,6 +10,7 @@
 
 #include "base/sl_core_work_link.h"
 #include "base/sl_core_log.h"
+#include "sl_common.h"
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
@@ -49,7 +50,7 @@ static DEFINE_SPINLOCK(core_links_lock);
 		(_link)->timers[_timer_num].data.link      = _link;      \
 		(_link)->timers[_timer_num].data.timer_num = _timer_num; \
 		(_link)->timers[_timer_num].data.work_num  = _work_num;  \
-		strncpy((_link)->timers[_timer_num].data.log,            \
+		strscpy((_link)->timers[_timer_num].data.log,            \
 			_log, SL_CORE_TIMER_LINK_LOG_SIZE);              \
 	} while (0)
 #define SL_CORE_INTR_INIT(_link, _intr_num, _work_num, _log)           \
@@ -59,7 +60,7 @@ static DEFINE_SPINLOCK(core_links_lock);
 		(_link)->intrs[_intr_num].data.link     = _link;       \
 		(_link)->intrs[_intr_num].data.intr_num = _intr_num;   \
 		(_link)->intrs[_intr_num].data.work_num = _work_num;   \
-		strncpy((_link)->intrs[_intr_num].data.log,            \
+		strscpy((_link)->intrs[_intr_num].data.log,            \
 			_log, SL_CORE_HW_INTR_LOG_SIZE);               \
 	} while (0)
 
@@ -240,7 +241,6 @@ int sl_core_data_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num)
 					       sl_core_hw_intr_hdlr, &(core_link->intrs[SL_CORE_HW_INTR_LANE_DEGRADE].data));
 		if (rtn != 0) {
 			sl_core_log_err_trace(core_link, LOG_NAME, "intr register degrade failed [%d]", rtn);
-			sl_core_hw_intr_hdlr_unregister(core_link);
 			kfree(core_link);
 			return rtn;
 		}

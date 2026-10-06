@@ -26,7 +26,7 @@ struct sl_ctrl_link;
  * l < (c / t); l * t < c; (l * p) < (c * 1000)
  */
 #define SL_CTRL_LINK_FEC_LIMIT_CHECK(_limit, _count, _period) \
-	((_limit && _period) ? (((u64)(_limit) * (_period)) <= ((_count) * 1000)) : 0)
+	(((_limit) && (_period)) ? (((u64)(_limit) * (_period)) <= ((_count) * 1000)) : 0)
 #define SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(_limit, _info) \
 	SL_CTRL_LINK_FEC_LIMIT_CHECK(_limit, (_info)->ucw, (_info)->period_ms)
 #define SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(_limit, _info) \

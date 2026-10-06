@@ -6,17 +6,10 @@
 #include <linux/hpe/sl/sl_lgrp.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "data/sl_ctrl_data_lgrp.h"
 #include "data/sl_ctrl_data_lgrp_trace.h"
-
-//FIXME: move somewhere common
-#define is_flag_set(_flags, _flag) ({              \
-		typeof(_flags) __flags = (_flags); \
-		typeof(_flag)  __flag  = (_flag);  \
-						   \
-		((__flags & __flag) == __flag);    \
-})
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -116,6 +109,9 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_BJ_100G))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);
@@ -147,6 +143,9 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS))
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
+	if (!idx)
+		return sysfs_emit(buf, "none\n");
+
 	output[idx - 1] = '\0';
 
 	return sysfs_emit(buf, "%s\n", output);

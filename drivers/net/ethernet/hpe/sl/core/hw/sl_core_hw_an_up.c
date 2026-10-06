@@ -6,6 +6,7 @@
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 
+#include "sl_common.h"
 #include "sl_media_lgrp.h"
 #include "sl_core_link.h"
 #include "sl_core_str.h"

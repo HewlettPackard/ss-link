@@ -8,6 +8,7 @@
 #include <linux/hpe/sl/sl_link.h>
 
 #include "sl_asic.h"
+#include "sl_common.h"
 #include "sl_platform.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_core_link.h"
