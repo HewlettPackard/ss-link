@@ -70,12 +70,13 @@ $(SL_NAME)-$(SL_BUILD_NIC) += \
 	core/data/nic/sl_core_data_mac.o
 
 $(SL_NAME)-y += \
-	sl_ldev.o  \
-	sl_lgrp.o  \
-	sl_link.o  \
-	sl_llr.o   \
-	sl_mac.o   \
-	sl_media.o \
+	sl_ldev.o   \
+	sl_lgrp.o   \
+	sl_link.o   \
+	sl_llr.o    \
+	sl_mac.o    \
+	sl_media.o  \
+	sl_common.o \
 	sl_fec.o
 
 $(SL_NAME)-y += \

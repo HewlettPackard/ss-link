@@ -1009,70 +1009,25 @@ int sl_media_jack_signal_cache_time_s_get(u8 ldev_num, u8 lgrp_num, time64_t *ca
 	return cached ? 0 : -ENOENT;
 }
 
+static const char * const sl_media_jack_attr_error_strings[] = {
+	[SL_MEDIA_ERROR_CABLE_UNSUPPORTED_BIT]        = "cable-unsupported",
+	[SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED_BIT] = "cable-format-unsupported",
+	[SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED_BIT]     = "cable-fw-unsupported",
+	[SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT_BIT]    = "cable-headshell-fault",
+	[SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT_BIT]  = "temp-down-limit-default",
+	[SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT_BIT]  = "temp-warn-limit-default",
+	[SL_MEDIA_ERROR_TRYABLE_BIT]                  = "tryable",
+};
+
+static const struct sl_str_map sl_media_jack_attr_error_str_map = {
+	.strings     = sl_media_jack_attr_error_strings,
+	.num_strings = ARRAY_SIZE(sl_media_jack_attr_error_strings),
+};
+
 int sl_media_jack_attr_error_map_str(unsigned long error_map, char *error_str, unsigned int error_str_size)
 {
-	int rtn;
-	int str_pos;
-	int which;
-
-	if (!error_str)
-		return -EINVAL;
-
-	if (error_str_size < SL_MEDIA_JACK_ATTR_ERR_STR_SIZE)
-		return -EINVAL;
-
-	if (!error_map) {
-		str_pos = snprintf(error_str, error_str_size, "none ");
-		goto out;
-	}
-
-	str_pos = 0;
-
-	for_each_set_bit(which, &error_map, sizeof(error_map) * BITS_PER_BYTE) {
-		switch (BIT(which)) {
-		case SL_MEDIA_ERROR_CABLE_UNSUPPORTED:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-unsupported ");
-			break;
-		case SL_MEDIA_ERROR_CABLE_FORMAT_UNSUPPORTED:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-format-unsupported ");
-			break;
-		case SL_MEDIA_ERROR_CABLE_FW_UNSUPPORTED:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-fw-unsupported ");
-			break;
-		case SL_MEDIA_ERROR_CABLE_HEADSHELL_FAULT:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "cable-headshell-fault ");
-			break;
-		case SL_MEDIA_ERROR_TEMP_DOWN_LIMIT_DEFAULT:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-down-limit-default ");
-			break;
-		case SL_MEDIA_ERROR_TEMP_WARN_LIMIT_DEFAULT:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "temp-warn-limit-default ");
-			break;
-		case SL_MEDIA_ERROR_TRYABLE:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "tryable ");
-			break;
-		default:
-			rtn = snprintf(error_str + str_pos, error_str_size - str_pos, "unknown ");
-			break;
-		}
-
-		if (rtn < 0) {
-			str_pos = snprintf(error_str, error_str_size, "error ");
-			goto out;
-		}
-		if (str_pos + rtn >= error_str_size) {
-			error_str[str_pos - 2] = '.';
-			error_str[str_pos - 3] = '.';
-			error_str[str_pos - 4] = '.';
-			break;
-		}
-		str_pos += rtn;
-	}
-
-out:
-	error_str[str_pos - 1] = '\0';
-
-	return 0;
+	return sl_str_map_create(error_map, &sl_media_jack_attr_error_str_map,
+				 error_str, error_str_size);
 }
 
 int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *error_map)
@@ -1086,44 +1041,43 @@ int sl_media_jack_attr_error_map_get(struct sl_media_jack *media_jack, u32 *erro
 	return 0;
 }
 
+static const char * const sl_media_fault_cause_strings[] = {
+	[SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED_BIT]         = "eeprom-format-unsupported",
+	[SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED_BIT]         = "eeprom-vendor-unsupported",
+	[SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO_BIT]                    = "eeprom-jack-io",
+	[SL_MEDIA_FAULT_CAUSE_JACK_GET_BIT]                          = "jack-get",
+	[SL_MEDIA_FAULT_CAUSE_JACK_STATUS_GET_BIT]                   = "jack-status-get",
+	[SL_MEDIA_FAULT_CAUSE_CABLE_SETUP_BIT]                       = "cable-setup",
+	[SL_MEDIA_FAULT_CAUSE_ACTIVE_CABLE_SETUP_BIT]                = "active-cable-setup",
+	[SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET_BIT]               = "serdes-settings-get",
+	[SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET_BIT]                    = "media-attr-set",
+	[SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO_BIT]            = "high-power-set-io",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_BIT]                = "down-jack-io",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET_BIT]  = "down-jack-io-low-power-set",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET_BIT] = "down-jack-io-high-power-set",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_BIT]                  = "up-jack-io",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET_BIT]    = "up-jack-io-low-power-set",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET_BIT]   = "up-jack-io-high-power-set",
+	[SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO_BIT]               = "state-jack-io",
+	[SL_MEDIA_FAULT_CAUSE_HOT_BIT]                               = "hot",
+	[SL_MEDIA_FAULT_CAUSE_WARM_BIT]                              = "warm",
+};
+
+static const struct sl_str_map sl_media_fault_cause_str_map = {
+	.strings     = sl_media_fault_cause_strings,
+	.num_strings = ARRAY_SIZE(sl_media_fault_cause_strings),
+};
+
 int sl_media_fault_cause_str_create(struct sl_media_jack *media_jack, u32 cause_map,
 				    char *cause_str, unsigned int cause_str_size)
 {
-	unsigned int   which;
-	unsigned int   str_pos;
-	unsigned long  cause_map_long;
-	const char    *str;
-	int            rtn;
-
-	str_pos 	= 0;
-	cause_map_long  = cause_map;
-
-	if (!cause_str)
-		return -EINVAL;
-	if (cause_str_size < SL_MEDIA_FAULT_CAUSE_STR_MIN)
-		return -EINVAL;
-
-	for_each_set_bit(which, &cause_map_long, sizeof(cause_map) * BITS_PER_BYTE) {
-		str = sl_media_fault_cause_str(BIT(which));
-		if (strcmp(str, "unknown") == 0)
-			sl_media_log_warn_trace(media_jack, LOG_NAME, "unknown fault bit set");
-
-		rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "%s ", str);
-		if (rtn < 0 || str_pos + rtn >= cause_str_size)
-			break;
-		str_pos += rtn;
-	}
-
-	if (str_pos == 0)
-		str_pos = snprintf(cause_str, cause_str_size, "none ");
-
-	cause_str[str_pos - 1] = '\0';
-	return 0;
+	return sl_str_map_create(cause_map, &sl_media_fault_cause_str_map,
+				 cause_str, cause_str_size);
 }
 
 void sl_media_jack_io_fault_cause_set(struct sl_media_jack *media_jack, u32 io_fault_cause)
 {
-	char io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char io_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int rtn;
 
 	spin_lock(&media_jack->data_lock);
@@ -1145,7 +1099,7 @@ void sl_media_jack_io_fault_cause_set(struct sl_media_jack *media_jack, u32 io_f
 
 void sl_media_jack_fault_cause_set(struct sl_media_jack *media_jack, u32 fault_cause)
 {
-	char fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char fault_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int rtn;
 
 	spin_lock(&media_jack->data_lock);
@@ -1172,8 +1126,7 @@ int sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_faul
 				  time64_t *io_fault_time, u32 *fault_cause,
 				  time64_t *fault_time)
 {
-	char io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
-	char fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int rtn;
 
 	spin_lock(&media_jack->data_lock);
@@ -1184,21 +1137,22 @@ int sl_media_jack_fault_cause_get(struct sl_media_jack *media_jack, u32 *io_faul
 	spin_unlock(&media_jack->data_lock);
 
 	rtn = sl_media_fault_cause_str_create(media_jack, *io_fault_cause,
-					      io_cause_str, sizeof(io_cause_str));
+					      cause_str, sizeof(cause_str));
 	if (rtn)
-		snprintf(io_cause_str, sizeof(io_cause_str), "error");
-
-	rtn = sl_media_fault_cause_str_create(media_jack, *fault_cause,
-					      fault_cause_str, sizeof(fault_cause_str));
-	if (rtn)
-		snprintf(fault_cause_str, sizeof(fault_cause_str), "error");
+		snprintf(cause_str, sizeof(cause_str), "error");
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "cable fault cause get (io fault cause = 0x%x %s)",
-			 *io_fault_cause, io_cause_str);
+			 *io_fault_cause, cause_str);
+
+	rtn = sl_media_fault_cause_str_create(media_jack, *fault_cause,
+					      cause_str, sizeof(cause_str));
+	if (rtn)
+		snprintf(cause_str, sizeof(cause_str), "error");
+
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "cable fault cause get (fault cause = 0x%x %s)",
-			 *fault_cause, fault_cause_str);
+			 *fault_cause, cause_str);
 
 	return 0;
 }

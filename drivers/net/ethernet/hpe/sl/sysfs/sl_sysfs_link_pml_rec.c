@@ -6,6 +6,7 @@
 #include <linux/types.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "data/sl_core_data_link.h"
 
 #include "sl_sysfs.h"
@@ -178,7 +179,7 @@ static ssize_t pml_rec_last_down_cause_map_show(struct kobject *kobj, struct kob
 	struct sl_core_link *core_link;
 	u64                  down_cause_map;
 	time64_t             down_time;
-	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                 cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		     rtn;
 
 	core_link = container_of(kobj, struct sl_core_link, pml_rec_kobj);

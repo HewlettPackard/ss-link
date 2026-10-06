@@ -20,6 +20,7 @@
 #define SL_LOG_SYSFS_LOG_NAME    "sysfs"
 #define SL_LOG_DEBUGFS_LOG_NAME  "debugfs"
 #define SL_LOG_TEST_LOG_NAME     "test"
+#define SL_LOG_STR_LOG_NAME      "str"
 
 void sl_log(void *ptr, const char *level, const char *block, const char *name, const char *text, ...) __printf(5, 6);
 void sl_log_err_trace(void *ptr, const char *block, const char *name, const char *text, ...) __printf(4, 5);

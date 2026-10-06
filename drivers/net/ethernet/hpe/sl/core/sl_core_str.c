@@ -2,122 +2,88 @@
 /* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
-#include <linux/bitops.h>
 
+#include "sl_common.h"
 #include "sl_core_lgrp.h"
 #include "sl_core_link.h"
 #include "hw/sl_core_hw_serdes_lane.h"
 #include "sl_core_str.h"
 
-#define SL_CORE_INFO_MAP_DESC_SIZE 30
-struct sl_core_info_map_str_item {
-	char desc[SL_CORE_INFO_MAP_DESC_SIZE];
+static const char * const sl_core_info_map_str_list[] = {
+	[SL_CORE_INFO_MAP_MEDIA_CHECK]             = "media-check",
+	[SL_CORE_INFO_MAP_MEDIA_OK]                = "media-ok",
+	[SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK] = "media-temperature-check",
+	[SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_OK]    = "media-temperature-ok",
+
+	[SL_CORE_INFO_MAP_SERDES_START]            = "serdes-start",
+	[SL_CORE_INFO_MAP_SERDES_CHECK]            = "serdes-check",
+	[SL_CORE_INFO_MAP_SERDES_OK]               = "serdes-ok",
+
+	[SL_CORE_INFO_MAP_LOOPBACK_SERDES_ON]      = "loopback-serdes-on",
+	[SL_CORE_INFO_MAP_LOOPBACK_HOST_ON]        = "loopback-host-on",
+	[SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON]       = "loopback-media-on",
+
+	[SL_CORE_INFO_MAP_PCS_LOCAL_FAULT]         = "pcs-local-fault",
+	[SL_CORE_INFO_MAP_PCS_REMOTE_FAULT]        = "pcs-remote-fault",
+	[SL_CORE_INFO_MAP_PCS_LINK_DOWN]           = "pcs-link-down",
+	[SL_CORE_INFO_MAP_PCS_CHECK]               = "pcs-check",
+	[SL_CORE_INFO_MAP_PCS_OK]                  = "pcs-ok",
+
+	[SL_CORE_INFO_MAP_FEC_CHECK]               = "fec-check",
+	[SL_CORE_INFO_MAP_FEC_OK]                  = "fec-ok",
+	[SL_CORE_INFO_MAP_LINK_DEGRADED]           = "link-degraded",
+	[SL_CORE_INFO_MAP_FEC_SETTLE_START]        = "fec-settle-start",
+	[SL_CORE_INFO_MAP_FEC_SETTLE_DONE]         = "fec-settle-done",
+
+	[SL_CORE_INFO_MAP_LINK_DOWN]               = "link-down",
+	[SL_CORE_INFO_MAP_LINK_UP_CANCEL]          = "link-up-cancel",
+	[SL_CORE_INFO_MAP_LINK_UP_TIMEOUT]         = "link-up-timeout",
+	[SL_CORE_INFO_MAP_LINK_UP_FAIL]            = "link-up-fail",
+	[SL_CORE_INFO_MAP_LINK_UP]                 = "link-up",
+
+	[SL_CORE_INFO_MAP_MAC_RX_CONFIG]           = "mac-rx-config",
+	[SL_CORE_INFO_MAP_MAC_TX_CONFIG]           = "mac-tx-config",
+	[SL_CORE_INFO_MAP_MAC_RX]                  = "mac-rx",
+	[SL_CORE_INFO_MAP_MAC_TX]                  = "mac-tx",
+
+	[SL_CORE_INFO_MAP_AN_BASE_PAGE]            = "an-base-page",
+	[SL_CORE_INFO_MAP_AN_NEXT_PAGE]            = "an-next-page",
+	[SL_CORE_INFO_MAP_AN_ERROR]                = "an-error",
+	[SL_CORE_INFO_MAP_AN_DONE]                 = "an-done",
+
+	[SL_CORE_INFO_MAP_LLR_CONFIG]              = "llr-config",
+	[SL_CORE_INFO_MAP_LLR_SETTING_UP]          = "llr-setting-up",
+	[SL_CORE_INFO_MAP_LLR_SETUP]               = "llr-setup",
+	[SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT]       = "llr-setup-timeout",
+	[SL_CORE_INFO_MAP_LLR_STARTING]            = "llr-starting",
+	[SL_CORE_INFO_MAP_LLR_RUNNING]             = "llr-running",
+	[SL_CORE_INFO_MAP_LLR_START_TIMEOUT]       = "llr-start-timeout",
+	[SL_CORE_INFO_MAP_LLR_MAX_STARVATION]      = "llr-max-starvation",
+	[SL_CORE_INFO_MAP_LLR_STARVED]             = "llr-starved",
+	[SL_CORE_INFO_MAP_LLR_REPLAY_MAX]          = "llr-replay-max",
+
+	[SL_CORE_INFO_MAP_HIGH_SER]                = "high-ser",
+
+	[SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG]      = "ald-config",
+	[SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG_OK]   = "ald-config-ok",
+
+	[SL_CORE_INFO_MAP_CABLE_SPEED_200G_START]  = "speed-200G-start",
+	[SL_CORE_INFO_MAP_CABLE_SPEED_200G_OK]     = "speed-200G-ok",
+
+	[SL_CORE_INFO_MAP_CABLE_SPEED_400G_START]  = "speed-400G-start",
+	[SL_CORE_INFO_MAP_CABLE_SPEED_400G_OK]     = "speed-400G-ok",
 };
-static struct sl_core_info_map_str_item sl_core_info_map_str_list[] = {
-	[SL_CORE_INFO_MAP_MEDIA_CHECK]             = { .desc = "media-check"            },
-	[SL_CORE_INFO_MAP_MEDIA_OK]                = { .desc = "media-ok"               },
-	[SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_CHECK] = { .desc = "media-temperature-check"},
-	[SL_CORE_INFO_MAP_MEDIA_TEMPERATURE_OK]    = { .desc = "media-temperature-ok"   },
 
-	[SL_CORE_INFO_MAP_SERDES_START]            = { .desc = "serdes-start"           },
-	[SL_CORE_INFO_MAP_SERDES_CHECK]            = { .desc = "serdes-check"           },
-	[SL_CORE_INFO_MAP_SERDES_OK]               = { .desc = "serdes-ok"              },
-
-	[SL_CORE_INFO_MAP_LOOPBACK_SERDES_ON]      = { .desc = "loopback-serdes-on"     },
-	[SL_CORE_INFO_MAP_LOOPBACK_HOST_ON]        = { .desc = "loopback-host-on"       },
-	[SL_CORE_INFO_MAP_LOOPBACK_MEDIA_ON]       = { .desc = "loopback-media-on"      },
-
-	[SL_CORE_INFO_MAP_PCS_LOCAL_FAULT]         = { .desc = "pcs-local-fault"        },
-	[SL_CORE_INFO_MAP_PCS_REMOTE_FAULT]        = { .desc = "pcs-remote-fault"       },
-	[SL_CORE_INFO_MAP_PCS_LINK_DOWN]           = { .desc = "pcs-link-down"          },
-	[SL_CORE_INFO_MAP_PCS_CHECK]               = { .desc = "pcs-check"              },
-	[SL_CORE_INFO_MAP_PCS_OK]                  = { .desc = "pcs-ok"                 },
-
-	[SL_CORE_INFO_MAP_FEC_CHECK]               = { .desc = "fec-check"              },
-	[SL_CORE_INFO_MAP_FEC_OK]                  = { .desc = "fec-ok"                 },
-	[SL_CORE_INFO_MAP_LINK_DEGRADED]           = { .desc = "link-degraded"          },
-	[SL_CORE_INFO_MAP_FEC_SETTLE_START]        = { .desc = "fec-settle-start"       },
-	[SL_CORE_INFO_MAP_FEC_SETTLE_DONE]         = { .desc = "fec-settle-done"        },
-
-	[SL_CORE_INFO_MAP_LINK_DOWN]               = { .desc = "link-down"              },
-	[SL_CORE_INFO_MAP_LINK_UP_CANCEL]          = { .desc = "link-up-cancel"         },
-	[SL_CORE_INFO_MAP_LINK_UP_TIMEOUT]         = { .desc = "link-up-timeout"        },
-	[SL_CORE_INFO_MAP_LINK_UP_FAIL]            = { .desc = "link-up-fail"           },
-	[SL_CORE_INFO_MAP_LINK_UP]                 = { .desc = "link-up"                },
-
-	[SL_CORE_INFO_MAP_MAC_RX_CONFIG]           = { .desc = "mac-rx-config"          },
-	[SL_CORE_INFO_MAP_MAC_TX_CONFIG]           = { .desc = "mac-tx-config"          },
-	[SL_CORE_INFO_MAP_MAC_RX]                  = { .desc = "mac-rx"                 },
-	[SL_CORE_INFO_MAP_MAC_TX]                  = { .desc = "mac-tx"                 },
-
-	[SL_CORE_INFO_MAP_AN_BASE_PAGE]            = { .desc = "an-base-page"           },
-	[SL_CORE_INFO_MAP_AN_NEXT_PAGE]            = { .desc = "an-next-page"           },
-	[SL_CORE_INFO_MAP_AN_ERROR]                = { .desc = "an-error"               },
-	[SL_CORE_INFO_MAP_AN_DONE]                 = { .desc = "an-done"                },
-
-	[SL_CORE_INFO_MAP_LLR_CONFIG]              = { .desc = "llr-config"             },
-	[SL_CORE_INFO_MAP_LLR_SETTING_UP]          = { .desc = "llr-setting-up"         },
-	[SL_CORE_INFO_MAP_LLR_SETUP]               = { .desc = "llr-setup"              },
-	[SL_CORE_INFO_MAP_LLR_SETUP_TIMEOUT]       = { .desc = "llr-setup-timeout"      },
-	[SL_CORE_INFO_MAP_LLR_STARTING]            = { .desc = "llr-starting"           },
-	[SL_CORE_INFO_MAP_LLR_RUNNING]             = { .desc = "llr-running"            },
-	[SL_CORE_INFO_MAP_LLR_START_TIMEOUT]       = { .desc = "llr-start-timeout"      },
-	[SL_CORE_INFO_MAP_LLR_MAX_STARVATION]      = { .desc = "llr-max-starvation"     },
-	[SL_CORE_INFO_MAP_LLR_STARVED]             = { .desc = "llr-starved"            },
-	[SL_CORE_INFO_MAP_LLR_REPLAY_MAX]          = { .desc = "llr-replay-max"         },
-
-	[SL_CORE_INFO_MAP_HIGH_SER]                = { .desc = "high-ser"               },
-
-	[SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG]      = { .desc = "ald-config"             },
-	[SL_CORE_INFO_MAP_LINK_UP_ALD_CONFIG_OK]   = { .desc = "ald-config-ok"          },
-
-	[SL_CORE_INFO_MAP_CABLE_SPEED_200G_START]  = { .desc = "speed-200G-start"       },
-	[SL_CORE_INFO_MAP_CABLE_SPEED_200G_OK]     = { .desc = "speed-200G-ok"          },
-
-	[SL_CORE_INFO_MAP_CABLE_SPEED_400G_START]  = { .desc = "speed-400G-start"       },
-	[SL_CORE_INFO_MAP_CABLE_SPEED_400G_OK]     = { .desc = "speed-400G-ok"          },
+static const struct sl_str_map sl_core_info_str_map = {
+	.strings     = sl_core_info_map_str_list,
+	.num_strings = ARRAY_SIZE(sl_core_info_map_str_list),
 };
 
 #define SL_CORE_INFO_MAP_STR_MIN 10
 int sl_core_info_map_str(u64 info_map, char *info_map_str, unsigned int info_map_str_size)
 {
-	int          rtn;
-	unsigned int x;
-	unsigned int str_pos;
-
-	if (!info_map_str)
-		return -EINVAL;
-
-	if (info_map_str_size < SL_CORE_INFO_MAP_STR_MIN)
-		return -EINVAL;
-
-	str_pos = 0;
-
-	for (x = 0; x < SL_CORE_INFO_MAP_NUM_BITS; ++x) {
-		if (!test_bit(x, (unsigned long *)&(info_map)))
-			continue;
-		rtn = snprintf(info_map_str + str_pos,
-			info_map_str_size - str_pos, "%s ",
-			sl_core_info_map_str_list[x].desc);
-		if (rtn < 0) {
-			str_pos = snprintf(info_map_str, info_map_str_size, "error ");
-			break;
-		}
-		if (str_pos + rtn >= info_map_str_size) {
-			info_map_str[str_pos - 2] = '.';
-			info_map_str[str_pos - 3] = '.';
-			info_map_str[str_pos - 4] = '.';
-			break;
-		}
-		str_pos += rtn;
-	}
-
-	if (str_pos == 0)
-		str_pos = snprintf(info_map_str, info_map_str_size, "none ");
-
-	info_map_str[str_pos - 1] = '\0';
-
-	return 0;
+	return sl_str_map_create(info_map, &sl_core_info_str_map,
+				 info_map_str, info_map_str_size);
 }
 
 const char *sl_core_link_state_str(enum sl_core_link_state link_state)

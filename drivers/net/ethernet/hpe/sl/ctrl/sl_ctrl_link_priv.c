@@ -5,6 +5,7 @@
 
 #include <linux/hpe/sl/sl_link.h>
 
+#include "sl_common.h"
 #include "base/sl_ctrl_log.h"
 #include "sl_media_lgrp.h"
 #include "data/sl_ctrl_data_lgrp.h"
@@ -115,7 +116,7 @@ static int sl_ctrl_link_up_fail_notif_send(struct sl_ctrl_lgrp *ctrl_lgrp, struc
 static int sl_ctrl_async_link_down_notif_send(struct sl_ctrl_link *ctrl_link, u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
-	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                     cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	info.cause_map = cause_map;
 
@@ -130,7 +131,7 @@ static int sl_ctrl_async_link_down_notif_send(struct sl_ctrl_link *ctrl_link, u6
 static int sl_ctrl_link_down_notif_send(struct sl_ctrl_link *ctrl_link, u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
-	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                     cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	info.cause_map = cause_map;
 
@@ -145,7 +146,7 @@ static int sl_ctrl_link_down_notif_send(struct sl_ctrl_link *ctrl_link, u64 caus
 static int sl_ctrl_link_down_req_notif_send(struct sl_ctrl_link *ctrl_link, u64 cause_map, u64 info_map)
 {
 	union sl_lgrp_notif_info info;
-	char                     cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                     cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	info.cause_map = cause_map;
 
@@ -241,7 +242,7 @@ static void sl_ctrl_link_state_stopping_set(struct sl_ctrl_link *ctrl_link)
 int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 {
 	struct sl_ctrl_link         *ctrl_link;
-	char                         core_imap_str[SL_LINK_INFO_STRLEN];
+	char                         core_imap_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int                          max_up_tries;
 	u32                          up_count;
 	int                          rtn;
@@ -475,7 +476,7 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 int sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map)
 {
 	struct sl_ctrl_link      *ctrl_link;
-	char                      core_imap_str[SL_LINK_INFO_STRLEN];
+	char                      core_imap_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int                       rtn;
 	union sl_lgrp_notif_info  info;
 
@@ -663,7 +664,7 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 {
 	int  rtn;
 	u32  link_state;
-	char cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME,

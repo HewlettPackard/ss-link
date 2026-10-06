@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link.h"
@@ -334,7 +335,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 	u64                  info_map;
-	char                 info_map_str[900];
+	char                 info_map_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, kobj);
 
@@ -470,7 +471,7 @@ static ssize_t last_down_cause_map_show(struct kobject *kobj, struct kobj_attrib
 	struct sl_ctrl_link *ctrl_link;
 	u64                  down_cause_map;
 	time64_t             down_time;
-	char                 cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                 cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, last_down_kobj);
@@ -583,7 +584,7 @@ static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_att
 	struct sl_ctrl_link *ctrl_link;
 	u64                  up_fail_cause_map;
 	time64_t             up_fail_time;
-	char                 cause_str[SL_LINK_UP_FAIL_CAUSE_STR_SIZE];
+	char                 cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		     rtn;
 
 	ctrl_link = container_of(kobj, struct sl_ctrl_link, last_up_fail_kobj);

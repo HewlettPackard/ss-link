@@ -8,6 +8,7 @@
 
 #include "sl_asic.h"
 
+#include "sl_common.h"
 #include "sl_media_lgrp.h"
 #include "sl_media_jack.h"
 #include "data/sl_media_data_lgrp.h"
@@ -500,34 +501,18 @@ int sl_media_lgrp_loopback_caps_get(u8 ldev_num, u8 lgrp_num, u8 *loopback_caps)
 	return sl_media_data_lgrp_loopback_caps_get(sl_media_data_lgrp_get(ldev_num, lgrp_num), loopback_caps);
 }
 
+static const char * const sl_media_lgrp_loopback_caps_strings[] = {
+	[SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA_BIT] = "media",
+	[SL_MEDIA_JACK_LOOPBACK_CAP_HOST_BIT]  = "host",
+};
+
+static const struct sl_str_map sl_media_lgrp_loopback_caps_str_map = {
+	.strings     = sl_media_lgrp_loopback_caps_strings,
+	.num_strings = ARRAY_SIZE(sl_media_lgrp_loopback_caps_strings),
+};
+
 int sl_media_lgrp_loopback_caps_str(unsigned long loopback_caps, char *caps_str, unsigned int caps_str_size)
 {
-	int which;
-
-	if (!caps_str || caps_str_size < SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE)
-		return -EINVAL;
-
-	if (!loopback_caps) {
-		strscpy(caps_str, "none", caps_str_size);
-		return 0;
-	}
-
-	strscpy(caps_str, "", caps_str_size);
-
-	for_each_set_bit(which, &loopback_caps, BITS_PER_LONG) {
-		switch (BIT(which)) {
-		case SL_MEDIA_JACK_LOOPBACK_CAP_HOST:
-			strlcat(caps_str, "host ", caps_str_size);
-			break;
-		case SL_MEDIA_JACK_LOOPBACK_CAP_MEDIA:
-			strlcat(caps_str, "media ", caps_str_size);
-			break;
-		default:
-			break;
-		}
-	}
-
-	strim(caps_str);
-
-	return 0;
+	return sl_str_map_create(loopback_caps, &sl_media_lgrp_loopback_caps_str_map,
+				 caps_str, caps_str_size);
 }

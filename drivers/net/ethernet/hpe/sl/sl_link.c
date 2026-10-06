@@ -8,6 +8,7 @@
 
 #include "sl_asic.h"
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_lgrp.h"
 #include "sl_link.h"
 #include "sl_core_str.h"
@@ -410,220 +411,75 @@ EXPORT_SYMBOL(sl_link_policy_opt_str);
 	SL_LINK_DOWN_ORIGIN_ASYNC   |\
 	SL_LINK_DOWN_ORIGIN_LINK_UP)
 
+static const char * const sl_link_down_cause_strings[] = {
+	[SL_LINK_DOWN_CAUSE_UCW_BIT]                        = "ucw",
+	[SL_LINK_DOWN_CAUSE_LF_BIT]                         = "lcl-fault",
+	[SL_LINK_DOWN_CAUSE_RF_BIT]                         = "rmt-fault",
+	[SL_LINK_DOWN_CAUSE_DOWN_BIT]                       = "link-down",
+	[SL_LINK_DOWN_CAUSE_UP_TRIES_BIT]                   = "up-tries",
+	[SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_BIT]            = "autoneg-nomatch",
+	[SL_LINK_DOWN_CAUSE_AUTONEG_BIT]                    = "autoneg-fail",
+	[SL_LINK_DOWN_CAUSE_CONFIG_BIT]                     = "config",
+	[SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE_BIT]             = "intr-up-enable",
+	[SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE_BIT]       = "intr-high-ser-enable",
+	[SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE_BIT]    = "intr-llr-starved-enable",
+	[SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE_BIT] = "intr-llr-max-starve-enable",
+	[SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_BIT]          = "intr-fault-enable",
+	[SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE_BIT]   = "intr-lane-degrade-enable",
+	[SL_LINK_DOWN_CAUSE_TIMEOUT_BIT]                    = "timeout",
+	[SL_LINK_DOWN_CAUSE_CANCELED_BIT]                   = "canceled",
+	[SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_BIT]          = "unsupported-cable",
+	[SL_LINK_DOWN_CAUSE_COMMAND_BIT]                    = "command",
+	[SL_LINK_DOWN_CAUSE_DOWNSHIFT_BIT]                  = "downshift-fail",
+	[SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_BIT]             = "llr-replay-at-max",
+	[SL_LINK_DOWN_CAUSE_UPSHIFT_BIT]                    = "upshift-fail",
+	[SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_BIT]             = "an-config",
+	[SL_LINK_DOWN_CAUSE_PCS_FAULT_BIT]                  = "pcs-fault",
+	[SL_LINK_DOWN_CAUSE_SERDES_PLL_BIT]                 = "serdes-pll",
+	[SL_LINK_DOWN_CAUSE_SERDES_CONFIG_BIT]              = "serdes-config",
+	[SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_BIT]              = "serdes-signal",
+	[SL_LINK_DOWN_CAUSE_SERDES_QUALITY_BIT]             = "serdes-quality",
+	[SL_LINK_DOWN_CAUSE_NO_MEDIA_BIT]                   = "no-media",
+	[SL_LINK_DOWN_CAUSE_CCW_BIT]                        = "ccw",
+	[SL_LINK_DOWN_CAUSE_MEDIA_HOT_BIT]                  = "media-hot",
+	[SL_LINK_DOWN_CAUSE_MEDIA_WARM_BIT]                 = "media-warm",
+	[SL_LINK_DOWN_CAUSE_INTR_REGISTER_BIT]              = "interrupt-reg",
+	[SL_LINK_DOWN_CAUSE_MEDIA_ERROR_BIT]                = "media-error",
+	[SL_LINK_DOWN_CAUSE_UP_CANCELED_BIT]                = "up-canceled",
+	[SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_BIT]          = "unsupported-speed",
+	[SL_LINK_DOWN_CAUSE_SS200_CABLE_BIT]                = "ss200-cable",
+	[SL_LINK_DOWN_CAUSE_TX_LOL_BIT]                     = "tx-lol",
+	[SL_LINK_DOWN_CAUSE_RX_LOL_BIT]                     = "rx-lol",
+	[SL_LINK_DOWN_CAUSE_TX_LOS_BIT]                     = "tx-los",
+	[SL_LINK_DOWN_CAUSE_RX_LOS_BIT]                     = "rx-los",
+	[SL_LINK_DOWN_CAUSE_FEC_CONFIG_BIT]                 = "fec-config",
+	[SL_LINK_DOWN_CAUSE_LOOPBACK_IO_BIT]                = "loopback-io",
+	[SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_BIT]       = "loopback-unsupported",
+	[SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_BIT]        = "partner-loopback-on",
+	[SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG_BIT]            = "loopback-config",
+	[SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_BIT]  = "partner-loopback-mismatch",
+	[SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON_BIT]          = "loopback-media-on",
+	[SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY_BIT]      = "media-cable-not-ready",
+	[SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_BIT]          = "media-cable-fault",
+	[SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION_BIT]     = "media-cable-transition",
+	[SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO_BIT]             = "media-cable-io",
+	[SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE_BIT]  = "media-cable-invalid-state",
+
+	[SL_LINK_DOWN_RETRYABLE_BIT]                        = "retryable",
+	[SL_LINK_DOWN_ORIGIN_ASYNC_BIT]                     = "origin-async",
+	[SL_LINK_DOWN_ORIGIN_LINK_UP_BIT]                   = "origin-up",
+};
+
+static const struct sl_str_map sl_link_down_cause_str_map = {
+	.strings     = sl_link_down_cause_strings,
+	.num_strings = ARRAY_SIZE(sl_link_down_cause_strings),
+};
+
 static int sl_link_down_cause_map_masked_str(unsigned long cause_map, char *cause_str, unsigned int cause_str_size,
 					     u64 mask)
 {
-	int rtn;
-	int str_pos;
-	int which;
-
-	if (!cause_str)
-		return -EINVAL;
-
-	if (cause_str_size < SL_LINK_DOWN_CAUSE_STR_SIZE_MIN)
-		return -EINVAL;
-
-	if (cause_map == SL_LINK_DOWN_CAUSE_NONE) {
-		str_pos = snprintf(cause_str, cause_str_size, "none ");
-		goto out;
-	}
-
-	cause_map &= mask;
-
-	str_pos = 0;
-
-	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
-
-		switch (BIT(which)) {
-		case SL_LINK_DOWN_CAUSE_UCW:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ucw ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LF:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
-			break;
-		case SL_LINK_DOWN_CAUSE_RF:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
-			break;
-		case SL_LINK_DOWN_CAUSE_DOWN:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UP_TRIES:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-tries ");
-			break;
-		case SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-nomatch ");
-			break;
-		case SL_LINK_DOWN_CAUSE_AUTONEG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "autoneg-fail ");
-			break;
-		case SL_LINK_DOWN_CAUSE_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-up-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-high-ser-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-llr-starved-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-llr-max-starve-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-fault-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "intr-lane-degrade-enable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_TIMEOUT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "timeout ");
-			break;
-		case SL_LINK_DOWN_CAUSE_CANCELED:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "canceled ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-cable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_COMMAND:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "command ");
-			break;
-		case SL_LINK_DOWN_CAUSE_DOWNSHIFT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "downshift-fail ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "llr-replay-at-max ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UPSHIFT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "upshift-fail ");
-			break;
-		case SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "an-config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_PCS_FAULT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "pcs-fault ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_PLL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-pll ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_SIGNAL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-signal ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SERDES_QUALITY:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "serdes-quality ");
-			break;
-		case SL_LINK_DOWN_CAUSE_NO_MEDIA:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "no-media ");
-			break;
-		case SL_LINK_DOWN_CAUSE_CCW:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ccw ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_HOT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-hot ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_WARM:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-warm ");
-			break;
-		case SL_LINK_DOWN_CAUSE_INTR_REGISTER:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "interrupt-reg ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_ERROR:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-error ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UP_CANCELED:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "up-canceled ");
-			break;
-		case SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unsupported-speed ");
-			break;
-		case SL_LINK_DOWN_CAUSE_SS200_CABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "ss200-cable ");
-			break;
-		case SL_LINK_DOWN_CAUSE_TX_LOL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "tx-lol ");
-			break;
-		case SL_LINK_DOWN_CAUSE_RX_LOL:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rx-lol ");
-			break;
-		case SL_LINK_DOWN_CAUSE_TX_LOS:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "tx-los ");
-			break;
-		case SL_LINK_DOWN_CAUSE_RX_LOS:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rx-los ");
-			break;
-		case SL_LINK_DOWN_CAUSE_FEC_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "fec-config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LOOPBACK_IO:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-io ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-unsupported ");
-			break;
-		case SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "partner-loopback-on ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-config ");
-			break;
-		case SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "partner-loopback-mismatch ");
-			break;
-		case SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "loopback-media-on ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-not-ready ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-fault ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-transition ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-io ");
-			break;
-		case SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "media-cable-invalid-state ");
-			break;
-
-		case SL_LINK_DOWN_RETRYABLE:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "retryable ");
-			break;
-		case SL_LINK_DOWN_ORIGIN_ASYNC:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-async ");
-			break;
-		case SL_LINK_DOWN_ORIGIN_LINK_UP:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "origin-up ");
-			break;
-
-		default:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
-			break;
-		}
-
-		if (rtn < 0) {
-			str_pos = snprintf(cause_str, cause_str_size, "error ");
-			goto out;
-		}
-		if (str_pos + rtn >= cause_str_size) {
-			cause_str[str_pos - 2] = '.';
-			cause_str[str_pos - 3] = '.';
-			cause_str[str_pos - 4] = '.';
-			break;
-		}
-		str_pos += rtn;
-	}
-
-out:
-	cause_str[str_pos - 1] = '\0';
-
-	return 0;
+	return sl_str_map_create(cause_map &= mask, &sl_link_down_cause_str_map,
+				 cause_str, cause_str_size);
 }
 
 int sl_link_down_cause_map_str(u64 cause_map, char *cause_str, unsigned int cause_str_size)

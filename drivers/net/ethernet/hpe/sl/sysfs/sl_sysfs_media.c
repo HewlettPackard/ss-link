@@ -7,6 +7,7 @@
 #include <linux/hpe/sl/sl_media.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "sl_core_str.h"
 #include "sl_core_lgrp.h"
@@ -813,7 +814,7 @@ static ssize_t last_io_fault_cause_show(struct kobject *kobj, struct kobj_attrib
 	u32                   fault_cause;
 	time64_t              io_fault_time;
 	time64_t              fault_time;
-	char		      io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char		      io_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
@@ -848,7 +849,7 @@ static ssize_t last_io_fault_time_show(struct kobject *kobj, struct kobj_attribu
 	u32                   fault_cause;
 	time64_t              io_fault_time;
 	time64_t              fault_time;
-	char		      io_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char		      io_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
@@ -883,7 +884,7 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 	u32                   fault_cause;
 	time64_t              io_fault_time;
 	time64_t              fault_time;
-	char		      fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char		      fault_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
@@ -918,7 +919,7 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 	u32                   fault_cause;
 	time64_t              io_fault_time;
 	time64_t              fault_time;
-	char		      fault_cause_str[SL_MEDIA_FAULT_CAUSE_STR_SIZE];
+	char		      fault_cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int		      rtn;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
@@ -1009,7 +1010,7 @@ static ssize_t error_info_show(struct kobject *kobj, struct kobj_attribute *katt
 	int                   rtn;
 	u32                   error_map;
 	struct sl_media_lgrp *media_lgrp;
-	char                  error_str[SL_MEDIA_JACK_ATTR_ERR_STR_SIZE];
+	char                  error_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);
 
@@ -1031,7 +1032,7 @@ static ssize_t loopback_caps_show(struct kobject *kobj, struct kobj_attribute *k
 {
 	int                   rtn;
 	struct sl_media_lgrp *media_lgrp;
-	char                  caps_str[SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE];
+	char                  caps_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	u8                    loopback_caps;
 
 	media_lgrp = container_of(kobj, struct sl_media_lgrp, kobj);

@@ -1359,58 +1359,22 @@ void sl_core_data_link_pml_rec_last_down_cause_cntr_inc(struct sl_core_link *cor
 			   [SL_LINK_PML_REC_LINK_REMOTE_FAULT_FAILED_CAUSE]);
 }
 
+static const char * const sl_core_data_link_pml_rec_down_cause_strings[] = {
+	[PML_REC_DOWN_CAUSE_LINK_DOWN]    = "link-down",
+	[PML_REC_DOWN_CAUSE_LOCAL_FAULT]  = "lcl-fault",
+	[PML_REC_DOWN_CAUSE_REMOTE_FAULT] = "rmt-fault",
+};
+
+static const struct sl_str_map sl_core_data_link_pml_rec_down_cause_str_map = {
+	.strings     = sl_core_data_link_pml_rec_down_cause_strings,
+	.num_strings = ARRAY_SIZE(sl_core_data_link_pml_rec_down_cause_strings),
+};
+
 int sl_core_data_link_pml_rec_down_cause_map_str(unsigned long cause_map, char *cause_str, unsigned int cause_str_size)
 {
-	int rtn;
-	int str_pos;
-	int which;
-
-	if (!cause_str)
-		return -EINVAL;
-
-	if (cause_str_size < PML_REC_DOWN_CAUSE_STR_SIZE_MIN)
-		return -EINVAL;
-
-	if (cause_map == PML_REC_DOWN_CAUSE_INVALID) {
-		str_pos = snprintf(cause_str, cause_str_size, "none ");
-		goto out;
-	}
-
-	str_pos = 0;
-
-	for_each_set_bit(which, &cause_map, sizeof(cause_map) * BITS_PER_BYTE) {
-		switch (BIT(which)) {
-		case PML_REC_DOWN_CAUSE_LINK_DOWN:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "link-down ");
-			break;
-		case PML_REC_DOWN_CAUSE_LOCAL_FAULT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "lcl-fault ");
-			break;
-		case PML_REC_DOWN_CAUSE_REMOTE_FAULT:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "rmt-fault ");
-			break;
-		default:
-			rtn = snprintf(cause_str + str_pos, cause_str_size - str_pos, "unknown ");
-			break;
-		}
-
-		if (rtn < 0) {
-			str_pos = snprintf(cause_str, cause_str_size, "error ");
-			goto out;
-		}
-		if (str_pos + rtn >= cause_str_size) {
-			cause_str[str_pos - 2] = '.';
-			cause_str[str_pos - 3] = '.';
-			cause_str[str_pos - 4] = '.';
-			break;
-		}
-		str_pos += rtn;
-	}
-
-out:
-	cause_str[str_pos - 1] = '\0';
-
-	return 0;
+	return sl_str_map_create(cause_map,
+				 &sl_core_data_link_pml_rec_down_cause_str_map,
+				 cause_str, cause_str_size);
 }
 
 void sl_core_data_link_high_ser_time_set(struct sl_core_link *core_link)

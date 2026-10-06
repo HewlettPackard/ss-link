@@ -14,6 +14,7 @@
 #include <linux/hpe/sl/sl_media.h>
 
 #include "sl_asic.h"
+#include "sl_common.h"
 #include "sl_lgrp.h"
 #include "sl_test_pdev.h"
 #include "log/sl_log.h"
@@ -134,7 +135,7 @@ static int sl_test_lgrp_notif_setup(void)
 static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf, size_t size)
 {
 	struct sl_lgrp_notif_msg *msg;
-	char                      cause_str[SL_LINK_DOWN_CAUSE_STR_SIZE];
+	char                      cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	msg = &event->msg;
 

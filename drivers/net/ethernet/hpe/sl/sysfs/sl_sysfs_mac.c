@@ -7,6 +7,7 @@
 #include <linux/hpe/sl/sl_mac.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "sl_ctrl_mac.h"
 #include "sl_ctrl_lgrp.h"
@@ -100,7 +101,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	int                 rtn;
 	struct sl_ctrl_mac *ctrl_mac;
 	u64                 info_map;
-	char                info_map_str[900];
+	char                info_map_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	ctrl_mac = container_of(kobj, struct sl_ctrl_mac, kobj);
 

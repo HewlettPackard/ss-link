@@ -11,8 +11,6 @@
 struct sl_lgrp;
 struct sl_link;
 
-#define SL_LINK_INFO_STRLEN 128
-
 enum sl_link_state {
 	SL_LINK_STATE_INVALID,
 	SL_LINK_STATE_DOWN,
@@ -169,67 +167,125 @@ struct sl_link_pml_rec_info {
 
 #define SL_LINK_INFINITE_UP_TRIES ~0
 
+enum sl_link_down_cause_bit {
+	SL_LINK_DOWN_CAUSE_UCW_BIT = 0,
+	SL_LINK_DOWN_CAUSE_LF_BIT,
+	SL_LINK_DOWN_CAUSE_RF_BIT,
+	SL_LINK_DOWN_CAUSE_DOWN_BIT,
+	SL_LINK_DOWN_CAUSE_UP_TRIES_BIT,
+	SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_BIT,
+	SL_LINK_DOWN_CAUSE_AUTONEG_BIT,
+	SL_LINK_DOWN_CAUSE_CONFIG_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE_BIT,
+	SL_LINK_DOWN_CAUSE_TIMEOUT_BIT,
+	SL_LINK_DOWN_CAUSE_CANCELED_BIT,
+	SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_BIT,
+	SL_LINK_DOWN_CAUSE_COMMAND_BIT,
+	SL_LINK_DOWN_CAUSE_DOWNSHIFT_BIT,
+	SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_BIT,
+	SL_LINK_DOWN_CAUSE_UPSHIFT_BIT,
+	SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_BIT,
+	SL_LINK_DOWN_CAUSE_PCS_FAULT_BIT,
+	SL_LINK_DOWN_CAUSE_SERDES_PLL_BIT,
+	SL_LINK_DOWN_CAUSE_SERDES_CONFIG_BIT,
+	SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_BIT,
+	SL_LINK_DOWN_CAUSE_SERDES_QUALITY_BIT,
+	SL_LINK_DOWN_CAUSE_NO_MEDIA_BIT,
+	SL_LINK_DOWN_CAUSE_CCW_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_HOT_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_WARM_BIT,
+	SL_LINK_DOWN_CAUSE_INTR_REGISTER_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_ERROR_BIT,
+	SL_LINK_DOWN_CAUSE_UP_CANCELED_BIT,
+	SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_BIT,
+	SL_LINK_DOWN_CAUSE_SS200_CABLE_BIT,
+	SL_LINK_DOWN_CAUSE_TX_LOL_BIT,
+	SL_LINK_DOWN_CAUSE_RX_LOL_BIT,
+	SL_LINK_DOWN_CAUSE_TX_LOS_BIT,
+	SL_LINK_DOWN_CAUSE_RX_LOS_BIT,
+	SL_LINK_DOWN_CAUSE_FEC_CONFIG_BIT,
+	SL_LINK_DOWN_CAUSE_LOOPBACK_IO_BIT,
+	SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_BIT,
+	SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_BIT,
+	SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG_BIT,
+	SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_BIT,
+	SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO_BIT,
+	SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE_BIT,
+
+	SL_LINK_DOWN_RETRYABLE_BIT                         = 61,
+	SL_LINK_DOWN_ORIGIN_ASYNC_BIT,
+	SL_LINK_DOWN_ORIGIN_LINK_UP_BIT,
+};
+
 #define SL_LINK_DOWN_CAUSE_NONE                       0
-#define SL_LINK_DOWN_CAUSE_UCW                        BIT(1)  /* link up or fec mon UCW limit crossed       */
-#define SL_LINK_DOWN_CAUSE_LF                         BIT(2)  /* link local fault                           */
-#define SL_LINK_DOWN_CAUSE_RF                         BIT(3)  /* link remote fault                          */
-#define SL_LINK_DOWN_CAUSE_DOWN                       BIT(4)  /* link down fault                            */
-#define SL_LINK_DOWN_CAUSE_UP_TRIES                   BIT(5)  /* link up tries exhausted                    */
-#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH            BIT(6)  /* lp_caps autoneg no match                   */
-#define SL_LINK_DOWN_CAUSE_AUTONEG                    BIT(7)  /* autoneg failure                            */
-#define SL_LINK_DOWN_CAUSE_CONFIG                     BIT(8)  /* link up bad config                         */
-#define SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE             BIT(9)  /* link up intr up enable failure             */
-#define SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE       BIT(10) /* link up intr high serdes enable failure    */
-#define SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE    BIT(11) /* link up intr llr starved enable failure    */
-#define SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE BIT(12) /* link up intr llr max starve enable failure */
-#define SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE          BIT(13) /* link up intr fault enable failure          */
-#define SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE   BIT(14) /* link up intr lane degrade enable failure   */
-#define SL_LINK_DOWN_CAUSE_TIMEOUT                    BIT(15) /* link up timeout                            */
-#define SL_LINK_DOWN_CAUSE_CANCELED                   BIT(16) /* link up cancelled                          */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE          BIT(17) /* unsupported cable                          */
-#define SL_LINK_DOWN_CAUSE_COMMAND                    BIT(18) /* client command                             */
-#define SL_LINK_DOWN_CAUSE_DOWNSHIFT                  BIT(19) /* link up cable downshift failed             */
-#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX             BIT(20) /* LLR replay at max fault                    */
-#define SL_LINK_DOWN_CAUSE_UPSHIFT                    BIT(21) /* link up cable upshift failed               */
-#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG             BIT(22) /* link up config after an failed             */
-#define SL_LINK_DOWN_CAUSE_PCS_FAULT                  BIT(23) /* link up PCS is not ok                      */
-#define SL_LINK_DOWN_CAUSE_SERDES_PLL                 BIT(24) /* link up serdes problems                    */
-#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG              BIT(25) /* link up serdes config problems             */
-#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL              BIT(26) /* link up serdes signal problems             */
-#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY             BIT(27) /* link up serdes quality problems            */
-#define SL_LINK_DOWN_CAUSE_NO_MEDIA                   BIT(28) /* no media present                           */
-#define SL_LINK_DOWN_CAUSE_CCW                        BIT(29) /* link up or fec mon CCW limit crossed       */
-#define SL_LINK_DOWN_CAUSE_MEDIA_HOT                  BIT(30) /* active cable hot                           */
-#define SL_LINK_DOWN_CAUSE_MEDIA_WARM                 BIT(31) /* active cable warm                          */
-#define SL_LINK_DOWN_CAUSE_INTR_REGISTER              BIT(32) /* link up interrupt register failure         */
-#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR                BIT(33) /* media has errors                           */
-#define SL_LINK_DOWN_CAUSE_UP_CANCELED                BIT(34) /* link up canceled, link down                */
-#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED          BIT(35) /* unsupported speed                          */
-#define SL_LINK_DOWN_CAUSE_SS200_CABLE                BIT(36) /* SS200 cable                                */
-#define SL_LINK_DOWN_CAUSE_TX_LOL                     BIT(37) /* TX Loss of Lock                            */
-#define SL_LINK_DOWN_CAUSE_RX_LOL                     BIT(38) /* RX Loss of Lock                            */
-#define SL_LINK_DOWN_CAUSE_TX_LOS                     BIT(39) /* TX Loss of Signal                          */
-#define SL_LINK_DOWN_CAUSE_RX_LOS                     BIT(40) /* RX Loss of Signal                          */
-#define SL_LINK_DOWN_CAUSE_FEC_CONFIG                 BIT(41) /* Invalid FEC configuration                  */
-#define SL_LINK_DOWN_CAUSE_LOOPBACK_IO                BIT(42) /* IO error setting loopback in media         */
-#define SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED       BIT(43) /* Loopback configuration not supported       */
-#define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON        BIT(44) /* Forced down, partner in loopback           */
-#define SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG            BIT(45) /* Invalid loopback configuration             */
-#define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH  BIT(46) /* Partner loopback config mismatch           */
-#define SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON          BIT(47) /* Media in loopback link up impossible       */
-#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY      BIT(48) /* Media cable not ready (low power)          */
-#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT          BIT(49) /* Media cable fault                          */
-#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION     BIT(50) /* Media cable in power transition            */
-#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO             BIT(51) /* Media cable IO error                       */
-#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE  BIT(52) /* Media cable invalid state                  */
 
-#define SL_LINK_DOWN_RETRYABLE                        BIT(61) /* client retry possible                      */
-#define SL_LINK_DOWN_ORIGIN_ASYNC                     BIT(62) /* link down cause was asynchronous           */
-#define SL_LINK_DOWN_ORIGIN_LINK_UP                   BIT(63) /* link down before reaching up               */
+#define SL_LINK_DOWN_CAUSE_UCW                        BIT(SL_LINK_DOWN_CAUSE_UCW_BIT)                        /* link up or fec mon UCW limit crossed       */
+#define SL_LINK_DOWN_CAUSE_LF                         BIT(SL_LINK_DOWN_CAUSE_LF_BIT)                         /* link local fault                           */
+#define SL_LINK_DOWN_CAUSE_RF                         BIT(SL_LINK_DOWN_CAUSE_RF_BIT)                         /* link remote fault                          */
+#define SL_LINK_DOWN_CAUSE_DOWN                       BIT(SL_LINK_DOWN_CAUSE_DOWN_BIT)                       /* link down fault                            */
+#define SL_LINK_DOWN_CAUSE_UP_TRIES                   BIT(SL_LINK_DOWN_CAUSE_UP_TRIES_BIT)                   /* link up tries exhausted                    */
+#define SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH            BIT(SL_LINK_DOWN_CAUSE_AUTONEG_NOMATCH_BIT)            /* lp_caps autoneg no match                   */
+#define SL_LINK_DOWN_CAUSE_AUTONEG                    BIT(SL_LINK_DOWN_CAUSE_AUTONEG_BIT)                    /* autoneg failure                            */
+#define SL_LINK_DOWN_CAUSE_CONFIG                     BIT(SL_LINK_DOWN_CAUSE_CONFIG_BIT)                     /* link up bad config                         */
+#define SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE             BIT(SL_LINK_DOWN_CAUSE_INTR_UP_ENABLE_BIT)             /* link up intr up enable failure             */
+#define SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE       BIT(SL_LINK_DOWN_CAUSE_INTR_HIGH_SER_ENABLE_BIT)       /* link up intr high serdes enable failure    */
+#define SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE    BIT(SL_LINK_DOWN_CAUSE_INTR_LLR_STARVED_ENABLE_BIT)    /* link up intr llr starved enable failure    */
+#define SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE BIT(SL_LINK_DOWN_CAUSE_INTR_LLR_MAX_STARVE_ENABLE_BIT) /* link up intr llr max starve enable failure */
+#define SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE          BIT(SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_BIT)          /* link up intr fault enable failure          */
+#define SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE   BIT(SL_LINK_DOWN_CAUSE_INTR_LANE_DEGRADE_ENABLE_BIT)   /* link up intr lane degrade enable failure   */
+#define SL_LINK_DOWN_CAUSE_TIMEOUT                    BIT(SL_LINK_DOWN_CAUSE_TIMEOUT_BIT)                    /* link up timeout                            */
+#define SL_LINK_DOWN_CAUSE_CANCELED                   BIT(SL_LINK_DOWN_CAUSE_CANCELED_BIT)                   /* link up cancelled                          */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE          BIT(SL_LINK_DOWN_CAUSE_UNSUPPORTED_CABLE_BIT)          /* unsupported cable                          */
+#define SL_LINK_DOWN_CAUSE_COMMAND                    BIT(SL_LINK_DOWN_CAUSE_COMMAND_BIT)                    /* client command                             */
+#define SL_LINK_DOWN_CAUSE_DOWNSHIFT                  BIT(SL_LINK_DOWN_CAUSE_DOWNSHIFT_BIT)                  /* link up cable downshift failed             */
+#define SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX             BIT(SL_LINK_DOWN_CAUSE_LLR_REPLAY_MAX_BIT)             /* LLR replay at max fault                    */
+#define SL_LINK_DOWN_CAUSE_UPSHIFT                    BIT(SL_LINK_DOWN_CAUSE_UPSHIFT_BIT)                    /* link up cable upshift failed               */
+#define SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG             BIT(SL_LINK_DOWN_CAUSE_AUTONEG_CONFIG_BIT)             /* link up config after an failed             */
+#define SL_LINK_DOWN_CAUSE_PCS_FAULT                  BIT(SL_LINK_DOWN_CAUSE_PCS_FAULT_BIT)                  /* link up PCS is not ok                      */
+#define SL_LINK_DOWN_CAUSE_SERDES_PLL                 BIT(SL_LINK_DOWN_CAUSE_SERDES_PLL_BIT)                 /* link up serdes problems                    */
+#define SL_LINK_DOWN_CAUSE_SERDES_CONFIG              BIT(SL_LINK_DOWN_CAUSE_SERDES_CONFIG_BIT)              /* link up serdes config problems             */
+#define SL_LINK_DOWN_CAUSE_SERDES_SIGNAL              BIT(SL_LINK_DOWN_CAUSE_SERDES_SIGNAL_BIT)              /* link up serdes signal problems             */
+#define SL_LINK_DOWN_CAUSE_SERDES_QUALITY             BIT(SL_LINK_DOWN_CAUSE_SERDES_QUALITY_BIT)             /* link up serdes quality problems            */
+#define SL_LINK_DOWN_CAUSE_NO_MEDIA                   BIT(SL_LINK_DOWN_CAUSE_NO_MEDIA_BIT)                   /* no media present                           */
+#define SL_LINK_DOWN_CAUSE_CCW                        BIT(SL_LINK_DOWN_CAUSE_CCW_BIT)                        /* link up or fec mon CCW limit crossed       */
+#define SL_LINK_DOWN_CAUSE_MEDIA_HOT                  BIT(SL_LINK_DOWN_CAUSE_MEDIA_HOT_BIT)                  /* active cable hot                           */
+#define SL_LINK_DOWN_CAUSE_MEDIA_WARM                 BIT(SL_LINK_DOWN_CAUSE_MEDIA_WARM_BIT)                 /* active cable warm                          */
+#define SL_LINK_DOWN_CAUSE_INTR_REGISTER              BIT(SL_LINK_DOWN_CAUSE_INTR_REGISTER_BIT)              /* link up interrupt register failure         */
+#define SL_LINK_DOWN_CAUSE_MEDIA_ERROR                BIT(SL_LINK_DOWN_CAUSE_MEDIA_ERROR_BIT)                /* media has errors                           */
+#define SL_LINK_DOWN_CAUSE_UP_CANCELED                BIT(SL_LINK_DOWN_CAUSE_UP_CANCELED_BIT)                /* link up canceled, link down                */
+#define SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED          BIT(SL_LINK_DOWN_CAUSE_UNSUPPORTED_SPEED_BIT)          /* unsupported speed                          */
+#define SL_LINK_DOWN_CAUSE_SS200_CABLE                BIT(SL_LINK_DOWN_CAUSE_SS200_CABLE_BIT)                /* SS200 cable                                */
+#define SL_LINK_DOWN_CAUSE_TX_LOL                     BIT(SL_LINK_DOWN_CAUSE_TX_LOL_BIT)                     /* TX Loss of Lock                            */
+#define SL_LINK_DOWN_CAUSE_RX_LOL                     BIT(SL_LINK_DOWN_CAUSE_RX_LOL_BIT)                     /* RX Loss of Lock                            */
+#define SL_LINK_DOWN_CAUSE_TX_LOS                     BIT(SL_LINK_DOWN_CAUSE_TX_LOS_BIT)                     /* TX Loss of Signal                          */
+#define SL_LINK_DOWN_CAUSE_RX_LOS                     BIT(SL_LINK_DOWN_CAUSE_RX_LOS_BIT)                     /* RX Loss of Signal                          */
+#define SL_LINK_DOWN_CAUSE_FEC_CONFIG                 BIT(SL_LINK_DOWN_CAUSE_FEC_CONFIG_BIT)                 /* Invalid FEC configuration                  */
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_IO                BIT(SL_LINK_DOWN_CAUSE_LOOPBACK_IO_BIT)                /* IO error setting loopback in media         */
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED       BIT(SL_LINK_DOWN_CAUSE_LOOPBACK_UNSUPPORTED_BIT)       /* Loopback configuration not supported       */
+#define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON        BIT(SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_BIT)        /* Forced down, partner in loopback           */
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG            BIT(SL_LINK_DOWN_CAUSE_LOOPBACK_CONFIG_BIT)            /* Invalid loopback configuration             */
+#define SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH  BIT(SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_MISMATCH_BIT)  /* Partner loopback config mismatch           */
+#define SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON          BIT(SL_LINK_DOWN_CAUSE_LOOPBACK_MEDIA_ON_BIT)          /* Media in loopback link up impossible       */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY      BIT(SL_LINK_DOWN_CAUSE_MEDIA_CABLE_NOT_READY_BIT)      /* Media cable not ready (low power)          */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT          BIT(SL_LINK_DOWN_CAUSE_MEDIA_CABLE_FAULT_BIT)          /* Media cable fault                          */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION     BIT(SL_LINK_DOWN_CAUSE_MEDIA_CABLE_TRANSITION_BIT)     /* Media cable in power transition            */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO             BIT(SL_LINK_DOWN_CAUSE_MEDIA_CABLE_IO_BIT)             /* Media cable IO error                       */
+#define SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE  BIT(SL_LINK_DOWN_CAUSE_MEDIA_CABLE_INVALID_STATE_BIT)  /* Media cable invalid state                  */
 
-#define SL_LINK_DOWN_CAUSE_STR_SIZE     128
-#define SL_LINK_UP_FAIL_CAUSE_STR_SIZE  128
-#define SL_LINK_DOWN_CAUSE_STR_SIZE_MIN 4
+
+
+#define SL_LINK_DOWN_RETRYABLE                        BIT(SL_LINK_DOWN_RETRYABLE_BIT)                        /* client retry possible */
+#define SL_LINK_DOWN_ORIGIN_ASYNC                     BIT(SL_LINK_DOWN_ORIGIN_ASYNC_BIT)                     /* link down cause was asynchronous */
+#define SL_LINK_DOWN_ORIGIN_LINK_UP                   BIT(SL_LINK_DOWN_ORIGIN_LINK_UP_BIT)                   /* link down before reaching up */
 
 struct sl_link *sl_link_new(struct sl_lgrp *lgrp, u8 link_num, struct kobject *sysfs_parent);
 int             sl_link_del(struct sl_link *link);

@@ -2044,7 +2044,7 @@ void sl_core_hw_link_pml_rec_poll_work(struct work_struct *work)
 	struct sl_core_link *core_link;
 	ktime_t              current_time;
 	s64                  elapsed_time;
-	char                 cause_str[128];
+	char                 cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	core_link = container_of(work, struct sl_core_link, work[SL_CORE_WORK_LINK_PML_REC_POLL]);
 

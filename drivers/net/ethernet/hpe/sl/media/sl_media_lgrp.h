@@ -15,7 +15,6 @@
 #include "base/sl_media_log.h"
 
 #define SL_MEDIA_MAX_SUPPORTED_SPEEDS 9
-#define SL_MEDIA_JACK_LOOPBACK_CAPS_STR_SIZE 16
 
 struct sl_media_serdes_settings;
 

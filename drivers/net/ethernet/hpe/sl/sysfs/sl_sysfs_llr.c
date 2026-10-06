@@ -7,6 +7,7 @@
 #include <linux/hpe/sl/sl_llr.h>
 
 #include "sl_log.h"
+#include "sl_common.h"
 #include "sl_sysfs.h"
 #include "sl_core_str.h"
 #include "sl_ctrl_llr.h"
@@ -93,7 +94,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	int                 rtn;
 	struct sl_core_llr *core_llr;
 	u64                 info_map;
-	char                info_map_str[900];
+	char                info_map_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
 	core_llr = container_of(kobj, struct sl_core_llr, kobj);
 
