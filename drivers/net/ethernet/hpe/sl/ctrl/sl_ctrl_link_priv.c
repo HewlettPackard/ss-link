@@ -174,7 +174,7 @@ void sl_ctrl_link_up_time_start(struct sl_ctrl_link *ctrl_link)
 void sl_ctrl_link_up_time_stop(struct sl_ctrl_link *ctrl_link)
 {
 	spin_lock(&ctrl_link->up_time.lock);
-	ctrl_link->up_time.stop    = ktime_get();
+	ctrl_link->up_time.stop = ktime_get();
 	spin_unlock(&ctrl_link->up_time.lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up stop (time = %lld)", ctrl_link->up_time.stop);

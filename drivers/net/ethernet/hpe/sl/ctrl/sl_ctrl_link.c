@@ -957,17 +957,17 @@ int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 
 	spin_lock(&ctrl_link->up_time.lock);
 
-	if (ktime_compare(ctrl_link->up_time.attempt_stop, ktime_set(0, 0)))
+	if (ctrl_link->up_time.attempt_stop == 0)
 		*attempt_time = ktime_to_ms(ktime_sub(ktime_get(), ctrl_link->up_time.attempt_start));
 	else
-		*attempt_time = ktime_to_ms(ktime_sub(ctrl_link->up_time.attempt_start, ctrl_link->up_time.attempt_stop));
+		*attempt_time = ktime_to_ms(ktime_sub(ctrl_link->up_time.attempt_stop, ctrl_link->up_time.attempt_start));
 
-	if (ktime_compare(ctrl_link->up_time.stop, ktime_set(0, 0)))
+	if (ctrl_link->up_time.stop == 0)
 		*total_time = ktime_to_ms(ktime_sub(ktime_get(), ctrl_link->up_time.start));
 	else
 		*total_time = ktime_to_ms(ktime_sub(ctrl_link->up_time.stop, ctrl_link->up_time.start));
 
-	if (ktime_compare(ctrl_link->up_time.stop, ktime_set(0, 0)))
+	if (ctrl_link->up_time.stop == 0)
 		*up_time = 0;
 	else
 		*up_time = ktime_to_ms(ktime_sub(ktime_get(), ctrl_link->up_time.stop));
@@ -975,8 +975,8 @@ int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	spin_unlock(&ctrl_link->up_time.lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"up time get (attempt_time = %lld, total_time = %lld)",
-			*attempt_time, *total_time);
+			"up time get (attempt_time = %lldms, total_time = %lldms, up_time = %lldms)",
+			*attempt_time, *total_time, *up_time);
 
 	if (sl_ctrl_link_put(ctrl_link))
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
