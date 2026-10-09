@@ -5,7 +5,7 @@
 
 #include <linux/types.h>
 
-#define SL_STR_MAP_STR_SIZE_DEFAULT 1024
+#define SL_STR_MAP_STR_SIZE_DEFAULT 650 /* need headroom for frame size of 1024 */
 
 #define is_flag_set(_flags, _flag) ({              \
 		typeof(_flags) __flags = (_flags); \
