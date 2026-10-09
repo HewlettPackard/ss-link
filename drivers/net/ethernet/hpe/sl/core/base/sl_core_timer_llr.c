@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
+#include <linux/version.h>
 
 #include "sl_core_str.h"
 #include "sl_core_llr.h"
@@ -13,6 +14,10 @@
 #include "base/sl_core_log.h"
 
 #define LOG_NAME SL_CORE_TIMER_LLR_LOG_NAME
+
+#ifndef timer_container_of
+#define timer_container_of from_timer
+#endif
 
 void sl_core_timer_llr_begin(struct sl_core_llr *core_llr, u32 timer_num)
 {

@@ -5,6 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/time.h>
 #include <linux/workqueue.h>
+#include <linux/version.h>
 
 #include "base/sl_ctrl_log.h"
 #include "sl_ctrl_ldev.h"
@@ -19,10 +20,15 @@
 #include "sl_core_link.h"
 #include "sl_platform.h"
 
+#define LOG_NAME SL_CTRL_LINK_FEC_LOG_NAME
+
+#ifndef timer_container_of
+#define timer_container_of from_timer
+#endif
+
 #define SL_CTRL_LINK_UCW_LIMIT_MAX_CHANCES 2
 #define SL_CTRL_LINK_CCW_LIMIT_MAX_CHANCES 2
 #define SL_CTRL_LINK_FEC_MON_PERIOD_MS     500
-#define LOG_NAME SL_CTRL_LINK_FEC_LOG_NAME
 
 void sl_ctrl_link_fec_data_store(struct sl_ctrl_link *ctrl_link,
 	struct sl_core_link_fec_cw_cntrs   *cw_cntrs,

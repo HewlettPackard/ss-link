@@ -5,6 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
+#include <linux/version.h>
 
 #include "sl_core_ldev.h"
 #include "sl_core_lgrp.h"
@@ -19,6 +20,10 @@
 #include "hw/sl_core_hw_intr.h"
 
 #define LOG_NAME SL_CORE_TIMER_LINK_LOG_NAME
+
+#ifndef timer_container_of
+#define timer_container_of from_timer
+#endif
 
 void sl_core_timer_link_begin(struct sl_core_link *core_link, u32 timer_num)
 {
