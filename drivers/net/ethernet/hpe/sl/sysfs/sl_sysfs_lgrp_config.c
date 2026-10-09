@@ -25,7 +25,7 @@ static ssize_t mfs_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_ctrl_data_lgrp_mfs_get(ctrl_lgrp, &mfs);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "mfs show (mfs = %u)", mfs);
 
@@ -42,7 +42,7 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_data_lgrp_furcation_get(ctrl_lgrp, &furcation);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "furcation show (furcation = %u %s)",
 		   furcation, sl_lgrp_furcation_str(furcation));
@@ -60,7 +60,7 @@ static ssize_t fec_mode_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_ctrl_data_lgrp_fec_mode_get(ctrl_lgrp, &fec_mode);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "fec mode show (mode = %u %s)",
 		   fec_mode, sl_lgrp_fec_mode_str(fec_mode));
@@ -80,12 +80,12 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_ctrl_data_lgrp_tech_map_get(ctrl_lgrp, &tech_map);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "tech map show (map = 0x%X)", tech_map);
 
 	if (tech_map == 0)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	idx = 0;
 	if (is_flag_set(tech_map, SL_LGRP_CONFIG_TECH_CK_400G))
@@ -110,7 +110,7 @@ static ssize_t tech_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_tech_str(SL_LGRP_CONFIG_TECH_BJ_100G));
 	if (!idx)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	output[idx - 1] = '\0';
 
@@ -129,12 +129,12 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 	rtn = sl_ctrl_data_lgrp_fec_map_get(ctrl_lgrp, &fec_map);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "fec map show (map = 0x%X)", fec_map);
 
 	if (fec_map == 0)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	idx = 0;
 	if (is_flag_set(fec_map, SL_LGRP_CONFIG_FEC_RS_LL))
@@ -144,7 +144,7 @@ static ssize_t fec_map_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 		idx += snprintf(output + idx, sizeof(output) - idx, "%s ",
 			sl_lgrp_config_fec_str(SL_LGRP_CONFIG_FEC_RS));
 	if (!idx)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	output[idx - 1] = '\0';
 
@@ -161,12 +161,12 @@ static ssize_t link_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (options & SL_LGRP_CONFIG_OPT_FABRIC)
-		return sysfs_emit(buf, "fabric\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_FABRIC "\n");
 
-	return sysfs_emit(buf, "edge\n");
+	return sysfs_emit(buf, SL_SYSFS_STR_EDGE "\n");
 }
 
 static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -179,7 +179,7 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "loopback show (options = 0x%X)", options);
 
@@ -190,7 +190,7 @@ static ssize_t loopback_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (options & SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE)
 		return sysfs_emit(buf, "%s\n", sl_lgrp_config_opt_str(SL_LGRP_CONFIG_OPT_LOOPBACK_MEDIA_ENABLE));
 
-	return sysfs_emit(buf, "disabled\n");
+	return sysfs_emit(buf, SL_SYSFS_STR_DISABLED "\n");
 }
 
 static ssize_t preamble_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -203,14 +203,14 @@ static ssize_t preamble_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "preamble show (options = 0x%X)", options);
 
 	if (options & SL_LGRP_CONFIG_OPT_LONG_PREAMBLE)
-		return sysfs_emit(buf, "long\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_LONG "\n");
 
-	return sysfs_emit(buf, "short\n");
+	return sysfs_emit(buf, SL_SYSFS_STR_SHORT "\n");
 }
 
 static struct kobj_attribute lgrp_mfs       = __ATTR_RO(mfs);
@@ -233,7 +233,7 @@ static ssize_t err_trace_enable_show(struct kobject *kobj, struct kobj_attribute
 	//FIXME: This checks ctrl, core, and media layers
 	rtn = sl_ctrl_data_lgrp_is_err_trace_enabled(ctrl_lgrp, &is_err_trace_enabled);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "err trace enable show (is_err_trace_enabled = %u)", is_err_trace_enabled);
@@ -281,7 +281,7 @@ static ssize_t warn_trace_enable_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_data_lgrp_is_warn_trace_enabled(ctrl_lgrp, &is_warn_trace_enabled);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "warn trace enable show (is_warn_trace_enabled = %u)",
 		   is_warn_trace_enabled);
@@ -375,14 +375,14 @@ static ssize_t fabric_link_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "fabric link show (fabric link = %s)",
 		   (options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
 
 	return sysfs_emit(buf, "%s\n",
-			 (options & SL_LGRP_CONFIG_OPT_FABRIC) ? "enabled" : "disabled");
+			 (options & SL_LGRP_CONFIG_OPT_FABRIC) ? SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 static struct kobj_attribute lgrp_fabric_link = __ATTR_RO(fabric_link);
 
@@ -396,13 +396,14 @@ static ssize_t r1_partner_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_ctrl_data_lgrp_options_get(ctrl_lgrp, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "r1 partner show (r1 partner = %s)",
 		   (options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
 
-	return sysfs_emit(buf, "%s\n", (options & SL_LGRP_CONFIG_OPT_R1) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (options & SL_LGRP_CONFIG_OPT_R1) ?
+			  SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 static struct kobj_attribute lgrp_r1_partner  = __ATTR_RO(r1_partner);
 

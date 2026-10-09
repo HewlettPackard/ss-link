@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "sl_core_link.h"
 
 #include "sl_sysfs_link_fec_current.h"
@@ -25,12 +26,12 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ccw show sl_core_link_fec_ccw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ccw show (ccw = %llu)", ccw);
@@ -50,12 +51,12 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "ucw show sl_core_link_fec_ucw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "ucw show (ucw = %llu)", ucw);
@@ -75,12 +76,12 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "gcw show sl_core_link_fec_gcw_get failed [%d]", rtn);
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
@@ -134,12 +135,12 @@ static ssize_t link_fec_current_fecl_show(struct kobject *kobj, struct kobj_attr
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current fecl show sl_core_link_fec_lane_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current fecl show (num = %u, lane_num = %u, fecl %u = %llu)",
@@ -167,12 +168,12 @@ static ssize_t link_fec_current_bin_show(struct kobject *kobj, struct kobj_attri
 	if (rtn == -ENOLINK) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(core_link, LOG_BLOCK, LOG_NAME,
 				 "current bin show sl_core_link_fec_tail_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 	}
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "current bin show (bin %u = %llu)", num, ccw_bin);

@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "data/sl_ctrl_data_link.h"
 
 #include "sl_sysfs_link_fec_down.h"
@@ -25,7 +26,7 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "ccw show sl_ctrl_data_link_fec_down_cache_ccw_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -46,7 +47,7 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "ucw show sl_ctrl_data_link_fec_down_cache_ucw_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -67,7 +68,7 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "gcw show sl_ctrl_data_link_fec_down_cache_gcw_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -120,7 +121,7 @@ static ssize_t link_fec_down_fecl_show(struct kobject *kobj, struct kobj_attribu
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "current fecl show sl_ctrl_data_link_fec_down_cache_lane_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(fecl_kobj->ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -149,7 +150,7 @@ static ssize_t link_fec_down_bin_show(struct kobject *kobj, struct kobj_attribut
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			   "down bin show sl_ctrl_data_link_fec_down_cache_tail_cntr_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,

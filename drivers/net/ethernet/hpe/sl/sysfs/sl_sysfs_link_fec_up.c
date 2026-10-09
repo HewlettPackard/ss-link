@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "data/sl_ctrl_data_link.h"
 
 #include "sl_sysfs_link_fec_up.h"
@@ -23,7 +24,7 @@ static ssize_t ccw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_ctrl_data_link_fec_up_cache_ccw_cntr_get(ctrl_link, &ccw);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ccw show (ccw = %llu)", ccw);
 
@@ -40,7 +41,7 @@ static ssize_t ucw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_ctrl_data_link_fec_up_cache_ucw_cntr_get(ctrl_link, &ucw);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw show (ucw = %llu)", ucw);
 
@@ -57,7 +58,7 @@ static ssize_t gcw_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_ctrl_data_link_fec_up_cache_gcw_cntr_get(ctrl_link, &gcw);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "gcw show (link = 0x%p, gcw = %llu)", ctrl_link, gcw);
@@ -107,7 +108,7 @@ static ssize_t link_fec_up_fecl_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_data_link_fec_up_cache_lane_cntr_get(ctrl_link, fecl_num, &fecl);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(fecl_kobj->ctrl_link, LOG_BLOCK, LOG_NAME,
 		"current fecl show (link = 0x%p, num = %u, lane_num = %u, fecl %u = %llu)",
@@ -133,7 +134,7 @@ static ssize_t link_fec_up_bin_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_ctrl_data_link_fec_up_cache_tail_cntr_get(ctrl_link, num, &tail_cntr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"up bin show (link = 0x%p, bin %u = %llu)",

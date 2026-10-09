@@ -33,7 +33,7 @@ static ssize_t monitor_state_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_ctrl_link_fec_mon_state_get(ctrl_link, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "monitor state show (link = 0x%p, state = %u, %s)", ctrl_link, state,
 		   sl_ctrl_link_fec_mon_state_str(state));

@@ -5,9 +5,8 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
-#include "data/sl_core_data_llr.h"
-
 #include "sl_sysfs.h"
+#include "data/sl_core_data_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -23,7 +22,7 @@ static ssize_t llr_loop_time_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_core_data_llr_loop_time_get(core_llr, loop_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "loop time show (loop_time[%u] = %lluns)", num, loop_time[num]);
@@ -69,7 +68,7 @@ static ssize_t calc_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
 	rtn = sl_core_data_llr_loop_calculated_ns_get(core_llr, &calculated_ns);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "calc show (calculated_ns = %lluns)", calculated_ns);
@@ -87,7 +86,7 @@ static ssize_t min_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_data_llr_loop_min_ns_get(core_llr, &min_ns);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "min show (min_ns = %lluns)", min_ns);
@@ -105,7 +104,7 @@ static ssize_t max_ns_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_data_llr_loop_max_ns_get(core_llr, &max_ns);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "max show (max_ns = %lluns)", max_ns);
@@ -123,7 +122,7 @@ static ssize_t average_ns_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_core_data_llr_loop_average_ns_get(core_llr, &average_ns);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "average show (average_ns = %lluns)", average_ns);

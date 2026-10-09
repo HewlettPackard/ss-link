@@ -28,12 +28,12 @@ static ssize_t tx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
@@ -53,12 +53,12 @@ static ssize_t rx_source_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 				     lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 

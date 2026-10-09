@@ -27,12 +27,12 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 	rtn	  = sl_core_hw_serdes_tx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state tx show (asic_lane_num = %u, state = %u %s)",
@@ -50,12 +50,12 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 	rtn	  = sl_core_hw_serdes_rx_lane_state_get(core_lgrp, lane_kobj->asic_lane_num, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		"state rx show (asic_lane_num = %u, state = %u %s)",

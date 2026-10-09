@@ -26,7 +26,7 @@ static ssize_t cause_eeprom_format_unsupported_show(struct kobject *kobj, struct
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_FORMAT_UNSUPPORTED, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom format unsupported show (counter = %u)",
@@ -46,7 +46,7 @@ static ssize_t cause_eeprom_vendor_unsupported_show(struct kobject *kobj, struct
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_VENDOR_UNSUPPORTED, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom vendor unsupported show (counter = %u)",
@@ -66,7 +66,7 @@ static ssize_t cause_eeprom_jack_io_show(struct kobject *kobj, struct kobj_attri
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_EEPROM_JACK_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause eeprom jack io show (counter = %u)", counter);
@@ -85,7 +85,7 @@ static ssize_t cause_jack_get_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_JACK_GET, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause jack get show (counter = %u)", counter);
@@ -104,7 +104,7 @@ static ssize_t cause_jack_status_get_show(struct kobject *kobj, struct kobj_attr
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_JACK_STATUS_GET, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause jack status get show (counter = %u)", counter);
@@ -123,7 +123,7 @@ static ssize_t cause_cable_setup_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_CABLE_SETUP, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause cable setup show (counter = %u)", counter);
@@ -142,7 +142,7 @@ static ssize_t cause_active_cable_setup_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_ACTIVE_CABLE_SETUP, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause active cable setup show (counter = %u)", counter);
@@ -161,7 +161,7 @@ static ssize_t cause_serdes_settings_get_show(struct kobject *kobj, struct kobj_
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SERDES_SETTINGS_GET, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause serdes settings get show (counter = %u)", counter);
@@ -180,7 +180,7 @@ static ssize_t cause_media_attr_set_show(struct kobject *kobj, struct kobj_attri
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_MEDIA_ATTR_SET, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause media attr set show (counter = %u)", counter);
@@ -199,7 +199,7 @@ static ssize_t cause_high_power_set_jack_io_show(struct kobject *kobj, struct ko
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_HIGH_POWER_SET_JACK_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause high power set io show (counter = %u)", counter);
@@ -218,7 +218,7 @@ static ssize_t cause_shift_down_jack_io_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_DOWN_JACK_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift down jack io show (counter = %u)", counter);
@@ -239,7 +239,7 @@ static ssize_t cause_shift_down_jack_io_low_power_set_show(struct kobject *kobj,
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET,
 					      &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift down jack io low power set show (counter = %u)",
@@ -261,7 +261,7 @@ static ssize_t cause_shift_down_jack_io_high_power_set_show(struct kobject *kobj
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack,
 					      MEDIA_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift down jack io high power set show (counter = %u)",
@@ -281,7 +281,7 @@ static ssize_t cause_shift_up_jack_io_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_UP_JACK_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift up jack io show (counter = %u)", counter);
@@ -302,7 +302,7 @@ static ssize_t cause_shift_up_jack_io_low_power_set_show(struct kobject *kobj, s
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET,
 					      &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift up jack io low power set show (counter = %u)",
@@ -324,7 +324,7 @@ static ssize_t cause_shift_up_jack_io_high_power_set_show(struct kobject *kobj, 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET,
 					      &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift up jack io high power set show (counter = %u)",
@@ -344,7 +344,7 @@ static ssize_t cause_shift_state_jack_io_show(struct kobject *kobj, struct kobj_
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_SHIFT_STATE_JACK_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause shift state jack io show (counter = %u)", counter);
@@ -363,7 +363,7 @@ static ssize_t cause_hot_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_HOT, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause hot show (counter = %u)", counter);
@@ -382,7 +382,7 @@ static ssize_t cause_warm_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_WARM, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause warm show (counter = %u)", counter);
@@ -401,7 +401,7 @@ static ssize_t cause_cable_fault_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_CABLE_FAULT, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause cable fault show (counter = %u)", counter);
@@ -439,7 +439,7 @@ static ssize_t temperature_state_cold_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_media_temp_state_counter_get(media_lgrp->media_jack, MEDIA_TEMP_STATE_COLD, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media temperature state cold show (counter = %u)", counter);
@@ -458,7 +458,7 @@ static ssize_t temperature_state_warm_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_media_temp_state_counter_get(media_lgrp->media_jack, MEDIA_TEMP_STATE_WARM, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media temperature state warm show (counter = %u)", counter);
@@ -477,7 +477,7 @@ static ssize_t temperature_state_hot_show(struct kobject *kobj, struct kobj_attr
 
 	rtn = sl_ctrl_media_temp_state_counter_get(media_lgrp->media_jack, MEDIA_TEMP_STATE_HOT, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media temperature state hot show (counter = %u)", counter);
@@ -496,7 +496,7 @@ static ssize_t temperature_state_unknown_io_show(struct kobject *kobj, struct ko
 
 	rtn = sl_ctrl_media_temp_state_counter_get(media_lgrp->media_jack, MEDIA_TEMP_STATE_UNKNOWN_IO, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media temperature state unknown io show (counter = %u)", counter);
@@ -515,7 +515,7 @@ static ssize_t temperature_state_unknown_slope_show(struct kobject *kobj, struct
 
 	rtn = sl_ctrl_media_temp_state_counter_get(media_lgrp->media_jack, MEDIA_TEMP_STATE_UNKNOWN_SLOPE, &counter);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media temperature state unknown slope show (counter = %u)",

@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "sl_core_link.h"
 #include "data/sl_core_data_link.h"
 
@@ -24,7 +25,7 @@ static ssize_t ucw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_core_data_link_fec_up_ucw_limit_get(core_link, &ucw_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "fec_up_ucw_limit show (ucw_limit = %d)", ucw_limit);
@@ -42,7 +43,7 @@ static ssize_t ccw_limit_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_core_data_link_fec_up_ccw_limit_get(core_link, &ccw_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "fec_up_ccw_limit show (ccw_limit = %d)", ccw_limit);
@@ -60,7 +61,7 @@ static ssize_t settle_wait_ms_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_core_data_link_fec_up_settle_wait_ms_get(core_link, &settle_wait_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "settle_wait_ms show (settle_wait_ms = %u)", settle_wait_ms);
@@ -78,7 +79,7 @@ static ssize_t check_wait_ms_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_core_data_link_fec_up_check_wait_ms_get(core_link, &check_wait_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "check_wait_ms show (check_wait_ms = %u)", check_wait_ms);

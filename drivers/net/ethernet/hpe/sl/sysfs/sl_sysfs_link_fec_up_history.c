@@ -7,6 +7,7 @@
 #include <linux/time.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "data/sl_ctrl_data_link.h"
 
 #include "sl_sysfs_link_fec_up_history.h"
@@ -27,9 +28,9 @@ static ssize_t fec_up_history_timestamp_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_ctrl_data_link_fec_up_history_get(ctrl_link, num, &record, &record_timestamp);
 	if (rtn == -ENOENT)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec up history timestamp show (num = %u, time = %lld %ptTd %ptTt)",
@@ -49,9 +50,9 @@ static ssize_t fec_up_history_ucw_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_fec_up_history_get(ctrl_link, num, &record, &record_timestamp);
 	if (rtn == -ENOENT)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec up history ucw show (num = %u, ucw = %llu)", num, record.ucw);
@@ -70,9 +71,9 @@ static ssize_t fec_up_history_ccw_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_fec_up_history_get(ctrl_link, num, &record, &record_timestamp);
 	if (rtn == -ENOENT)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec up history ccw show (num = %u, ccw = %llu)", num, record.ccw);
@@ -91,9 +92,9 @@ static ssize_t fec_up_history_gcw_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_fec_up_history_get(ctrl_link, num, &record, &record_timestamp);
 	if (rtn == -ENOENT)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec up history gcw show (num = %u, gcw = %llu)", num, record.gcw);
@@ -112,9 +113,9 @@ static ssize_t fec_up_history_period_ms_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_ctrl_data_link_fec_up_history_get(ctrl_link, num, &record, &record_timestamp);
 	if (rtn == -ENOENT)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec up history period_ms show (num = %u, period_ms = %u)", num, record.period_ms);

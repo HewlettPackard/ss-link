@@ -5,9 +5,8 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
-#include "data/sl_core_data_llr.h"
-
 #include "sl_sysfs.h"
+#include "data/sl_core_data_llr.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -23,10 +22,10 @@ static ssize_t continuous_tries_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_core_data_llr_policy_options_get(core_llr, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	return sysfs_emit(buf, "%s\n",
-		(options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? "enabled" : "disabled");
+		(options & SL_LLR_POLICY_OPT_CONTINUOUS_START_TRIES) ? SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static struct kobj_attribute continuous_tries = __ATTR_RO(continuous_tries);

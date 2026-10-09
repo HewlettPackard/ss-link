@@ -365,7 +365,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	if (SL_CTRL_LINK_FEC_UCW_LIMIT_CHECK(ucw_warn_limit, &fec_info)) {
 		rtn = sl_core_link_ucw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 							      ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
-		if(rtn)
+		if (rtn)
 			sl_core_log_warn_trace(ctrl_link, LOG_NAME, "ucw_warn_limit_crossed_get failed [%d]", rtn);
 
 		if (!is_limit_crossed) {
@@ -391,7 +391,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
 		rtn = sl_core_link_ccw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 							      ctrl_link->ctrl_lgrp->num, ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
-		if(rtn)
+		if (rtn)
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "ccw_warn_limit_crossed_get failed [%d]", rtn);
 
 		if (!is_limit_crossed) {

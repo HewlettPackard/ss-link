@@ -31,13 +31,13 @@ static ssize_t last_fail_cause_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_core_data_llr_last_fail_cause_get(core_llr, &llr_fail_cause, &llr_fail_time);
 	if (rtn)
-		sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "last fail cause show (cause = %u %s)", llr_fail_cause, sl_core_llr_fail_cause_str(llr_fail_cause));
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return sysfs_emit(buf, "no-fail\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAIL "\n");
 
 	return sysfs_emit(buf, "%s\n", sl_core_llr_fail_cause_str(llr_fail_cause));
 }
@@ -53,7 +53,7 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_core_data_llr_last_fail_cause_get(core_llr, &llr_fail_cause, &llr_fail_time);
 	if (rtn)
-		sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_llr, LOG_BLOCK, LOG_NAME,
 		   "last fail time show (cause = %u %s, time = %lld %ptTd %ptTt)",
@@ -61,7 +61,7 @@ static ssize_t last_fail_time_show(struct kobject *kobj, struct kobj_attribute *
 		   llr_fail_time, &llr_fail_time, &llr_fail_time);
 
 	if (llr_fail_cause == SL_LLR_FAIL_CAUSE_NONE)
-		return sysfs_emit(buf, "no-fail\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAIL "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_fail_time, &llr_fail_time);
 }
@@ -77,7 +77,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	rtn = sl_core_data_llr_state_get(core_llr, &core_llr_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	llr_state = sl_ctrl_llr_state_from_core_llr_state(core_llr_state);
 
@@ -100,7 +100,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_data_llr_info_map_get(core_llr, &info_map);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
 

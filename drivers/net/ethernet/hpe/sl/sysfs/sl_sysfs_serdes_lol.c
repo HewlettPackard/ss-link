@@ -37,21 +37,21 @@ static ssize_t tx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 		sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 				"lol tx show (asic_lane_num = %u) - tx_lane_is_lol no cache [%d]",
 				lane_kobj->asic_lane_num, rtn);
-		return sysfs_emit(buf, "no-cache\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CACHE "\n");
 	}
 
 	if (rtn) {
 		sl_core_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "lol tx show (asic_lane_num = %u) - tx_lane_is_lol failed [%d]",
 				      lane_kobj->asic_lane_num, rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 			"lol tx show (asic_lane_num = %u, is_tx_lol = %s)",
 			lane_kobj->asic_lane_num, is_tx_lol ? "yes" : "no");
 
-	return sysfs_emit(buf, "%s\n", is_tx_lol ? "yes" : "no");
+	return sysfs_emit(buf, "%s\n", is_tx_lol ? SL_SYSFS_STR_YES : SL_SYSFS_STR_NO);
 }
 
 static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -73,21 +73,21 @@ static ssize_t rx_show(struct kobject *kobj, struct kobj_attribute *kattr, char 
 		sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 				"lol rx show (asic_lane_num = %u) - rx_lane_is_lol no cache [%d]",
 				lane_kobj->asic_lane_num, rtn);
-		return sysfs_emit(buf, "no-cache\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CACHE "\n");
 	}
 
 	if (rtn) {
 		sl_core_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "lol rx show (asic_lane_num = %u) - rx_lane_is_lol failed [%d]",
 				      lane_kobj->asic_lane_num, rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_core_log_dbg(ctrl_lgrp, LOG_NAME,
 			"lol rx show (asic_lane_num = %u, is_rx_lol = %s)",
 			lane_kobj->asic_lane_num, is_rx_lol ? "yes" : "no");
 
-	return sysfs_emit(buf, "%s\n", is_rx_lol ? "yes" : "no");
+	return sysfs_emit(buf, "%s\n", is_rx_lol ? SL_SYSFS_STR_YES : SL_SYSFS_STR_NO);
 }
 
 static struct kobj_attribute lol_tx = __ATTR_RO(tx);

@@ -74,7 +74,7 @@ static ssize_t media_temperature_monitor_state_show(struct kobject *kobj, struct
 
 	rtn = sl_media_data_ldev_temp_mon_state_get(media_ldev, &temp_mon_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "media temperature monitor state show (ldev = 0x%p, temp_mon_state = %s)",
 		   ctrl_ldev, sl_media_data_ldev_temp_mon_state_str(temp_mon_state));

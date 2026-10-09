@@ -30,7 +30,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"state show (link = 0x%p, state = %u %s)", ctrl_link, state, sl_link_state_str(state));
@@ -50,21 +50,21 @@ static ssize_t speed_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 	rtn = sl_ctrl_link_state_get_cmd(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 					 ctrl_link->ctrl_lgrp->num, ctrl_link->num, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_core_link_speed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num,
 				     ctrl_link->ctrl_lgrp->num, ctrl_link->num, &speed);
 	if (rtn == -ENOLINK)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "speed show (state = %u %s, speed = 0x%X %s)",
 		   state, sl_link_state_str(state), speed, sl_lgrp_config_tech_str(speed));
 
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	return sysfs_emit(buf, "%s\n", sl_lgrp_config_tech_str(speed));
 }
@@ -81,13 +81,13 @@ static ssize_t ccw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_att
 	rtn = sl_core_link_ccw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						      ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ccw warn limit crossed show (is_limit_crossed = %d %s)", is_limit_crossed,
 		is_limit_crossed ? "yes":"no");
 
-	return sysfs_emit(buf, "%s\n", is_limit_crossed ? "yes":"no");
+	return sysfs_emit(buf, "%s\n", is_limit_crossed ? SL_SYSFS_STR_YES : SL_SYSFS_STR_NO);
 }
 
 static ssize_t ccw_warn_limit_last_crossed_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -102,14 +102,14 @@ static ssize_t ccw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 	rtn = sl_core_link_ccw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						      ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ccw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTd %ptTt)",
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
-		return sysfs_emit(buf, "not-crossed\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_CROSSED "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &limit_crossed_time, &limit_crossed_time);
 }
@@ -126,13 +126,13 @@ static ssize_t ucw_warn_limit_crossed_show(struct kobject *kobj, struct kobj_att
 	rtn = sl_core_link_ucw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						      ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ucw warn limit crossed show (is_limit_crossed = %d %s)", is_limit_crossed,
 		is_limit_crossed ? "yes":"no");
 
-	return sysfs_emit(buf, "%s\n", is_limit_crossed ? "yes":"no");
+	return sysfs_emit(buf, "%s\n", is_limit_crossed ? SL_SYSFS_STR_YES : SL_SYSFS_STR_NO);
 }
 
 static ssize_t ucw_warn_limit_last_crossed_time_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -147,14 +147,14 @@ static ssize_t ucw_warn_limit_last_crossed_time_show(struct kobject *kobj, struc
 	rtn = sl_core_link_ucw_warn_limit_crossed_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						      ctrl_link->num, &is_limit_crossed, &limit_crossed_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		"ucw warn limit last crossed time show (is_limit_crossed = 0x%X, time = %lld %ptTd %ptTt)",
 		is_limit_crossed, limit_crossed_time, &limit_crossed_time, &limit_crossed_time);
 
 	if (!is_limit_crossed)
-		return sysfs_emit(buf, "not-crossed\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_CROSSED "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &limit_crossed_time, &limit_crossed_time);
 }
@@ -170,7 +170,7 @@ static ssize_t up_count_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	rtn = sl_ctrl_link_up_count_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					ctrl_link->num, &up_count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "up count show (up_count = %u)", up_count);
 
@@ -190,15 +190,15 @@ static ssize_t time_to_link_up_ms_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "time to link up show (attempt_time = %lldms, total_time = %lldms)",
@@ -220,15 +220,15 @@ static ssize_t total_time_to_link_up_ms_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "total time to link up show (attempt_time = %lldms, total_time = %lldms)",
@@ -250,15 +250,15 @@ static ssize_t up_time_ms_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_ctrl_data_link_state_get(ctrl_link, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if ((state != SL_LINK_STATE_UP) && (state != SL_LINK_STATE_UP_DOWN_REQ))
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	rtn = sl_ctrl_link_up_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 				       ctrl_link->num, &attempt_time_ms, &total_time_ms, &up_time_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "up time show (up_time = %lldms)", up_time_ms);
 
@@ -276,7 +276,7 @@ static ssize_t lp_caps_state_show(struct kobject *kobj, struct kobj_attribute *k
 	rtn = sl_ctrl_link_an_lp_caps_state_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						ctrl_link->num, &lp_caps_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "an lp caps state show (lp_caps_state = %u %s)",
 		   lp_caps_state, sl_link_an_lp_caps_state_str(lp_caps_state));
@@ -296,13 +296,13 @@ static ssize_t last_autoneg_fail_cause_show(struct kobject *kobj, struct kobj_at
 	rtn = sl_ctrl_link_an_fail_cause_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					     ctrl_link->num, &fail_cause, &fail_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail casue show (cause = %u %s)",
 		   fail_cause, sl_core_link_an_fail_cause_str(fail_cause));
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
-		return sysfs_emit(buf, "no-fail\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAIL "\n");
 
 	return sysfs_emit(buf, "%s\n", sl_core_link_an_fail_cause_str(fail_cause));
 }
@@ -319,13 +319,13 @@ static ssize_t last_autoneg_fail_time_show(struct kobject *kobj, struct kobj_att
 	rtn = sl_ctrl_link_an_fail_cause_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					     ctrl_link->num, &fail_cause, &fail_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "last autoneg fail time show (cause = %u %s, time = %lld %ptTd %ptTt)",
 		   fail_cause, sl_core_link_an_fail_cause_str(fail_cause), fail_time, &fail_time, &fail_time);
 
 	if (fail_cause == SL_CORE_HW_AN_FAIL_CAUSE_NONE)
-		return sysfs_emit(buf, "no-fail\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAIL "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &fail_time, &fail_time);
 }
@@ -344,7 +344,7 @@ static ssize_t info_map_show(struct kobject *kobj, struct kobj_attribute *kattr,
 	if (rtn) {
 		sl_log_err(ctrl_link, LOG_BLOCK, LOG_NAME,
 			"info map show sl_ctrl_link_info_map_get failed [%d]", rtn);
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 	}
 
 	sl_core_info_map_str(info_map, info_map_str, sizeof(info_map_str));
@@ -366,13 +366,13 @@ static ssize_t high_ser_time_show(struct kobject *kobj, struct kobj_attribute *k
 	rtn = sl_core_link_high_ser_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 					     ctrl_link->num, &high_ser_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "high ser time show (time = %lld %ptTd %ptTt)",
 		   high_ser_time, &high_ser_time, &high_ser_time);
 
 	if (!high_ser_time)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &high_ser_time, &high_ser_time);
 }
@@ -388,13 +388,13 @@ static ssize_t llr_max_starvation_time_show(struct kobject *kobj, struct kobj_at
 	rtn = sl_core_link_llr_max_starvation_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						       ctrl_link->num, &llr_max_starvation_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "llr max starvation time show (time = %lld %ptTd %ptTt)",
 		   llr_max_starvation_time, &llr_max_starvation_time, &llr_max_starvation_time);
 
 	if (!llr_max_starvation_time)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_max_starvation_time, &llr_max_starvation_time);
 }
@@ -410,13 +410,13 @@ static ssize_t llr_starved_time_show(struct kobject *kobj, struct kobj_attribute
 	rtn = sl_core_link_llr_starved_time_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 						ctrl_link->num, &llr_starved_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "llr starve time show (time = %lld %ptTd %ptTt)",
 		   llr_starved_time, &llr_starved_time, &llr_starved_time);
 
 	if (!llr_starved_time)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &llr_starved_time, &llr_starved_time);
 }
@@ -479,7 +479,7 @@ static ssize_t last_down_cause_map_show(struct kobject *kobj, struct kobj_attrib
 	rtn = sl_core_link_last_down_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 							ctrl_link->num, num, &down_cause_map, &down_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -519,14 +519,14 @@ static ssize_t last_down_time_show(struct kobject *kobj, struct kobj_attribute *
 	rtn = sl_core_link_last_down_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 							ctrl_link->num, num, &down_cause_map, &down_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "last down time show (num = %u, cause_map = 0x%llX, time = %lld %ptTd %ptTt)",
 		   num, down_cause_map, down_time, &down_time, &down_time);
 
 	if (down_cause_map == SL_LINK_DOWN_CAUSE_NONE)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &down_time, &down_time);
 }
@@ -591,7 +591,7 @@ static ssize_t last_up_fail_cause_map_show(struct kobject *kobj, struct kobj_att
 	rtn = sl_core_link_last_up_fail_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 							   ctrl_link->num, num, &up_fail_cause_map, &up_fail_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_link_down_cause_map_with_info_str(up_fail_cause_map, cause_str, sizeof(cause_str));
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
@@ -630,14 +630,14 @@ static ssize_t last_up_fail_time_show(struct kobject *kobj, struct kobj_attribut
 	rtn = sl_core_link_last_up_fail_cause_map_info_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num,
 							   ctrl_link->num, num, &up_fail_cause_map, &up_fail_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "last up_fail time show (num = %u, cause_map = 0x%llX, time = %lld %ptTd %ptTt)",
 		   num, up_fail_cause_map, up_fail_time, &up_fail_time, &up_fail_time);
 
 	if (up_fail_cause_map == SL_LINK_DOWN_CAUSE_NONE)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &up_fail_time, &up_fail_time);
 }

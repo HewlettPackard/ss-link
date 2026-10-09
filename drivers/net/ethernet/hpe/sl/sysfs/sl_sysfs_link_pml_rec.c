@@ -7,9 +7,8 @@
 
 #include "sl_log.h"
 #include "sl_common.h"
-#include "data/sl_core_data_link.h"
-
 #include "sl_sysfs.h"
+#include "data/sl_core_data_link.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
 #define LOG_NAME  SL_LOG_SYSFS_LOG_NAME
@@ -25,7 +24,7 @@ static ssize_t pml_rec_attempts_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_core_data_link_pml_rec_attempts_get(core_link, &attempts);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec attempts show (attempts = %d)", attempts);
 
@@ -42,7 +41,7 @@ static ssize_t pml_rec_successes_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_core_data_link_pml_rec_successes_get(core_link, &successes);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec successes show (successes = %d)", successes);
 
@@ -59,7 +58,7 @@ static ssize_t pml_rec_link_fault_cause_show(struct kobject *kobj, struct kobj_a
 
 	rtn = sl_core_data_link_pml_rec_link_fault_cause_get(core_link, &link_fault_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_cause show (link_fault_cause = %d)", link_fault_cause);
 
@@ -76,7 +75,7 @@ static ssize_t pml_rec_link_down_cause_show(struct kobject *kobj, struct kobj_at
 
 	rtn = sl_core_data_link_pml_rec_link_down_cause_get(core_link, &link_down_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_cause = %d)", link_down_cause);
 
@@ -93,7 +92,7 @@ static ssize_t pml_rec_link_fault_failed_cause_show(struct kobject *kobj, struct
 
 	rtn = sl_core_data_link_pml_rec_link_fault_failed_cause_get(core_link, &link_fault_failed_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_fault_failed_cause show (link_fault_failed_cause = %d)",
 		   link_fault_failed_cause);
@@ -111,7 +110,7 @@ static ssize_t pml_rec_link_down_failed_cause_show(struct kobject *kobj, struct 
 
 	rtn = sl_core_data_link_pml_rec_link_down_failed_cause_get(core_link, &link_down_failed_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_down_cause show (link_down_failed_cause = %d)",
 		   link_down_failed_cause);
@@ -129,7 +128,7 @@ static ssize_t pml_rec_link_remote_fault_cause_show(struct kobject *kobj, struct
 
 	rtn = sl_core_data_link_pml_rec_link_remote_fault_cause_get(core_link, &link_remote_fault_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec link_remote_fault_cause show (link_remote_fault_cause = %d)",
 		   link_remote_fault_cause);
@@ -147,7 +146,7 @@ static ssize_t pml_rec_link_remote_fault_failed_cause_show(struct kobject *kobj,
 
 	rtn = sl_core_data_link_pml_rec_link_remote_fault_failed_cause_get(core_link, &link_remote_fault_failed_cause);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "pml rec link_remote_fault_failed_cause show (link_remote_fault_failed_cause = %d)",
@@ -166,7 +165,7 @@ static ssize_t pml_rec_rate_limit_exceeded_show(struct kobject *kobj, struct kob
 
 	rtn = sl_core_data_link_pml_rec_rate_limit_exceeded_get(core_link, &rate_limit_exceeded);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME, "pml rec rate_limit_exceeded show (rate_limit_exceeded = %d)",
 		   rate_limit_exceeded);
@@ -186,7 +185,7 @@ static ssize_t pml_rec_last_down_cause_map_show(struct kobject *kobj, struct kob
 
 	rtn = sl_core_data_link_pml_rec_last_down_cause_map_info_get(core_link, &down_cause_map, &down_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_core_data_link_pml_rec_down_cause_map_str(down_cause_map, cause_str, sizeof(cause_str));
 
@@ -207,10 +206,10 @@ static ssize_t pml_rec_last_down_time_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_core_data_link_pml_rec_last_down_cause_map_info_get(core_link, &down_cause_map, &down_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (down_cause_map == PML_REC_DOWN_CAUSE_INVALID)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "pml rec last down time show (time = %lld %ptTd %ptTt)", down_time, &down_time, &down_time);

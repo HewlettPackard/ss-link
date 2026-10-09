@@ -23,7 +23,7 @@ static ssize_t mac_tx_start_cmd_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_CMD, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start cmd show (count = %u)", count);
 
@@ -40,7 +40,7 @@ static ssize_t mac_tx_started_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STARTED, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx started show (count = %u)", count);
 
@@ -57,7 +57,7 @@ static ssize_t mac_tx_start_fail_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_START_FAIL, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx start fail show (count = %u)", count);
 
@@ -74,7 +74,7 @@ static ssize_t mac_tx_stop_cmd_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_CMD, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop cmd show (count = %u)", count);
 
@@ -91,7 +91,7 @@ static ssize_t mac_tx_stopped_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOPPED, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stopped show (count = %u)", count);
 
@@ -108,7 +108,7 @@ static ssize_t mac_tx_stop_fail_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_TX_STOP_FAIL, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac tx stop fail show (count = %u)", count);
 
@@ -125,7 +125,7 @@ static ssize_t mac_rx_start_cmd_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_CMD, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start cmd show (count = %u)", count);
 
@@ -142,7 +142,7 @@ static ssize_t mac_rx_started_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STARTED, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx started show (count = %u)", count);
 
@@ -159,7 +159,7 @@ static ssize_t mac_rx_start_fail_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_START_FAIL, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx start fail show (count = %u)", count);
 
@@ -176,7 +176,7 @@ static ssize_t mac_rx_stop_cmd_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_CMD, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop cmd show (count = %u)", count);
 
@@ -193,7 +193,7 @@ static ssize_t mac_rx_stopped_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOPPED, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stopped show (count = %u)", count);
 
@@ -210,7 +210,7 @@ static ssize_t mac_rx_stop_fail_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RX_STOP_FAIL, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac rx stop fail show (count = %u)", count);
 
@@ -227,7 +227,7 @@ static ssize_t mac_reset_cmd_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_CMD, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset cmd show (count = %u)", count);
 
@@ -244,7 +244,7 @@ static ssize_t mac_reset_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset show (count = %u)", count);
 
@@ -261,7 +261,7 @@ static ssize_t mac_reset_fail_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_mac_counter_get(ctrl_mac, MAC_RESET_FAIL, &count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_mac, LOG_BLOCK, LOG_NAME, "mac reset fail show (count = %u)", count);
 

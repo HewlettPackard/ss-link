@@ -5,6 +5,7 @@
 #include <linux/sysfs.h>
 
 #include "sl_log.h"
+#include "sl_sysfs.h"
 #include "data/sl_ctrl_data_link.h"
 
 #include "sl_sysfs_link_fec_mon_check.h"
@@ -25,17 +26,17 @@ static ssize_t ucw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 	if (rtn == -EBADRQC) {
 		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
 				  "ucw down limit show monitoring not enabled");
-		return sysfs_emit(buf, "not-monitoring\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_MONITORING "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ucw_down_limit_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw down limit show (ucw_down_limit = %d)", ucw_down_limit);
 
 	if (ucw_down_limit == -1)
-		return sysfs_emit(buf, "calculated\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_CALCULATED "\n");
 
 	return sysfs_emit(buf, "%d\n", ucw_down_limit);
 }
@@ -52,17 +53,17 @@ static ssize_t ucw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 	if (rtn == -EBADRQC) {
 		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
 				  "ucw warn limit show monitoring not enabled");
-		return sysfs_emit(buf, "not-monitoring\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_MONITORING "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ucw_warn_limit_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME, "ucw warn limit show (ucw_warn_limit = %d)", ucw_warn_limit);
 
 	if (ucw_warn_limit == -1)
-		return sysfs_emit(buf, "calculated\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_CALCULATED "\n");
 
 	return sysfs_emit(buf, "%d\n", ucw_warn_limit);
 }
@@ -79,18 +80,18 @@ static ssize_t ccw_down_limit_show(struct kobject *kobj, struct kobj_attribute *
 	if (rtn == -EBADRQC) {
 		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
 				  "ccw down limit show monitoring not enabled");
-		return sysfs_emit(buf, "not-monitoring\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_MONITORING "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ccw_down_limit_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec_mon_ccw_down_limit show (ccw_down_limit = %d)", ccw_down_limit);
 
 	if (ccw_down_limit == -1)
-		return sysfs_emit(buf, "calculated\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_CALCULATED "\n");
 
 	return sysfs_emit(buf, "%d\n", ccw_down_limit);
 }
@@ -107,18 +108,18 @@ static ssize_t ccw_warn_limit_show(struct kobject *kobj, struct kobj_attribute *
 	if (rtn == -EBADRQC) {
 		sl_log_warn_trace(ctrl_link, LOG_BLOCK, LOG_NAME,
 				  "ccw warn limit show monitoring not enabled");
-		return sysfs_emit(buf, "not-monitoring\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_MONITORING "\n");
 	}
 	if (rtn) {
 		sl_log_err_trace(ctrl_link, LOG_BLOCK, LOG_NAME, "fec_mon_ccw_warn_limit_get failed [%d]", rtn);
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 	}
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec_mon_ccw_warn_limit show (ccw_warn_limit = %d)", ccw_warn_limit);
 
 	if (ccw_warn_limit == -1)
-		return sysfs_emit(buf, "calculated\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_CALCULATED "\n");
 
 	return sysfs_emit(buf, "%d\n", ccw_warn_limit);
 }
@@ -133,7 +134,7 @@ static ssize_t period_ms_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	rtn = sl_ctrl_data_link_fec_mon_period_ms_get(ctrl_link, &period_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "fec_mon_period_ms_show show (period_ms = %u)", period_ms);

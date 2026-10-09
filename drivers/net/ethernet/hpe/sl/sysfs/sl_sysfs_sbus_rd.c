@@ -26,7 +26,7 @@ static ssize_t dev_addr_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_lgrp_sbus_rd_dev_addr_get(core_lgrp, &dev_addr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd dev addr show (dev_addr = 0x%02X)", dev_addr);
 
@@ -45,7 +45,7 @@ static ssize_t data_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_rd_data_get(core_lgrp, &data);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd data show (data = 0x%08X)", data);
 
@@ -64,7 +64,7 @@ static ssize_t mask_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_rd_mask_get(core_lgrp, &mask);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd mask show (mask = 0x%08X)", mask);
 
@@ -83,7 +83,7 @@ static ssize_t reg_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_core_lgrp_sbus_rd_reg_get(core_lgrp, &reg);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd reg show (reg = 0x%02X)", reg);
 
@@ -102,7 +102,7 @@ static ssize_t lsb_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_core_lgrp_sbus_rd_lsb_get(core_lgrp, &lsb);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd lsb show (lsb = %u)", lsb);
 
@@ -121,7 +121,7 @@ static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_sbus_rd_result_get(core_lgrp, &result);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rd result show (result = %d)", result);
 

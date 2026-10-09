@@ -23,7 +23,7 @@ static ssize_t mode_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_ctrl_data_llr_config_mode_get(ctrl_llr, &mode);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
 		   "mode (mode = %u %s)",
@@ -42,7 +42,7 @@ static ssize_t setup_timeout_ms_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_data_llr_config_setup_timeout_ms_get(ctrl_llr, &setup_timeout_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
 		   "setup timeout show (setup_timeout = %ums)",
@@ -61,7 +61,7 @@ static ssize_t start_timeout_ms_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_ctrl_data_llr_config_start_timeout_ms_get(ctrl_llr, &start_timeout_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
 		   "start timeout show (start_timeout = %ums)",
@@ -80,7 +80,7 @@ static ssize_t link_down_behavior_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_llr_config_link_dn_behavior_get(ctrl_llr, &link_dn_behavior);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_llr, LOG_BLOCK, LOG_NAME,
 		   "down behavior show (dn_behavior = %u %s)",

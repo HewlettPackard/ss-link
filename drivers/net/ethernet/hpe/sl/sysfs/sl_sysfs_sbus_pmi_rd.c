@@ -26,7 +26,7 @@ static ssize_t dev_addr_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_dev_addr_get(core_lgrp, &dev_addr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd dev_addr show (dev_addr = 0x%02X)", dev_addr);
 
@@ -45,7 +45,7 @@ static ssize_t addr_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_addr_get(core_lgrp, &addr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd addr show (addr = 0x%04X)", addr);
 
@@ -64,7 +64,7 @@ static ssize_t data_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_data_get(core_lgrp, &data);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd data show (data = 0x%04X)", data);
 
@@ -83,7 +83,7 @@ static ssize_t mask_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_mask_get(core_lgrp, &mask);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd mask show (mask = 0x%04X)", mask);
 
@@ -102,7 +102,7 @@ static ssize_t dev_id_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_dev_id_get(core_lgrp, &dev_id);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd dev id show (dev_id = 0x%02X)", dev_id);
 
@@ -121,7 +121,7 @@ static ssize_t lane_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_lane_get(core_lgrp, &lane);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd lane show (lane = 0x%02X)", lane);
 
@@ -140,7 +140,7 @@ static ssize_t pll_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_pll_get(core_lgrp, &pll);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd pll show (pll = 0x%02X)", pll);
 
@@ -159,7 +159,7 @@ static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_sbus_pmi_rd_result_get(core_lgrp, &result);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus_pmi rd result show (result = %d)", result);
 

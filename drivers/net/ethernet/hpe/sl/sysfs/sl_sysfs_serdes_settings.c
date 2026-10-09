@@ -31,18 +31,18 @@ static ssize_t pre1_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_pre1_get(core_lgrp, lane_kobj->asic_lane_num, &pre1);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings pre1 show (pre1 = %d)", pre1);
 
@@ -59,18 +59,18 @@ static ssize_t pre2_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_pre2_get(core_lgrp, lane_kobj->asic_lane_num, &pre2);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings pre2 show (pre2 = %d)", pre2);
 
@@ -87,18 +87,18 @@ static ssize_t pre3_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_pre3_get(core_lgrp, lane_kobj->asic_lane_num, &pre3);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings pre3 show (pre3 = %d)", pre3);
@@ -116,18 +116,18 @@ static ssize_t cursor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_cursor_get(core_lgrp, lane_kobj->asic_lane_num, &cursor);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings cursor show (cursor = %d)", cursor);
 
@@ -144,18 +144,18 @@ static ssize_t post1_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_post1_get(core_lgrp, lane_kobj->asic_lane_num, &post1);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings post1 show (post1 = %d)", post1);
 
@@ -172,18 +172,18 @@ static ssize_t post2_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_post2_get(core_lgrp, lane_kobj->asic_lane_num, &post2);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "settings post2 show (post2 = %d)", post2);
 
@@ -197,12 +197,12 @@ static ssize_t media_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		"settings media show (media = %d)", core_link->serdes.media_serdes_settings.media);
@@ -228,18 +228,18 @@ static ssize_t osr_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_osr_get(core_lgrp, lane_kobj->asic_lane_num, &osr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		   "settings osr show (osr = %u %s)", osr, sl_core_serdes_lane_osr_str(osr));
@@ -257,18 +257,18 @@ static ssize_t encoding_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_encoding_get(core_lgrp, lane_kobj->asic_lane_num, &encoding);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		   "settings encoding show (encoding = %u %s)",
@@ -286,16 +286,16 @@ static ssize_t clocking_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	rtn = sl_core_link_clocking_get(core_link, &clocking);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_link, LOG_BLOCK, LOG_NAME,
 		   "settings clocking show (clocking = %u %s)",
@@ -314,18 +314,18 @@ static ssize_t width_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_width_get(core_lgrp, lane_kobj->asic_lane_num, &width);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		   "settings width show (width = %u %s)",
@@ -344,23 +344,23 @@ static ssize_t dfe_show(struct kobject *kobj, struct kobj_attribute *kattr, char
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_dfe_get(core_lgrp, lane_kobj->asic_lane_num, &dfe);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		   "settings dfe show (dfe = %s)", (dfe) ? "enabled" : "disabled");
 
-	return sysfs_emit(buf, "%s\n", (dfe) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (dfe) ? SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static ssize_t scramble_dis_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -373,23 +373,23 @@ static ssize_t scramble_dis_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	core_lgrp = sl_core_lgrp_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num);
 
 	rtn = sl_core_lgrp_scramble_dis_get(core_lgrp, lane_kobj->asic_lane_num, &scramble_dis);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME,
 		   "settings scramble_dis show (scramble_dis = %s)", (scramble_dis) ? "set" : "not-set");
 
-	return sysfs_emit(buf, "%s\n", (scramble_dis) ? "set" : "not-set");
+	return sysfs_emit(buf, "%s\n", (scramble_dis) ? SL_SYSFS_STR_SET : SL_SYSFS_STR_NOT_SET);
 }
 
 static struct kobj_attribute settings_osr          = __ATTR_RO(osr);
@@ -406,17 +406,17 @@ static ssize_t link_training_show(struct kobject *kobj, struct kobj_attribute *k
 
 	lane_kobj = container_of(kobj, struct sl_lgrp_serdes_lane_kobj, kobj);
 	if (!lane_kobj->ctrl_lgrp)
-		return sysfs_emit(buf, "no-lane\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LANE "\n");
 
 	core_link = sl_core_link_get(lane_kobj->ctrl_lgrp->ctrl_ldev->num, lane_kobj->ctrl_lgrp->num,
 		lane_num_to_link_num(lane_kobj->ctrl_lgrp, lane_kobj->asic_lane_num));
 	if (!core_link)
-		return sysfs_emit(buf, "no-link\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_LINK "\n");
 
 	if (is_flag_set(core_link->core_lgrp->link_caps[core_link->num].hpe_map, SL_LINK_CONFIG_HPE_LINKTRAIN))
-		return sysfs_emit(buf, "enabled\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ENABLED "\n");
 	else
-		return sysfs_emit(buf, "disabled\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_DISABLED "\n");
 }
 
 static struct kobj_attribute settings_link_training = __ATTR_RO(link_training);

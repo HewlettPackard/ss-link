@@ -26,7 +26,7 @@ static ssize_t dev_addr_show(struct kobject *kobj, struct kobj_attribute *kattr,
 
 	rtn = sl_core_lgrp_sbus_rst_dev_addr_get(core_lgrp, &dev_addr);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rst dev addr show (dev_addr = 0x%02X)", dev_addr);
 
@@ -45,7 +45,7 @@ static ssize_t result_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	rtn = sl_core_lgrp_sbus_rst_result_get(core_lgrp, &result);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(core_lgrp, LOG_BLOCK, LOG_NAME, "sbus rst result show (result = %d)", result);
 

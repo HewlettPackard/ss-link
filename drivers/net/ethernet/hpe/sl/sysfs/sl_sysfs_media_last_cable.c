@@ -33,10 +33,10 @@ static ssize_t last_cable_time(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_media_data_jack_last_cable_insert_get(media_lgrp->media_jack, num, &cable_insert_entry);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (!cable_insert_entry.timestamp)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "last cable time show (time = %lld %ptTd %ptTt)", cable_insert_entry.timestamp,
@@ -98,10 +98,10 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *attr, ch
 
 	rtn = sl_media_data_jack_last_cable_insert_get(media_lgrp->media_jack, num, &cable_insert_entry);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (!cable_insert_entry.timestamp)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "vendor show (num = %u, vendor = %s)",
@@ -125,10 +125,10 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *attr, char
 
 	rtn = sl_media_data_jack_last_cable_insert_get(media_lgrp->media_jack, num, &cable_insert_entry);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (!cable_insert_entry.timestamp)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "type show (num = %u, type = %s)", num, sl_media_type_str(cable_insert_entry.cable.type));
@@ -152,10 +152,10 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *attr
 
 	rtn = sl_media_data_jack_last_cable_insert_get(media_lgrp->media_jack, num, &cable_insert_entry);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (!cable_insert_entry.timestamp)
-		return sysfs_emit(buf, "none\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NONE "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "serial num show (num = %u, serial_num = %s)", num,

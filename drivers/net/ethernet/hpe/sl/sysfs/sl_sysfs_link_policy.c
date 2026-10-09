@@ -28,7 +28,7 @@ static ssize_t fec_mon_period_ms_show(struct kobject *kobj, struct kobj_attribut
 
 	rtn = sl_ctrl_data_link_policy_fec_mon_period_ms_get(ctrl_link, &fec_mon_period_ms);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_period_ms show (fec_mon_period_ms = %d)", fec_mon_period_ms);
@@ -46,7 +46,7 @@ static ssize_t fec_mon_ucw_down_limit_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_data_link_policy_fec_mon_ucw_down_limit_get(ctrl_link, &fec_mon_ucw_down_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ucw_down_limit show (fec_mon_ucw_down_limit = %d)", fec_mon_ucw_down_limit);
@@ -64,7 +64,7 @@ static ssize_t fec_mon_ucw_warn_limit_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_data_link_policy_fec_mon_ucw_warn_limit_get(ctrl_link, &fec_mon_ucw_warn_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ucw_warn_limit show (fec_mon_ucw_warn_limit = %d)", fec_mon_ucw_warn_limit);
@@ -82,7 +82,7 @@ static ssize_t fec_mon_ccw_down_limit_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_data_link_policy_fec_mon_ccw_down_limit_get(ctrl_link, &fec_mon_ccw_down_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ccw_down_limit show (fec_mon_ccw_down_limit = %d)", fec_mon_ccw_down_limit);
@@ -100,7 +100,7 @@ static ssize_t fec_mon_ccw_warn_limit_show(struct kobject *kobj, struct kobj_att
 
 	rtn = sl_ctrl_data_link_policy_fec_mon_ccw_warn_limit_get(ctrl_link, &fec_mon_ccw_warn_limit);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 	    "fec_mon_ccw_warn_limit show (fec_mon_ccw_warn_limit = %d)", fec_mon_ccw_warn_limit);
@@ -118,12 +118,13 @@ static ssize_t lock_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link_policy_option_locked show (options = 0x%X)", options);
 
-	return sysfs_emit(buf, "%s\n", (options & SL_LINK_POLICY_OPT_LOCK) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (options & SL_LINK_POLICY_OPT_LOCK) ?
+			  SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -136,13 +137,13 @@ static ssize_t keep_serdes_up_show(struct kobject *kobj, struct kobj_attribute *
 
 	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link_policy_option_keep_serdes_up show (options = 0x%X)", options);
 
 	return sysfs_emit(buf, "%s\n",
-			 (options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) ? "enabled" : "disabled");
+			 (options & SL_LINK_POLICY_OPT_KEEP_SERDES_UP) ? SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static ssize_t use_unsupported_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -155,13 +156,13 @@ static ssize_t use_unsupported_cable_show(struct kobject *kobj, struct kobj_attr
 
 	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link_policy_option_use_unsupported_cable show (options = 0x%X)", options);
 
-	return sysfs_emit(buf, "%s\n",
-			 (options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (options & SL_LINK_POLICY_OPT_USE_UNSUPPORTED_CABLE) ?
+			  SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static ssize_t use_supported_ss200_cable_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -174,13 +175,13 @@ static ssize_t use_supported_ss200_cable_show(struct kobject *kobj, struct kobj_
 
 	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		  "link_policy_option_use_supported_ss200_cable show (options = 0x%X)", options);
 
-	return sysfs_emit(buf, "%s\n",
-			 (options & SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (options & SL_LINK_POLICY_OPT_USE_SUPPORTED_SS200_CABLE) ?
+			  SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static ssize_t ignore_media_error_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -193,13 +194,13 @@ static ssize_t ignore_media_error_show(struct kobject *kobj, struct kobj_attribu
 
 	rtn = sl_ctrl_data_link_policy_options_get(ctrl_link, &options);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_link, LOG_BLOCK, LOG_NAME,
 		   "link_policy_option_ignore_media_error show (options = %u)", options);
 
-	return sysfs_emit(buf, "%s\n",
-			 (options & SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR) ? "enabled" : "disabled");
+	return sysfs_emit(buf, "%s\n", (options & SL_LINK_POLICY_OPT_IGNORE_MEDIA_ERROR) ?
+			  SL_SYSFS_STR_ENABLED : SL_SYSFS_STR_DISABLED);
 }
 
 static struct kobj_attribute fec_mon_period_ms         = __ATTR_RO(fec_mon_period_ms);

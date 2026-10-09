@@ -6,6 +6,36 @@
 
 #include <linux/kobject.h>
 
+#define SL_SYSFS_STR_CALCULATED         "calculated"
+#define SL_SYSFS_STR_DISABLED           "disabled"
+#define SL_SYSFS_STR_EDGE               "edge"
+#define SL_SYSFS_STR_ENABLED            "enabled"
+#define SL_SYSFS_STR_EMPTY              "empty"
+#define SL_SYSFS_STR_ERROR              "error"
+#define SL_SYSFS_STR_FABRIC             "fabric"
+#define SL_SYSFS_STR_INFINITE           "infinite"
+#define SL_SYSFS_STR_LONG               "long"
+#define SL_SYSFS_STR_NO                 "no"
+#define SL_SYSFS_STR_NONE               "none"
+#define SL_SYSFS_STR_SET                "set"
+#define SL_SYSFS_STR_SHORT              "short"
+#define SL_SYSFS_STR_YES                "yes"
+#define SL_SYSFS_STR_IO_ERROR           "io-error"
+#define SL_SYSFS_STR_NO_CABLE           "no-cable"
+#define SL_SYSFS_STR_NO_CACHE           "no-cache"
+#define SL_SYSFS_STR_NO_FAIL            "no-fail"
+#define SL_SYSFS_STR_NO_FAULT           "no-fault"
+#define SL_SYSFS_STR_NO_LANE            "no-lane"
+#define SL_SYSFS_STR_NO_LINK            "no-link"
+#define SL_SYSFS_STR_NO_MAC             "no-mac"
+#define SL_SYSFS_STR_NO_SERDES          "no-serdes"
+#define SL_SYSFS_STR_NOT_ACTIVE         "not-active"
+#define SL_SYSFS_STR_NOT_CROSSED        "not-crossed"
+#define SL_SYSFS_STR_NOT_MONITORING     "not-monitoring"
+#define SL_SYSFS_STR_NOT_SET            "not-set"
+#define SL_SYSFS_STR_ENABLED_CONTINUOUS "enabled-continuous"
+#define SL_SYSFS_STR_UNSUPPORTED_FORMAT "unsupported-format"
+
 struct sl_core_link;
 struct sl_core_llr;
 struct sl_ctrl_ldev;

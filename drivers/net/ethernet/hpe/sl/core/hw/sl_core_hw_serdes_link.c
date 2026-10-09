@@ -163,7 +163,7 @@ static int sl_core_hw_serdes_link_up_settings(struct sl_core_link *core_link)
 
 	core_link->serdes.core_serdes_settings.dfe = SL_CORE_HW_SERDES_DFE_ENABLE;
 	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_shift_state);
-	if(rtn)
+	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "cable_shift_state_get failed [%d]", rtn);
 
 	if (cable_shift_state == SL_MEDIA_JACK_CABLE_SHIFT_STATE_DOWNSHIFTED)

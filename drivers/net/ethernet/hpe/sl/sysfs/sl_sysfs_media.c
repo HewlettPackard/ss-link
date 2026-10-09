@@ -37,7 +37,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	rtn = sl_media_jack_state_get(media_lgrp->media_jack, &state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "state show (media_lgrp = 0x%p, state = %u %s)",
@@ -58,13 +58,13 @@ static ssize_t cable_state_show(struct kobject *kobj, struct kobj_attribute *kat
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_state_get(media_lgrp->media_ldev->num, media_lgrp->num, &cable_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "cable state show (cable_state = 0x%X %s)", cable_state,
 		   sl_media_jack_cable_state_str(cable_state));
@@ -84,15 +84,15 @@ static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attrib
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_temp_get(media_lgrp->media_ldev->num, media_lgrp->num, &temp);
 	if (rtn == -EBADRQC)
-		return sysfs_emit(buf, "not-active\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 	if (rtn == -EIO)
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "temperature_celsius show (media_lgrp = 0x%p, temp = %uc)", media_lgrp, temp);
@@ -112,17 +112,17 @@ static ssize_t temperature_warn_limit_celsius_show(struct kobject *kobj, struct 
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_temp_warn_limit_get(media_lgrp->media_ldev->num,
 						      media_lgrp->num, &temp_warn_limit_c);
 
 	if (rtn == -EBADRQC)
-		return sysfs_emit(buf, "not-active\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 	if (rtn == -EIO)
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "temperature_warn_limit_celsius show (media_lgrp = 0x%p, temp = %uc)",
@@ -143,17 +143,17 @@ static ssize_t temperature_down_limit_celsius_show(struct kobject *kobj, struct 
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_temp_down_limit_get(media_lgrp->media_ldev->num,
 						      media_lgrp->num, &temp_down_limit_c);
 
 	if (rtn == -EBADRQC)
-		return sysfs_emit(buf, "not-active\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 	if (rtn == -EIO)
-		return sysfs_emit(buf, "io-error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "temperature_down_limit_celsius show (media_lgrp = 0x%p, temp = %uc)",
@@ -174,16 +174,16 @@ static ssize_t temperature_state_show(struct kobject *kobj, struct kobj_attribut
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
-		return sysfs_emit(buf, "not-active\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 
 	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "temperature state show (media_lgrp = 0x%p, temperature_state = %u %s)",
@@ -204,13 +204,13 @@ static ssize_t vendor_show(struct kobject *kobj, struct kobj_attribute *kattr, c
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_vendor_get(media_lgrp, &vendor);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "vendor show (media_lgrp = 0x%p, vendor = %u %s)",
@@ -231,20 +231,20 @@ static ssize_t vendor_part_num_show(struct kobject *kobj, struct kobj_attribute 
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_vendor_pn_str_get(media_lgrp, vendor_pn_str);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "vendor part num show (media_lgrp = 0x%p, vendor_pn_str = %s)",
 		   media_lgrp, vendor_pn_str);
 
 	if (strlen(vendor_pn_str) == 0)
-		return sysfs_emit(buf, "empty\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_EMPTY "\n");
 
 	return sysfs_emit(buf, "%s\n", vendor_pn_str);
 }
@@ -261,13 +261,13 @@ static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *kattr, cha
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_type_get(media_lgrp, &type);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "type show (media_lgrp = 0x%p, type = %u %s)",
@@ -288,13 +288,13 @@ static ssize_t shape_show(struct kobject *kobj, struct kobj_attribute *kattr, ch
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_shape_get(media_lgrp, &shape);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"shape show (media_lgrp = 0x%p, shape = %u %s)", media_lgrp, shape, sl_media_shape_str(shape));
@@ -314,13 +314,13 @@ static ssize_t cable_end_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_end_get(media_lgrp->media_jack, &cable_end);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"cable_end show (media_lgrp = 0x%p, cable_end = %u %s)",
@@ -341,13 +341,13 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_length_get(media_lgrp, &length_cm);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "length_cm show (media_lgrp = 0x%p, length_cm = %u)",
 		media_lgrp, length_cm);
@@ -367,13 +367,13 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_max_speed_get(media_lgrp, &max_speed);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "max speed show (media_lgrp = 0x%p, max_speed = %u %s)",
@@ -394,19 +394,19 @@ static ssize_t serial_num_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_serial_num_str_get(media_lgrp, serial_num_str);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "serial num show (media_lgrp = 0x%p, serial_num = %s)",
 		   media_lgrp, serial_num_str);
 
 	if (strlen(serial_num_str) == 0)
-		return sysfs_emit(buf, "empty\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_EMPTY "\n");
 
 	return sysfs_emit(buf, "%s\n", serial_num_str);
 }
@@ -423,19 +423,19 @@ static ssize_t hpe_part_num_show(struct kobject *kobj, struct kobj_attribute *ka
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_hpe_pn_str_get(media_lgrp, hpe_pn_str);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "hpe part num show (media_lgrp = 0x%p, hpe_pn = %s)",
 		media_lgrp, hpe_pn_str);
 
 	if (strlen(hpe_pn_str) == 0)
-		return sysfs_emit(buf, "empty\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_EMPTY "\n");
 
 	return sysfs_emit(buf, "%s\n", hpe_pn_str);
 }
@@ -468,17 +468,17 @@ static ssize_t jack_type_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_jack_type_get(media_lgrp, &jack_type);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_lgrp_jack_type_qsfp_density_get(media_lgrp, &density);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "jack type show (media_lgrp = 0x%p, jack_type = %u %s)",
 		media_lgrp, jack_type, sl_media_jack_type_str(jack_type, density));
@@ -498,13 +498,13 @@ static ssize_t furcation_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_furcation_get(media_lgrp, &furcation);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "furcation show (media_lgrp = 0x%p, furcation = %u %s)",
 		media_lgrp, furcation, sl_media_furcation_str(furcation));
@@ -523,8 +523,8 @@ static ssize_t is_supported_cable_show(struct kobject *kobj, struct kobj_attribu
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	unsupported = sl_media_lgrp_is_cable_unsupported(media_lgrp);
@@ -533,7 +533,7 @@ static ssize_t is_supported_cable_show(struct kobject *kobj, struct kobj_attribu
 		   "is_supported_cable show (media_lgrp = 0x%p, is_supported_cable = %s)",
 		   media_lgrp, unsupported ? "no" : "yes");
 
-	return sysfs_emit(buf, "%s\n", unsupported ? "no" : "yes");
+	return sysfs_emit(buf, "%s\n", unsupported ? SL_SYSFS_STR_NO : SL_SYSFS_STR_YES);
 }
 
 static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -548,19 +548,19 @@ static ssize_t date_code_show(struct kobject *kobj, struct kobj_attribute *kattr
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_date_code_str_get(media_lgrp, date_code_str);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "date code show (media_lgrp = 0x%p, date_code = %s)",
 		media_lgrp, date_code_str);
 
 	if (strlen(date_code_str) == 0)
-		return sysfs_emit(buf, "empty\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_EMPTY "\n");
 
 	return sysfs_emit(buf, "%s\n", date_code_str);
 }
@@ -577,13 +577,16 @@ static ssize_t firmware_version_hex_show(struct kobject *kobj, struct kobj_attri
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
+
+	if (!sl_media_lgrp_media_type_is_active(media_lgrp->media_ldev->num, media_lgrp->num))
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 
 	rtn = sl_media_lgrp_fw_ver_str_get(media_lgrp, fw_ver);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"firmware version hex show (media_lgrp = 0x%p, firmware_version_hex = %02X.%02X)",
@@ -604,13 +607,13 @@ static ssize_t target_firmware_version_hex_show(struct kobject *kobj, struct kob
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_eeprom_target_fw_ver_str_get(media_lgrp->media_jack, target_fw_ver_str, sizeof(target_fw_ver_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"target firmware version hex show (media_lgrp = 0x%p, target_firmware_version_hex = %s)",
@@ -631,13 +634,13 @@ static ssize_t cable_speed_state_show(struct kobject *kobj, struct kobj_attribut
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_cable_shift_state_get(media_lgrp->media_jack, &cable_speed_state);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "cable_speed state show (media_lgrp = 0x%p, cable_speed_state = %u %s)",
@@ -658,13 +661,13 @@ static ssize_t active_cable_200g_host_interface_show(struct kobject *kobj, struc
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_200g_host_interface_get(media_lgrp->media_jack, &host_interface);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 200g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
@@ -685,13 +688,13 @@ static ssize_t active_cable_200g_lane_count_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_200g_lane_count_get(media_lgrp->media_jack, &lane_count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 200g lane coiunt show (media_lgrp = 0x%p, lane_count = 0x%X)",
@@ -712,13 +715,13 @@ static ssize_t active_cable_200g_appsel_num_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_200g_appsel_num_get(media_lgrp->media_jack, &appsel_num);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 200g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
@@ -738,13 +741,13 @@ static ssize_t active_cable_400g_host_interface_show(struct kobject *kobj, struc
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_400g_host_interface_get(media_lgrp->media_jack, &host_interface);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 400g host interface show (media_lgrp = 0x%p, host_interface = 0x%X)",
@@ -765,13 +768,13 @@ static ssize_t active_cable_400g_lane_count_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_400g_lane_count_get(media_lgrp->media_jack, &lane_count);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "active cable 400g lane count show (media_lgrp = 0x%p, lane_count = 0x%X)",
@@ -792,13 +795,13 @@ static ssize_t active_cable_400g_appsel_num_show(struct kobject *kobj, struct ko
 
 	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_jack_active_cable_400g_appsel_num_get(media_lgrp->media_jack, &appsel_num);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		"active cable 400g appsel no show (media_lgrp = 0x%p, appsel_num = 0x%X)", media_lgrp, appsel_num);
@@ -823,12 +826,12 @@ static ssize_t last_io_fault_cause_show(struct kobject *kobj, struct kobj_attrib
 	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
 					    &fault_cause, &fault_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, io_fault_cause,
 					      io_cause_str, sizeof(io_cause_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "last_io_fault cause show (cause = 0x%x %s, time = %lld %ptTd %ptTt)",
@@ -836,7 +839,7 @@ static ssize_t last_io_fault_cause_show(struct kobject *kobj, struct kobj_attrib
 		   io_fault_time, &io_fault_time, &io_fault_time);
 
 	if (!io_fault_cause)
-		return sysfs_emit(buf, "no-fault\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAULT "\n");
 
 	return sysfs_emit(buf, "%s\n", io_cause_str);
 }
@@ -858,12 +861,12 @@ static ssize_t last_io_fault_time_show(struct kobject *kobj, struct kobj_attribu
 	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
 					    &fault_cause, &fault_time);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, io_fault_cause,
 					      io_cause_str, sizeof(io_cause_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "last io fault time show (cause = 0x%x %s, time = %lld %ptTd %ptTt)",
@@ -871,7 +874,7 @@ static ssize_t last_io_fault_time_show(struct kobject *kobj, struct kobj_attribu
 		   io_fault_time, &io_fault_time, &io_fault_time);
 
 	if (!io_fault_cause)
-		return sysfs_emit(buf, "no-fault\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAULT "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &io_fault_time, &io_fault_time);
 }
@@ -892,13 +895,13 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 
 	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
 					    &fault_cause, &fault_time);
-	if(rtn)
-		return sysfs_emit(buf, "error\n");
+	if (rtn)
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, fault_cause,
 					      fault_cause_str, sizeof(fault_cause_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "last_fault cause show (cause = 0x%x %s, time = %lld %ptTd %ptTt)",
@@ -906,7 +909,7 @@ static ssize_t last_fault_cause_show(struct kobject *kobj, struct kobj_attribute
 		   fault_time, &fault_time, &fault_time);
 
 	if (!fault_cause)
-		return sysfs_emit(buf, "no-fault\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAULT "\n");
 
 	return sysfs_emit(buf, "%s\n", fault_cause_str);
 }
@@ -927,13 +930,13 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 
 	rtn = sl_media_jack_fault_cause_get(media_lgrp->media_jack, &io_fault_cause, &io_fault_time,
 					    &fault_cause, &fault_time);
-	if(rtn)
-		return sysfs_emit(buf, "error\n");
+	if (rtn)
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_fault_cause_str_create(media_lgrp->media_jack, fault_cause,
 					      fault_cause_str, sizeof(fault_cause_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "last fault time show (cause = 0x%x %s, time = %lld %ptTd %ptTt)",
@@ -941,7 +944,7 @@ static ssize_t last_fault_time_show(struct kobject *kobj, struct kobj_attribute 
 		   fault_time, &fault_time, &fault_time);
 
 	if (!fault_cause)
-		return sysfs_emit(buf, "no-fault\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_FAULT "\n");
 
 	return sysfs_emit(buf, "%ptTd %ptTt\n", &fault_time, &fault_time);
 }
@@ -957,7 +960,7 @@ static ssize_t is_supported_ss200_cable_show(struct kobject *kobj, struct kobj_a
 		media_lgrp->media_jack->is_supported_ss200_cable ? "yes" : "no");
 
 	if (media_lgrp->media_jack->is_supported_ss200_cable)
-		return sysfs_emit(buf, "yes\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_YES "\n");
 
 	return sysfs_emit(buf, "no\n");
 }
@@ -996,7 +999,7 @@ static ssize_t signal_cache_time_show(struct kobject *kobj, struct kobj_attribut
 	rtn = sl_media_jack_signal_cache_time_s_get(ldev_num, lgrp_num, &signal_cache_time_s);
 	if (rtn) {
 		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME, "signal cache time show failed [%d]", rtn);
-		return sysfs_emit(buf, "no-cache\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CACHE "\n");
 	}
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
@@ -1016,11 +1019,11 @@ static ssize_t error_info_show(struct kobject *kobj, struct kobj_attribute *katt
 
 	rtn = sl_media_jack_attr_error_map_get(media_lgrp->media_jack, &error_map);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_jack_attr_error_map_str(error_map, error_str, sizeof(error_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "error info show (error_map = 0x%x %s)", error_map, error_str);
@@ -1039,11 +1042,11 @@ static ssize_t loopback_caps_show(struct kobject *kobj, struct kobj_attribute *k
 
 	rtn = sl_media_data_lgrp_loopback_caps_get(media_lgrp, &loopback_caps);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	rtn = sl_media_lgrp_loopback_caps_str(loopback_caps, caps_str, sizeof(caps_str));
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME,
 		   "loopback host supported show (loopback_caps = 0x%x %s)", loopback_caps, caps_str);
@@ -1152,13 +1155,13 @@ static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *
 
 	if (!sl_media_jack_is_cable_inserted(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(speed_kobj->media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_type_get(speed_kobj->media_lgrp, &type);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	speed = speed_kobj->speed;
 
@@ -1183,23 +1186,23 @@ static ssize_t projected_ber_show(struct kobject *kobj, struct kobj_attribute *k
 
 	if (!sl_media_jack_is_cable_inserted(speed_kobj->media_lgrp->media_jack)) {
 		if (sl_media_jack_is_cable_format_unsupported(speed_kobj->media_lgrp->media_jack))
-			return sysfs_emit(buf, "unsupported-format\n");
-		return sysfs_emit(buf, "no-cable\n");
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
 	}
 
 	rtn = sl_media_lgrp_type_get(speed_kobj->media_lgrp, &type);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 			   "projected_ber show (media_lgrp = 0x%p, projected_ber = 0)", speed_kobj->media_lgrp);
-		return sysfs_emit(buf, "0\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_ACTIVE "\n");
 	}
 
 	rtn = sl_media_eeprom_media_interface_get(speed_kobj->media_lgrp->media_jack, &media_interface);
 	if (rtn)
-		return sysfs_emit(buf, "error\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
 
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 		   "projected_ber show (media_lgrp = 0x%p, projected_ber = %s)",
