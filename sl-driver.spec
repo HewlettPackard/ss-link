@@ -26,7 +26,8 @@
 %define release_extra 0
 
 Name:           sl-driver
-Version:        1.20.20
+# WARN: don't change this version directly.  The commit script will do it.
+Version:        1.20.21
 Release:        %(echo ${BUILD_METADATA})
 Summary:        HPE Slingshot Link driver
 License:        GPL-2.0
@@ -242,12 +243,7 @@ ${postinst} %{name} %{version}-%{release}
 %exclude /lib/modules/modules.order
 
 %changelog
-* Mon Sep 08 2026 Patrick Bueb <patrick.bueb@hpe.com> 1.20.20
-- Build the DKMS module in %post (dependency-ordered) instead of %posttrans; this module is
-  versioned (no upgrade collision) and is a build dependency of other modules (ENCASSINI-2814).
-* Wed Sep 02 2026 Patrick Bueb <patrick.bueb@hpe.com> 1.20.19
-- Move the DKMS build/install to the posttrans scriptlet so the old module is removed first on upgrade.
-- Standardize kmod/dkms Conflicts.
-* Tue Jan 20 2026 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.18
+# WARN: don't add any entries here.  The commit script will do it.
+* Fri Oct 09 2026 Slingshot Platform Team <hpcdev_ss_plat@hpe.com> 1.20.21
 
 %{_git_hash}
