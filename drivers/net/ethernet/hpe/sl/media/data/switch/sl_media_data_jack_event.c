@@ -485,6 +485,15 @@ void sl_media_data_jack_remove(struct sl_media_jack *media_jack)
 	sl_media_log_info(media_jack, LOG_NAME, "cable removed");
 }
 
+void sl_media_data_jack_offline(struct sl_media_jack *media_jack)
+{
+	sl_media_log_err(media_jack, LOG_NAME, "cable offline");
+
+	sl_media_jack_state_set(media_jack, SL_MEDIA_JACK_CABLE_ERROR);
+	sl_media_jack_fault_cause_set(media_jack, SL_MEDIA_FAULT_CAUSE_OFFLINE);
+	sl_media_data_jack_led_set(media_jack);
+}
+
 static bool ignore_events;
 
 void sl_media_data_jack_event_ignore_set(bool val)
@@ -492,7 +501,11 @@ void sl_media_data_jack_event_ignore_set(bool val)
 	ignore_events = val;
 }
 
-#define SL_MEDIA_XCVR_REMOVED (HSNXCVR_EVENT_OFFLINE | HSNXCVR_EVENT_REMOVE)
+#define SL_MEDIA_XCVR_EVENT_MASK ( \
+	HSNXCVR_EVENT_OFFLINE     |\
+	HSNXCVR_EVENT_ONLINE      |\
+	HSNXCVR_EVENT_REMOVE      |\
+	HSNXCVR_EVENT_INSERT)
 int sl_media_data_jack_event(struct notifier_block *event_notifier,
 			     unsigned long events, void *hdl)
 {
@@ -532,11 +545,17 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 
 	sl_media_log_info(media_jack, LOG_NAME, "event (events = 0x%08lX)", events);
 
-	if ((events & SL_MEDIA_XCVR_REMOVED) == SL_MEDIA_XCVR_REMOVED)
-		sl_media_data_jack_remove(media_jack);
-
-	if (events & HSNXCVR_EVENT_ONLINE)
+	switch (events & SL_MEDIA_XCVR_EVENT_MASK) {
+	case HSNXCVR_EVENT_OFFLINE:
+		sl_media_data_jack_offline(media_jack);
+		break;
+	case HSNXCVR_EVENT_ONLINE:
 		sl_media_data_jack_insert(media_jack);
+		break;
+	case HSNXCVR_EVENT_OFFLINE | HSNXCVR_EVENT_REMOVE:
+		sl_media_data_jack_remove(media_jack);
+		break;
+	}
 
 	return NOTIFY_OK;
 }

@@ -388,54 +388,6 @@ int sl_media_jack_cable_upshift(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	return 0;
 }
 
-const char *sl_media_fault_cause_str(u32 fault_cause)
-{
-	switch (fault_cause) {
-	case SL_MEDIA_FAULT_CAUSE_EEPROM_FORMAT_UNSUPPORTED:
-		return "eeprom-format-unsupported";
-	case SL_MEDIA_FAULT_CAUSE_EEPROM_VENDOR_UNSUPPORTED:
-		return "eeprom-vendor-unsupported";
-	case SL_MEDIA_FAULT_CAUSE_EEPROM_JACK_IO:
-		return "eeprom-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_JACK_GET:
-		return "jack-get";
-	case SL_MEDIA_FAULT_CAUSE_JACK_STATUS_GET:
-		return "jack-status-get";
-	case SL_MEDIA_FAULT_CAUSE_CABLE_SETUP:
-		return "cable-setup";
-	case SL_MEDIA_FAULT_CAUSE_ACTIVE_CABLE_SETUP:
-		return "active-cable-setup";
-	case SL_MEDIA_FAULT_CAUSE_SERDES_SETTINGS_GET:
-		return "serdes-settings-get";
-	case SL_MEDIA_FAULT_CAUSE_MEDIA_ATTR_SET:
-		return "media-attr-set";
-	case SL_MEDIA_FAULT_CAUSE_HIGH_POWER_SET_JACK_IO:
-		return "high-power-set-io";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO:
-		return "down-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_LOW_POWER_SET:
-		return "down-jack-io-low-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_DOWN_JACK_IO_HIGH_POWER_SET:
-		return "down-jack-io-high-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO:
-		return "up-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_LOW_POWER_SET:
-		return "up-jack-io-low-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_UP_JACK_IO_HIGH_POWER_SET:
-		return "up-jack-io-high-power-set";
-	case SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO:
-		return "state-jack-io";
-	case SL_MEDIA_FAULT_CAUSE_HOT:
-		return "hot";
-	case SL_MEDIA_FAULT_CAUSE_WARM:
-		return "warm";
-	case SL_MEDIA_FAULT_CAUSE_CABLE_FAULT:
-		return "cable-fault";
-	default:
-		return "unknown";
-	}
-}
-
 const char *sl_media_temp_state_str(u8 temperature_state)
 {
 	switch (temperature_state) {
@@ -649,20 +601,20 @@ static int sl_media_jack_lane_data_read(u8 ldev_num, u8 lgrp_num, struct sl_medi
 
 	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_TX_LOS_OFFSET, (u8 *)&tmp_lane_data.signal.tx, 2);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
 		return -EIO;
 	}
 
 	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_RX_LOS_OFFSET, (u8 *)&tmp_lane_data.signal.rx, 2);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
 		return -EIO;
 	}
 
 	rtn = sl_media_io_read(media_jack, 0x11, SL_MEDIA_JACK_DP_STATE_OFFSET, read_bytes,
 			       SL_MEDIA_JACK_MAX_COHERENT_BYTES);
 	if (rtn) {
-		sl_media_log_err(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
+		sl_media_log_err_trace(media_jack, LOG_NAME, "media_io_read_data failed [%d]", rtn);
 		return -EIO;
 	}
 
@@ -1061,6 +1013,8 @@ static const char * const sl_media_fault_cause_strings[] = {
 	[SL_MEDIA_FAULT_CAUSE_SHIFT_STATE_JACK_IO_BIT]               = "state-jack-io",
 	[SL_MEDIA_FAULT_CAUSE_HOT_BIT]                               = "hot",
 	[SL_MEDIA_FAULT_CAUSE_WARM_BIT]                              = "warm",
+	[SL_MEDIA_FAULT_CAUSE_CABLE_FAULT_BIT]                       = "cable-fault",
+	[SL_MEDIA_FAULT_CAUSE_OFFLINE_BIT]                           = "offline",
 };
 
 static const struct sl_str_map sl_media_fault_cause_str_map = {

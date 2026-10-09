@@ -409,6 +409,25 @@ static ssize_t cause_cable_fault_show(struct kobject *kobj, struct kobj_attribut
 	return sysfs_emit(buf, "%u\n", counter);
 }
 
+static ssize_t cause_offline_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	u32                   counter;
+	u32                   rtn;
+
+	media_lgrp = container_of(kobj, struct sl_media_lgrp, counters_kobj);
+
+	rtn = sl_ctrl_media_cause_counter_get(media_lgrp->media_jack, MEDIA_CAUSE_OFFLINE, &counter);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
+
+	ctrl_lgrp = sl_ctrl_lgrp_get(media_lgrp->media_ldev->num, media_lgrp->num);
+	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media cause offline show (counter = %u)", counter);
+
+	return sysfs_emit(buf, "%u\n", counter);
+}
+
 static ssize_t temperature_state_cold_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
 	struct sl_media_lgrp *media_lgrp;
@@ -525,6 +544,7 @@ static struct kobj_attribute media_cause_shift_state_jack_io               = __A
 static struct kobj_attribute media_cause_hot                               = __ATTR_RO(cause_hot);
 static struct kobj_attribute media_cause_warm                              = __ATTR_RO(cause_warm);
 static struct kobj_attribute media_cause_cable_fault                       = __ATTR_RO(cause_cable_fault);
+static struct kobj_attribute media_cause_offline                           = __ATTR_RO(cause_offline);
 static struct kobj_attribute media_temperature_state_cold                  = __ATTR_RO(temperature_state_cold);
 static struct kobj_attribute media_temperature_state_warm                  = __ATTR_RO(temperature_state_warm);
 static struct kobj_attribute media_temperature_state_hot                   = __ATTR_RO(temperature_state_hot);
@@ -552,6 +572,7 @@ static struct attribute *media_counters_attrs[] = {
 	&media_cause_hot.attr,
 	&media_cause_warm.attr,
 	&media_cause_cable_fault.attr,
+	&media_cause_offline.attr,
 	&media_temperature_state_cold.attr,
 	&media_temperature_state_warm.attr,
 	&media_temperature_state_hot.attr,

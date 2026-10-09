@@ -39,6 +39,7 @@ enum sl_ctrl_media_cause_counters {
 	MEDIA_CAUSE_HOT,                               /* media hot detected                            */
 	MEDIA_CAUSE_WARM,                              /* media warm detected                           */
 	MEDIA_CAUSE_CABLE_FAULT,                       /* media cable fault                             */
+	MEDIA_CAUSE_OFFLINE,                           /* media offline error                           */
 	SL_CTRL_MEDIA_CAUSE_COUNTERS_COUNT
 };
 

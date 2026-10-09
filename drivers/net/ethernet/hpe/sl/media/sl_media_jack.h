@@ -275,6 +275,7 @@ enum sl_media_fault_cause_bit {
 	SL_MEDIA_FAULT_CAUSE_HOT_BIT,
 	SL_MEDIA_FAULT_CAUSE_WARM_BIT,
 	SL_MEDIA_FAULT_CAUSE_CABLE_FAULT_BIT,
+	SL_MEDIA_FAULT_CAUSE_OFFLINE_BIT,
 };
 
 #define SL_MEDIA_FAULT_CAUSE_NONE 0
@@ -298,6 +299,7 @@ enum sl_media_fault_cause_bit {
 #define SL_MEDIA_FAULT_CAUSE_HOT                               BIT(SL_MEDIA_FAULT_CAUSE_HOT_BIT)
 #define SL_MEDIA_FAULT_CAUSE_WARM                              BIT(SL_MEDIA_FAULT_CAUSE_WARM_BIT)
 #define SL_MEDIA_FAULT_CAUSE_CABLE_FAULT                       BIT(SL_MEDIA_FAULT_CAUSE_CABLE_FAULT_BIT) /* Specific cable status read from HW */
+#define SL_MEDIA_FAULT_CAUSE_OFFLINE                           BIT(SL_MEDIA_FAULT_CAUSE_OFFLINE_BIT)
 
 int                   sl_media_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num);
 void                  sl_media_jack_del(u8 ldev_num, u8 jack_num);
@@ -336,7 +338,6 @@ void sl_media_jack_cable_warm_notif_sent_set(struct sl_media_jack *media_jack,
 void sl_media_jack_cable_cold_notif_sent_set(struct sl_media_jack *media_jack,
 					     struct sl_media_lgrp_cable_info *cable_info, bool value);
 
-const char *sl_media_fault_cause_str(u32 fault_cause);
 const char *sl_media_temp_state_str(u8 temperature_state);
 
 void sl_media_jack_led_set(u8 ldev_num, u8 lgrp_num);

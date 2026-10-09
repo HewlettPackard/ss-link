@@ -46,6 +46,7 @@ int sl_ctrl_media_cause_counters_init(struct sl_media_jack *media_jack)
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_HOT);
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_WARM);
 	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_CABLE_FAULT);
+	SL_CTRL_MEDIA_CAUSE_COUNTER_INIT(media_jack, MEDIA_CAUSE_OFFLINE);
 
 	return 0;
 }
@@ -167,6 +168,9 @@ void sl_ctrl_media_cause_counter_inc(struct sl_media_jack *media_jack, unsigned 
 			break;
 		case SL_MEDIA_FAULT_CAUSE_CABLE_FAULT:
 			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_CABLE_FAULT);
+			break;
+		case SL_MEDIA_FAULT_CAUSE_OFFLINE:
+			SL_CTRL_MEDIA_CAUSE_COUNTER_INC(media_jack, MEDIA_CAUSE_OFFLINE);
 			break;
 		default:
 			sl_ctrl_log_warn_trace(media_jack, LOG_NAME,

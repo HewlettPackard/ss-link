@@ -96,6 +96,7 @@ void sl_media_data_jack_insert_status_map_clr(u8 ldev_num, u8 bit_num);
 u32  sl_media_data_jack_insert_status_map_get(u8 ldev_num);
 int  sl_media_data_jack_insert(struct sl_media_jack *media_jack);
 void sl_media_data_jack_remove(struct sl_media_jack *media_jack);
+void sl_media_data_jack_offline(struct sl_media_jack *media_jack);
 
 void sl_media_data_jack_event_ignore_set(bool val);
 int  sl_media_data_jack_event(struct notifier_block *event_notifier, unsigned long events, void *hdl);
