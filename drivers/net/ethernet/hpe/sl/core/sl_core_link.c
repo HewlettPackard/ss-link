@@ -141,6 +141,7 @@ int sl_core_link_cancel(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		return 0;
 	case SL_CORE_LINK_STATE_GOING_UP:
 	case SL_CORE_LINK_STATE_AN:
+	case SL_CORE_LINK_STATE_UP:
 		sl_core_log_dbg(core_link, LOG_NAME, "canceling");
 		core_link->link.tags.down       = tag;
 		core_link->link.callbacks.down  = callback;

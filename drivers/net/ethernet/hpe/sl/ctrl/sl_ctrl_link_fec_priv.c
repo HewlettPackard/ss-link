@@ -187,7 +187,6 @@ void sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
 	spin_unlock(&ctrl_link->fec_data.lock);
 	if (!period) {
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
-		cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 		return;
 	}
 
