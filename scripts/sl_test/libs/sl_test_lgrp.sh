@@ -383,7 +383,7 @@ function sl_test_lgrp_notifs_remove {
 		fi
 
 		temp_file=$(mktemp)
-		sl_test_lgrp_notifs_read -r > ${temp_file} 2>&1
+		sl_test_lgrp_notifs_read -d ${ldev_num} -r > ${temp_file} 2>&1
 		rtn=$?
 		if [[ "${rtn}" != 0 ]]; then
 			sl_test_warn_log "${FUNCNAME}" "lgrp_notifs_read failed [${rtn}]"
@@ -959,7 +959,7 @@ function sl_test_lgrp_notifs_show {
 			return ${rtn}
 		fi
 
-		sl_test_lgrp_notifs_read -r
+		sl_test_lgrp_notifs_read -d ${ldev_num} -r
 		rtn=$?
 	done
 
@@ -1282,7 +1282,7 @@ function sl_test_lgrp_links_notif_wait {
 
 			sl_test_debug_log "${FUNCNAME}" "waiting (ldev_num = ${ldev_num}, lgrp_num = ${lgrp_num}, link_num = ${link_num})"
 
-			notif_str=$(sl_test_lgrp_notifs_read ${filter} -e ${wait_notif} -t ${timeout_ms} 2> ${temp_file})
+			notif_str=$(sl_test_lgrp_notifs_read -d ${ldev_num} ${filter} -e ${wait_notif} -t ${timeout_ms} 2> ${temp_file})
 			rtn=$?
 			if [[ "${rtn}" != 0 ]]; then
 				while IFS= read -r line; do

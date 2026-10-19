@@ -17,6 +17,7 @@ int             sl_test_lgrp_policy_set(void);
 
 int             sl_test_lgrp_notif_reg(void);
 int             sl_test_lgrp_notif_unreg(void);
+void            sl_test_lgrp_notif_unregister_all(void);
 
 u8              sl_test_debugfs_lgrp_num_get(void);
 struct sl_lgrp *sl_test_lgrp_get(void);

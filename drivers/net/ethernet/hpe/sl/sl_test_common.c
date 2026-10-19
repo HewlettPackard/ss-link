@@ -3,6 +3,9 @@
 
 #include <linux/module.h>
 #include <linux/debugfs.h>
+#include <linux/err.h>
+#include <linux/mutex.h>
+#include <linux/string.h>
 
 #include "log/sl_log.h"
 #include "sl_asic.h"
@@ -20,6 +23,37 @@
 #define VAL_LEN        32
 #define SYSFS_NAME_LEN 64
 #define OPTS_STR_LEN   256
+
+static DEFINE_MUTEX(sl_test_debugfs_state_mutex);
+
+int sl_test_debugfs_entry_check(struct dentry *dentry)
+{
+	if (!dentry)
+		return -ENOMEM;
+	if (IS_ERR(dentry))
+		return PTR_ERR(dentry);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_entry_check);
+
+int sl_test_debugfs_cmd_call(const char *cmd, struct cmd_entry *cmd_list, size_t num_cmds, int *call_rtn)
+{
+	int i;
+
+	for (i = 0; i < num_cmds; ++i) {
+		if (sysfs_streq(cmd, cmd_list[i].cmd)) {
+			mutex_lock(&sl_test_debugfs_state_mutex);
+			*call_rtn = cmd_list[i].call();
+			mutex_unlock(&sl_test_debugfs_state_mutex);
+
+			return 0;
+		}
+	}
+
+	return -ENOENT;
+}
+EXPORT_SYMBOL(sl_test_debugfs_cmd_call);
 
 int sl_test_serdes_params_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			      s16 pre1, s16 pre2, s16 pre3, s16 cursor,
@@ -199,8 +233,10 @@ static ssize_t sl_test_option_read(struct file *f, char __user *buf, size_t size
 
 	entry = f->private_data;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	len = snprintf(val_buf, sizeof(val_buf), "%s\n",
 		(*entry->options & entry->field) ? "enabled" : "disabled");
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
 		return len;
@@ -252,10 +288,12 @@ static ssize_t sl_test_option_write(struct file *f, const char __user *buf, size
 
 	entry = f->private_data;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	if (enable)
 		*entry->options |= entry->field;
 	else
 		*entry->options &= ~entry->field;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	return count;
 }
@@ -270,12 +308,14 @@ static const struct file_operations sl_test_option_fops = {
 int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *parent,
 	struct options_field_entry *option)
 {
+	int            rtn;
 	struct dentry *dentry;
 
 	dentry = debugfs_create_file(name, mode, parent, option, &sl_test_option_fops);
-	if (!dentry) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_file failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -296,12 +336,17 @@ EXPORT_SYMBOL(sl_test_cmds_show);
 static ssize_t sl_test_debugfs_s32_write(struct file *f, const char __user *buf, size_t count, loff_t *pos)
 {
 	int rtn;
+	s32 value;
 
-	rtn = kstrtoint_from_user(buf, count, 0, f->private_data);
+	rtn = kstrtoint_from_user(buf, count, 0, &value);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtoint_from_user failed [%d]", rtn);
 		return rtn;
 	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(s32 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	return count;
 }
@@ -312,7 +357,9 @@ static ssize_t sl_test_debugfs_s32_read(struct file *f, char __user *buf, size_t
 	int     len;
 	ssize_t bytes_read;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	len = snprintf(val_buf, sizeof(val_buf), "%d\n", *(s32 *)f->private_data);
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
 		return len;
@@ -337,12 +384,14 @@ static const struct file_operations sl_test_fops_s32 = {
 
 int sl_test_debugfs_create_s32(const char *name, umode_t mode, struct dentry *parent, s32 *value)
 {
+	int            rtn;
 	struct dentry *dentry;
 
 	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_fops_s32);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s32 failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s32 failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -352,12 +401,17 @@ EXPORT_SYMBOL_GPL(sl_test_debugfs_create_s32);
 static ssize_t sl_test_debugfs_s16_write(struct file *f, const char __user *buf, size_t count, loff_t *pos)
 {
 	int rtn;
+	s16 value;
 
-	rtn = kstrtos16_from_user(buf, count, 0, f->private_data);
+	rtn = kstrtos16_from_user(buf, count, 0, &value);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtoint_from_user failed [%d]", rtn);
 		return rtn;
 	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(s16 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	return count;
 }
@@ -368,7 +422,9 @@ static ssize_t sl_test_debugfs_s16_read(struct file *f, char __user *buf, size_t
 	int     len;
 	ssize_t bytes_read;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	len = snprintf(val_buf, sizeof(val_buf), "%d\n", *(s16 *)f->private_data);
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "snprintf failed [%d]", len);
 		return len;
@@ -393,17 +449,227 @@ static const struct file_operations sl_test_fops_s16 = {
 
 int sl_test_debugfs_create_s16(const char *name, umode_t mode, struct dentry *parent, s16 *value)
 {
+	int            rtn;
 	struct dentry *dentry;
 
 	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_fops_s16);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s16 failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_s16 failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
 }
 EXPORT_SYMBOL_GPL(sl_test_debugfs_create_s16);
+
+static ssize_t sl_test_debugfs_u8_write(struct file *f, const char __user *buf,
+					size_t count, loff_t *pos)
+{
+	u8  value;
+	int rtn;
+
+	rtn = kstrtou8_from_user(buf, count, 0, &value);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtou8_from_user failed [%d]", rtn);
+		return rtn;
+	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(u8 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	return count;
+}
+
+static ssize_t sl_test_debugfs_u8_read(struct file *f, char __user *buf,
+				       size_t size, loff_t *pos)
+{
+	char val_buf[VAL_LEN];
+	u8   value;
+	int  len;
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	value = *(u8 *)f->private_data;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	len = scnprintf(val_buf, sizeof(val_buf), "%u\n", value);
+
+	return simple_read_from_buffer(buf, size, pos, val_buf, len);
+}
+
+static const struct file_operations sl_test_debugfs_u8_fops = {
+	.owner = THIS_MODULE,
+	.open  = simple_open,
+	.read  = sl_test_debugfs_u8_read,
+	.write = sl_test_debugfs_u8_write,
+};
+
+int sl_test_debugfs_create_u8(const char *name, umode_t mode, struct dentry *parent, u8 *value)
+{
+	struct dentry *dentry;
+
+	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_debugfs_u8_fops);
+
+	return sl_test_debugfs_entry_check(dentry);
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_create_u8);
+
+static ssize_t sl_test_debugfs_u16_write(struct file *f, const char __user *buf,
+					 size_t count, loff_t *pos)
+{
+	u16 value;
+	int rtn;
+
+	rtn = kstrtou16_from_user(buf, count, 0, &value);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtou16_from_user failed [%d]", rtn);
+		return rtn;
+	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(u16 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	return count;
+}
+
+static ssize_t sl_test_debugfs_u16_read(struct file *f, char __user *buf,
+					size_t size, loff_t *pos)
+{
+	char val_buf[VAL_LEN];
+	u16  value;
+	int  len;
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	value = *(u16 *)f->private_data;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	len = scnprintf(val_buf, sizeof(val_buf), "%u\n", value);
+
+	return simple_read_from_buffer(buf, size, pos, val_buf, len);
+}
+
+static const struct file_operations sl_test_debugfs_u16_fops = {
+	.owner = THIS_MODULE,
+	.open  = simple_open,
+	.read  = sl_test_debugfs_u16_read,
+	.write = sl_test_debugfs_u16_write,
+};
+
+int sl_test_debugfs_create_u16(const char *name, umode_t mode, struct dentry *parent, u16 *value)
+{
+	struct dentry *dentry;
+
+	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_debugfs_u16_fops);
+
+	return sl_test_debugfs_entry_check(dentry);
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_create_u16);
+
+static ssize_t sl_test_debugfs_u32_write(struct file *f, const char __user *buf,
+					 size_t count, loff_t *pos)
+{
+	u32 value;
+	int rtn;
+
+	rtn = kstrtou32_from_user(buf, count, 0, &value);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtou32_from_user failed [%d]", rtn);
+		return rtn;
+	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(u32 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	return count;
+}
+
+static ssize_t sl_test_debugfs_u32_read(struct file *f, char __user *buf,
+					size_t size, loff_t *pos)
+{
+	char val_buf[VAL_LEN];
+	u32 value;
+	int len;
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	value = *(u32 *)f->private_data;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	len = scnprintf(val_buf, sizeof(val_buf), "%u\n", value);
+
+	return simple_read_from_buffer(buf, size, pos, val_buf, len);
+}
+
+static const struct file_operations sl_test_debugfs_u32_fops = {
+	.owner = THIS_MODULE,
+	.open  = simple_open,
+	.read  = sl_test_debugfs_u32_read,
+	.write = sl_test_debugfs_u32_write,
+};
+
+int sl_test_debugfs_create_u32(const char *name, umode_t mode, struct dentry *parent, u32 *value)
+{
+	struct dentry *dentry;
+
+	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_debugfs_u32_fops);
+
+	return sl_test_debugfs_entry_check(dentry);
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_create_u32);
+
+static ssize_t sl_test_debugfs_u64_write(struct file *f, const char __user *buf,
+					 size_t count, loff_t *pos)
+{
+	u64 value;
+	int rtn;
+
+	rtn = kstrtou64_from_user(buf, count, 0, &value);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "kstrtou64_from_user failed [%d]", rtn);
+		return rtn;
+	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*(u64 *)f->private_data = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	return count;
+}
+
+static ssize_t sl_test_debugfs_u64_read(struct file *f, char __user *buf,
+					size_t size, loff_t *pos)
+{
+	char val_buf[VAL_LEN];
+	u64  value;
+	int  len;
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	value = *(u64 *)f->private_data;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
+
+	len = scnprintf(val_buf, sizeof(val_buf), "%llu\n", value);
+
+	return simple_read_from_buffer(buf, size, pos, val_buf, len);
+}
+
+static const struct file_operations sl_test_debugfs_u64_fops = {
+	.owner = THIS_MODULE,
+	.open  = simple_open,
+	.read  = sl_test_debugfs_u64_read,
+	.write = sl_test_debugfs_u64_write,
+};
+
+int sl_test_debugfs_create_u64(const char *name, umode_t mode, struct dentry *parent, u64 *value)
+{
+	struct dentry *dentry;
+
+	dentry = debugfs_create_file(name, mode, parent, value, &sl_test_debugfs_u64_fops);
+
+	return sl_test_debugfs_entry_check(dentry);
+}
+EXPORT_SYMBOL_GPL(sl_test_debugfs_create_u64);
 
 static ssize_t sl_test_debugfs_str_to_u16_read(struct file *f, char __user *buf, size_t size, loff_t *pos)
 {
@@ -414,7 +680,9 @@ static ssize_t sl_test_debugfs_str_to_u16_read(struct file *f, char __user *buf,
 
 	option = f->private_data;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	len = scnprintf(str, VAL_LEN, "%s\n", option->to_str(*option->value));
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	bytes_read = simple_read_from_buffer(buf, size, pos, str, len);
 	if (bytes_read < 0) {
@@ -434,6 +702,7 @@ static ssize_t sl_test_debugfs_str_to_u16_write(struct file *f, const char __use
 {
 	int                  rtn;
 	int                  len;
+	u16                  value;
 	struct str_conv_u16 *option;
 	char                 kbuf[VAL_LEN];
 
@@ -448,11 +717,15 @@ static ssize_t sl_test_debugfs_str_to_u16_write(struct file *f, const char __use
 
 	kbuf[len] = '\0';
 
-	rtn = option->to_u16(kbuf, option->value);
+	rtn = option->to_u16(kbuf, &value);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "conversion failed [%d]", rtn);
 		return rtn;
 	}
+
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*option->value = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	return count;
 }
@@ -493,20 +766,23 @@ static const struct file_operations sl_test_fops_conv_opts = {
 int sl_test_debugfs_create_str_conv_u16(const char *name, umode_t mode, struct dentry *parent,
 					struct str_conv_u16 *option)
 {
+	int            rtn;
 	struct dentry *dentry;
 	char           name_buf[SYSFS_NAME_LEN];
 
 	dentry = debugfs_create_file(name, mode, parent, option, &sl_test_fops_str_conv_u16);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u16 failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u16 failed [%d]", rtn);
+		return rtn;
 	}
 
 	snprintf(name_buf, SYSFS_NAME_LEN, "%s_options", name);
 	dentry = debugfs_create_file(name_buf, mode, parent, option, &sl_test_fops_conv_opts);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u16 opts failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u16 opts failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -522,7 +798,9 @@ static ssize_t sl_test_debugfs_str_to_u32_read(struct file *f, char __user *buf,
 
 	option = f->private_data;
 
+	mutex_lock(&sl_test_debugfs_state_mutex);
 	len = scnprintf(str, VAL_LEN, "%s\n", option->to_str(*option->value));
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	bytes_read = simple_read_from_buffer(buf, size, pos, str, len);
 	if (bytes_read < 0) {
@@ -538,6 +816,7 @@ static ssize_t sl_test_debugfs_str_to_u32_write(struct file *f, const char __use
 {
 	int                  rtn;
 	int                  len;
+	u32                  value;
 	struct str_conv_u32 *option;
 	char                 kbuf[VAL_LEN];
 
@@ -549,11 +828,14 @@ static ssize_t sl_test_debugfs_str_to_u32_write(struct file *f, const char __use
 
 	kbuf[len] = '\0';
 
-	rtn = option->to_u32(kbuf, option->value);
+	rtn = option->to_u32(kbuf, &value);
 	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "conversion failed [%d]", rtn);
 		return rtn;
 	}
+	mutex_lock(&sl_test_debugfs_state_mutex);
+	*option->value = value;
+	mutex_unlock(&sl_test_debugfs_state_mutex);
 
 	return count;
 }
@@ -568,20 +850,23 @@ static const struct file_operations sl_test_fops_str_conv_u32 = {
 int sl_test_debugfs_create_str_conv_u32(const char *name, umode_t mode, struct dentry *parent,
 					struct str_conv_u32 *option)
 {
+	int            rtn;
 	struct dentry *dentry;
 	char           name_buf[SYSFS_NAME_LEN];
 
 	dentry = debugfs_create_file(name, mode, parent, option, &sl_test_fops_str_conv_u32);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u32 failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u32 failed [%d]", rtn);
+		return rtn;
 	}
 
 	snprintf(name_buf, SYSFS_NAME_LEN, "%s_options", name);
 	dentry = debugfs_create_file(name_buf, mode, parent, option, &sl_test_fops_conv_opts);
-	if (!dentry) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u32 opts failed");
-		return -ENOMEM;
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
+		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "debugfs_create_str_conv_u32 opts failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;

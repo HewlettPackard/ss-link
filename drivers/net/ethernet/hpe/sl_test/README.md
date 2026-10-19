@@ -694,6 +694,10 @@ wait for a notification from a link `sl_test_lgrp_links_notif_wait`.
 > reception of a notification. See `sl_test_lgrp_notif_read --help` for
 > further details.
 
+Use `sl_test_lgrp_notif_read -d <ldev>` to read from the selected ldev's
+`/sys/kernel/debug/sl/lgrp/notifs<ldev>` file. Without `-d`, the tool uses the
+path in `SL_TEST_LGRP_DEBUGFS_NOTIFS` unchanged.
+
 Notifications are held in a FIFO in the sl_test module. Each link group can hold
 a total of `SL_TEST_LGRP_NOTIF_NUM_ENTRIES` notifications. This allows you to
 register for notifications for multiple links at once.

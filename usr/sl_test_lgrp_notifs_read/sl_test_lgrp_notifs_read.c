@@ -20,6 +20,7 @@
 #define NOTIF_TYPE_SIZE      64 
 #define NOTIF_INFO_SIZE      256
 #define NOTIF_NUM_FIELDS     7
+#define NOTIF_FILENAME_SIZE  4096
 
 /* Command options */
 #define SHORT_OPTIONS_LEN    32
@@ -32,6 +33,7 @@
 #define FILTER_SHORT_OPT     'f'
 #define REMOVE_SHORT_OPT     'r'
 #define EXPECT_SHORT_OPT     'e'
+#define LDEV_SHORT_OPT       'd'
 
 /* Epoll Events. Corresponds with number of open fds. Logic is written to handle only 1 event. */
 #define MAX_EPOLL_EVENTS     1
@@ -47,9 +49,12 @@ static const char getopt_short_opts[] = {
 	REMOVE_SHORT_OPT,
 	EXPECT_SHORT_OPT,
 	':',                  /* Has argument */
+	LDEV_SHORT_OPT,
+	':',                  /* Has argument */
+	'\0',
 };
 
-static const char *lgrp_notifs_filename;
+static unsigned long selected_ldev_num = 0;
 static int read_timeout = -1; /* Wait indefinitely */
 static char filter_name[FILTER_NAME_LEN];
 static char expect_name[FILTER_NAME_LEN];
@@ -62,6 +67,7 @@ enum {
 	OPT_FILTER,
 	OPT_REMOVE,
 	OPT_EXPECT,
+	OPT_LDEV,
 	NUM_OPTS,
 };
 
@@ -105,6 +111,7 @@ static const struct cmd_option {
 	const char *argument_name;
 	const int   required;
 } cmd_options[] = {
+	[OPT_LDEV]       = {LDEV_SHORT_OPT,       "ldev",       "Select the ldev notification queue.",          "LDEV",    required_argument },
 	[OPT_HELP]       = {HELP_SHORT_OPT,       "help",       "This help message.",                           NULL,      no_argument       },
 	[OPT_VERSION]    = {VERSION_SHORT_OPT,    "version",    "Print the version information.",               NULL,      no_argument       },
 	[OPT_TIMEOUT]    = {TIMEOUT_SHORT_OPT,    "timeout",    "Set the read timeout in milliseconds.",        "TIMEOUT", required_argument },
@@ -119,9 +126,10 @@ static struct option_desc {
 	int                      flag;
 	void                    *argument;
 } option_descs[] = {
+	[OPT_LDEV]       = { &cmd_options[OPT_LDEV],        0, &selected_ldev_num },
 	[OPT_HELP]       = { &cmd_options[OPT_HELP],        0,  NULL },
 	[OPT_VERSION]    = { &cmd_options[OPT_VERSION],     0,  NULL },
-	[OPT_TIMEOUT]    = { &cmd_options[OPT_TIMEOUT],     0,  &read_timeout },
+	[OPT_TIMEOUT]    = { &cmd_options[OPT_TIMEOUT],     0, &read_timeout },
 	[OPT_CONTINUOUS] = { &cmd_options[OPT_CONTINUOUS],  0,  NULL },
 	[OPT_FILTER]     = { &cmd_options[OPT_FILTER],      0,  filter_name },
 	[OPT_REMOVE]     = { &cmd_options[OPT_REMOVE],      0,  NULL },
@@ -137,6 +145,7 @@ static struct option_desc {
 #define OPTION_SET(_opt) (option_descs[(_opt)].flag == option_descs[(_opt)].info->short_option)
 
 static struct option long_options[] = {
+	LONG_OPTION_WITH_ARG(OPT_LDEV),
 	LONG_OPTION_FLAG_ONLY(OPT_HELP),
 	LONG_OPTION_FLAG_ONLY(OPT_VERSION),
 	LONG_OPTION_WITH_ARG(OPT_TIMEOUT),
@@ -292,15 +301,17 @@ void print_help(char *name)
 
 int main(int argc, char *argv[])
 {
-	int     rtn;
-	int     opt;
-	int     options_index;
-	int     fd;
-	char    notif[NOTIF_SIZE];
-	bool    again;
-	size_t  i;
-	char   *expect;
-	char   *filter;
+	int         rtn;
+	int         opt;
+	int         options_index;
+	int         fd;
+	char        notif[NOTIF_SIZE];
+	const char *notifs_filename;
+	char        selected_notifs_filename[NOTIF_FILENAME_SIZE];
+	bool        again;
+	size_t      i;
+	char       *expect;
+	char       *filter;
 
 	options_index = 0;
 	expect = NULL;
@@ -382,6 +393,10 @@ int main(int argc, char *argv[])
 			expect = option_descs[OPT_EXPECT].argument;
 
 			break;
+		case LDEV_SHORT_OPT:
+			selected_ldev_num = strtoul(optarg, NULL, 0);
+			SET_OPTION(OPT_LDEV);
+			break;
 		default:
 			fprintf(stderr, "invalid option (opt = %c)\n", opt);
 			print_help(argv[0]);
@@ -406,15 +421,24 @@ int main(int argc, char *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	lgrp_notifs_filename = getenv(NOTIF_ENV);
+	notifs_filename = getenv(NOTIF_ENV);
 
-	if (!lgrp_notifs_filename) {
+	if (!notifs_filename) {
 		fprintf(stderr, "%s: %s undefined [%d]\n", strerror(EINVAL), NOTIF_ENV, EINVAL);
 		fprintf(stderr, "source /usr/bin/sl_test_scripts/sl_test_env.sh\n");
 		exit(EINVAL);
 	}
 
-	fd = open(lgrp_notifs_filename, O_RDONLY);
+	if (OPTION_SET(OPT_LDEV)) {
+		rtn = snprintf(selected_notifs_filename, sizeof(selected_notifs_filename), "%s%lu",
+			       notifs_filename, selected_ldev_num);
+		if (rtn < 0) {
+			fprintf(stderr, "invalid notification filename [%d]\n", rtn);
+			exit(rtn);
+		}
+	}
+
+	fd = open(selected_notifs_filename, O_RDONLY);
 	if (fd == -1) {
 		rtn = errno;
 		fprintf(stderr, "%s: open failed [%d]\n", strerror(rtn), rtn);

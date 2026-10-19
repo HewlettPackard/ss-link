@@ -39,23 +39,21 @@ enum llr_cmd_index {
 };
 
 static struct cmd_entry llr_cmd_list[]  = {
-	[LLR_NEW_CMD]          = { .cmd = "llr_new",          .desc = "create llr object"                  },
-	[LLR_DEL_CMD]          = { .cmd = "llr_del",          .desc = "delete llr object"                  },
-	[LLR_CONFIG_WRITE_CMD] = { .cmd = "llr_config_write", .desc = "write out the llr config from dir"  },
-	[LLR_POLICY_WRITE_CMD] = { .cmd = "llr_policy_write", .desc = "write out the llr policy from dir"  },
-	[LLR_SETUP_CMD]        = { .cmd = "llr_setup",        .desc = "setup LLR"                          },
-	[LLR_START_CMD]        = { .cmd = "llr_start",        .desc = "start LLR"                          },
-	[LLR_STOP_CMD]         = { .cmd = "llr_stop",         .desc = "stop LLR"                           },
+	[LLR_NEW_CMD]          = { .cmd = "llr_new",          .desc = "create llr object",                 .call = sl_test_llr_new        },
+	[LLR_DEL_CMD]          = { .cmd = "llr_del",          .desc = "delete llr object",                 .call = sl_test_llr_del        },
+	[LLR_CONFIG_WRITE_CMD] = { .cmd = "llr_config_write", .desc = "write out the llr config from dir", .call = sl_test_llr_config_set },
+	[LLR_POLICY_WRITE_CMD] = { .cmd = "llr_policy_write", .desc = "write out the llr policy from dir", .call = sl_test_llr_policy_set },
+	[LLR_SETUP_CMD]        = { .cmd = "llr_setup",        .desc = "setup LLR",                         .call = sl_test_llr_setup      },
+	[LLR_START_CMD]        = { .cmd = "llr_start",        .desc = "start LLR",                         .call = sl_test_llr_start      },
+	[LLR_STOP_CMD]         = { .cmd = "llr_stop",         .desc = "stop LLR",                          .call = sl_test_llr_stop       },
 };
-
-#define LLR_CMD_MATCH(_index, _str) (strncmp((_str), llr_cmd_list[_index].cmd, strlen(llr_cmd_list[_index].cmd)) == 0)
 
 static ssize_t sl_test_llr_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
@@ -64,13 +62,13 @@ static ssize_t sl_test_llr_cmd_write(struct file *f, const char __user *buf, siz
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write simple_write_to_buffer [%ld]", len);
@@ -79,87 +77,19 @@ static ssize_t sl_test_llr_cmd_write(struct file *f, const char __user *buf, siz
 
 	cmd_buf[len] = '\0';
 
-	match_found = LLR_CMD_MATCH(LLR_NEW_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_new();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_new failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, llr_cmd_list, ARRAY_SIZE(llr_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = LLR_CMD_MATCH(LLR_DEL_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_del();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_del failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	match_found = LLR_CMD_MATCH(LLR_CONFIG_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_config_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_config_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LLR_CMD_MATCH(LLR_POLICY_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_policy_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_policy_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LLR_CMD_MATCH(LLR_SETUP_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_setup();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_setup failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LLR_CMD_MATCH(LLR_START_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_start();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_start failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LLR_CMD_MATCH(LLR_STOP_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_llr_stop();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_llr_stop failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_llr_cmd_fops = {
@@ -244,65 +174,59 @@ int sl_test_debugfs_llr_create(struct dentry *top_dir)
 	struct dentry *dentry;
 
 	llr_dir = debugfs_create_dir("llr", top_dir);
-	if (!llr_dir) {
+	rtn = sl_test_debugfs_entry_check(llr_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"llr debugfs_create_dir failed");
-		return -ENOMEM;
+			   "llr debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_llr_init(&llr, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
-	debugfs_create_u8("num", 0644, llr_dir, &llr.num);
+	SL_TEST_DEBUGFS_CREATE(u8, "num", llr_dir, &llr.num);
 
 	config_dir = debugfs_create_dir("config", llr_dir);
-	if (!config_dir) {
+	rtn = sl_test_debugfs_entry_check(config_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"llr config debugfs_create_dir failed");
-		return -ENOMEM;
+			   "llr config debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_llr_config_init();
 
-	debugfs_create_u32("mode", 0644, config_dir, &llr_config.mode);
-	debugfs_create_u32("down_behavior", 0644, config_dir, &llr_config.link_dn_behavior);
-	debugfs_create_u32("setup_timeout_ms", 0644, config_dir, &llr_config.setup_timeout_ms);
-	debugfs_create_u32("start_timeout_ms", 0644, config_dir, &llr_config.start_timeout_ms);
-
-	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &config_option_lock);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"llr config lock debugfs_create_file failed");
-		return -ENOMEM;
-	}
+	SL_TEST_DEBUGFS_CREATE(u32, "mode",             config_dir, &llr_config.mode);
+	SL_TEST_DEBUGFS_CREATE(u32, "down_behavior",    config_dir, &llr_config.link_dn_behavior);
+	SL_TEST_DEBUGFS_CREATE(u32, "setup_timeout_ms", config_dir, &llr_config.setup_timeout_ms);
+	SL_TEST_DEBUGFS_CREATE(u32, "start_timeout_ms", config_dir, &llr_config.start_timeout_ms);
+	SL_TEST_DEBUGFS_CREATE(opt, "lock",             config_dir, &config_option_lock);
 
 	sl_test_llr_policy_init();
 
 	policy_dir = debugfs_create_dir("policies", llr_dir);
-	if (!policy_dir) {
+	rtn = sl_test_debugfs_entry_check(policy_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"llr policy debugfs_create_dir failed");
-		return -ENOMEM;
+			   "llr policy debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
-	rtn = sl_test_debugfs_create_opt("lock", 0644, policy_dir, &policy_option_lock);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"llr policy lock debugfs_create_file failed");
-		return -ENOMEM;
-	}
+	SL_TEST_DEBUGFS_CREATE(opt, "lock", policy_dir, &policy_option_lock);
 
 	dentry = debugfs_create_file("cmds", 0644, llr_dir, NULL, &sl_test_llr_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, llr_dir, NULL, &sl_test_llr_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -326,14 +250,13 @@ void sl_test_llr_remove(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 
 	rtn = sl_llr_del(&llr);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
 		return;
 	}
 
 	rtn = sl_test_pdev_port_kobj_put(ldev_num, lgrp_num, llr_num);
 	if (rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", rtn);
 }
 
 int sl_test_llr_new(void)
@@ -360,14 +283,13 @@ int sl_test_llr_new(void)
 	}
 
 	new_llr = sl_llr_new(lgrp, llr_num, port_num_kobj);
-	if (IS_ERR(new_llr)) {
-		rtn = PTR_ERR(new_llr);
+	if (IS_ERR_OR_NULL(new_llr)) {
+		rtn = new_llr ? PTR_ERR(new_llr) : -ENOMEM;
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			   "sl_llr_new failed [%d]", rtn);
 		put_rtn = sl_test_pdev_port_kobj_put(lgrp->ldev_num, lgrp->num, llr_num);
 		if (put_rtn)
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-					 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 		return rtn;
 	}
 
@@ -384,15 +306,13 @@ int sl_test_llr_del(void)
 
 	rtn = sl_llr_del(llr);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_llr_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_llr_del failed [%d]", rtn);
 		return rtn;
 	}
 
 	put_rtn = sl_test_pdev_port_kobj_put(llr->ldev_num, llr->lgrp_num, llr->num);
 	if (put_rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 
 	return rtn;
 }

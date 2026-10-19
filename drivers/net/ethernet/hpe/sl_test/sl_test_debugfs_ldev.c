@@ -3,6 +3,7 @@
 
 #include <linux/kernel.h>
 #include <linux/debugfs.h>
+#include <linux/err.h>
 
 #include "sl_asic.h"
 #include "sl_ldev.h"
@@ -27,12 +28,9 @@ enum ldev_cmd_index {
 };
 
 static struct cmd_entry ldev_cmd_list[]  = {
-	[LDEV_NEW_CMD] = { .cmd = "ldev_new", .desc = "create ldev object" },
-	[LDEV_DEL_CMD] = { .cmd = "ldev_del", .desc = "delete ldev object" },
+	[LDEV_NEW_CMD] = { .cmd = "ldev_new", .desc = "create ldev object", .call = sl_test_ldev_new },
+	[LDEV_DEL_CMD] = { .cmd = "ldev_del", .desc = "delete ldev object", .call = sl_test_ldev_del },
 };
-
-#define LDEV_CMD_MATCH(_index, _str) \
-	(strncmp((_str), ldev_cmd_list[_index].cmd, strlen(ldev_cmd_list[_index].cmd)) == 0)
 
 static void sl_test_ldev_init(void)
 {
@@ -63,58 +61,46 @@ static const struct file_operations sl_test_ldev_cmds_fops = {
 static ssize_t sl_test_ldev_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"partial cmd_write");
+			   "partial cmd_write");
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd_write too big (size = %ld)", size);
+			   "cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd_write simple_write_to_buffer [%ld]", len);
+			   "cmd_write simple_write_to_buffer [%ld]", len);
 		return len;
 	}
 
 	cmd_buf[len] = '\0';
 
-	match_found = LDEV_CMD_MATCH(LDEV_NEW_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_ldev_new();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_ldev_new failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, ldev_cmd_list, ARRAY_SIZE(ldev_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = LDEV_CMD_MATCH(LDEV_DEL_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_ldev_del();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_ldev_del failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_ldev_cmd_fops = {
@@ -130,31 +116,35 @@ struct sl_ldev *sl_test_ldev_get(void)
 
 int sl_test_debugfs_ldev_create(struct dentry *top_dir)
 {
+	int rtn;
 	struct dentry *dentry;
 
 	ldev_dir = debugfs_create_dir("ldev", top_dir);
-	if (!ldev_dir) {
+	rtn = sl_test_debugfs_entry_check(ldev_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"ldev debugfs_create_dir failed");
-		return -ENOMEM;
+			   "ldev debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_ldev_init();
 
-	debugfs_create_u8("num", 0644, ldev_dir, &ldev.num);
+	SL_TEST_DEBUGFS_CREATE(u8, "num", ldev_dir, &ldev.num);
 
 	dentry = debugfs_create_file("cmds", 0644, ldev_dir, NULL, &sl_test_ldev_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, ldev_dir, NULL, &sl_test_ldev_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;

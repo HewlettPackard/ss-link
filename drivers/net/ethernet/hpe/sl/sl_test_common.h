@@ -21,6 +21,7 @@
 struct cmd_entry {
 	const char cmd[CMD_LEN];
 	const char desc[CMD_DESC_LEN];
+	int        (*call)(void);
 };
 
 struct cmd_entries {
@@ -98,11 +99,28 @@ struct sl_ctrl_lgrp *sl_test_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
 int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *parent,
 	struct options_field_entry *value);
+int sl_test_debugfs_cmd_call(const char *cmd, struct cmd_entry *cmd_list, size_t num_cmds, int *call_rtn);
+int sl_test_debugfs_entry_check(struct dentry *dentry);
+
+#define SL_TEST_DEBUGFS_CREATE(_create, _name, _parent, _value)                                       \
+	do {                                                                                          \
+		const char *__name = (_name);                                                         \
+		int __rtn = sl_test_debugfs_create_##_create(__name, 0644, _parent, _value);          \
+		if (__rtn) {                                                                          \
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "%s debugfs node creation failed [%d]", \
+				   __name, __rtn);                                                    \
+			return __rtn;                                                                 \
+		}                                                                                     \
+	} while (0)
 
 int sl_test_cmds_show(struct seq_file *s, struct cmd_entry *cmd_list, size_t num_cmds);
 
 int sl_test_debugfs_create_s32(const char *name, umode_t mode, struct dentry *parent, s32 *value);
 int sl_test_debugfs_create_s16(const char *name, umode_t mode, struct dentry *parent, s16 *value);
+int sl_test_debugfs_create_u8(const char *name, umode_t mode, struct dentry *parent, u8 *value);
+int sl_test_debugfs_create_u16(const char *name, umode_t mode, struct dentry *parent, u16 *value);
+int sl_test_debugfs_create_u32(const char *name, umode_t mode, struct dentry *parent, u32 *value);
+int sl_test_debugfs_create_u64(const char *name, umode_t mode, struct dentry *parent, u64 *value);
 
 int sl_test_debugfs_create_str_conv_u16(const char *name, umode_t mode, struct dentry *parent,
 					struct str_conv_u16 *option);

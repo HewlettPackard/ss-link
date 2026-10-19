@@ -3,6 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/debugfs.h>
+#include <linux/err.h>
 #include <linux/kobject.h>
 #include <linux/kfifo.h>
 #include <linux/poll.h>
@@ -46,10 +47,13 @@ struct lgrp_notif_interface {
 	spinlock_t        data_lock;
 	bool              is_pollout_req;
 	wait_queue_head_t wait;
+	char              event_str[SL_TEST_EVENT_STR_SIZE];
 	DECLARE_KFIFO(lgrp_events, struct lgrp_notif_event, SL_TEST_LGRP_NOTIF_NUM_ENTRIES);
 };
 
-static struct lgrp_notif_interface lgrp_notif_interfaces[SL_ASIC_MAX_LGRPS];
+static struct lgrp_notif_interface lgrp_notif_interfaces[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS];
+static DEFINE_MUTEX(lgrp_notif_reg_lock);
+static bool lgrp_notif_registered[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS];
 
 enum lgrp_cmd_index {
 	LGRP_NEW_CMD,
@@ -62,16 +66,13 @@ enum lgrp_cmd_index {
 };
 
 static struct cmd_entry lgrp_cmd_list[]  = {
-	[LGRP_NEW_CMD]          = { .cmd = "lgrp_new",          .desc = "create lgrp object"                 },
-	[LGRP_DEL_CMD]          = { .cmd = "lgrp_del",          .desc = "delete lgrp object"                 },
-	[LGRP_CONFIG_WRITE_CMD] = { .cmd = "lgrp_config_write", .desc = "write out the lgrp config from dir" },
-	[LGRP_POLICY_WRITE_CMD] = { .cmd = "lgrp_policy_write", .desc = "write out the lgrp policy from dir" },
-	[LGRP_NOTIFS_REG_CMD]   = { .cmd = "lgrp_notifs_reg",   .desc = "register for all notifications"     },
-	[LGRP_NOTIFS_UNREG_CMD] = { .cmd = "lgrp_notifs_unreg", .desc = "unregister for all notifications"   },
+	[LGRP_NEW_CMD]          = { .cmd = "lgrp_new",          .desc = "create lgrp object",                 .call = sl_test_lgrp_new         },
+	[LGRP_DEL_CMD]          = { .cmd = "lgrp_del",          .desc = "delete lgrp object",                 .call = sl_test_lgrp_del         },
+	[LGRP_CONFIG_WRITE_CMD] = { .cmd = "lgrp_config_write", .desc = "write out the lgrp config from dir", .call = sl_test_lgrp_config_set  },
+	[LGRP_POLICY_WRITE_CMD] = { .cmd = "lgrp_policy_write", .desc = "write out the lgrp policy from dir", .call = sl_test_lgrp_policy_set  },
+	[LGRP_NOTIFS_REG_CMD]   = { .cmd = "lgrp_notifs_reg",   .desc = "register for all notifications",     .call = sl_test_lgrp_notif_reg   },
+	[LGRP_NOTIFS_UNREG_CMD] = { .cmd = "lgrp_notifs_unreg", .desc = "unregister for all notifications",   .call = sl_test_lgrp_notif_unreg },
 };
-
-#define LGRP_CMD_MATCH(_index, _str) \
-	(strncmp((_str), lgrp_cmd_list[_index].cmd, strlen(lgrp_cmd_list[_index].cmd)) == 0)
 
 static void is_pollout_req_set(struct lgrp_notif_interface *interface, bool pollout)
 {
@@ -120,13 +121,16 @@ static const struct file_operations sl_test_lgrp_cmds_fops = {
 
 static int sl_test_lgrp_notif_setup(void)
 {
+	u8 ldev_num;
 	u8 lgrp_num;
 
-	for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
-		INIT_KFIFO(lgrp_notif_interfaces[lgrp_num].lgrp_events);
-		init_waitqueue_head(&lgrp_notif_interfaces[lgrp_num].wait);
-		mutex_init(&lgrp_notif_interfaces[lgrp_num].read_lock);
-		spin_lock_init(&lgrp_notif_interfaces[lgrp_num].data_lock);
+	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num) {
+		for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
+			INIT_KFIFO(lgrp_notif_interfaces[ldev_num][lgrp_num].lgrp_events);
+			init_waitqueue_head(&lgrp_notif_interfaces[ldev_num][lgrp_num].wait);
+			mutex_init(&lgrp_notif_interfaces[ldev_num][lgrp_num].read_lock);
+			spin_lock_init(&lgrp_notif_interfaces[ldev_num][lgrp_num].data_lock);
+		}
 	}
 
 	return 0;
@@ -185,7 +189,17 @@ static ssize_t sl_test_lgrp_event_str(struct lgrp_notif_event *event, char *buf,
 	};
 }
 
-static char event_str[SL_TEST_EVENT_STR_SIZE];
+static bool sl_test_lgrp_notif_available(struct lgrp_notif_interface *interface)
+{
+	bool available;
+
+	spin_lock(&interface->data_lock);
+	available = !kfifo_is_empty(&interface->lgrp_events);
+	spin_unlock(&interface->data_lock);
+
+	return available;
+}
+
 static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, size_t count, loff_t *f_pos)
 {
 	int                          rtn;
@@ -205,84 +219,60 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 	}
 
 	interface = filep->private_data;
+	if (mutex_lock_interruptible(&interface->read_lock))
+		return -ERESTARTSYS;
 
-	memset(&event_str, 0, sizeof(event_str));
-
-	do {
-		if (kfifo_is_empty(&interface->lgrp_events)) {
-
-			sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-				"lgrp_notif_read empty fifio (f_flags = %u)", filep->f_flags);
-
-			if (filep->f_flags & O_NONBLOCK) {
-				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-					"lgrp_notif_read empty fifo");
-				return -EAGAIN;
-			}
-
-			if (is_pollout_req(interface)) {
-				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read POLLOUT");
-				wake_up_poll(&interface->wait, EPOLLOUT);
-				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read waiting");
-			}
-
-			rtn = wait_event_interruptible(interface->wait, !kfifo_is_empty(&interface->lgrp_events));
-			if (rtn) {
-				sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-					"lgrp_notif_read wait failed [%d]", rtn);
-				return rtn;
-			}
-		} else {
-			sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_read fifo has data");
+	while (!sl_test_lgrp_notif_available(interface)) {
+		if (filep->f_flags & O_NONBLOCK) {
+			mutex_unlock(&interface->read_lock);
+			return -EAGAIN;
 		}
 
-		if (mutex_lock_interruptible(&interface->read_lock)) {
-			sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-				"lgrp_notif_read mutex lock taken");
-			return -ERESTARTSYS;
-		}
+		if (is_pollout_req(interface))
+			wake_up_poll(&interface->wait, EPOLLOUT);
 
-		notif_count = kfifo_out_spinlocked(&interface->lgrp_events, &event, 1, &interface->data_lock);
+		rtn = wait_event_interruptible(interface->wait,
+					       sl_test_lgrp_notif_available(interface));
+		if (rtn) {
+			mutex_unlock(&interface->read_lock);
+			return rtn;
+		}
+	}
+
+	spin_lock(&interface->data_lock);
+	notif_count = kfifo_out_peek(&interface->lgrp_events, &event, 1);
+	spin_unlock(&interface->data_lock);
+	if (notif_count != 1) {
+		mutex_unlock(&interface->read_lock);
+		return -ENOENT;
+	}
+
+	len = sl_test_lgrp_event_str(&event, interface->event_str,
+				     sizeof(interface->event_str));
+	if (len < 0) {
+		mutex_unlock(&interface->read_lock);
+		return len;
+	}
+
+	bytes = simple_read_from_buffer(buf, count, f_pos,
+					interface->event_str, len + 1);
+	if (bytes < 0) {
+		mutex_unlock(&interface->read_lock);
+		return bytes;
+	}
+
+	if (bytes > 0) {
+		spin_lock(&interface->data_lock);
+		notif_count = kfifo_out(&interface->lgrp_events, &event, 1);
+		spin_unlock(&interface->data_lock);
 		if (notif_count != 1) {
 			mutex_unlock(&interface->read_lock);
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"lgrp_notif_read kfifo_get failed (notif_count = %d)", notif_count);
 			return -ENOENT;
 		}
-
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp_notif_read (notif_count = %d)", notif_count);
-
-		len = sl_test_lgrp_event_str(&event, event_str, sizeof(event_str));
-		if (len < 0) {
-			mutex_unlock(&interface->read_lock);
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"lgrp_notif_read lgrp_event_str failed [%ld]", len);
-			return len;
-		}
-
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "len = %ld", len);
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "event_str: %s", event_str);
-
-		bytes = simple_read_from_buffer(buf, count, f_pos, event_str, len + 1);
-		if (bytes < 0) {
-			mutex_unlock(&interface->read_lock);
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"lgrp_notif_read lgrp_event_str failed [%ld]", bytes);
-			return bytes;
-		}
-
-		/* Overwrite user buffer */
 		*f_pos = 0;
+	}
 
-		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "simple_read_from_buffer (bytes = %ld)", bytes);
-
-		mutex_unlock(&interface->read_lock);
-
-		if (bytes == 0 && (filep->f_flags & O_NONBLOCK))
-			return -EAGAIN;
-
-	} while (bytes == 0);
+	mutex_unlock(&interface->read_lock);
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "read complete (bytes = %ld)", bytes);
 
@@ -292,17 +282,19 @@ static ssize_t sl_test_lgrp_notif_read(struct file *filep, char __user *buf, siz
 static __poll_t sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_struct *wait)
 {
 	struct lgrp_notif_interface *interface;
-	bool                         is_empty;
+	bool                         notif_available;
 
 	interface = filep->private_data;
 
 	is_pollout_req_set(interface, poll_requested_events(wait) & EPOLLOUT);
+	poll_wait(filep, &interface->wait, wait);
 
-	is_empty = kfifo_is_empty(&interface->lgrp_events);
+	notif_available = sl_test_lgrp_notif_available(interface);
 
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll (empty = %s)", is_empty ? "true" : "false");
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll (notif_available = %s)",
+		   notif_available ? "true" : "false");
 
-	if (!is_empty) {
+	if (notif_available) {
 		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll data ready");
 		return (EPOLLIN | EPOLLRDNORM);
 	}
@@ -312,23 +304,23 @@ static __poll_t sl_test_lgrp_notif_poll(struct file *filep, struct poll_table_st
 		return EPOLLOUT;
 	}
 
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll waiting");
-	poll_wait(filep, &interface->wait, wait);
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_poll wait complete");
-
 	return 0;
 }
 
 static int sl_test_lgrp_notif_open(struct inode *inode, struct file *filep)
 {
+	u8 ldev_num;
 	u8 lgrp_num;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_open");
 
+	ldev_num = sl_test_debugfs_ldev_num_get();
 	lgrp_num = sl_test_debugfs_lgrp_num_get();
-	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "notif_open (lgrp_num = %u", lgrp_num);
 
-	filep->private_data = &lgrp_notif_interfaces[lgrp_num];
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME,
+		   "notif_open (ldev_num = %u, lgrp_num = %u)", ldev_num, lgrp_num);
+
+	filep->private_data = &lgrp_notif_interfaces[ldev_num][lgrp_num];
 
 	return 0;
 }
@@ -354,7 +346,7 @@ static int sl_test_lgrp_notif_push(struct sl_lgrp_notif_msg *msg, time64_t times
 	event.timestamp = timestamp;
 	event.msg       = *msg;
 
-	interface = &lgrp_notif_interfaces[msg->lgrp_num];
+	interface = &lgrp_notif_interfaces[msg->ldev_num][msg->lgrp_num];
 
 	copied = kfifo_in_spinlocked(&interface->lgrp_events, &event, 1, &interface->data_lock);
 	if (copied != 0) {
@@ -382,15 +374,15 @@ static void sl_test_lgrp_notif_callback(void *tag, struct sl_lgrp_notif_msg *msg
 
 	rtn = sl_test_lgrp_notif_push(msg, ktime_get_real_seconds());
 	if (rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_push failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_push failed [%d]", rtn);
 }
 
 static ssize_t sl_test_lgrp_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_cmd_write");
 
@@ -401,13 +393,13 @@ static ssize_t sl_test_lgrp_cmd_write(struct file *f, const char __user *buf, si
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write simple_write_to_buffer [%ld]", len);
@@ -418,76 +410,19 @@ static ssize_t sl_test_lgrp_cmd_write(struct file *f, const char __user *buf, si
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "(cmd_buf = %s)", cmd_buf);
 
-	match_found = LGRP_CMD_MATCH(LGRP_NEW_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_new();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_new failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, lgrp_cmd_list, ARRAY_SIZE(lgrp_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = LGRP_CMD_MATCH(LGRP_DEL_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_del();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_del failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	match_found = LGRP_CMD_MATCH(LGRP_CONFIG_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_config_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_config_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LGRP_CMD_MATCH(LGRP_POLICY_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_policy_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_policy_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LGRP_CMD_MATCH(LGRP_NOTIFS_REG_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_notif_reg();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_notif_reg failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LGRP_CMD_MATCH(LGRP_NOTIFS_UNREG_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_lgrp_notif_unreg();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_lgrp_notif_unreg failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_lgrp_cmd_fops = {
@@ -572,7 +507,7 @@ static void sl_test_lgrp_policy_init(void)
 {
 	lgrp_policy.magic     = SL_LGRP_POLICY_MAGIC;
 	lgrp_policy.ver       = SL_LGRP_POLICY_VER;
-	lgrp_policy.size      = sizeof(lgrp_config);
+	lgrp_policy.size      = sizeof(lgrp_policy);
 	lgrp_policy.options  |= SL_LGRP_OPT_ADMIN;
 }
 
@@ -583,143 +518,98 @@ struct sl_lgrp *sl_test_lgrp_get(void)
 	return &lgrp;
 }
 
-#define SL_TEST_FEC_MAP_SET_NODE(_name)                                                                             \
-	do {                                                                                                        \
-		rtn = sl_test_debugfs_create_opt("fec_map_"#_name"_set", 0644, config_dir, &fec_map_##_name##_set); \
-		if (rtn) {                                                                                          \
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                 \
-				"link config fec map %s set debugfs_create_opt failed", #_name);                    \
-			return -ENOMEM;                                                                             \
-		}                                                                                                   \
-	} while (0)
-
-#define SL_TEST_TECH_MAP_SET_NODE(_name)                                                                              \
-	do {                                                                                                          \
-		rtn = sl_test_debugfs_create_opt("tech_map_"#_name"_set", 0644, config_dir, &tech_map_##_name##_set); \
-		if (rtn) {                                                                                            \
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                   \
-				"link config tech map %s set debugfs_create_opt failed", #_name);                     \
-			return -ENOMEM;                                                                               \
-		}                                                                                                     \
-	} while (0)
-
 int sl_test_debugfs_lgrp_create(struct dentry *top_dir)
 {
 	int            rtn;
 	struct dentry *config_dir;
 	struct dentry *policies_dir;
 	struct dentry *dentry;
+	u8             ldev_num;
+	char           notifs_file_name[16];
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "debugfs_lgrp_create");
 
 	lgrp_dir = debugfs_create_dir("lgrp", top_dir);
-	if (!lgrp_dir) {
+	rtn = sl_test_debugfs_entry_check(lgrp_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp debugfs_create_dir failed");
-		return -ENOMEM;
+			   "lgrp debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_lgrp_init(&lgrp, sl_test_debugfs_ldev_num_get(), 0);
 	sl_test_lgrp_notif_setup();
 
-	debugfs_create_u8("num", 0644, lgrp_dir, &lgrp.num);
+	SL_TEST_DEBUGFS_CREATE(u8, "num", lgrp_dir, &lgrp.num);
 
 	sl_test_lgrp_config_init();
 
 	config_dir = debugfs_create_dir("config", lgrp_dir);
-	if (!config_dir) {
+	rtn = sl_test_debugfs_entry_check(config_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config debugfs_create_dir failed");
-		return -ENOMEM;
+			   "lgrp config debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
-	debugfs_create_u32("mfs", 0644, config_dir, &lgrp_config.mfs);
-
-	SL_TEST_FEC_MAP_SET_NODE(rs);
-	SL_TEST_FEC_MAP_SET_NODE(rs_ll);
-
-	debugfs_create_u32("fec_mode", 0644, config_dir, &lgrp_config.fec_mode);
-
-	SL_TEST_TECH_MAP_SET_NODE(ck400g);
-	SL_TEST_TECH_MAP_SET_NODE(ck200g);
-	SL_TEST_TECH_MAP_SET_NODE(ck100g);
-	SL_TEST_TECH_MAP_SET_NODE(bs200g);
-	SL_TEST_TECH_MAP_SET_NODE(cd100g);
-	SL_TEST_TECH_MAP_SET_NODE(cd50g);
-	SL_TEST_TECH_MAP_SET_NODE(bj100g);
-
-	sl_test_debugfs_create_str_conv_u32("furcation", 0644, config_dir, &lgrp_furcation);
-
-	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &option_lock);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config lock debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("fabric_link", 0644, config_dir, &config_option_fabric_link);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config fabric_link debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("r1_partner", 0644, config_dir, &config_option_r1_partner);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config r1_partner debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("loopback_serdes", 0644, config_dir, &config_option_loopback_serdes);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp config loopback_serdes debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("loopback_host", 0644, config_dir, &config_option_loopback_host);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "lgrp config loopback_host debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("loopback_media", 0644, config_dir, &config_option_loopback_media);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "lgrp config loopback_media debugfs_create_file failed");
-		return -ENOMEM;
-	}
+	SL_TEST_DEBUGFS_CREATE(u32,          "mfs",                 config_dir, &lgrp_config.mfs);
+	SL_TEST_DEBUGFS_CREATE(opt,          "fec_map_rs_set",      config_dir, &fec_map_rs_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "fec_map_rs_ll_set",   config_dir, &fec_map_rs_ll_set);
+	SL_TEST_DEBUGFS_CREATE(u32,          "fec_mode",            config_dir, &lgrp_config.fec_mode);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_ck400g_set", config_dir, &tech_map_ck400g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_ck200g_set", config_dir, &tech_map_ck200g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_ck100g_set", config_dir, &tech_map_ck100g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_bs200g_set", config_dir, &tech_map_bs200g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_cd100g_set", config_dir, &tech_map_cd100g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_cd50g_set",  config_dir, &tech_map_cd50g_set);
+	SL_TEST_DEBUGFS_CREATE(opt,          "tech_map_bj100g_set", config_dir, &tech_map_bj100g_set);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u32, "furcation",           config_dir, &lgrp_furcation);
+	SL_TEST_DEBUGFS_CREATE(opt,          "lock",                config_dir, &option_lock);
+	SL_TEST_DEBUGFS_CREATE(opt,          "fabric_link",         config_dir, &config_option_fabric_link);
+	SL_TEST_DEBUGFS_CREATE(opt,          "r1_partner",          config_dir, &config_option_r1_partner);
+	SL_TEST_DEBUGFS_CREATE(opt,          "loopback_serdes",     config_dir, &config_option_loopback_serdes);
+	SL_TEST_DEBUGFS_CREATE(opt,          "loopback_host",       config_dir, &config_option_loopback_host);
+	SL_TEST_DEBUGFS_CREATE(opt,          "loopback_media",      config_dir, &config_option_loopback_media);
 
 	sl_test_lgrp_policy_init();
 
 	policies_dir = debugfs_create_dir("policies", lgrp_dir);
-	if (!policies_dir) {
+	rtn = sl_test_debugfs_entry_check(policies_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"lgrp policies debugfs_create_dir failed");
-		return -ENOMEM;
+			   "lgrp policies debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmds", 0644, lgrp_dir, NULL, &sl_test_lgrp_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, lgrp_dir, NULL, &sl_test_lgrp_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
-	dentry = debugfs_create_file("notifs", 0644, lgrp_dir, NULL, &sl_test_lgrp_notifs_fops);
-	if (!dentry) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"notifs debugfs_create_file failed");
-		return -ENOMEM;
+	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num) {
+		snprintf(notifs_file_name, sizeof(notifs_file_name), "notifs%u", ldev_num);
+
+		dentry = debugfs_create_file(notifs_file_name, 0644, lgrp_dir,
+					     lgrp_notif_interfaces[ldev_num],
+					     &sl_test_lgrp_notifs_fops);
+		rtn = sl_test_debugfs_entry_check(dentry);
+		if (rtn) {
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+				   "%s debugfs_create_file failed [%d]",
+				   notifs_file_name, rtn);
+			return rtn;
+		}
 	}
 
 	return 0;
@@ -765,16 +655,45 @@ int sl_test_lgrp_new(void)
 	return rtn;
 }
 
+static int sl_test_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num)
+{
+	int            rtn;
+	struct sl_lgrp notif_lgrp;
+
+	if (ldev_num >= SL_ASIC_MAX_LDEVS || lgrp_num >= SL_ASIC_MAX_LGRPS)
+		return -EINVAL;
+
+	mutex_lock(&lgrp_notif_reg_lock);
+	if (!lgrp_notif_registered[ldev_num][lgrp_num]) {
+		mutex_unlock(&lgrp_notif_reg_lock);
+		return -ENOENT;
+	}
+
+	sl_test_lgrp_init(&notif_lgrp, ldev_num, lgrp_num);
+	rtn = sl_lgrp_notif_callback_unreg(&notif_lgrp,
+					   sl_test_lgrp_notif_callback, SL_LGRP_NOTIF_ALL);
+	if (rtn) {
+		mutex_unlock(&lgrp_notif_reg_lock);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_callback_reg failed [%d]", rtn);
+		return rtn;
+	}
+	lgrp_notif_registered[ldev_num][lgrp_num] = false;
+
+	mutex_unlock(&lgrp_notif_reg_lock);
+
+	return 0;
+}
+
 /**
  * sl_test_lgrp_del - Delete a link group.
  *
- * Today this is just a placeholder. Clients are in control of deleting link groups. We only log which one is being
- * deleted.
+ * Unregister test notifications. Clients remain owners of the link group object.
  *
  * Return: 0 on success, negative error code on failure
  */
 int sl_test_lgrp_del(void)
 {
+	int                  rtn;
 	u8                   ldev_num;
 	u8                   lgrp_num;
 	struct sl_ctrl_lgrp *ctrl_lgrp;
@@ -784,6 +703,19 @@ int sl_test_lgrp_del(void)
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_del (ldev_num = %u, lgrp_num = %u)", ldev_num, lgrp_num);
 
+	rtn = sl_test_lgrp_notif_callback_unreg(ldev_num, lgrp_num);
+	switch (rtn) {
+	case -ENOENT:
+		sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_callback_unreg returned -ENOENT");
+		break;
+	case 0:
+		break;
+	default:
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_callback_unreg failed [%d]", rtn);
+		return rtn;
+	}
+
+	/* Only for logging purposes */
 	ctrl_lgrp = sl_test_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (ctrl_lgrp) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp_del device found (ctrl_lgrp = %p)",
@@ -826,28 +758,59 @@ int sl_test_lgrp_policy_set(void)
 	return sl_lgrp_policy_set(sl_test_lgrp_get(), &lgrp_policy);
 }
 
+/* Today we need to track registration because we aren't in control of the link group object that would handle
+ * unregistering for us when we delete. sl-test must unregister as part of its cleanup process so we don't
+ * retain a stale callback pointer.
+ */
 int sl_test_lgrp_notif_reg(void)
 {
 	int rtn;
+	u8 ldev_num = sl_test_debugfs_ldev_num_get();
+	u8 lgrp_num = sl_test_debugfs_lgrp_num_get();
+	struct sl_lgrp notif_lgrp;
 
-	rtn = sl_lgrp_notif_callback_reg(sl_test_lgrp_get(), sl_test_lgrp_notif_callback, SL_LGRP_NOTIF_ALL, NULL);
+	if (ldev_num >= SL_ASIC_MAX_LDEVS || lgrp_num >= SL_ASIC_MAX_LGRPS)
+		return -EINVAL;
+
+	mutex_lock(&lgrp_notif_reg_lock);
+	if (lgrp_notif_registered[ldev_num][lgrp_num]) {
+		mutex_unlock(&lgrp_notif_reg_lock);
+		return -EALREADY;
+	}
+	sl_test_lgrp_init(&notif_lgrp, ldev_num, lgrp_num);
+	rtn = sl_lgrp_notif_callback_reg(&notif_lgrp, sl_test_lgrp_notif_callback,
+					 SL_LGRP_NOTIF_ALL, NULL);
 	if (rtn) {
+		mutex_unlock(&lgrp_notif_reg_lock);
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_callback_reg failed [%d]", rtn);
 		return rtn;
 	}
+	lgrp_notif_registered[ldev_num][lgrp_num] = true;
+	mutex_unlock(&lgrp_notif_reg_lock);
 
 	return 0;
 }
 
 int sl_test_lgrp_notif_unreg(void)
 {
-	int rtn;
+	return sl_test_lgrp_notif_callback_unreg(sl_test_debugfs_ldev_num_get(),
+						 sl_test_debugfs_lgrp_num_get());
+}
 
-	rtn = sl_lgrp_notif_callback_unreg(sl_test_lgrp_get(), sl_test_lgrp_notif_callback, SL_LGRP_NOTIF_ALL);
-	if (rtn) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_notif_callback_reg failed [%d]", rtn);
-		return rtn;
+void sl_test_lgrp_notif_unregister_all(void)
+{
+	int            rtn;
+	u8             ldev_num;
+	u8             lgrp_num;
+
+	for (ldev_num = 0; ldev_num < SL_ASIC_MAX_LDEVS; ++ldev_num) {
+		for (lgrp_num = 0; lgrp_num < SL_ASIC_MAX_LGRPS; ++lgrp_num) {
+			rtn = sl_test_lgrp_notif_callback_unreg(ldev_num, lgrp_num);
+			if (rtn && rtn != -ENOENT)
+				sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+					   "lgrp notifier unregister failed "
+					   "(ldev_num = %u, lgrp_num = %u) [%d]",
+					   ldev_num, lgrp_num, rtn);
+		}
 	}
-
-	return 0;
 }

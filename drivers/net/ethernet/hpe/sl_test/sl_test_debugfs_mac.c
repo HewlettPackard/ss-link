@@ -36,15 +36,13 @@ enum mac_cmd_index {
 };
 
 static struct cmd_entry mac_cmd_list[]  = {
-	[MAC_NEW_CMD]      = { .cmd = "mac_new",      .desc = "create mac object" },
-	[MAC_DEL_CMD]      = { .cmd = "mac_del",      .desc = "delete mac object" },
-	[MAC_TX_START_CMD] = { .cmd = "mac_tx_start", .desc = "start MAC tx"      },
-	[MAC_RX_START_CMD] = { .cmd = "mac_rx_start", .desc = "start MAC rx"      },
-	[MAC_TX_STOP_CMD]  = { .cmd = "mac_tx_stop",   .desc = "stop MAC tx"      },
-	[MAC_RX_STOP_CMD]  = { .cmd = "mac_rx_stop",   .desc = "stop MAC rx"      },
+	[MAC_NEW_CMD]      = { .cmd = "mac_new",     .desc = "create mac object", .call = sl_test_mac_new      },
+	[MAC_DEL_CMD]      = { .cmd = "mac_del",     .desc = "delete mac object", .call = sl_test_mac_del      },
+	[MAC_TX_START_CMD] = { .cmd = "mac_tx_start", .desc = "start MAC tx",     .call = sl_test_mac_tx_start },
+	[MAC_RX_START_CMD] = { .cmd = "mac_rx_start", .desc = "start MAC rx",     .call = sl_test_mac_rx_start },
+	[MAC_TX_STOP_CMD]  = { .cmd = "mac_tx_stop",  .desc = "stop MAC tx",      .call = sl_test_mac_tx_stop  },
+	[MAC_RX_STOP_CMD]  = { .cmd = "mac_rx_stop",  .desc = "stop MAC rx",      .call = sl_test_mac_rx_stop  },
 };
-
-#define MAC_CMD_MATCH(_index, _str) (strncmp((_str), mac_cmd_list[_index].cmd, strlen(mac_cmd_list[_index].cmd)) == 0)
 
 static int sl_test_mac_cmds_show(struct seq_file *s, void *unused)
 {
@@ -67,9 +65,9 @@ static const struct file_operations sl_test_mac_cmds_fops = {
 static ssize_t sl_test_mac_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
@@ -78,13 +76,13 @@ static ssize_t sl_test_mac_cmd_write(struct file *f, const char __user *buf, siz
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write simple_write_to_buffer [%ld]", len);
@@ -93,76 +91,19 @@ static ssize_t sl_test_mac_cmd_write(struct file *f, const char __user *buf, siz
 
 	cmd_buf[len] = '\0';
 
-	match_found = MAC_CMD_MATCH(MAC_NEW_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_new();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_new failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, mac_cmd_list, ARRAY_SIZE(mac_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = MAC_CMD_MATCH(MAC_DEL_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_del();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_del failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	match_found = MAC_CMD_MATCH(MAC_TX_START_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_tx_start();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_tx_start failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = MAC_CMD_MATCH(MAC_RX_START_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_rx_start();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_rx_start failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = MAC_CMD_MATCH(MAC_TX_STOP_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_tx_stop();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_tx_stop failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = MAC_CMD_MATCH(MAC_RX_STOP_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_mac_rx_stop();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_mac_rx_stop failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_mac_cmd_fops = {
@@ -190,31 +131,35 @@ static struct sl_mac *sl_test_mac_get(void)
 
 int sl_test_debugfs_mac_create(struct dentry *top_dir)
 {
+	int            rtn;
 	struct dentry *dentry;
 
 	mac_dir = debugfs_create_dir("mac", top_dir);
-	if (!mac_dir) {
+	rtn = sl_test_debugfs_entry_check(mac_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"mac debugfs_create_dir failed");
-		return -ENOMEM;
+			   "mac debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_mac_init(&mac, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
-	debugfs_create_u8("num", 0644, mac_dir, &mac.num);
+	SL_TEST_DEBUGFS_CREATE(u8, "num", mac_dir, &mac.num);
 
 	dentry = debugfs_create_file("cmds", 0644, mac_dir, NULL, &sl_test_mac_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, mac_dir, NULL, &sl_test_mac_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -238,14 +183,13 @@ void sl_test_mac_remove(u8 ldev_num, u8 lgrp_num, u8 mac_num)
 
 	rtn = sl_mac_del(&sl_mac);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
 		return;
 	}
 
 	rtn = sl_test_pdev_port_kobj_put(ldev_num, lgrp_num, mac_num);
 	if (rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", rtn);
 }
 
 int sl_test_mac_new(void)
@@ -266,20 +210,17 @@ int sl_test_mac_new(void)
 
 	port_num_kobj = sl_test_pdev_port_kobj_get(lgrp->ldev_num, lgrp->num, mac_num);
 	if (!port_num_kobj) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_get failed");
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_get failed");
 		return -ENODEV;
 	}
 
 	new_mac = sl_mac_new(lgrp, mac_num, port_num_kobj);
-	if (IS_ERR(new_mac)) {
-		rtn = PTR_ERR(new_mac);
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_mac_new failed [%d]", rtn);
+	if (IS_ERR_OR_NULL(new_mac)) {
+		rtn = new_mac ? PTR_ERR(new_mac) : -ENOMEM;
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_new failed [%d]", rtn);
 		put_rtn = sl_test_pdev_port_kobj_put(lgrp->ldev_num, lgrp->num, mac_num);
 		if (put_rtn)
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-					 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 		return rtn;
 	}
 
@@ -296,15 +237,13 @@ int sl_test_mac_del(void)
 
 	rtn = sl_mac_del(sl_mac);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_mac_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_mac_del failed [%d]", rtn);
 		return rtn;
 	}
 
 	put_rtn = sl_test_pdev_port_kobj_put(sl_mac->ldev_num, sl_mac->lgrp_num, sl_mac->num);
 	if (put_rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 
 	return rtn;
 }

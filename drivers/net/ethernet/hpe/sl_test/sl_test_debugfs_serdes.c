@@ -2,6 +2,7 @@
 /* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/debugfs.h>
+#include <linux/err.h>
 
 #include <linux/hpe/sl/sl_test.h>
 
@@ -121,12 +122,9 @@ enum serdes_cmd_index {
 };
 
 static struct cmd_entry serdes_cmd_list[]  = {
-	[SERDES_PARAMS_SET_CMD]   = { .cmd = "serdes_params_set",   .desc = "set serdes params"                },
-	[SERDES_PARAMS_UNSET_CMD] = { .cmd = "serdes_params_unset", .desc = "return serdes params to original" },
+	[SERDES_PARAMS_SET_CMD]   = { .cmd = "serdes_params_set",   .desc = "set serdes params",                .call = sl_test_serdes_set   },
+	[SERDES_PARAMS_UNSET_CMD] = { .cmd = "serdes_params_unset", .desc = "return serdes params to original", .call = sl_test_serdes_unset },
 };
-
-#define SERDES_CMD_MATCH(_index, _str) \
-	(strncmp((_str), serdes_cmd_list[_index].cmd, strlen(serdes_cmd_list[_index].cmd)) == 0)
 
 static int sl_test_serdes_cmds_show(struct seq_file *s, void *unused)
 {
@@ -149,9 +147,9 @@ static const struct file_operations sl_test_serdes_cmds_fops = {
 static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
@@ -160,13 +158,13 @@ static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, 
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write simple_write_to_buffer [%ld]", len);
@@ -175,32 +173,19 @@ static ssize_t sl_test_serdes_cmd_write(struct file *f, const char __user *buf, 
 
 	cmd_buf[len] = '\0';
 
-	match_found = SERDES_CMD_MATCH(SERDES_PARAMS_SET_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_serdes_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"cmd_write test_serdes_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, serdes_cmd_list, ARRAY_SIZE(serdes_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = SERDES_CMD_MATCH(SERDES_PARAMS_UNSET_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_serdes_unset();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"cmd_write test_serdes_unset failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_serdes_cmd_fops = {
@@ -231,54 +216,58 @@ static void sl_test_serdes_init(void)
 
 int sl_test_serdes_create(struct dentry *parent)
 {
+	int            rtn;
 	struct dentry *dentry;
 	struct dentry *settings_dir;
 
 	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "serdes create");
 
 	sl_test_serdes_dir = debugfs_create_dir("serdes", parent);
-	if (!sl_test_serdes_dir) {
+	rtn = sl_test_debugfs_entry_check(sl_test_serdes_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"serdes debugfs_create_dir failed");
-		return -ENOMEM;
+			   "serdes debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_serdes_init();
 
 	settings_dir = debugfs_create_dir("settings", sl_test_serdes_dir);
-	if (!sl_test_serdes_dir) {
+	rtn = sl_test_debugfs_entry_check(settings_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"serdes settings debugfs_create_dir failed");
-		return -ENOMEM;
+			   "serdes settings debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
-	sl_test_debugfs_create_s16("pre1",     0644, settings_dir, &(settings.pre1));
-	sl_test_debugfs_create_s16("pre2",     0644, settings_dir, &(settings.pre2));
-	sl_test_debugfs_create_s16("pre3",     0644, settings_dir, &(settings.pre3));
-	sl_test_debugfs_create_s16("cursor",   0644, settings_dir, &(settings.cursor));
-	sl_test_debugfs_create_s16("post1",    0644, settings_dir, &(settings.post1));
-	sl_test_debugfs_create_s16("post2",    0644, settings_dir, &(settings.post2));
-	sl_test_debugfs_create_s16("media",    0644, settings_dir, &(settings.media));
-
-	sl_test_debugfs_create_str_conv_u16("encoding",     0644, settings_dir, &lane_encoding);
-	sl_test_debugfs_create_str_conv_u16("clocking",     0644, settings_dir, &lane_clocking);
-	sl_test_debugfs_create_str_conv_u16("osr",          0644, settings_dir, &lane_osr);
-	sl_test_debugfs_create_str_conv_u16("width",        0644, settings_dir, &lane_width);
-	sl_test_debugfs_create_str_conv_u16("dfe",          0644, settings_dir, &lane_dfe);
-	sl_test_debugfs_create_str_conv_u16("scramble_dis", 0644, settings_dir, &lane_scramble_dis);
+	SL_TEST_DEBUGFS_CREATE(s16,          "pre1",         settings_dir, &settings.pre1);
+	SL_TEST_DEBUGFS_CREATE(s16,          "pre2",         settings_dir, &settings.pre2);
+	SL_TEST_DEBUGFS_CREATE(s16,          "pre3",         settings_dir, &settings.pre3);
+	SL_TEST_DEBUGFS_CREATE(s16,          "cursor",       settings_dir, &settings.cursor);
+	SL_TEST_DEBUGFS_CREATE(s16,          "post1",        settings_dir, &settings.post1);
+	SL_TEST_DEBUGFS_CREATE(s16,          "post2",        settings_dir, &settings.post2);
+	SL_TEST_DEBUGFS_CREATE(s16,          "media",        settings_dir, &settings.media);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "encoding",     settings_dir, &lane_encoding);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "clocking",     settings_dir, &lane_clocking);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "osr",          settings_dir, &lane_osr);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "width",        settings_dir, &lane_width);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "dfe",          settings_dir, &lane_dfe);
+	SL_TEST_DEBUGFS_CREATE(str_conv_u16, "scramble_dis", settings_dir, &lane_scramble_dis);
 
 	dentry = debugfs_create_file("cmds", 0644, sl_test_serdes_dir, NULL, &sl_test_serdes_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, sl_test_serdes_dir, NULL, &sl_test_serdes_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;

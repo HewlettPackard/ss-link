@@ -2,6 +2,7 @@
 /* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
 
 #include <linux/debugfs.h>
+#include <linux/err.h>
 
 #include "log/sl_log.h"
 #include "sl_test_debugfs.h"
@@ -11,6 +12,7 @@
 #include "sl_test_debugfs_llr.h"
 #include "sl_test_debugfs_mac.h"
 #include "sl_test_debugfs_serdes.h"
+#include "sl_test_common.h"
 
 #define LOG_BLOCK "start"
 #define LOG_NAME  SL_LOG_DEBUGFS_LOG_NAME
@@ -23,10 +25,11 @@ int sl_test_debugfs_create(void)
 
 	/* NOTE: will show up in /sys/kernel/debug/sl */
 	sl_test_top_dir = debugfs_create_dir("sl", NULL);
-	if (!sl_test_top_dir) {
+	rtn = sl_test_debugfs_entry_check(sl_test_top_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"sl debugfs_create_dir failed");
-		return -ENOMEM;
+			   "sl debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	rtn = sl_test_debugfs_ldev_create(sl_test_top_dir);

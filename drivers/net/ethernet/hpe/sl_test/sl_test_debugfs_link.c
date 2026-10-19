@@ -5,6 +5,7 @@
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/debugfs.h>
+#include <linux/err.h>
 
 #include <linux/hpe/sl/sl_link.h>
 #include <linux/hpe/sl/sl_test.h>
@@ -42,27 +43,24 @@ enum link_cmd_index {
 };
 
 static struct cmd_entry link_cmd_list[]  = {
-	[LINK_NEW_CMD]            = { .cmd = "link_new",            .desc = "create link object"                 },
-	[LINK_DEL_CMD]            = { .cmd = "link_del",            .desc = "delete link object"                 },
-	[LINK_CONFIG_WRITE_CMD]   = { .cmd = "link_config_write",   .desc = "write out the link config from dir" },
-	[LINK_POLICY_WRITE_CMD]   = { .cmd = "link_policy_write",   .desc = "write out the link policy from dir" },
-	[UP_CMD]                  = { .cmd = "up",                  .desc = "task link to go up"                 },
-	[DOWN_CMD]                = { .cmd = "down",                .desc = "task link to go down"               },
-	[CANCEL_CMD]              = { .cmd = "cancel",              .desc = "cancel command"                     },
-	[LINK_OPTION_SET_CMD]     = { .cmd = "link_opt_set",        .desc = "set link test options"              },
-	[LINK_FEC_CNT_SET_CMD]    = { .cmd = "link_fec_cnt_set",    .desc = "set link test fec cntrs"            },
-	[LINK_AN_LP_CAPS_GET_CMD] = { .cmd = "link_an_lp_caps_get", .desc = "get the link partner capabilities"  },
+	[LINK_NEW_CMD]            = { .cmd = "link_new",            .desc = "create link object",                 .call = sl_test_link_new            },
+	[LINK_DEL_CMD]            = { .cmd = "link_del",            .desc = "delete link object",                 .call = sl_test_link_del            },
+	[LINK_CONFIG_WRITE_CMD]   = { .cmd = "link_config_write",   .desc = "write out the link config from dir", .call = sl_test_link_config_set     },
+	[LINK_POLICY_WRITE_CMD]   = { .cmd = "link_policy_write",   .desc = "write out the link policy from dir", .call = sl_test_link_policy_set     },
+	[UP_CMD]                  = { .cmd = "up",                  .desc = "task link to go up",                 .call = sl_test_link_up             },
+	[DOWN_CMD]                = { .cmd = "down",                .desc = "task link to go down",               .call = sl_test_link_down           },
+	[CANCEL_CMD]              = { .cmd = "cancel",              .desc = "cancel command",                     .call = sl_test_link_down           },
+	[LINK_OPTION_SET_CMD]     = { .cmd = "link_opt_set",        .desc = "set link test options",              .call = sl_test_link_options_set    },
+	[LINK_FEC_CNT_SET_CMD]    = { .cmd = "link_fec_cnt_set",    .desc = "set link test fec cntrs",            .call = sl_test_link_fec_cntr_set   },
+	[LINK_AN_LP_CAPS_GET_CMD] = { .cmd = "link_an_lp_caps_get", .desc = "get the link partner capabilities",  .call = sl_test_link_an_lp_caps_get },
 };
-
-#define LINK_CMD_MATCH(_index, _str) \
-	(strncmp((_str), link_cmd_list[_index].cmd, strlen(link_cmd_list[_index].cmd)) == 0)
 
 static ssize_t sl_test_link_cmd_write(struct file *f, const char __user *buf, size_t size, loff_t *pos)
 {
 	int     rtn;
+	int     call_rtn;
 	ssize_t len;
 	char    cmd_buf[CMD_LEN];
-	bool    match_found;
 
 	/* Don't allow partial writes */
 	if (*pos != 0) {
@@ -71,13 +69,13 @@ static ssize_t sl_test_link_cmd_write(struct file *f, const char __user *buf, si
 		return 0;
 	}
 
-	if (size > sizeof(cmd_buf)) {
+	if (!size || size >= sizeof(cmd_buf)) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write too big (size = %ld)", size);
 		return -ENOSPC;
 	}
 
-	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf), pos, buf, size);
+	len = simple_write_to_buffer(cmd_buf, sizeof(cmd_buf) - 1, pos, buf, size);
 	if (len < 0) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			"cmd_write simple_write_to_buffer [%ld]", len);
@@ -86,109 +84,19 @@ static ssize_t sl_test_link_cmd_write(struct file *f, const char __user *buf, si
 
 	cmd_buf[len] = '\0';
 
-	match_found = LINK_CMD_MATCH(LINK_NEW_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_new();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_new failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	rtn = sl_test_debugfs_cmd_call(cmd_buf, link_cmd_list, ARRAY_SIZE(link_cmd_list), &call_rtn);
+	if (rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write failed (cmd_buf = %s) [%d]", cmd_buf, rtn);
+		return rtn;
 	}
 
-	match_found = LINK_CMD_MATCH(LINK_DEL_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_del();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_del failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "cmd_write succeeded (cmd_buf = %s, call_rtn = %d)", cmd_buf, call_rtn);
+	if (call_rtn) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "cmd_write call failed (cmd_buf = %s) [%d]", cmd_buf, call_rtn);
+		return call_rtn;
 	}
 
-	match_found = LINK_CMD_MATCH(UP_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_up();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_up failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	};
-
-	match_found = LINK_CMD_MATCH(DOWN_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_down();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_down failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LINK_CMD_MATCH(LINK_CONFIG_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_config_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_config_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LINK_CMD_MATCH(LINK_POLICY_WRITE_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_policy_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_policy_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LINK_CMD_MATCH(LINK_OPTION_SET_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_options_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_options_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LINK_CMD_MATCH(LINK_FEC_CNT_SET_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_fec_cntr_set();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_options_set failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	match_found = LINK_CMD_MATCH(LINK_AN_LP_CAPS_GET_CMD, cmd_buf);
-	if (match_found) {
-		rtn = sl_test_link_an_lp_caps_get();
-		if (rtn < 0) {
-			sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-				"sl_test_link_an_lp_caps_get failed [%d]", rtn);
-			return rtn;
-		}
-		return size;
-	}
-
-	sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-		"cmd_write no cmd found (cmd_buf = %s)", cmd_buf);
-
-	return -EBADRQC;
+	return size;
 }
 
 static const struct file_operations sl_test_link_cmd_fops = {
@@ -322,26 +230,6 @@ static struct sl_link *sl_test_link_get(void)
 	return &link;
 }
 
-#define SL_TEST_HPE_MAP_NODE(_name)                                                                                 \
-	do {                                                                                                        \
-		rtn = sl_test_debugfs_create_opt("hpe_map_"#_name"_set", 0644, config_dir, &hpe_map_##_name##_set); \
-		if (rtn) {                                                                                          \
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                 \
-				"link config hpe map %s set debugfs_create_opt failed", #_name);                    \
-			return -ENOMEM;                                                                             \
-		}                                                                                                   \
-	} while (0)
-
-#define SL_TEST_PAUSE_MAP_NODE(_name)                                                                           \
-	do {                                                                                                    \
-		rtn = sl_test_debugfs_create_opt("pause_map_"#_name"_set", 0644, config_dir, &pause_map_##_name##_set); \
-		if (rtn) {                                                                                              \
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,                                                     \
-				"link config pause map %s set debugfs_create_opt failed", #_name);                      \
-			return -ENOMEM;                                                                                 \
-		}                                                                                                       \
-	} while (0)
-
 int sl_test_debugfs_link_create(struct dentry *top_dir)
 {
 	int            rtn;
@@ -351,151 +239,98 @@ int sl_test_debugfs_link_create(struct dentry *top_dir)
 	struct dentry *dentry;
 
 	link_dir = debugfs_create_dir("link", top_dir);
-	if (!link_dir) {
+	rtn = sl_test_debugfs_entry_check(link_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"link debugfs_create_dir failed");
-		return -ENOMEM;
+			   "link debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_link_init(&link, sl_test_debugfs_ldev_num_get(), sl_test_debugfs_lgrp_num_get(), 0);
 
-	debugfs_create_u8("num", 0644, link_dir, &link.num);
+	SL_TEST_DEBUGFS_CREATE(u8, "num", link_dir, &link.num);
 
 	config_dir = debugfs_create_dir("config", link_dir);
-	if (!config_dir) {
+	rtn = sl_test_debugfs_entry_check(config_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"link config debugfs_create_dir failed");
-		return -ENOMEM;
+			   "link config debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_link_config_init();
 
-	debugfs_create_u32("link_up_timeout_ms", 0644, config_dir, &link_config.link_up_timeout_ms);
-
-	SL_TEST_HPE_MAP_NODE(linktrain);
-	SL_TEST_HPE_MAP_NODE(precode);
-	SL_TEST_HPE_MAP_NODE(pcal);
-	SL_TEST_HPE_MAP_NODE(r3);
-	SL_TEST_HPE_MAP_NODE(r2);
-	SL_TEST_HPE_MAP_NODE(r1);
-	SL_TEST_HPE_MAP_NODE(c3);
-	SL_TEST_HPE_MAP_NODE(c2);
-	SL_TEST_HPE_MAP_NODE(c1);
-	SL_TEST_HPE_MAP_NODE(llr);
-
-	SL_TEST_PAUSE_MAP_NODE(asym);
-	SL_TEST_PAUSE_MAP_NODE(sym);
-
-	sl_test_debugfs_create_s32("link_up_tries_max",     0644, config_dir, &link_config.link_up_tries_max);
-	sl_test_debugfs_create_s32("fec_up_settle_wait_ms", 0644, config_dir, &link_config.fec_up_settle_wait_ms);
-	sl_test_debugfs_create_s32("fec_up_check_wait_ms",  0644, config_dir, &link_config.fec_up_check_wait_ms);
-	sl_test_debugfs_create_s32("fec_up_ccw_limit",      0644, config_dir, &link_config.fec_up_ccw_limit);
-	sl_test_debugfs_create_s32("fec_up_ucw_limit",      0644, config_dir, &link_config.fec_up_ucw_limit);
-
-	rtn = sl_test_debugfs_create_opt("lock", 0644, config_dir, &config_option_lock);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link config lock debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("autoneg", 0644, config_dir, &config_option_autoneg);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link config autoneg debugfs_create_file failed");
-		return -ENOMEM;
-	}
+	SL_TEST_DEBUGFS_CREATE(u32, "link_up_timeout_ms",    config_dir, &link_config.link_up_timeout_ms);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_linktrain_set", config_dir, &hpe_map_linktrain_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_precode_set",   config_dir, &hpe_map_precode_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_pcal_set",      config_dir, &hpe_map_pcal_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_r3_set",        config_dir, &hpe_map_r3_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_r2_set",        config_dir, &hpe_map_r2_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_r1_set",        config_dir, &hpe_map_r1_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_c3_set",        config_dir, &hpe_map_c3_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_c2_set",        config_dir, &hpe_map_c2_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_c1_set",        config_dir, &hpe_map_c1_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "hpe_map_llr_set",       config_dir, &hpe_map_llr_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "pause_map_asym_set",    config_dir, &pause_map_asym_set);
+	SL_TEST_DEBUGFS_CREATE(opt, "pause_map_sym_set",     config_dir, &pause_map_sym_set);
+	SL_TEST_DEBUGFS_CREATE(s32, "link_up_tries_max",     config_dir, &link_config.link_up_tries_max);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_up_settle_wait_ms", config_dir, &link_config.fec_up_settle_wait_ms);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_up_check_wait_ms",  config_dir, &link_config.fec_up_check_wait_ms);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_up_ccw_limit",      config_dir, &link_config.fec_up_ccw_limit);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_up_ucw_limit",      config_dir, &link_config.fec_up_ucw_limit);
+	SL_TEST_DEBUGFS_CREATE(opt, "lock",                  config_dir, &config_option_lock);
+	SL_TEST_DEBUGFS_CREATE(opt, "autoneg",               config_dir, &config_option_autoneg);
 
 	policy_dir = debugfs_create_dir("policies", link_dir);
-	if (!policy_dir) {
+	rtn = sl_test_debugfs_entry_check(policy_dir);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"link policy debugfs_create_dir failed");
-		return -ENOMEM;
+			   "link policy debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
 	sl_test_link_policy_init();
 
-	sl_test_debugfs_create_s32("fec_mon_period_ms", 0644, policy_dir,
-		    &link_policy.fec_mon_period_ms);
-	sl_test_debugfs_create_s32("fec_mon_ucw_down_limit", 0644, policy_dir,
-		    &link_policy.fec_mon_ucw_down_limit);
-	sl_test_debugfs_create_s32("fec_mon_ucw_warn_limit", 0644, policy_dir,
-		    &link_policy.fec_mon_ucw_warn_limit);
-	sl_test_debugfs_create_s32("fec_mon_ccw_down_limit", 0644, policy_dir,
-		    &link_policy.fec_mon_ccw_down_limit);
-	sl_test_debugfs_create_s32("fec_mon_ccw_warn_limit", 0644, policy_dir,
-		    &link_policy.fec_mon_ccw_warn_limit);
-
-	rtn = sl_test_debugfs_create_opt("lock", 0644, policy_dir, &policy_option_lock);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link policy lock debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("keep_serdes_up", 0644, policy_dir, &policy_option_keep_serdes_up);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link policy keep_serdes_up debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("use_unsupported_cable", 0644, policy_dir,
-		&policy_option_use_unsupported_cable);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link policy use_unsupported_cable debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("ignore_media_error", 0644, policy_dir,
-					 &policy_option_ignore_media_error);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "link policy ignore_media_error debugfs_create_file failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("use_supported_ss200_cable", 0644, policy_dir,
-					 &policy_option_use_supported_ss200_cable);
-	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "link policy use_supported_ss200_cable debugfs_create_file failed");
-		return -ENOMEM;
-	}
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_mon_period_ms",         policy_dir, &link_policy.fec_mon_period_ms);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_mon_ucw_down_limit",    policy_dir, &link_policy.fec_mon_ucw_down_limit);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_mon_ucw_warn_limit",    policy_dir, &link_policy.fec_mon_ucw_warn_limit);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_mon_ccw_down_limit",    policy_dir, &link_policy.fec_mon_ccw_down_limit);
+	SL_TEST_DEBUGFS_CREATE(s32, "fec_mon_ccw_warn_limit",    policy_dir, &link_policy.fec_mon_ccw_warn_limit);
+	SL_TEST_DEBUGFS_CREATE(opt, "lock",                      policy_dir, &policy_option_lock);
+	SL_TEST_DEBUGFS_CREATE(opt, "keep_serdes_up",            policy_dir, &policy_option_keep_serdes_up);
+	SL_TEST_DEBUGFS_CREATE(opt, "use_unsupported_cable",     policy_dir, &policy_option_use_unsupported_cable);
+	SL_TEST_DEBUGFS_CREATE(opt, "ignore_media_error",        policy_dir, &policy_option_ignore_media_error);
+	SL_TEST_DEBUGFS_CREATE(opt, "use_supported_ss200_cable", policy_dir, &policy_option_use_supported_ss200_cable);
 
 	sl_test_options_init();
 
 	test_dir = debugfs_create_dir("test", link_dir);
-	if (!test_dir) {
-		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"link test debugfs_create_dir failed");
-		return -ENOMEM;
-	}
-
-	rtn = sl_test_debugfs_create_opt("use_fec_cntr", 0644, test_dir, &test_option_use_fec_cntr);
+	rtn = sl_test_debugfs_entry_check(test_dir);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"link test use_fec_cntr debugfs_create_file failed");
-		return -ENOMEM;
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
+			   "link test debugfs_create_dir failed [%d]", rtn);
+		return rtn;
 	}
 
-	debugfs_create_u64("fec_ucw", 0644, test_dir, &fec_ucw);
-	debugfs_create_u64("fec_ccw", 0644, test_dir, &fec_ccw);
-	debugfs_create_u64("fec_gcw", 0644, test_dir, &fec_gcw);
+	SL_TEST_DEBUGFS_CREATE(opt, "use_fec_cntr", test_dir, &test_option_use_fec_cntr);
+	SL_TEST_DEBUGFS_CREATE(u64, "fec_ucw",      test_dir, &fec_ucw);
+	SL_TEST_DEBUGFS_CREATE(u64, "fec_ccw",      test_dir, &fec_ccw);
+	SL_TEST_DEBUGFS_CREATE(u64, "fec_gcw",      test_dir, &fec_gcw);
 
 	dentry = debugfs_create_file("cmds", 0644, link_dir, NULL, &sl_test_link_cmds_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmds debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmds debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	dentry = debugfs_create_file("cmd", 0644, link_dir, NULL, &sl_test_link_cmd_fops);
-	if (!dentry) {
+	rtn = sl_test_debugfs_entry_check(dentry);
+	if (rtn) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
-			"cmd debugfs_create_file failed");
-		return -ENOMEM;
+			   "cmd debugfs_create_file failed [%d]", rtn);
+		return rtn;
 	}
 
 	return 0;
@@ -519,14 +354,13 @@ void sl_test_link_remove(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 	rtn = sl_link_del(&sl_link);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
 		return;
 	}
 
 	rtn = sl_test_pdev_port_kobj_put(ldev_num, lgrp_num, link_num);
 	if (rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", rtn);
 }
 
 int sl_test_link_new(void)
@@ -553,14 +387,13 @@ int sl_test_link_new(void)
 	}
 
 	new_link = sl_link_new(lgrp, link_num, port_num_kobj);
-	if (IS_ERR(new_link)) {
-		rtn = PTR_ERR(new_link);
+	if (IS_ERR_OR_NULL(new_link)) {
+		rtn = new_link ? PTR_ERR(new_link) : -ENOMEM;
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME,
 			   "sl_link_new failed [%d]", rtn);
 		put_rtn = sl_test_pdev_port_kobj_put(lgrp->ldev_num, lgrp->num, link_num);
 		if (put_rtn)
-			sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-					 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+			sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 		return rtn;
 	}
 
@@ -577,15 +410,13 @@ int sl_test_link_del(void)
 
 	rtn = sl_link_del(link);
 	if (rtn) {
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-			"sl_link_del failed [%d]", rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_link_del failed [%d]", rtn);
 		return rtn;
 	}
 
 	put_rtn = sl_test_pdev_port_kobj_put(link->ldev_num, link->lgrp_num, link->num);
 	if (put_rtn)
-		sl_log_err_trace(NULL, LOG_BLOCK, LOG_NAME,
-				 "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sl_test_pdev_port_kobj_put failed [%d]", put_rtn);
 
 	return rtn;
 }
