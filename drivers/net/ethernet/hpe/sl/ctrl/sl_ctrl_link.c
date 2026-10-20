@@ -12,6 +12,7 @@
 #include "sl_ctrl_ldev.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link.h"
+#include "sl_ctrl_link_fec.h"
 #include "data/sl_ctrl_data_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_ctrl_link_counters.h"
@@ -494,6 +495,7 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 {
 	int                         rtn;
 	u32                         link_state;
+	u32                         fec_mon_state;
 	struct sl_ctrl_link        *ctrl_link;
 	struct sl_core_link_policy  core_link_policy;
 
@@ -543,31 +545,50 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	rtn = sl_core_link_policy_set(ctrl_link->ctrl_lgrp->ctrl_ldev->num, ctrl_link->ctrl_lgrp->num, ctrl_link->num,
 			&core_link_policy);
 	if (rtn) {
-		sl_core_log_err(ctrl_link, LOG_NAME, "core link policy set failed [%d]", rtn);
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "core link policy set failed [%d]", rtn);
 		rtn = -EBADRQC;
 		goto out;
 	}
 
-	rtn = sl_ctrl_data_link_state_get(ctrl_link, &link_state);
-	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "data link state get failed [%d]", rtn);
-		goto out;
-	}
+	link_state = sl_ctrl_link_state_get(ctrl_link);
 
-	if ((link_state != SL_LINK_STATE_UP) && (link_state != SL_LINK_STATE_UP_DOWN_REQ)) {
-		sl_core_log_dbg(ctrl_link, LOG_NAME, "link_policy_set not up (link_state = %u %s)", link_state,
-		  sl_core_link_state_str(link_state));
-		rtn = 0;
-		goto out;
-	}
+	/* We only need to update FEC monitor settings if the link is up. Otherwise the normal link up path will
+	 * handle it.
+	 */
+	if (link_state == SL_LINK_STATE_UP || link_state == SL_LINK_STATE_UP_DOWN_REQ) {
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set updating FEC monitor");
 
-	sl_ctrl_link_fec_mon_start(ctrl_link);
+		if (link_policy->fec_mon_period_ms) {
+			/* Policy period can be negative (default values). We need to initialize FEC monitor values
+			 * before starting.
+			 */
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set start FEC monitor");
+			sl_ctrl_link_fec_mon_limits_calc(ctrl_link);
+			rtn = sl_ctrl_link_fec_mon_start(ctrl_link);
+			if (rtn) {
+				sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "policy set fec mon start failed [%d]", rtn);
+				goto out;
+			}
+
+			rtn = sl_ctrl_link_fec_mon_state_get(ctrl_link, &fec_mon_state);
+			if (rtn)
+				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+						       "policy set fec mon state get failed [%d]", rtn);
+
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set fec monitor (state = %u %s)",
+					fec_mon_state, sl_ctrl_link_fec_mon_state_str(fec_mon_state));
+		} else {
+			/* Don't cancel any FEC monitor work we can be called in atomic context. */
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set stop FEC monitor");
+			sl_ctrl_link_fec_mon_stop(ctrl_link);
+		}
+	}
 
 	rtn = 0;
 
 out:
 	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set - link removed (link = 0x%p)", ctrl_link);
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set link removed (link = 0x%p)", ctrl_link);
 
 	return rtn;
 }

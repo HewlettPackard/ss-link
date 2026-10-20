@@ -5,6 +5,8 @@
 
 # Default log level is "info"
 export SL_TEST_LOG_LEVEL=${SL_TEST_LOG_LEVEL:-2}
+# Set by sl_run_test.sh; discard file logging when run standalone
+export SL_TEST_LOG_FILE=${SL_TEST_LOG_FILE:-/dev/null}
 if [[ -z "${TERM:-}" ]]; then
 	export TERM="xterm-256color"
 fi

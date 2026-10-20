@@ -99,16 +99,15 @@ void sl_ctrl_link_fec_down_cache_store(struct sl_ctrl_link *ctrl_link,
 	spin_unlock(&ctrl_link->fec_down_cache.lock);
 }
 
-static void sl_ctrl_link_fec_mon_limits_calc(struct sl_ctrl_link *ctrl_link)
+void sl_ctrl_link_fec_mon_limits_calc(struct sl_ctrl_link *ctrl_link)
 {
 	struct sl_link_policy link_policy;
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor limits calc");
 
+	sl_ctrl_link_policy_get(ctrl_link, &link_policy);
+
 	spin_lock(&ctrl_link->fec_data.lock);
-
-	link_policy = ctrl_link->policy;
-
 	ctrl_link->fec_data.info.monitor.period_ms = (link_policy.fec_mon_period_ms < 0) ?
 		SL_CTRL_LINK_FEC_MON_PERIOD_MS : link_policy.fec_mon_period_ms;
 
@@ -164,39 +163,44 @@ static void sl_ctrl_link_fec_mon_limits_calc(struct sl_ctrl_link *ctrl_link)
 	if (ctrl_link->fec_data.info.monitor.ucw_down_limit &&
 		(ctrl_link->fec_data.info.monitor.ucw_warn_limit > ctrl_link->fec_data.info.monitor.ucw_down_limit))
 		sl_ctrl_log_warn(ctrl_link, LOG_NAME,
-			"CCW warning limit set greater than down limit (%d > %d)",
+			"UCW warning limit set greater than down limit (%d > %d)",
 			ctrl_link->fec_data.info.monitor.ucw_warn_limit,
 			ctrl_link->fec_data.info.monitor.ucw_down_limit);
 
 	spin_unlock(&ctrl_link->fec_data.lock);
 }
 
-void sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
+int sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
 {
-	u32 period;
+	int rtn;
+	int mod_active_timer;
+	u32 period_ms;
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor start");
 
 	if (SL_PLATFORM_IS_NETSIM(sl_core_ldev_get(ctrl_link->ctrl_lgrp->ctrl_ldev->num)))
-		return;
+		return 0;
 
-	sl_ctrl_link_fec_mon_limits_calc(ctrl_link);
+	rtn = sl_ctrl_data_link_fec_mon_period_ms_get(ctrl_link, &period_ms);
+	if (rtn)
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "monitor start fec_mon_period_ms_get failed [%d]", rtn);
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	period = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
-	if (!period) {
-		sl_ctrl_link_fec_mon_stop(ctrl_link);
-		return;
+	if (!period_ms) {
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor start off");
+		return 0;
 	}
 
 	spin_lock(&ctrl_link->fec_mon_timer_lock);
 	ctrl_link->fec_mon_timer_stop = false;
-	ctrl_link->fec_mon_state = SL_CTRL_LINK_FEC_MON_ON;
-	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
+	ctrl_link->fec_mon_state      = SL_CTRL_LINK_FEC_MON_ON;
+
+	/* Policy changes can modify monitor timer */
+	mod_active_timer = mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period_ms));
 	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor timer started (period = %ums)", period);
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor start (mod_active_timer = %d) ", mod_active_timer);
+
+	return 0;
 }
 
 void sl_ctrl_link_fec_data_calc(struct sl_ctrl_link *ctrl_link)
@@ -268,7 +272,7 @@ static bool sl_ctrl_link_fec_ucw_chance_limit_check(struct sl_ctrl_link *ctrl_li
 		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, info);
 		if (rtn)
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "UCW check fec mon history add failed [%d]", rtn);
+					      "UCW check monitor history add failed [%d]", rtn);
 	} else {
 		ctrl_link->fec_ucw_chance = 0;
 	}
@@ -290,7 +294,7 @@ static bool sl_ctrl_link_fec_ccw_chance_limit_check(struct sl_ctrl_link *ctrl_li
 		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, info);
 		if (rtn)
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "CCW check fec mon history add failed [%d]", rtn);
+					      "CCW check monitor history add failed [%d]", rtn);
 	} else {
 		ctrl_link->fec_ccw_chance = 0;
 	}
@@ -384,7 +388,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, &fec_info);
 		if (rtn)
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "UCW check fec mon history add failed [%d]", rtn);
+					      "UCW check monitor history add failed [%d]", rtn);
 	}
 
 	if (SL_CTRL_LINK_FEC_CCW_LIMIT_CHECK(ccw_warn_limit, &fec_info)) {
@@ -410,7 +414,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 		rtn = sl_ctrl_data_link_fec_mon_history_add(ctrl_link, &fec_info);
 		if (rtn)
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "CCW check fec mon history add failed [%d]", rtn);
+					      "CCW check monitor history add failed [%d]", rtn);
 	}
 
 	return 0;
@@ -420,7 +424,7 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 {
 	int                                  rtn;
 	struct sl_ctrl_link                 *ctrl_link;
-	u32                                  period;
+	u32                                  period_ms;
 	bool                                 stop;
 	struct sl_core_link_fec_cw_cntrs     cw_cntrs;
 	struct sl_core_link_fec_lane_cntrs   lane_cntrs;
@@ -438,10 +442,11 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 		return;
 	}
 
-	spin_lock(&ctrl_link->fec_data.lock);
-	period = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
-	if (!period) {
+	rtn = sl_ctrl_data_link_fec_mon_period_ms_get(ctrl_link, &period_ms);
+	if (rtn)
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "monitor work fec_mon_period_ms_get failed [%d]", rtn);
+
+	if (!period_ms) {
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work period zero");
 		return;
 	}
@@ -484,23 +489,25 @@ void sl_ctrl_link_fec_mon_work(struct work_struct *work)
 	}
 
 start_mon:
-	spin_lock(&ctrl_link->fec_data.lock);
-	period = ctrl_link->fec_data.info.monitor.period_ms;
-	spin_unlock(&ctrl_link->fec_data.lock);
-	if (!period) {
+	rtn = sl_ctrl_data_link_fec_mon_period_ms_get(ctrl_link, &period_ms);
+	if (rtn)
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "monitor work fec_mon_period_ms_get failed [%d]", rtn);
+
+	if (!period_ms) {
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work period zero");
 		return;
 	}
 
 	spin_lock(&ctrl_link->fec_mon_timer_lock);
 	stop = ctrl_link->fec_mon_timer_stop;
-	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 	if (stop) {
+		spin_unlock(&ctrl_link->fec_mon_timer_lock);
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work stopped");
 		return;
 	}
 
-	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period));
+	mod_timer(&ctrl_link->fec_mon_timer, jiffies + msecs_to_jiffies(period_ms));
+	spin_unlock(&ctrl_link->fec_mon_timer_lock);
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "monitor work started");
 }
 

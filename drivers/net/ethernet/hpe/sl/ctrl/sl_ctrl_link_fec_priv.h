@@ -94,7 +94,8 @@ int sl_ctrl_link_fec_up_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
 int sl_ctrl_link_fec_down_cache_tail_cntrs_get(struct sl_ctrl_link *ctrl_link,
 					       struct sl_core_link_fec_tail_cntrs *tail_cntrs);
 
-void sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link);
+void sl_ctrl_link_fec_mon_limits_calc(struct sl_ctrl_link *ctrl_link);
+int  sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link);
 void sl_ctrl_link_fec_mon_work(struct work_struct *work);
 void sl_ctrl_link_fec_mon_timer(struct timer_list *timer);
 void sl_ctrl_link_fec_mon_stop(struct sl_ctrl_link *ctrl_link);

@@ -15,6 +15,8 @@
 #include "sl_ctrl_link.h"
 #include "sl_ctrl_link_priv.h"
 #include "sl_ctrl_link_counters.h"
+#include "sl_ctrl_link_fec_priv.h"
+#include "sl_ctrl_link_fec.h"
 #include "sl_core_link.h"
 #include "sl_core_link_an.h"
 #include "sl_core_str.h"
@@ -245,6 +247,8 @@ static int sl_ctrl_link_up_callback_cancel(struct sl_ctrl_link *ctrl_link, u64 i
 	int rtn;
 	u64 up_fail_cause_map;
 
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback cancel (info_map = 0x%llx)", info_map);
+
 	flush_work(&ctrl_link->ctrl_lgrp->notif_work);
 
 	sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_DOWN);
@@ -254,15 +258,13 @@ static int sl_ctrl_link_up_callback_cancel(struct sl_ctrl_link *ctrl_link, u64 i
 	rtn = sl_ctrl_link_last_up_fail_cause_map_get(ctrl_link, &up_fail_cause_map);
 	if (rtn)
 		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-				       "up callback cancel - last_up_fail_cause_map_get failed [%d]", rtn);
+				       "up callback cancel last_up_fail_cause_map_get failed [%d]", rtn);
 
 	rtn = sl_ctrl_link_up_fail_notif_send(ctrl_link->ctrl_lgrp, ctrl_link,
 					      up_fail_cause_map, info_map);
-	if (rtn) {
-		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-				      "up callback cancel ctrl_link_up_fail_notif_send failed [%d]", rtn);
-		return rtn;
-	}
+	if (rtn)
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
+				       "up callback cancel ctrl_link_up_fail_notif_send failed [%d]", rtn);
 
 	return 0;
 }
@@ -273,6 +275,8 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 	char                         core_imap_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 	int                          max_up_tries;
 	u32                          up_count;
+	u32                          link_state;
+	u32                          fec_mon_state;
 	int                          rtn;
 	s64                          attempt_time;
 	s64                          total_time;
@@ -314,14 +318,33 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 				"up callback (count = %d, attempt_time = %lldms, total_time = %lldms)",
 				up_count, attempt_time, total_time);
 
-		/* canceled */
+		sl_ctrl_link_fec_mon_limits_calc(ctrl_link);
+
 		spin_lock(&ctrl_link->state_lock);
-		if (ctrl_link->state != SL_LINK_STATE_STARTING) {
-			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback - not starting (ctrl_link_state = %u %s)",
-					ctrl_link->state, sl_link_state_str(ctrl_link->state));
+		link_state = ctrl_link->state;
+		if (link_state == SL_LINK_STATE_STARTING) {
+			rtn = sl_ctrl_link_fec_mon_start(ctrl_link);
+			if (rtn)
+				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "up callback fec mon start failed [%d]",
+						       rtn);
+
+			ctrl_link->state = SL_LINK_STATE_UP;
+		} else {
 			ctrl_link->is_canceled = true;
 			ctrl_link->state = SL_LINK_STATE_STOPPING;
-			spin_unlock(&ctrl_link->state_lock);
+		}
+		spin_unlock(&ctrl_link->state_lock);
+
+		rtn = sl_ctrl_link_fec_mon_state_get(ctrl_link, &fec_mon_state);
+		if (rtn)
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "up callback fec mon state get failed [%d]", rtn);
+
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback fec monitor (state = %u %s)",
+				fec_mon_state, sl_ctrl_link_fec_mon_state_str(fec_mon_state));
+
+		if (link_state != SL_LINK_STATE_STARTING) {
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up callback not starting (ctrl_link_state = %u %s)",
+					link_state, sl_link_state_str(link_state));
 
 			rtn = sl_ctrl_link_up_callback_cancel(ctrl_link, core_link_up_info.info_map);
 			if (rtn)
@@ -330,12 +353,6 @@ int sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *up_info)
 
 			return 0;
 		}
-
-		//TODO: SSHOTPFCMN-675 will shorten the work done here.
-		sl_ctrl_link_fec_mon_start(ctrl_link);
-
-		ctrl_link->state = SL_LINK_STATE_UP;
-		spin_unlock(&ctrl_link->state_lock);
 
 		rtn = sl_ctrl_link_up_notif_send(ctrl_link->ctrl_lgrp, ctrl_link, core_link_up_info.info_map,
 			core_link_up_info.speed, core_link_up_info.fec_mode, core_link_up_info.fec_type);
@@ -948,7 +965,7 @@ int sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		partner.ctrl_link = sl_ctrl_link_get(ldev_num, partner.lgrp_num, 0);
 		if (!partner.ctrl_link) {
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-					"link down partners - partner link not found (partner_lgrp = %u)",
+					"link down partners partner link not found (partner_lgrp = %u)",
 					partner.lgrp_num);
 			continue;
 		}
@@ -967,14 +984,14 @@ int sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num)
 
 			if (sl_ctrl_link_put(partner.ctrl_link))
 				sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-						"link down partners - link removed (link = 0x%p)",
+						"link down partners link removed (link = 0x%p)",
 						partner.ctrl_link);
 			return rtn;
 		}
 
 		if (sl_ctrl_link_put(partner.ctrl_link))
 			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-					"link down partners - link removed (link = 0x%p)",
+					"link down partners link removed (link = 0x%p)",
 					partner.ctrl_link);
 	}
 
