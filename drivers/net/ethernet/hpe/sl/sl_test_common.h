@@ -95,7 +95,9 @@ struct kobject *sl_test_ldev_kobj_get(u8 ldev_num);
 struct kobject *sl_test_lgrp_kobj_get(u8 ldev_num, u8 lgrp_num);
 
 struct sl_ctrl_ldev *sl_test_ctrl_ldev_get(u8 ldev_num);
+void                 sl_test_ctrl_ldev_put(struct sl_ctrl_ldev *ctrl_ldev);
 struct sl_ctrl_lgrp *sl_test_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num);
+void                 sl_test_ctrl_lgrp_put(struct sl_ctrl_lgrp *ctrl_lgrp);
 
 int sl_test_debugfs_create_opt(const char *name, umode_t mode, struct dentry *parent,
 	struct options_field_entry *value);

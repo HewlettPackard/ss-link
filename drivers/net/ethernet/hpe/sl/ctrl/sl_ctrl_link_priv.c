@@ -5,6 +5,7 @@
 
 #include <linux/hpe/sl/sl_link.h>
 
+#include "sl_asic.h"
 #include "sl_common.h"
 #include "base/sl_ctrl_log.h"
 #include "sl_media_lgrp.h"
@@ -513,26 +514,12 @@ int sl_ctrl_link_fault_start_callback(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	struct sl_ctrl_link *ctrl_link;
 
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
-	if (!ctrl_link) {
-		sl_ctrl_log_err(NULL, LOG_NAME,
-			"NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
-			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-				"fault start callback kref unavailable (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
-	}
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback");
 
 	sl_ctrl_link_state_set(ctrl_link, SL_LINK_STATE_STOPPING);
 	sl_ctrl_link_fec_mon_stop(ctrl_link);
-
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "fault start callback - link removed (link = 0x%p)", ctrl_link);
+	cancel_work_sync(&ctrl_link->fec_mon_timer_work);
 
 	return 0;
 }
@@ -681,12 +668,6 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 
 	ctrl_link = tag;
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-			"async_down kref_get_unless_zero failed (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
-	}
-
 	sl_ctrl_link_up_time_reset(ctrl_link);
 
 	sl_link_down_cause_map_with_info_str(core_cause_map, cause_str, sizeof(cause_str));
@@ -713,59 +694,50 @@ static int sl_ctrl_link_async_down_callback(void *tag, u32 core_state, u64 core_
 			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
 				"async down callback async_link_down_notif_send failed [%d]", rtn);
 
-		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	default:
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async down callback invalid (core_state = %u %s)",
 			core_state, sl_core_link_state_str(core_state));
 
-		sl_ctrl_link_put(ctrl_link);
 		return -EBADRQC;
 	}
 }
 
-int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down)
+int sl_ctrl_link_priv_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down)
 {
 	int  rtn;
 	u32  link_state;
 	char cause_str[SL_STR_MAP_STR_SIZE_DEFAULT];
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"async_down kref_get_unless_zero failed (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
-	}
-
 	sl_link_down_cause_map_with_info_str(down_cause_map, cause_str, sizeof(cause_str));
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
+			"priv_async_down (down_cause_map = 0x%llX %s)", down_cause_map, cause_str);
 
 	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
 	switch (link_state) {
 	case SL_LINK_STATE_UP_DOWN_REQ:
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already requested");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "priv_async_down already requested");
 		spin_unlock(&ctrl_link->state_lock);
-		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_UP:
 	case SL_LINK_STATE_AN:
 	case SL_LINK_STATE_STARTING:
-		if (!force_down && (ctrl_link->policy.options & SL_LINK_POLICY_OPT_LINK_DOWN_REQ)) {
+		if (!force_down &&
+		    (sl_ctrl_link_policy_options_get(ctrl_link) & SL_LINK_POLICY_OPT_LINK_DOWN_REQ)) {
 			ctrl_link->state = SL_LINK_STATE_UP_DOWN_REQ;
-			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down request link down");
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "priv_async_down request link down");
 			spin_unlock(&ctrl_link->state_lock);
 			rtn = sl_ctrl_link_down_req_notif_send(ctrl_link, down_cause_map, 0); // FIXME: info_map?
 			if (rtn)
 				sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME,
-						       "async_down ctrl_link_down_req_notif_send failed [%d]",
+						       "priv_async_down ctrl_link_down_req_notif_send failed [%d]",
 						       rtn);
-			sl_ctrl_link_put(ctrl_link);
 			return 0;
 		}
 		ctrl_link->state = SL_LINK_STATE_STOPPING;
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down stopping");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "priv_async_down stopping");
 		spin_unlock(&ctrl_link->state_lock);
 		sl_ctrl_link_fec_mon_stop(ctrl_link);
 
@@ -773,27 +745,22 @@ int sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, 
 					ctrl_link->num, sl_ctrl_link_async_down_callback, ctrl_link,
 					down_cause_map);
 		if (rtn) {
-			sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down core_link_down failed [%d]", rtn);
-			sl_ctrl_link_put(ctrl_link);
+			sl_ctrl_log_err(ctrl_link, LOG_NAME, "priv_async_down core_link_down failed [%d]", rtn);
 			return rtn;
 		}
-		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_DOWN:
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already down");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "priv_async_down already down");
 		spin_unlock(&ctrl_link->state_lock);
-		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	case SL_LINK_STATE_STOPPING:
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "async_down already stopping");
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "priv_async_down already stopping");
 		spin_unlock(&ctrl_link->state_lock);
-		sl_ctrl_link_put(ctrl_link);
 		return 0;
 	default:
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "async_down invalid state (link_state = %u %s)",
+		sl_ctrl_log_err(ctrl_link, LOG_NAME, "priv_async_down invalid state (link_state = %u %s)",
 				link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctrl_link->state_lock);
-		sl_ctrl_link_put(ctrl_link);
 		return -EBADRQC;
 	}
 }
@@ -927,15 +894,19 @@ int sl_ctrl_link_last_up_fail_cause_info_get(struct sl_ctrl_link *ctrl_link, u64
 int sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	int                  rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 	struct sl_ctrl_link *ctrl_link;
 	int                  port_num;
+	u32                  furcation;
 	struct {
 		u8                   lgrp_num;
+		u8                   link_num;
 		u32                  lgrp_options;
 		struct sl_ctrl_link *ctrl_link;
 	} partner;
 
 	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "link down partners");
 
@@ -961,38 +932,42 @@ int sl_ctrl_link_down_partners(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		if (partner.lgrp_options & SL_LGRP_CONFIG_OPT_TRANSCEIVER_LOOPBACK_MASK)
 			continue;
 
-		/* Link partners are assumed to be unfurcated. */
-		partner.ctrl_link = sl_ctrl_link_get(ldev_num, partner.lgrp_num, 0);
-		if (!partner.ctrl_link) {
-			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-					"link down partners partner link not found (partner_lgrp = %u)",
-					partner.lgrp_num);
-			continue;
-		}
+		rtn = sl_ctrl_data_lgrp_furcation_get(ctrl_lgrp, &furcation);
+		if (rtn)
+			sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "lgrp_furcation_get failed [%d]", rtn);
 
-		if (!sl_ctrl_link_kref_get_unless_zero(partner.ctrl_link)) {
-			sl_ctrl_log_err(ctrl_link, LOG_NAME,
-					"link down partners bad ref (partner_ctrl_link = 0x%p)",
-					partner.ctrl_link);
-			return -EBADRQC;
-		}
+		for (partner.link_num = 0; partner.link_num < SL_ASIC_MAX_LINKS; ++partner.link_num) {
+			if (!(furcation & BIT(partner.link_num)))
+				continue;
 
-		rtn = sl_ctrl_link_async_down(partner.ctrl_link, SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_MAP, false);
-		if (rtn) {
-			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
-					      "partner down failed (lgrp_num = %u) [%d]", partner.lgrp_num, rtn);
+			partner.ctrl_link = sl_ctrl_link_get_ref(ldev_num, partner.lgrp_num, partner.link_num);
+			if (!partner.ctrl_link) {
+				sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+						"link down partners partner link not found (partner_lgrp = %u, link_num = %u)",
+						partner.lgrp_num, partner.link_num);
+				continue;
+			}
 
-			if (sl_ctrl_link_put(partner.ctrl_link))
+			rtn = sl_ctrl_link_priv_async_down(partner.ctrl_link,
+							   SL_LINK_DOWN_CAUSE_PARTNER_LOOPBACK_ON_MAP, false);
+			if (rtn) {
+				sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
+						      "link down partners async down failed "
+						      "(lgrp_num = %u, link_num = %u) [%d]",
+						      partner.lgrp_num, partner.link_num, rtn);
+
+				if (sl_ctrl_link_put_ref(partner.ctrl_link))
+					sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+							"link down partners link removed (link = 0x%p)",
+							partner.ctrl_link);
+				return rtn;
+			}
+
+			if (sl_ctrl_link_put_ref(partner.ctrl_link))
 				sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 						"link down partners link removed (link = 0x%p)",
 						partner.ctrl_link);
-			return rtn;
 		}
-
-		if (sl_ctrl_link_put(partner.ctrl_link))
-			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-					"link down partners link removed (link = 0x%p)",
-					partner.ctrl_link);
 	}
 
 	return 0;

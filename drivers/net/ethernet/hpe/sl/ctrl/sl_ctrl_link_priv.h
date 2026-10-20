@@ -26,7 +26,7 @@ int  sl_ctrl_link_fault_callback(void *tag, u32 core_state, u64 core_cause_map, 
 int  sl_ctrl_link_an_lp_caps_get_callback(void *tag, struct sl_link_caps *caps, u32 result);
 int  sl_ctrl_link_up_callback(void *tag, struct sl_core_link_up_info *core_link_up_info);
 int  sl_ctrl_link_down_callback(void *tag, u32 core_state, u64 core_cause_map, u64 core_info_map);
-int  sl_ctrl_link_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down);
+int  sl_ctrl_link_priv_async_down(struct sl_ctrl_link *ctrl_link, u64 down_cause_map, bool force_down);
 
 void sl_ctrl_link_up_time_start(struct sl_ctrl_link *ctrl_link);
 void sl_ctrl_link_up_time_stop(struct sl_ctrl_link *ctrl_link);

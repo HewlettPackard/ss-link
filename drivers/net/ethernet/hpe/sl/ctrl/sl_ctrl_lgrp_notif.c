@@ -37,16 +37,9 @@ int sl_ctrl_lgrp_notif_callback_reg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t ca
 	u8                    tries;
 	u8                    counter;
 
-	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "notif callback reg NULL ctrl_lgrp");
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_lgrp_kref_get_unless_zero(ctrl_lgrp)) {
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME,
-				"notif callback reg kref_get_unless_zero failed (ctrl_lgrp = 0x%p)",
-				ctrl_lgrp);
 		return -EBADRQC;
 	}
 
@@ -113,9 +106,7 @@ wait_idle:
 
 	rtn = 0;
 out:
-	if (sl_ctrl_lgrp_put(ctrl_lgrp))
-		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
-				"notif callback reg lgrp removed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 
 	return rtn;
 }
@@ -128,14 +119,9 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 	u8                    reg_idx;
 	u8                    counter;
 
-	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "NULL ctrl_lgrp");
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_lgrp_kref_get_unless_zero(ctrl_lgrp)) {
-		sl_ctrl_log_err(ctrl_lgrp, LOG_NAME, "kref_get_unless_zero failed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
 		return -EBADRQC;
 	}
 
@@ -175,9 +161,7 @@ int sl_ctrl_lgrp_notif_callback_unreg(u8 ldev_num, u8 lgrp_num, sl_lgrp_notif_t 
 	rtn = 0;
 
 out:
-	if (sl_ctrl_lgrp_put(ctrl_lgrp))
-		sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
-			"notif callback unreg - lgrp removed (ctrl_lgrp = 0x%p)", ctrl_lgrp);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 
 	return rtn;
 }

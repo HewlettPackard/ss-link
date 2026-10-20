@@ -3,6 +3,7 @@
 
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
+#include <linux/bitmap.h>
 #include <linux/slab.h>
 #include <linux/completion.h>
 
@@ -31,33 +32,51 @@
 
 static struct sl_ctrl_link *ctrl_links[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(ctrl_links_lock);
+static DECLARE_BITMAP(ctrl_links_busy, SL_ASIC_MAX_LDEVS * SL_ASIC_MAX_LGRPS * SL_ASIC_MAX_LINKS);
+
+static inline unsigned int sl_ctrl_link_busy_bit(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	return (ldev_num * SL_ASIC_MAX_LGRPS + lgrp_num) * SL_ASIC_MAX_LINKS + link_num;
+}
 
 int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent)
 {
-	int                  rtn;
-	struct sl_ctrl_lgrp  *ctrl_lgrp;
+	int                 rtn;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "missing lgrp (lgrp_num = %u)", lgrp_num);
 		return -EBADRQC;
 	}
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
-	if (ctrl_link) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "new exists (link = 0x%p)", ctrl_link);
+	if (test_and_set_bit_lock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"link_new busy (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 		return -EBADRQC;
 	}
 
-	ctrl_link = kzalloc(sizeof(struct sl_ctrl_link), GFP_KERNEL);
-	if (!ctrl_link)
-		return -ENOMEM;
+	if (sl_ctrl_link_get(ldev_num, lgrp_num, link_num)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"link_new exists (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		rtn = -EBADRQC;
+		goto out_unlock;
+	}
 
-	ctrl_link->magic    = SL_CTRL_LINK_MAGIC;
-	ctrl_link->ver      = SL_CTRL_LINK_VER;
-	ctrl_link->num      = link_num;
-	ctrl_link->ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	ctrl_link = kzalloc(sizeof(struct sl_ctrl_link), GFP_KERNEL);
+	if (!ctrl_link) {
+		rtn = -ENOMEM;
+		goto out_unlock;
+	}
+
+	ctrl_link->magic     = SL_CTRL_LINK_MAGIC;
+	ctrl_link->ver       = SL_CTRL_LINK_VER;
+	ctrl_link->num       = link_num;
+	ctrl_link->ctrl_lgrp = ctrl_lgrp;
 
 	kref_init(&ctrl_link->ref_cnt);
 	init_completion(&ctrl_link->del_complete);
@@ -130,6 +149,8 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 	spin_unlock(&ctrl_links_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "new (link = 0x%p)", ctrl_link);
+	clear_bit_unlock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 
 	return 0;
 
@@ -143,6 +164,9 @@ out_link_counters_del:
 	sl_ctrl_link_counters_del(ctrl_link);
 out_free:
 	kfree(ctrl_link);
+out_unlock:
+	clear_bit_unlock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 	return rtn;
 }
 
@@ -219,17 +243,24 @@ static void sl_ctrl_link_down_wait(struct sl_ctrl_link *ctrl_link)
 static void sl_ctrl_link_release(struct kref *kref)
 {
 	struct sl_ctrl_link *ctrl_link;
-	u32                  link_state;
-	u8                   ldev_num;
-	u8                   lgrp_num;
-	u8                   link_num;
 
 	ctrl_link = container_of(kref, struct sl_ctrl_link, ref_cnt);
+
+	complete(&ctrl_link->del_complete);
+}
+
+static void sl_ctrl_link_remove(struct sl_ctrl_link *ctrl_link)
+{
+	u32 link_state;
+	u8  ldev_num;
+	u8  lgrp_num;
+	u8  link_num;
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "remove (link = 0x%p)", ctrl_link);
+
 	ldev_num = ctrl_link->ctrl_lgrp->ctrl_ldev->num;
 	lgrp_num = ctrl_link->ctrl_lgrp->num;
 	link_num = ctrl_link->num;
-
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "release (link = 0x%p)", ctrl_link);
 
 	spin_lock(&ctrl_link->state_lock);
 	link_state = ctrl_link->state;
@@ -261,9 +292,10 @@ static void sl_ctrl_link_release(struct kref *kref)
 	case SL_LINK_STATE_INVALID:
 	default:
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "release invalid state (link_state = %u %s)",
-			link_state, sl_link_state_str(link_state));
+				link_state, sl_link_state_str(link_state));
 		spin_unlock(&ctrl_link->state_lock);
-		return;
+		/* force removal */
+		break;
 	}
 
 	/* Must delete sysfs first to guarantee nobody is reading */
@@ -279,12 +311,10 @@ static void sl_ctrl_link_release(struct kref *kref)
 	ctrl_links[ldev_num][lgrp_num][link_num] = NULL;
 	spin_unlock(&ctrl_links_lock);
 
-	complete_all(&ctrl_link->del_complete);
-
 	kfree(ctrl_link);
 }
 
-int sl_ctrl_link_put(struct sl_ctrl_link *ctrl_link)
+int sl_ctrl_link_put_ref(struct sl_ctrl_link *ctrl_link)
 {
 	return kref_put(&ctrl_link->ref_cnt, sl_ctrl_link_release);
 }
@@ -292,39 +322,52 @@ int sl_ctrl_link_put(struct sl_ctrl_link *ctrl_link)
 int sl_ctrl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	struct sl_ctrl_link *ctrl_link;
-	unsigned long        timeleft;
+	int                  rtn;
+	unsigned long        timeleft_jiffies;
 
 	sl_ctrl_log_dbg(NULL, LOG_NAME, "link del (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 		ldev_num, lgrp_num, link_num);
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	if (test_and_set_bit_lock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"del busy (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
+		return -EBADRQC;
+	}
+
+	spin_lock(&ctrl_links_lock);
+	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
+	spin_unlock(&ctrl_links_lock);
 	if (!ctrl_link) {
 		sl_ctrl_log_err_trace(NULL, LOG_NAME,
 			"link del link not found (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
+		rtn = -EBADRQC;
+		goto out;
 	}
 
-	/* Release occurs on the last caller. Block until complete. */
-	if (!sl_ctrl_link_put(ctrl_link)) {
-		timeleft = wait_for_completion_timeout(&ctrl_link->del_complete,
-			msecs_to_jiffies(SL_CTRL_LINK_DEL_WAIT_TIMEOUT_MS));
+	kref_put(&ctrl_link->ref_cnt, sl_ctrl_link_release);
 
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "del completion_timeout (timeleft = %lums)", timeleft);
+	timeleft_jiffies = wait_for_completion_timeout(&ctrl_link->del_complete,
+						       msecs_to_jiffies(SL_CTRL_LINK_DEL_WAIT_TIMEOUT_MS));
+	if (!timeleft_jiffies)
+		sl_ctrl_log_err(ctrl_link, LOG_NAME,
+				"del timed out, forcing remove (ref_cnt = %u)",
+				kref_read(&ctrl_link->ref_cnt));
 
-		if (timeleft == 0) {
-			sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"del completion_timeout (ctrl_link = 0x%p)", ctrl_link);
-			return -ETIMEDOUT;
-		}
-	}
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
+			"waited for refs for %d ms (timeleft_jiffies = %lu)",
+			SL_CTRL_LINK_DEL_WAIT_TIMEOUT_MS - jiffies_to_msecs(timeleft_jiffies), timeleft_jiffies);
 
-	return 0;
-}
+	sl_ctrl_link_remove(ctrl_link);
 
-bool sl_ctrl_link_kref_get_unless_zero(struct sl_ctrl_link *ctrl_link)
-{
-	return (kref_get_unless_zero(&ctrl_link->ref_cnt) != 0);
+	rtn = 0;
+out:
+	clear_bit_unlock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy);
+
+	sl_ctrl_log_dbg(NULL, LOG_NAME, "del complete (link = 0x%p)", ctrl_link);
+
+	return rtn;
 }
 
 struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -335,7 +378,24 @@ struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
 	spin_unlock(&ctrl_links_lock);
 
-	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "get (link = 0x%p)", ctrl_link);
+	return ctrl_link;
+}
+
+struct sl_ctrl_link *sl_ctrl_link_get_ref(u8 ldev_num, u8 lgrp_num, u8 link_num)
+{
+	struct sl_ctrl_link *ctrl_link;
+
+	spin_lock(&ctrl_links_lock);
+	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
+
+	/* If we are busy we are deleting/creating the object */
+	if (ctrl_link && (test_bit(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy) ||
+	    !kref_get_unless_zero(&ctrl_link->ref_cnt)))
+		ctrl_link = NULL;
+
+	spin_unlock(&ctrl_links_lock);
+
+	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "get ref (link = 0x%p)", ctrl_link);
 
 	return ctrl_link;
 }
@@ -424,7 +484,7 @@ static int sl_ctrl_link_config_set_cmd(struct sl_ctrl_link *ctrl_link, struct sl
 	ctrl_link->config = *link_config;
 	spin_unlock(&ctrl_link->config_lock);
 
-	if (ctrl_link->config.link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
+	if (link_config->link_up_tries_max == SL_LINK_INFINITE_UP_TRIES)
 		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "link up tries set to infinite");
 
 	return 0;
@@ -437,17 +497,11 @@ int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	struct sl_ctrl_link *ctrl_link;
 	u32                  link_state;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"config set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "config set link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -484,8 +538,7 @@ int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	}
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "config - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -499,17 +552,11 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	struct sl_ctrl_link        *ctrl_link;
 	struct sl_core_link_policy  core_link_policy;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"policy set NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "policy set link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -587,8 +634,7 @@ int sl_ctrl_link_policy_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	rtn = 0;
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "policy set link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -599,17 +645,11 @@ int sl_ctrl_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"caps get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "caps get link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -621,8 +661,7 @@ int sl_ctrl_link_an_lp_caps_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 			"core_link_an_lp_caps_get failed [%d]", rtn);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an lp caps get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -632,17 +671,11 @@ int sl_ctrl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"caps stop NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "caps stop link ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -653,8 +686,7 @@ int sl_ctrl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 			"core_link_an_lp_caps_stop failed [%d]", rtn);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an lp caps stop - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -696,17 +728,11 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	struct sl_ctrl_link *ctrl_link;
 	u32                  link_state;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"link up NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "link up ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -753,8 +779,7 @@ int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "up - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -765,17 +790,11 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	struct sl_ctrl_link *ctrl_link;
 	u32                  link_state;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_dbg(NULL, LOG_NAME,
 			"link down NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "link down ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -830,8 +849,7 @@ int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "down - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -870,7 +888,7 @@ static int sl_ctrl_link_reset_cmd(struct sl_ctrl_link *ctrl_link)
 		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "core_mac_rx_stop failed [%d]", rtn);
 
 	rtn = sl_core_link_down(ldev_num, lgrp_num, link_num, sl_ctrl_link_down_callback,
-		ctrl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
+				ctrl_link, SL_LINK_DOWN_CAUSE_COMMAND_MAP);
 	if (rtn)
 		sl_ctrl_log_warn(ctrl_link, LOG_NAME, "core_link_down failed [%d]", rtn);
 
@@ -893,17 +911,11 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	struct sl_ctrl_link *ctrl_link;
 	u32                  link_state;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"link reset NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "link reset ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -950,8 +962,7 @@ int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	}
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "reset - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -961,18 +972,11 @@ int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 {
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 				"up time get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 				ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"up time get link ref unavailable (ctrl_link = 0x%p)",
-				ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -999,9 +1003,7 @@ int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			"up time get (attempt_time = %lldms, total_time = %lldms, up_time = %lldms)",
 			*attempt_time, *total_time, *up_time);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-				"up time get link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return 0;
 }
@@ -1010,18 +1012,11 @@ int sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attemp
 {
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 				"up count get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 				ldev_num, lgrp_num, link_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"up count get link ref unavailable (ctrl_link = 0x%p)",
-				ctrl_link);
 		return -EBADRQC;
 	}
 
@@ -1032,9 +1027,7 @@ int sl_ctrl_link_up_count_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *attemp
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"up count get (attempt_count = %u)", *attempt_count);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-				"up count get link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return 0;
 }
@@ -1045,17 +1038,12 @@ int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state
 	struct sl_ctrl_link *ctrl_link;
 
 	*state = SL_LINK_STATE_INVALID;
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_dbg(NULL, LOG_NAME,
 			"state get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 			ldev_num, lgrp_num, link_num);
 		return 0;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "state get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
 	}
 
 	rtn = sl_ctrl_data_link_state_get(ctrl_link, state);
@@ -1069,8 +1057,7 @@ int sl_ctrl_link_state_get_cmd(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *state
 		*state, sl_link_state_str(*state));
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "state get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return 0;
 }
@@ -1079,7 +1066,7 @@ int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32
 {
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"an lp caps state get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
@@ -1087,16 +1074,9 @@ int sl_ctrl_link_an_lp_caps_state_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32
 		return -EINVAL;
 	}
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"an lp caps state get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
-	}
-
 	*state = sl_core_link_an_lp_caps_state_get(ldev_num, lgrp_num, link_num);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an lp caps state get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return 0;
 }
@@ -1106,7 +1086,7 @@ int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *f
 	int    rtn;
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 				"an fail cause get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
@@ -1114,16 +1094,9 @@ int sl_ctrl_link_an_fail_cause_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u32 *f
 		return -EBADRQC;
 	}
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"an fail cause get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
-	}
-
 	rtn = sl_core_link_an_fail_cause_get(ldev_num, lgrp_num, link_num, fail_cause, fail_time);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "an fail cause get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }
@@ -1142,7 +1115,7 @@ int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_m
 {
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 			"info map get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
@@ -1150,16 +1123,9 @@ int sl_ctrl_link_info_map_get(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 *info_m
 		return -EBADRQC;
 	}
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME, "info map get ref unavailable (ctrl_link = 0x%p)",
-			ctrl_link);
-		return -EBADRQC;
-	}
-
 	*info_map = sl_core_link_info_map_get(ldev_num, lgrp_num, link_num);
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "info map get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return 0;
 }
@@ -1169,7 +1135,7 @@ int sl_ctrl_link_is_pml_rec_running(u8 ldev_num, u8 lgrp_num, u8 link_num, bool 
 	int                  rtn;
 	struct sl_ctrl_link *ctrl_link;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(NULL, LOG_NAME,
 				"pml rec running get NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
@@ -1177,17 +1143,39 @@ int sl_ctrl_link_is_pml_rec_running(u8 ldev_num, u8 lgrp_num, u8 link_num, bool 
 		return -EBADRQC;
 	}
 
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"pml rec running get kref unavailable (ctrl_link = 0x%p)", ctrl_link);
+	rtn = sl_core_link_is_pml_rec_running_get(ldev_num, lgrp_num, link_num, is_pml_rec_running);
+	if (rtn)
+		sl_ctrl_log_warn_trace(ctrl_link, LOG_NAME, "pml rec running get failed (rtn = %d)", rtn);
+
+	sl_ctrl_link_put_ref(ctrl_link);
+
+	return rtn;
+}
+
+int sl_ctrl_link_async_down(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 down_cause_map, bool force_down)
+{
+	int                  rtn;
+	struct sl_ctrl_link *ctrl_link;
+
+	sl_ctrl_log_dbg(NULL, LOG_NAME, "async down (down_cause_map = 0x%llX, force_down = %d)",
+			down_cause_map, force_down);
+
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
+	if (!ctrl_link) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"async down NULL link (ldev_num = %u, lgrp_num = %u, link_num = %u)",
+				ldev_num, lgrp_num, link_num);
 		return -EBADRQC;
 	}
 
-	rtn = sl_core_link_is_pml_rec_running_get(ldev_num, lgrp_num, link_num, is_pml_rec_running);
+	rtn = sl_ctrl_link_priv_async_down(ctrl_link, down_cause_map, force_down);
+	if (rtn) {
+		sl_ctrl_log_err_trace(ctrl_link, LOG_NAME, "async down failed (rtn = %d)", rtn);
+		sl_ctrl_link_put_ref(ctrl_link);
+		return rtn;
+	}
 
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-				"pml rec running get - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
-	return rtn;
+	return 0;
 }

@@ -31,16 +31,10 @@ int sl_ctrl_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool u
 	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
 	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
 
-	ctrl_link = sl_ctrl_link_get(ldev_num, lgrp_num, link_num);
+	ctrl_link = sl_ctrl_link_get_ref(ldev_num, lgrp_num, link_num);
 	if (!ctrl_link) {
 		sl_ctrl_log_err(ctrl_link, LOG_NAME, "ctrl_link_get failed");
 		return -EINVAL;
-	}
-
-	if (!sl_ctrl_link_kref_get_unless_zero(ctrl_link)) {
-		sl_ctrl_log_err(ctrl_link, LOG_NAME,
-				"cntrs use set kref unavailable (ctrl_link = 0x%p)", ctrl_link);
-		return -EBADRQC;
 	}
 
 	sl_core_test_fec_cntrs_use_set(ldev_num, lgrp_num, link_num, use_test_cntrs);
@@ -57,8 +51,7 @@ int sl_ctrl_test_fec_cntrs_use_set(u8 ldev_num, u8 lgrp_num, u8 link_num, bool u
 	sl_ctrl_link_fec_data_store(ctrl_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
 
 out:
-	if (sl_ctrl_link_put(ctrl_link))
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "cntrs use set - link removed (link = 0x%p)", ctrl_link);
+	sl_ctrl_link_put_ref(ctrl_link);
 
 	return rtn;
 }

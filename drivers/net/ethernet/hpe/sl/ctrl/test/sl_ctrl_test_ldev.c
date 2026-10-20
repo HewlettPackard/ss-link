@@ -10,16 +10,24 @@
 struct kobject *sl_ctrl_test_ldev_kobj_get(u8 ldev_num)
 {
 	struct sl_ctrl_ldev *ctrl_ldev;
+	struct kobject      *parent_kobj;
 
-	ctrl_ldev = sl_ctrl_ldev_get(ldev_num);
-
+	ctrl_ldev = sl_ctrl_ldev_get_ref(ldev_num);
 	if (!ctrl_ldev)
 		return NULL;
 
-	return ctrl_ldev->parent_kobj;
+	parent_kobj = ctrl_ldev->parent_kobj;
+	sl_ctrl_ldev_put_ref(ctrl_ldev);
+
+	return parent_kobj;
 }
 
 struct sl_ctrl_ldev *sl_ctrl_test_ldev_get(u8 ldev_num)
 {
-	return sl_ctrl_ldev_get(ldev_num);
+	return sl_ctrl_ldev_get_ref(ldev_num);
+}
+
+void sl_ctrl_test_ldev_put_ref(struct sl_ctrl_ldev *ctrl_ldev)
+{
+	sl_ctrl_ldev_put_ref(ctrl_ldev);
 }

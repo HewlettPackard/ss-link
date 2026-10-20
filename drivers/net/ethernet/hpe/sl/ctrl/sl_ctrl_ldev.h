@@ -68,7 +68,7 @@ struct sl_ctrl_ldev {
 	struct sl_ctrl_ldev_cable_hpe_pn_kobj *cable_hpe_pns_kobj;
 
 	struct kref                            ref_cnt;
-	struct completion                      del_complete;
+	struct completion                      no_refs;
 };
 
 int                  sl_ctrl_ldev_new(u8 ldev_num,
@@ -76,9 +76,9 @@ int                  sl_ctrl_ldev_new(u8 ldev_num,
 				      struct sl_ldev_attr *ldev_attr);
 int                  sl_ctrl_ldev_serdes_init(u8 ldev_num);
 int                  sl_ctrl_ldev_del(u8 ldev_num);
-bool                 sl_ctrl_ldev_kref_get_unless_zero(struct sl_ctrl_ldev *ctrl_ldev);
-int                  sl_ctrl_ldev_put(struct sl_ctrl_ldev *ctrl_ldev);
-struct sl_ctrl_ldev *sl_ctrl_ldev_get(u8 ldev_num);
+
+int                  sl_ctrl_ldev_put_ref(struct sl_ctrl_ldev *ctrl_ldev);
+struct sl_ctrl_ldev *sl_ctrl_ldev_get_ref(u8 ldev_num);
 
 void                 sl_ctrl_ldev_exit(void);
 

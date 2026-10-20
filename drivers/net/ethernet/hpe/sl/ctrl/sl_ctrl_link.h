@@ -123,11 +123,11 @@ struct sl_ctrl_link {
 };
 
 int		     sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent);
-int                  sl_ctrl_link_put(struct sl_ctrl_link *ctrl_link);
 int		     sl_ctrl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num);
 struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
-bool                 sl_ctrl_link_kref_get_unless_zero(struct sl_ctrl_link *ctrl_link);
-struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num);
+
+int                  sl_ctrl_link_put_ref(struct sl_ctrl_link *ctrl_link);
+struct sl_ctrl_link *sl_ctrl_link_get_ref(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_config_set(u8 ldev_num, u8 lgrp_num, u8 link_num,
 			    struct sl_link_config *link_config);
@@ -140,6 +140,7 @@ int sl_ctrl_link_an_lp_caps_stop(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_up(u8 ldev_num, u8 lgrp_num, u8 link_num);
 int sl_ctrl_link_down(u8 ldev_num, u8 lgrp_num, u8 link_num);
+int sl_ctrl_link_async_down(u8 ldev_num, u8 lgrp_num, u8 link_num, u64 down_cause_map, bool force_down);
 int sl_ctrl_link_reset(u8 ldev_num, u8 lgrp_num, u8 link_num);
 
 int sl_ctrl_link_up_time_get(u8 ldev_num, u8 lgrp_num, u8 link_num,

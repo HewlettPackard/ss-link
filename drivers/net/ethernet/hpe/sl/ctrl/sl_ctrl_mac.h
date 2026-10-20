@@ -28,12 +28,14 @@ struct sl_ctrl_mac {
 	struct kobject              counters_kobj;
 
 	struct kref                 ref_cnt;
-	struct completion           del_complete;
+	struct completion           no_refs;
 };
 
 int		    sl_ctrl_mac_new(u8 ldev_num, u8 lgrp_num, u8 mac_num, struct kobject *sysfs_parent);
 int		    sl_ctrl_mac_del(u8 ldev_num, u8 lgrp_num, u8 mac_num);
-struct sl_ctrl_mac *sl_ctrl_mac_get(u8 ldev_num, u8 lgrp_num, u8 mac_num);
+
+int                 sl_ctrl_mac_put_ref(struct sl_ctrl_mac *ctrl_mac);
+struct sl_ctrl_mac *sl_ctrl_mac_get_ref(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 
 int sl_ctrl_mac_tx_start(u8 ldev_num, u8 lgrp_num, u8 mac_num);
 int sl_ctrl_mac_tx_stop(u8 ldev_num, u8 lgrp_num, u8 mac_num);

@@ -7,6 +7,7 @@
 #include "sl_ctrl_link.h"
 #include "data/sl_core_data_link.h"
 #include "data/sl_ctrl_data_link.h"
+#include "sl_core_link_fec.h"
 
 #define LOG_NAME SL_CTRL_LINK_LOG_NAME
 
@@ -42,9 +43,9 @@ int sl_ctrl_data_link_state_get(struct sl_ctrl_link *ctrl_link, u32 *link_state)
 
 int sl_ctrl_data_link_fec_up_settle_wait_ms_get(struct sl_ctrl_link *ctrl_link, u32 *fec_up_settle_wait_ms)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*fec_up_settle_wait_ms = ctrl_link->config.fec_up_settle_wait_ms;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (fec_up_settle_wait_ms = %d)", *fec_up_settle_wait_ms);
@@ -54,9 +55,9 @@ int sl_ctrl_data_link_fec_up_settle_wait_ms_get(struct sl_ctrl_link *ctrl_link, 
 
 int sl_ctrl_data_link_fec_up_check_wait_ms_get(struct sl_ctrl_link *ctrl_link, s32 *fec_up_check_wait_ms)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*fec_up_check_wait_ms = ctrl_link->config.fec_up_check_wait_ms;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (fec_up_check_wait_ms = %d)", *fec_up_check_wait_ms);
@@ -66,9 +67,9 @@ int sl_ctrl_data_link_fec_up_check_wait_ms_get(struct sl_ctrl_link *ctrl_link, s
 
 int sl_ctrl_data_link_fec_up_ucw_limit_get(struct sl_ctrl_link *ctrl_link, s32 *fec_up_ucw_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*fec_up_ucw_limit = ctrl_link->config.fec_up_ucw_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (fec_up_ucw_limit = %d)", *fec_up_ucw_limit);
@@ -78,9 +79,9 @@ int sl_ctrl_data_link_fec_up_ucw_limit_get(struct sl_ctrl_link *ctrl_link, s32 *
 
 int sl_ctrl_data_link_fec_up_ccw_limit_get(struct sl_ctrl_link *ctrl_link, s32 *fec_up_ccw_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*fec_up_ccw_limit = ctrl_link->config.fec_up_ccw_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (fec_up_ccw_limit = %d)", *fec_up_ccw_limit);
@@ -90,9 +91,9 @@ int sl_ctrl_data_link_fec_up_ccw_limit_get(struct sl_ctrl_link *ctrl_link, s32 *
 
 int sl_ctrl_data_link_policy_fec_mon_period_ms_get(struct sl_ctrl_link *ctrl_link, s32 *mon_period_ms)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*mon_period_ms = ctrl_link->policy.fec_mon_period_ms;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (mon_period_ms = %d)", *mon_period_ms);
@@ -102,9 +103,9 @@ int sl_ctrl_data_link_policy_fec_mon_period_ms_get(struct sl_ctrl_link *ctrl_lin
 
 int sl_ctrl_data_link_policy_fec_mon_ucw_down_limit_get(struct sl_ctrl_link *ctrl_link, s32 *mon_ucw_down_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*mon_ucw_down_limit = ctrl_link->policy.fec_mon_ucw_down_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (mon_ucw_down_limit = %d)", *mon_ucw_down_limit);
@@ -114,9 +115,9 @@ int sl_ctrl_data_link_policy_fec_mon_ucw_down_limit_get(struct sl_ctrl_link *ctr
 
 int sl_ctrl_data_link_policy_fec_mon_ucw_warn_limit_get(struct sl_ctrl_link *ctrl_link, s32 *mon_ucw_warn_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*mon_ucw_warn_limit = ctrl_link->policy.fec_mon_ucw_warn_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (mon_ucw_warn_limit = %d)", *mon_ucw_warn_limit);
@@ -126,9 +127,9 @@ int sl_ctrl_data_link_policy_fec_mon_ucw_warn_limit_get(struct sl_ctrl_link *ctr
 
 int sl_ctrl_data_link_policy_fec_mon_ccw_down_limit_get(struct sl_ctrl_link *ctrl_link, s32 *mon_ccw_down_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*mon_ccw_down_limit = ctrl_link->policy.fec_mon_ccw_down_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (mon_ccw_down_limit = %d)", *mon_ccw_down_limit);
@@ -138,9 +139,9 @@ int sl_ctrl_data_link_policy_fec_mon_ccw_down_limit_get(struct sl_ctrl_link *ctr
 
 int sl_ctrl_data_link_policy_fec_mon_ccw_warn_limit_get(struct sl_ctrl_link *ctrl_link, s32 *mon_ccw_warn_limit)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*mon_ccw_warn_limit = ctrl_link->policy.fec_mon_ccw_warn_limit;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (mon_ccw_warn_limit = %d)", *mon_ccw_warn_limit);
@@ -350,9 +351,9 @@ int sl_ctrl_data_link_fec_up_cache_tail_cntr_get(struct sl_ctrl_link *ctrl_link,
 
 int sl_ctrl_data_link_policy_options_get(struct sl_ctrl_link *ctrl_link, u32 *options)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*options = ctrl_link->policy.options;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (options = 0x%08x)", *options);
@@ -362,9 +363,9 @@ int sl_ctrl_data_link_policy_options_get(struct sl_ctrl_link *ctrl_link, u32 *op
 
 int sl_ctrl_data_link_up_timeout_ms_get(struct sl_ctrl_link *ctrl_link, u32 *link_up_timeout_ms)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*link_up_timeout_ms = ctrl_link->config.link_up_timeout_ms;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (link_up_timeout_ms = %d)", *link_up_timeout_ms);
@@ -374,9 +375,9 @@ int sl_ctrl_data_link_up_timeout_ms_get(struct sl_ctrl_link *ctrl_link, u32 *lin
 
 int sl_ctrl_data_link_up_tries_max_get(struct sl_ctrl_link *ctrl_link, u32 *link_up_tries_max)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*link_up_tries_max = ctrl_link->config.link_up_tries_max;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (link_up_tries_max = %d)", *link_up_tries_max);
@@ -386,9 +387,9 @@ int sl_ctrl_data_link_up_tries_max_get(struct sl_ctrl_link *ctrl_link, u32 *link
 
 int sl_ctrl_data_link_config_options_get(struct sl_ctrl_link *ctrl_link, u32 *options)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*options = ctrl_link->config.options;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (options = 0x%08x)", *options);
@@ -398,9 +399,9 @@ int sl_ctrl_data_link_config_options_get(struct sl_ctrl_link *ctrl_link, u32 *op
 
 int sl_ctrl_data_link_pause_map_get(struct sl_ctrl_link *ctrl_link, u32 *pause_map)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*pause_map = ctrl_link->config.pause_map;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (pause_map = 0x%x)", *pause_map);
@@ -410,9 +411,9 @@ int sl_ctrl_data_link_pause_map_get(struct sl_ctrl_link *ctrl_link, u32 *pause_m
 
 int sl_ctrl_data_link_hpe_map_get(struct sl_ctrl_link *ctrl_link, u32 *hpe_map)
 {
-	spin_lock(&ctrl_link->data_lock);
+	spin_lock(&ctrl_link->config_lock);
 	*hpe_map = ctrl_link->config.hpe_map;
-	spin_unlock(&ctrl_link->data_lock);
+	spin_unlock(&ctrl_link->config_lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 			"get (hpe_map = 0x%x)", *hpe_map);

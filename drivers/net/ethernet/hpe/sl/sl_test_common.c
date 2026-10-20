@@ -218,11 +218,23 @@ struct sl_ctrl_ldev *sl_test_ctrl_ldev_get(u8 ldev_num)
 }
 EXPORT_SYMBOL(sl_test_ctrl_ldev_get);
 
+void sl_test_ctrl_ldev_put(struct sl_ctrl_ldev *ctrl_ldev)
+{
+	sl_ctrl_test_ldev_put_ref(ctrl_ldev);
+}
+EXPORT_SYMBOL(sl_test_ctrl_ldev_put);
+
 struct sl_ctrl_lgrp *sl_test_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
 	return sl_ctrl_test_lgrp_get(ldev_num, lgrp_num);
 }
 EXPORT_SYMBOL(sl_test_ctrl_lgrp_get);
+
+void sl_test_ctrl_lgrp_put(struct sl_ctrl_lgrp *ctrl_lgrp)
+{
+	sl_ctrl_test_lgrp_put_ref(ctrl_lgrp);
+}
+EXPORT_SYMBOL(sl_test_ctrl_lgrp_put);
 
 static ssize_t sl_test_option_read(struct file *f, char __user *buf, size_t size, loff_t *pos)
 {

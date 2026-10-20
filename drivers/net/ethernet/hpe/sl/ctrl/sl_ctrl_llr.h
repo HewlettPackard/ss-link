@@ -54,6 +54,9 @@ int		    sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *s
 int		    sl_ctrl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 struct sl_ctrl_llr *sl_ctrl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num);
 
+int                 sl_ctrl_llr_put_ref(struct sl_ctrl_llr *ctrl_llr);
+struct sl_ctrl_llr *sl_ctrl_llr_get_ref(u8 ldev_num, u8 lgrp_num, u8 llr_num);
+
 int sl_ctrl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_config *llr_config);
 int sl_ctrl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_policy *llr_policy);
 

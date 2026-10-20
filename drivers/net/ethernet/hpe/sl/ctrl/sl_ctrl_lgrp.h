@@ -80,9 +80,10 @@ struct sl_ctrl_lgrp {
 
 int		     sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent);
 int		     sl_ctrl_lgrp_del(u8 ldev_num, u8 lgrp_num);
-bool		     sl_ctrl_lgrp_kref_get_unless_zero(struct sl_ctrl_lgrp *ctrl_lgrp);
-int		     sl_ctrl_lgrp_put(struct sl_ctrl_lgrp *ctrl_lgrp);
 struct sl_ctrl_lgrp *sl_ctrl_lgrp_get(u8 ldev_num, u8 lgrp_num);
+
+int		     sl_ctrl_lgrp_put_ref(struct sl_ctrl_lgrp *ctrl_lgrp);
+struct sl_ctrl_lgrp *sl_ctrl_lgrp_get_ref(u8 ldev_num, u8 lgrp_num);
 
 int sl_ctrl_lgrp_connect_id_set(u8 ldev_num, u8 lgrp_num, const char *connect_id);
 

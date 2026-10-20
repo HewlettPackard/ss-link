@@ -641,11 +641,15 @@ int sl_test_lgrp_new(void)
 		   "lgrp_new (ldev_num = %u, lgrp_num = %u)", ldev_num,
 		   lgrp_num);
 
+	/* We rely on the lgrp created by the client. Don't create new, just check if you can get a reference. */
 	ctrl_lgrp = sl_test_ctrl_lgrp_get(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "lgrp_new ctrl_lgrp_get failed");
 		return -ENODEV;
 	}
+	sl_test_ctrl_lgrp_put(ctrl_lgrp);
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "ctrl_lgrp_get success (ctrl_lgrp = 0x%p)", ctrl_lgrp);
 
 	rtn = sl_test_pdev_pgrp_add(ldev_num, lgrp_num);
 	if (rtn)
@@ -720,6 +724,7 @@ int sl_test_lgrp_del(void)
 	if (ctrl_lgrp) {
 		sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "lgrp_del device found (ctrl_lgrp = %p)",
 			ctrl_lgrp);
+		sl_test_ctrl_lgrp_put(ctrl_lgrp);
 	}
 
 	return 0;

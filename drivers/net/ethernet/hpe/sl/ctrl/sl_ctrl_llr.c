@@ -4,6 +4,7 @@
 #include <linux/kobject.h>
 #include <linux/types.h>
 #include <linux/spinlock.h>
+#include <linux/bitmap.h>
 #include <linux/slab.h>
 
 #include "sl_asic.h"
@@ -23,6 +24,32 @@
 
 static struct sl_ctrl_llr *ctrl_llrs[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
 static DEFINE_SPINLOCK(ctrl_llrs_lock);
+static DECLARE_BITMAP(ctrl_llrs_busy, SL_ASIC_MAX_LDEVS * SL_ASIC_MAX_LGRPS * SL_ASIC_MAX_LINKS);
+
+static inline unsigned int sl_ctrl_llr_busy_bit(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+{
+	return (ldev_num * SL_ASIC_MAX_LGRPS + lgrp_num) * SL_ASIC_MAX_LINKS + llr_num;
+}
+
+struct sl_ctrl_llr *sl_ctrl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+{
+	struct sl_ctrl_llr *ctrl_llr;
+
+	spin_lock(&ctrl_llrs_lock);
+	ctrl_llr = ctrl_llrs[ldev_num][lgrp_num][llr_num];
+	spin_unlock(&ctrl_llrs_lock);
+
+	return ctrl_llr;
+}
+
+static void sl_ctrl_llr_release(struct kref *kref)
+{
+	struct sl_ctrl_llr *ctrl_llr;
+
+	ctrl_llr = container_of(kref, struct sl_ctrl_llr, ref_cnt);
+
+	complete(&ctrl_llr->del_complete);
+}
 
 static void sl_ctrl_llr_setup_callback(void *tag, u32 core_llr_state, u64 core_imap, struct sl_llr_data core_llr_data)
 {
@@ -144,23 +171,40 @@ static void sl_ctrl_llr_start_callback(void *tag, u32 core_llr_state, u64 core_i
 
 int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_parent)
 {
-	int                 rtn;
-	struct sl_ctrl_llr *ctrl_llr;
+	int                  rtn;
+	struct sl_ctrl_llr  *ctrl_llr;
+	struct sl_ctrl_lgrp *ctrl_lgrp;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
-	if (ctrl_llr) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "exists (ctrl_llr = 0x%p)", ctrl_llr);
+	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
+	if (!ctrl_lgrp)
+		return -EBADRQC;
+
+	if (test_and_set_bit_lock(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"llr_new busy (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+				ldev_num, lgrp_num, llr_num);
+		sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 		return -EBADRQC;
 	}
 
+	if (sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"llr_new exists (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+				ldev_num, lgrp_num, llr_num);
+		rtn = -EBADRQC;
+		goto out_unlock;
+	}
+
 	ctrl_llr = kzalloc(sizeof(*ctrl_llr), GFP_KERNEL);
-	if (!ctrl_llr)
-		return -ENOMEM;
+	if (!ctrl_llr) {
+		rtn = -ENOMEM;
+		goto out_unlock;
+	}
 
 	ctrl_llr->magic     = SL_CTRL_LLR_MAGIC;
 	ctrl_llr->ver       = SL_CTRL_LLR_VER;
 	ctrl_llr->num       = llr_num;
-	ctrl_llr->ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	ctrl_llr->ctrl_lgrp = ctrl_lgrp;
 
 	spin_lock_init(&ctrl_llr->data_lock);
 	kref_init(&ctrl_llr->ref_cnt);
@@ -199,6 +243,8 @@ int sl_ctrl_llr_new(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct kobject *sysfs_
 	spin_unlock(&ctrl_llrs_lock);
 
 	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "new (ctrl_llr = 0x%p)", ctrl_llr);
+	clear_bit_unlock(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 
 	return 0;
 
@@ -210,27 +256,28 @@ out_llr_counters_del:
 	sl_ctrl_llr_counters_del(ctrl_llr);
 out_free:
 	kfree(ctrl_llr);
-	return -ENOMEM;
+out_unlock:
+	clear_bit_unlock(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy);
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
+	return rtn;
 }
 
-static void sl_ctrl_llr_release(struct kref *kref)
+static void sl_ctrl_llr_remove(struct sl_ctrl_llr *ctrl_llr)
 {
-	int                 rtn;
-	struct sl_ctrl_llr *ctrl_llr;
-	u8                  ldev_num;
-	u8                  lgrp_num;
-	u8                  llr_num;
+	int rtn;
+	u8  ldev_num;
+	u8  lgrp_num;
+	u8  llr_num;
 
-	ctrl_llr = container_of(kref, struct sl_ctrl_llr, ref_cnt);
+	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "remove (ctrl_llr = 0x%p)", ctrl_llr);
+
 	ldev_num = ctrl_llr->ctrl_lgrp->ctrl_ldev->num;
 	lgrp_num = ctrl_llr->ctrl_lgrp->num;
 	llr_num = ctrl_llr->num;
 
-	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "release (ctrl_llr = 0x%p)", ctrl_llr);
-
 	rtn = sl_core_llr_stop(ldev_num, lgrp_num, llr_num);
 	if (rtn)
-		sl_ctrl_log_warn_trace(ctrl_llr, LOG_NAME, "release core_llr_stop failed [%d]", rtn);
+		sl_ctrl_log_warn_trace(ctrl_llr, LOG_NAME, "remove core_llr_stop failed [%d]", rtn);
 
 	/* Must delete sysfs first to guarantee nobody is reading */
 	sl_sysfs_llr_delete(ctrl_llr);
@@ -244,12 +291,10 @@ static void sl_ctrl_llr_release(struct kref *kref)
 	ctrl_llrs[ldev_num][lgrp_num][llr_num] = NULL;
 	spin_unlock(&ctrl_llrs_lock);
 
-	complete_all(&ctrl_llr->del_complete);
-
 	kfree(ctrl_llr);
 }
 
-static int sl_ctrl_llr_put(struct sl_ctrl_llr *ctrl_llr)
+int sl_ctrl_llr_put_ref(struct sl_ctrl_llr *ctrl_llr)
 {
 	return kref_put(&ctrl_llr->ref_cnt, sl_ctrl_llr_release);
 }
@@ -257,45 +302,63 @@ static int sl_ctrl_llr_put(struct sl_ctrl_llr *ctrl_llr)
 int sl_ctrl_llr_del(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	struct sl_ctrl_llr *ctrl_llr;
-	unsigned long       timeleft;
+	int                 rtn;
+	unsigned long       timeleft_jiffies;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
-	if (!ctrl_llr) {
-		sl_ctrl_log_err_trace(NULL, LOG_NAME, "del not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
-				      ldev_num, lgrp_num, llr_num);
+	if (test_and_set_bit_lock(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy)) {
+		sl_ctrl_log_err(NULL, LOG_NAME,
+				"del busy (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+				ldev_num, lgrp_num, llr_num);
 		return -EBADRQC;
 	}
 
-	/* Release occurs on the last caller. Block until complete. */
-	if (!sl_ctrl_llr_put(ctrl_llr)) {
-		timeleft = wait_for_completion_timeout(&ctrl_llr->del_complete,
-						       msecs_to_jiffies(SL_CTRL_LLR_DEL_WAIT_TIMEOUT_MS));
-
-		if (timeleft == 0) {
-			sl_ctrl_log_err(ctrl_llr, LOG_NAME, "del completion_timeout (ctrl_llr = 0x%p)", ctrl_llr);
-			return -ETIMEDOUT;
-		}
+	spin_lock(&ctrl_llrs_lock);
+	ctrl_llr = ctrl_llrs[ldev_num][lgrp_num][llr_num];
+	spin_unlock(&ctrl_llrs_lock);
+	if (!ctrl_llr) {
+		sl_ctrl_log_err_trace(NULL, LOG_NAME, "del not found (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
+				      ldev_num, lgrp_num, llr_num);
+		rtn = -EBADRQC;
+		goto out;
 	}
 
-	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "del complete (ctrl_llr = 0x%p, timeleft = %lu)", ctrl_llr, timeleft);
+	kref_put(&ctrl_llr->ref_cnt, sl_ctrl_llr_release);
 
-	return 0;
+	timeleft_jiffies = wait_for_completion_timeout(&ctrl_llr->del_complete,
+						       msecs_to_jiffies(SL_CTRL_LLR_DEL_WAIT_TIMEOUT_MS));
+	if (!timeleft_jiffies)
+		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "del timed out, forcing remove (ref_cnt = %u)",
+				kref_read(&ctrl_llr->ref_cnt));
+
+	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME,
+			"waited for refs for %d ms (timeleft_jiffies = %lu)",
+			SL_CTRL_LLR_DEL_WAIT_TIMEOUT_MS - jiffies_to_msecs(timeleft_jiffies), timeleft_jiffies);
+
+	sl_ctrl_llr_remove(ctrl_llr);
+
+	rtn = 0;
+out:
+	clear_bit_unlock(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy);
+
+	sl_ctrl_log_dbg(NULL, LOG_NAME, "del complete (ctrl_llr = 0x%p)", ctrl_llr);
+
+	return rtn;
 }
 
-static bool sl_ctrl_llr_kref_get_unless_zero(struct sl_ctrl_llr *ctrl_llr)
-{
-	return (kref_get_unless_zero(&ctrl_llr->ref_cnt) != 0);
-}
-
-struct sl_ctrl_llr *sl_ctrl_llr_get(u8 ldev_num, u8 lgrp_num, u8 llr_num)
+struct sl_ctrl_llr *sl_ctrl_llr_get_ref(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 {
 	struct sl_ctrl_llr *ctrl_llr;
 
 	spin_lock(&ctrl_llrs_lock);
 	ctrl_llr = ctrl_llrs[ldev_num][lgrp_num][llr_num];
-	spin_unlock(&ctrl_llrs_lock);
 
-	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "get (ctrl_llr = 0x%p)", ctrl_llr);
+	/* If we are busy we are deleting/creating the object */
+	if (ctrl_llr && (test_bit(sl_ctrl_llr_busy_bit(ldev_num, lgrp_num, llr_num), ctrl_llrs_busy) ||
+	    !kref_get_unless_zero(&ctrl_llr->ref_cnt)))
+		ctrl_llr = NULL;
+
+	spin_unlock(&ctrl_llrs_lock);
+	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "get ref (ctrl_llr = 0x%p)", ctrl_llr);
 
 	return ctrl_llr;
 }
@@ -305,16 +368,10 @@ int sl_ctrl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_c
 	int                rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "config set NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "config set kref_get_unless_zero failed (ctrl_llr = 0x%p)",
-				ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -332,8 +389,7 @@ int sl_ctrl_llr_config_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_c
 	spin_unlock(&ctrl_llr->data_lock);
 
 out:
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "config set - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -343,16 +399,10 @@ int sl_ctrl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 	int                rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "policy set NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME,
-				"policy set kref_get_unless_zero failed (ctrl_llr = 0x%p)", ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -369,8 +419,7 @@ int sl_ctrl_llr_policy_set(u8 ldev_num, u8 lgrp_num, u8 llr_num, struct sl_llr_p
 	spin_unlock(&ctrl_llr->data_lock);
 
 out:
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "policy set - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -380,15 +429,10 @@ int sl_ctrl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	int                rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "setup NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "setup kref_get_unless_zero failed (ctrl_llr = 0x%p)", ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -403,8 +447,7 @@ int sl_ctrl_llr_setup(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		SL_CTRL_LLR_COUNTER_INC(ctrl_llr, LLR_SETUP_FAIL);
 	}
 
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "setup - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -414,15 +457,10 @@ int sl_ctrl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	int                rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "start NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "start kref_get_unless_zero failed (ctrl_llr = 0x%p)", ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -437,8 +475,7 @@ int sl_ctrl_llr_start(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		SL_CTRL_LLR_COUNTER_INC(ctrl_llr, LLR_START_FAIL);
 	}
 
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "start - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -448,15 +485,10 @@ int sl_ctrl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 	int                rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "stop NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "stop kref_get_unless_zero failed (ctrl_llr = 0x%p)", ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -470,8 +502,7 @@ int sl_ctrl_llr_stop(u8 ldev_num, u8 lgrp_num, u8 llr_num)
 		SL_CTRL_LLR_COUNTER_INC(ctrl_llr, LLR_STOP_FAIL);
 	}
 
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "stop - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -511,16 +542,10 @@ int sl_ctrl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 	struct sl_ctrl_llr *ctrl_llr;
 	u32                core_llr_state;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "state get NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME, "state get kref_get_unless_zero failed (ctrl_llr = 0x%p)",
-				ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -543,8 +568,7 @@ int sl_ctrl_llr_state_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u32 *state)
 			*state, sl_llr_state_str(*state));
 
 out:
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "state get - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }
@@ -554,16 +578,10 @@ int sl_ctrl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map
 	int                 rtn;
 	struct sl_ctrl_llr *ctrl_llr;
 
-	ctrl_llr = sl_ctrl_llr_get(ldev_num, lgrp_num, llr_num);
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, llr_num);
 	if (!ctrl_llr) {
 		sl_ctrl_log_err(NULL, LOG_NAME, "info map get NULL llr (ldev_num = %u, lgrp_num = %u, llr_num = %u)",
 				ldev_num, lgrp_num, llr_num);
-		return -EBADRQC;
-	}
-
-	if (!sl_ctrl_llr_kref_get_unless_zero(ctrl_llr)) {
-		sl_ctrl_log_err(ctrl_llr, LOG_NAME,
-				"info map get kref_get_unless_zero failed (ctrl_llr = 0x%p)", ctrl_llr);
 		return -EBADRQC;
 	}
 
@@ -576,8 +594,7 @@ int sl_ctrl_llr_info_map_get(u8 ldev_num, u8 lgrp_num, u8 llr_num, u64 *info_map
 	sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "info map get (info_map = 0x%llX)", *info_map);
 
 out:
-	if (sl_ctrl_llr_put(ctrl_llr))
-		sl_ctrl_log_dbg(ctrl_llr, LOG_NAME, "info map get - llr removed (ctrl_llr = 0x%p)", ctrl_llr);
+	sl_ctrl_llr_put_ref(ctrl_llr);
 
 	return rtn;
 }

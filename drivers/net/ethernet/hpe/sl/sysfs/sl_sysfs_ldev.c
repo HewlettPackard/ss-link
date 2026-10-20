@@ -391,22 +391,18 @@ int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 	int                 rtn;
 	struct sl_ctrl_ldev *ctrl_ldev;
 
-	ctrl_ldev = sl_ctrl_ldev_get(ldev_num);
+	ctrl_ldev = sl_ctrl_ldev_get_ref(ldev_num);
 	if (!ctrl_ldev) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "sysfs create ldev not found (ldev_num = %u)", ldev_num);
 		return -EBADRQC;
 	}
 
-	if (!sl_ctrl_ldev_kref_get_unless_zero(ctrl_ldev)) {
-		sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
-			   "kref_get_unless_zero failed (ldev = 0x%p)", ctrl_ldev);
-		return -EBADRQC;
-	}
-
 	sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "ldev create (ldev = 0x%p)", ctrl_ldev);
 
-	if (ctrl_ldev->is_sysfs_ok)
+	if (ctrl_ldev->is_sysfs_ok) {
+		sl_ctrl_ldev_put_ref(ctrl_ldev);
 		return 0;
+	}
 
 	ctrl_ldev->parent_kobj = parent;
 	ctrl_ldev->is_sysfs_ok = false;
@@ -430,8 +426,7 @@ int sl_sysfs_ldev_create(u8 ldev_num, struct kobject *parent)
 	rtn = 0;
 
 out:
-	if (sl_ctrl_ldev_put(ctrl_ldev))
-		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "ldev create removed (ldev = 0x%p)", ctrl_ldev);
+	sl_ctrl_ldev_put_ref(ctrl_ldev);
 
 	return rtn;
 #else /* CONFIG_SYSFS */

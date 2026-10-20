@@ -408,8 +408,9 @@ int sl_media_data_jack_insert(struct sl_media_jack *media_jack)
 		rtn = sl_media_data_jack_cable_setup(media_jack, &media_attr);
 		break;
 	default:
+		rtn = -EOPNOTSUPP;
 		media_attr.jack_type = SL_MEDIA_JACK_TYPE_UNSUPPORTED;
-		sl_media_log_warn(media_jack, LOG_NAME, "unsupported jack");
+		sl_media_log_err(media_jack, LOG_NAME, "unsupported jack");
 	}
 
 	if (rtn) {

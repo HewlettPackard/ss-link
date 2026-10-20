@@ -206,6 +206,8 @@ int sl_ctrl_link_fec_mon_start(struct sl_ctrl_link *ctrl_link)
 void sl_ctrl_link_fec_data_calc(struct sl_ctrl_link *ctrl_link)
 {
 	int x;
+	struct sl_fec_info fec_info;
+	struct sl_fec_tail fec_tail;
 
 	spin_lock(&ctrl_link->fec_data.lock);
 
@@ -225,17 +227,16 @@ void sl_ctrl_link_fec_data_calc(struct sl_ctrl_link *ctrl_link)
 		ctrl_link->fec_data.tail.ccw_bins[x] = ctrl_link->fec_data.curr_ptr->tail_cntrs.ccw_bins[x] -
 			ctrl_link->fec_data.prev_ptr->tail_cntrs.ccw_bins[x];
 	ctrl_link->fec_data.tail.period_ms = ctrl_link->fec_data.info.period_ms;
+	fec_info = ctrl_link->fec_data.info;
+	fec_tail = ctrl_link->fec_data.tail;
 
 	spin_unlock(&ctrl_link->fec_data.lock);
 
-	if ((ctrl_link->fec_data.info.ccw > 0) || (ctrl_link->fec_data.info.ucw > 0)) {
-		sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-			"data_calc (ccw = %llu, ucw = %llu, gcw = %llu, period = %ums)",
-			ctrl_link->fec_data.info.ccw, ctrl_link->fec_data.info.ucw,
-			ctrl_link->fec_data.info.gcw, ctrl_link->fec_data.info.period_ms);
+	if (fec_info.ccw > 0 || fec_info.ucw > 0) {
+		sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "data_calc (ccw = %llu, ucw = %llu, gcw = %llu, period = %ums)",
+				fec_info.ccw, fec_info.ucw, fec_info.gcw, fec_info.period_ms);
 		for (x = 0; x < SL_CTRL_NUM_CCW_BINS; ++x)
-			sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
-				"data_calc (bin %d = %llu)", x, ctrl_link->fec_data.tail.ccw_bins[x]);
+			sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "data_calc (bin %d = %llu)", x, fec_tail.ccw_bins[x]);
 	}
 }
 
@@ -323,9 +324,8 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 	ccw_warn_limit = ctrl_link->fec_data.info.monitor.ccw_warn_limit;
 	ucw_down_limit = ctrl_link->fec_data.info.monitor.ucw_down_limit;
 	ucw_warn_limit = ctrl_link->fec_data.info.monitor.ucw_warn_limit;
-	spin_unlock(&ctrl_link->fec_data.lock);
-
 	fec_info = ctrl_link->fec_data.info;
+	spin_unlock(&ctrl_link->fec_data.lock);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME,
 		"data check config (ccw_down = %d, ucw_down = %d, ccw_warn = %d, ucw_warn = %d)",
@@ -341,7 +341,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ucw_chance);
 		ctrl_link->fec_ucw_chance = 0;
 
-		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_UCW_MAP, false);
+		rtn = sl_ctrl_link_priv_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_UCW_MAP, false);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 					      "data check UCW ctrl_link_async_down failed [%d]", rtn);
@@ -356,7 +356,7 @@ int sl_ctrl_link_fec_data_check(struct sl_ctrl_link *ctrl_link)
 			fec_info.ucw, fec_info.ccw, ctrl_link->fec_ccw_chance);
 		ctrl_link->fec_ccw_chance = 0;
 
-		rtn = sl_ctrl_link_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_CCW_MAP, false);
+		rtn = sl_ctrl_link_priv_async_down(ctrl_link, SL_LINK_DOWN_CAUSE_CCW_MAP, false);
 		if (rtn) {
 			sl_ctrl_log_err_trace(ctrl_link, LOG_NAME,
 					      "data check CCW ctrl_link_async_down failed [%d]", rtn);

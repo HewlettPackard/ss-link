@@ -157,15 +157,23 @@ u8 sl_test_debugfs_ldev_num_get(void)
 
 int sl_test_ldev_new(void)
 {
+	u8                   ldev_num;
 	struct sl_ctrl_ldev *ctrl_ldev;
 
+	ldev_num = sl_test_debugfs_ldev_num_get();
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "ldev_new (ldev_num = %u)", ldev_num);
+
 	//TODO: Create ldev object
-	/* We rely on the ldev created by the client. Don't create new */
-	ctrl_ldev = sl_test_ctrl_ldev_get(sl_test_debugfs_ldev_num_get());
+	/* We rely on the ldev created by the client. Don't create new, just check if you can get a reference. */
+	ctrl_ldev = sl_test_ctrl_ldev_get(ldev_num);
 	if (!ctrl_ldev) {
 		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "ldev_new ctrl_ldev_get failed");
 		return -ENODEV;
 	}
+	sl_test_ctrl_ldev_put(ctrl_ldev);
+
+	sl_log_dbg(NULL, LOG_BLOCK, LOG_NAME, "ctrl_ldev_get success (ctrl_ldev = 0x%p)", ctrl_ldev);
 
 	return 0;
 }

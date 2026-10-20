@@ -7,16 +7,24 @@
 struct kobject *sl_ctrl_test_lgrp_kobj_get(u8 ldev_num, u8 lgrp_num)
 {
 	struct sl_ctrl_lgrp *ctrl_lgrp;
+	struct kobject      *parent_kobj;
 
-	ctrl_lgrp = sl_ctrl_lgrp_get(ldev_num, lgrp_num);
-
+	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
 	if (!ctrl_lgrp)
 		return NULL;
 
-	return ctrl_lgrp->parent_kobj;
+	parent_kobj = ctrl_lgrp->parent_kobj;
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
+
+	return parent_kobj;
 }
 
 struct sl_ctrl_lgrp *sl_ctrl_test_lgrp_get(u8 ldev_num, u8 lgrp_num)
 {
-	return sl_ctrl_lgrp_get(ldev_num, lgrp_num);
+	return sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
+}
+
+void sl_ctrl_test_lgrp_put_ref(struct sl_ctrl_lgrp *ctrl_lgrp)
+{
+	sl_ctrl_lgrp_put_ref(ctrl_lgrp);
 }
