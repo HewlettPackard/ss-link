@@ -18,14 +18,20 @@
 
 #define LOG_NAME SL_MEDIA_CABLE_LOG_NAME
 
-static void sl_media_cable_db_record_to_attr(const void *bytes, u32 data_version,
-					     struct sl_media_cable_attr *attr)
+int sl_media_data_cable_db_entry_get(struct sl_media_ldev *media_ldev, u32 idx,
+				     struct sl_media_cable_attr *attr)
 {
+	u32                                      data_version;
 	const union sl_media_cable_db_record_v1 *v1;
+
+	data_version = media_ldev->cable_db.data_version;
+
+	sl_media_log_dbg(media_ldev, LOG_NAME, "db entry get (idx = %u, data_version = %u)",
+			 idx, data_version);
 
 	switch (data_version) {
 	case SL_MEDIA_CABLE_DB_DATA_VERSION:
-		v1 = bytes;
+		v1 = media_ldev->cable_db.data + idx * media_ldev->cable_db.record_size;
 
 		attr->hpe_pn    = v1->hpe_pn;
 		attr->vendor    = v1->vendor;
@@ -48,25 +54,16 @@ static void sl_media_cable_db_record_to_attr(const void *bytes, u32 data_version
 
 		attr->is_supported_ss200_cable = v1->is_supported_ss200_cable;
 
-		memcpy(attr->vendor_pn_str, v1->vendor_pn_str, sizeof(attr->vendor_pn_str));
-		attr->vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE - 1] = '\0';
+		strscpy(attr->vendor_pn_str, v1->vendor_pn_str, sizeof(attr->vendor_pn_str));
 
 		break;
+	default:
+		sl_media_log_err(media_ldev, LOG_NAME, "db entry get invalid (data_version = %u)",
+				 data_version);
+		return -EBADRQC;
 	}
-}
 
-void sl_media_data_cable_db_entry_get_by_idx(const struct sl_media_ldev *media_ldev,
-					     u32 idx, struct sl_media_cable_attr *attr)
-{
-	sl_media_cable_db_record_to_attr((const u8 *)media_ldev->cable_db.data + idx * media_ldev->cable_db.record_size,
-					 media_ldev->cable_db.data_version, attr);
-}
-
-void sl_media_data_cable_db_entry_get(const struct sl_media_jack *media_jack,
-				      struct sl_media_cable_attr *attr)
-{
-	sl_media_data_cable_db_entry_get_by_idx(media_jack->media_ldev,
-						media_jack->cable_db_idx, attr);
+	return 0;
 }
 
 int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
@@ -84,20 +81,28 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	int                              rtn;
 	struct sl_media_cable_db_hdr_v1  hdr_v1;
 
-	sl_media_log_dbg(media_ldev, LOG_NAME, "cable db load");
+	sl_media_log_dbg(media_ldev, LOG_NAME, "db load");
 
 	rtn = request_firmware(&fw, SL_MEDIA_CABLE_DB_FW_FILE, sl_device_get());
 	if (rtn) {
 		sl_media_log_err(media_ldev, LOG_NAME,
-				 "cable db load request_firmware failed [%d]", rtn);
+				 "db load request_firmware failed [%d]", rtn);
 		return -EIO;
+	}
+
+	if (fw->size < SL_MEDIA_DB_HDR_SIZE) {
+		sl_media_log_err(media_ldev, LOG_NAME,
+				 "db load size too small (actual = %zu, minimum = %zu)",
+				 fw->size, (size_t)SL_MEDIA_DB_HDR_SIZE);
+		rtn = -EINVAL;
+		goto out_release;
 	}
 
 	memcpy(&magic, fw->data + SL_MEDIA_CABLE_DB_MAGIC_OFFSET, sizeof(magic));
 
 	if (magic != SL_MEDIA_CABLE_DB_MAGIC) {
 		sl_media_log_err(media_ldev, LOG_NAME,
-				 "cable db load bad magic (actual = 0x%08X, expected = 0x%08X)",
+				 "db load bad magic (actual = 0x%08X, expected = 0x%08X)",
 				 magic, SL_MEDIA_CABLE_DB_MAGIC);
 		rtn = -EINVAL;
 		goto out_release;
@@ -105,7 +110,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 
 	memcpy(&hdr_version, fw->data + SL_MEDIA_CABLE_DB_HDR_VER_OFFSET, sizeof(hdr_version));
 
-	sl_media_log_dbg(media_ldev, LOG_NAME, "cable db load (hdr_version = %u)", hdr_version);
+	sl_media_log_dbg(media_ldev, LOG_NAME, "db load (hdr_version = %u)", hdr_version);
 
 	switch (hdr_version) {
 	case SL_MEDIA_CABLE_DB_HDR_VERSION:
@@ -116,13 +121,13 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		break;
 	default:
 		sl_media_log_err(media_ldev, LOG_NAME,
-				 "cable db load unsupported (hdr_version = %u)", hdr_version);
+				 "db load unsupported (hdr_version = %u)", hdr_version);
 		rtn = -EINVAL;
 		goto out_release;
 	}
 
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "cable db load (data_version = %u, count = %u)", data_version, count);
+			 "db load (data_version = %u, count = %u)", data_version, count);
 
 	switch (data_version) {
 	case SL_MEDIA_CABLE_DB_DATA_VERSION:
@@ -130,7 +135,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		break;
 	default:
 		sl_media_log_err(media_ldev, LOG_NAME,
-				 "cable db load unsupported (data_version = %u)",
+				 "db load unsupported (data_version = %u)",
 				 data_version);
 		rtn = -EINVAL;
 		goto out_release;
@@ -144,14 +149,14 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 
 	if (fw->size < expected_size) {
 		sl_media_log_err(media_ldev, LOG_NAME,
-				 "cable db load size mismatch (actual = %zu, expected = %u)",
+				 "db load size mismatch (actual = %zu, expected = %u)",
 				 fw->size, expected_size);
 		rtn = -EINVAL;
 		goto out_release;
 	}
 
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "cable db load size (actual = %zu, expected = %u)", fw->size, expected_size);
+			 "db load size (actual = %zu, expected = %u)", fw->size, expected_size);
 
 	blob = kmemdup(fw->data + hdr_size, blob_size, GFP_KERNEL);
 	if (!blob) {
@@ -165,7 +170,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	media_ldev->cable_db.count        = count;
 
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "cable db load done (count = %u)", count);
+			 "db load done (count = %u)", count);
 	rtn = 0;
 
 out_release:

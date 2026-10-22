@@ -508,6 +508,7 @@ static void sl_media_eeprom_supported_flags_advertised_get(struct sl_media_jack 
 
 bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
+	int                        rtn;
 	struct sl_media_cable_attr entry;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
@@ -517,7 +518,12 @@ bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, s
 			 media_jack->cable_end, sl_media_cable_end_str(media_jack->cable_end),
 			 media_jack->cable_db_idx);
 
-	sl_media_data_cable_db_entry_get(media_jack, &entry);
+	rtn = sl_media_data_cable_db_entry_get(media_jack->media_ldev, media_jack->cable_db_idx, &entry);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable db entry not found (idx = %u) [%d]",
+				       media_jack->cable_db_idx, rtn);
+		return false;
+	}
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "is fw version supported (fw_ver = %02X.%02X, db_fw_ver = %02X.%02X, db_split_fw_ver = %02X.%02X)",
@@ -538,6 +544,7 @@ bool sl_media_eeprom_is_fw_version_supported(struct sl_media_jack *media_jack, s
 int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char *target_fw_str, size_t target_fw_size)
 {
 	struct sl_media_cable_attr entry;
+	int rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "target fw ver get (idx = %u, type = 0x%X %s, shape = %u %s, end = %u %s, supported = %s)",
@@ -565,7 +572,12 @@ int sl_media_eeprom_target_fw_ver_str_get(struct sl_media_jack *media_jack, char
 		return 0;
 	}
 
-	sl_media_data_cable_db_entry_get(media_jack, &entry);
+	rtn = sl_media_data_cable_db_entry_get(media_jack->media_ldev, media_jack->cable_db_idx, &entry);
+	if (rtn) {
+		sl_media_log_err_trace(media_jack, LOG_NAME, "cable db entry not found (idx = %u)",
+				       media_jack->cable_db_idx);
+		return rtn;
+	}
 
 	if (media_jack->cable_info[0].media_attr.shape == SL_MEDIA_SHAPE_SPLITTER &&
 	    media_jack->cable_end != SL_MEDIA_CABLE_END_DD) {

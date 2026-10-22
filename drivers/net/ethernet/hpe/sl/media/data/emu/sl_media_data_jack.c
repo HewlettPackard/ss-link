@@ -36,6 +36,14 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 	return 0;
 }
 
+void sl_media_data_jack_scan_cancel(struct sl_media_ldev *media_ldev)
+{
+}
+
+void sl_media_data_jack_event_ignore_set(bool val)
+{
+}
+
 int sl_media_data_jack_cable_downshift(struct sl_media_jack *media_jack, u8 version)
 {
 	return 0;

@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/atomic.h>
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
+#include <linux/bitmap.h>
 #include <linux/string.h>
 
 #include <linux/hpe/sl/sl_media.h>
@@ -22,26 +24,32 @@
 
 #define LOG_NAME SL_MEDIA_DATA_JACK_LOG_NAME
 
-static u32 sl_media_data_jack_insert_status_map[SL_ASIC_MAX_LDEVS];
+static DECLARE_BITMAP(sl_media_data_jack_insert_status_map[SL_ASIC_MAX_LDEVS], SL_MEDIA_MAX_JACK_NUM);
 
 void sl_media_data_jack_insert_status_map_init(u8 ldev_num)
 {
-	sl_media_data_jack_insert_status_map[ldev_num] = 0;
+	bitmap_zero(sl_media_data_jack_insert_status_map[ldev_num], SL_MEDIA_MAX_JACK_NUM);
 }
 
 static void sl_media_data_jack_insert_status_map_set(u8 ldev_num, u8 bit_num)
 {
-	sl_media_data_jack_insert_status_map[ldev_num] |= BIT(bit_num);
+	set_bit(bit_num, sl_media_data_jack_insert_status_map[ldev_num]);
 }
 
 void sl_media_data_jack_insert_status_map_clr(u8 ldev_num, u8 bit_num)
 {
-	sl_media_data_jack_insert_status_map[ldev_num] &= ~BIT(bit_num);
+	clear_bit(bit_num, sl_media_data_jack_insert_status_map[ldev_num]);
 }
 
-u32 sl_media_data_jack_insert_status_map_get(u8 ldev_num)
+bool sl_media_data_jack_insert_status_map_contains(u8 ldev_num, const unsigned long *check_map)
 {
-	return sl_media_data_jack_insert_status_map[ldev_num];
+	unsigned long bit_num;
+
+	for_each_set_bit(bit_num, check_map, SL_MEDIA_MAX_JACK_NUM)
+		if (!test_bit(bit_num, sl_media_data_jack_insert_status_map[ldev_num]))
+			return false;
+
+	return true;
 }
 
 static int sl_media_data_jack_eeprom_page0_get(struct sl_media_jack *media_jack)
@@ -410,7 +418,9 @@ int sl_media_data_jack_insert(struct sl_media_jack *media_jack)
 	default:
 		rtn = -EOPNOTSUPP;
 		media_attr.jack_type = SL_MEDIA_JACK_TYPE_UNSUPPORTED;
-		sl_media_log_err(media_jack, LOG_NAME, "unsupported jack");
+		sl_media_log_warn(media_jack, LOG_NAME, "unsupported jack type (jack_type = %u)",
+				  media_jack->jack_type);
+		rtn = -EBADRQC;
 	}
 
 	if (rtn) {
@@ -495,11 +505,11 @@ void sl_media_data_jack_offline(struct sl_media_jack *media_jack)
 	sl_media_data_jack_led_set(media_jack);
 }
 
-static bool ignore_events;
+static atomic_t ignore_events = ATOMIC_INIT(0);
 
 void sl_media_data_jack_event_ignore_set(bool val)
 {
-	ignore_events = val;
+	atomic_set(&ignore_events, val);
 }
 
 #define SL_MEDIA_XCVR_EVENT_MASK ( \
@@ -517,7 +527,7 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 
 	sl_media_log_dbg(NULL, LOG_NAME, "event (events = 0x%08lX)", events);
 
-	if (ignore_events) {
+	if (atomic_read(&ignore_events)) {
 		sl_media_log_dbg(NULL, LOG_NAME, "event ignore set");
 		return NOTIFY_OK;
 	}
@@ -534,12 +544,22 @@ int sl_media_data_jack_event(struct notifier_block *event_notifier,
 		return NOTIFY_OK;
 	}
 
+	if (jack_num == 0) {
+		sl_media_log_err(NULL, LOG_NAME, "out of range (jack_num = 0)");
+		return NOTIFY_OK;
+	}
+
 	if (jack_num >= 201) /* GX backplanes */
 		jack_num -= 177;
 	else if (jack_num >= 100) /* backplanes */
 		jack_num -= 76;
 	else
 		jack_num -= 1;
+
+	if (jack_num >= SL_MEDIA_MAX_JACK_NUM) {
+		sl_media_log_err(NULL, LOG_NAME, "out of range (jack_num = %u)", jack_num);
+		return NOTIFY_OK;
+	}
 
 	// FIXME: ldev num hardcoded to 0
 	media_jack = sl_media_data_jack_get(0, jack_num);

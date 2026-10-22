@@ -48,6 +48,14 @@ int sl_media_data_jack_fake_media_attr_set(struct sl_media_jack *media_jack,
 	return 0;
 }
 
+void sl_media_data_jack_scan_cancel(struct sl_media_ldev *media_ldev)
+{
+}
+
+void sl_media_data_jack_event_ignore_set(bool val)
+{
+}
+
 void sl_media_data_jack_fake_media_attr_clr(struct sl_media_jack *media_jack,
 		struct sl_media_lgrp_cable_info *cable_info)
 {

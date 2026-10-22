@@ -93,7 +93,7 @@ int  sl_media_data_jack_last_cable_insert_get(struct sl_media_jack *media_jack, 
 
 void sl_media_data_jack_insert_status_map_init(u8 ldev_num);
 void sl_media_data_jack_insert_status_map_clr(u8 ldev_num, u8 bit_num);
-u32  sl_media_data_jack_insert_status_map_get(u8 ldev_num);
+bool sl_media_data_jack_insert_status_map_contains(u8 ldev_num, const unsigned long *check_map);
 int  sl_media_data_jack_insert(struct sl_media_jack *media_jack);
 void sl_media_data_jack_remove(struct sl_media_jack *media_jack);
 void sl_media_data_jack_offline(struct sl_media_jack *media_jack);
@@ -102,7 +102,8 @@ void sl_media_data_jack_event_ignore_set(bool val);
 int  sl_media_data_jack_event(struct notifier_block *event_notifier, unsigned long events, void *hdl);
 
 void sl_media_data_jack_work_init(struct sl_media_jack *media_jack);
+void sl_media_data_jack_scan_cancel(struct sl_media_ldev *media_ldev);
 int  sl_media_data_jack_scan(struct sl_media_ldev *media_ldev);
-void sl_media_data_jack_unregister_event_notifier(void);
+int  sl_media_data_jack_unregister_event_notifier(void);
 
 #endif /* _SL_MEDIA_DATA_JACK_H_ */

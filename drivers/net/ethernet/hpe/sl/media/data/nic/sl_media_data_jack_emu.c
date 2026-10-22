@@ -34,6 +34,7 @@ int sl_media_data_jack_lgrp_connect(struct sl_media_lgrp *media_lgrp)
 	return -EFAULT;
 }
 
-void sl_media_data_jack_unregister_event_notifier(void)
+int sl_media_data_jack_unregister_event_notifier(void)
 {
+	return 0;
 }

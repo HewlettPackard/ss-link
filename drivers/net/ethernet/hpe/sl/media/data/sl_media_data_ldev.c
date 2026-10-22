@@ -41,28 +41,26 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	media_ldev->num            = ldev_num;
 	media_ldev->workqueue      = workqueue;
 	media_ldev->temp_mon_state = SL_MEDIA_TEMP_MON_OFF;
+	spin_lock_init(&media_ldev->data_lock);
 
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
 		rtn = sl_media_data_jack_new(media_ldev, jack_num);
 		if (rtn) {
 			sl_media_log_err(media_ldev, LOG_NAME, "jack new failed [%d]", rtn);
-			kfree(media_ldev);
-			return -EFAULT;
+			goto err_jacks;
 		}
 	}
 
 	rtn = sl_media_data_cable_db_load(media_ldev);
-	if (rtn)
+	if (rtn) {
 		sl_media_log_err(media_ldev, LOG_NAME, "cable_db_load failed [%d]", rtn);
+		goto err_jacks;
+	}
 
 	rtn = sl_media_data_jack_scan(media_ldev);
 	if (rtn) {
 		sl_media_log_err(media_ldev, LOG_NAME, "jack scan failed [%d]", rtn);
-		sl_media_data_cable_db_unload(media_ldev);
-		for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num)
-			sl_media_data_jack_del(ldev_num, jack_num);
-		kfree(media_ldev);
-		return -EFAULT;
+		goto err_scan;
 	}
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "new (ldev = 0x%p)", media_ldev);
@@ -74,6 +72,20 @@ int sl_media_data_ldev_new(u8 ldev_num, struct workqueue_struct *workqueue)
 	sl_media_data_jack_cable_temp_monitor_start(media_ldev);
 
 	return 0;
+
+err_scan:
+	sl_media_data_jack_event_ignore_set(true);
+	sl_media_data_jack_scan_cancel(media_ldev);
+	sl_media_data_cable_db_unload(media_ldev);
+
+err_jacks:
+	/* Delete all previously created jacks in case of error */
+	while (jack_num > 0) {
+		--jack_num;
+		sl_media_data_jack_del(ldev_num, jack_num);
+	}
+	kfree(media_ldev);
+	return rtn;
 }
 
 void sl_media_data_ldev_del(u8 ldev_num)
@@ -89,6 +101,9 @@ void sl_media_data_ldev_del(u8 ldev_num)
 	}
 
 	sl_media_data_jack_cable_temp_monitor_stop(media_ldev);
+	sl_media_data_jack_event_ignore_set(true);
+	sl_media_data_jack_unregister_event_notifier();
+	sl_media_data_jack_scan_cancel(media_ldev);
 
 	spin_lock(&media_ldevs_lock);
 	media_ldevs[ldev_num] = NULL;
@@ -103,8 +118,6 @@ void sl_media_data_ldev_del(u8 ldev_num)
 
 	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num)
 		sl_media_data_jack_del(ldev_num, jack_num);
-
-	sl_media_data_jack_unregister_event_notifier();
 
 	kfree(media_ldev);
 }

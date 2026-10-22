@@ -23,6 +23,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	struct sl_media_cable_attr entry;
 	struct sl_media_ldev      *media_ldev;
 	u32                        indexer;
+	int                        rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "validate (hpe_part_num = %d %s, vendor = %d %s, type = 0x%X %s)",
@@ -54,7 +55,12 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 	}
 
 	for (indexer = 0; indexer < media_ldev->cable_db.count; ++indexer) {
-		sl_media_data_cable_db_entry_get_by_idx(media_ldev, indexer, &entry);
+		rtn = sl_media_data_cable_db_entry_get(media_ldev, indexer, &entry);
+		if (rtn) {
+			sl_media_log_warn_trace(media_jack, LOG_NAME,
+						"cable_db_entry_get failed (idx = %u) [%d]", indexer, rtn);
+			continue;
+		}
 
 		if (entry.hpe_pn != media_attr->hpe_pn)
 			continue;
@@ -87,6 +93,7 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_jack, struct sl_media_attr *media_attr)
 {
 	struct sl_media_cable_attr entry;
+	int                        rtn;
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "serdes settings get (media_type = 0x%X %s)",
@@ -131,7 +138,12 @@ int sl_media_data_cable_db_ops_serdes_settings_get(struct sl_media_jack *media_j
 		media_jack->serdes_settings.post1  = 0;
 		media_jack->serdes_settings.post2  = 0;
 	} else {
-		sl_media_data_cable_db_entry_get(media_jack, &entry);
+		rtn = sl_media_data_cable_db_entry_get(media_jack->media_ldev, media_jack->cable_db_idx, &entry);
+		if (rtn) {
+			sl_media_log_err_trace(media_jack, LOG_NAME, "cable_db_entry_get failed (idx = %u)",
+					       media_jack->cable_db_idx);
+			return rtn;
+		}
 		media_jack->serdes_settings = entry.serdes_settings;
 	}
 	media_jack->serdes_settings.media = SL_MEDIA_TYPE_SERDES;

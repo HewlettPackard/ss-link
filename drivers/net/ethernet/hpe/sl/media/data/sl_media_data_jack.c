@@ -79,7 +79,7 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	rtn = sl_ctrl_media_temp_state_counters_init(media_jack);
 	if (rtn) {
 		sl_media_log_err(media_jack, LOG_NAME, "ctrl_media_temp_state_counters_init failed [%d]", rtn);
-		goto out;
+		goto out_cause_counters;
 	}
 
 	spin_lock_init(&(media_jack->data_lock));
@@ -96,6 +96,7 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 	media_jack->temperature_value_c      = -1;
 	media_jack->temperature_down_limit_c = -1;
 	media_jack->temperature_warn_limit_c = -1;
+	init_completion(&media_jack->lane_data.read_complete);
 
 	sl_media_log_dbg(media_jack, LOG_NAME, "new (jack = 0x%p)", media_jack);
 
@@ -105,6 +106,8 @@ int sl_media_data_jack_new(struct sl_media_ldev *media_ldev, u8 jack_num)
 
 	return 0;
 
+out_cause_counters:
+	sl_ctrl_media_cause_counters_del(media_jack);
 out:
 	kfree(media_jack);
 	return -ENOMEM;

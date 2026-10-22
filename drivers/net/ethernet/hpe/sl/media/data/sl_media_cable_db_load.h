@@ -23,20 +23,12 @@ int  sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev);
 void sl_media_data_cable_db_unload(struct sl_media_ldev *media_ldev);
 
 /**
- * sl_media_data_cable_db_entry_get() - Fill attr from the DB entry for a jack.
- * @media_jack: jack whose cable_db_idx has been set
- * @attr: output struct to fill
- */
-void sl_media_data_cable_db_entry_get(const struct sl_media_jack *media_jack,
-				      struct sl_media_cable_attr *attr);
-
-/**
- * sl_media_data_cable_db_entry_get_by_idx() - Fill attr from DB entry at index.
+ * sl_media_data_cable_db_entry_get() - Fill attr from DB entry at index.
  * @media_ldev: the media link device
  * @idx: record index
  * @attr: output struct to fill
  */
-void sl_media_data_cable_db_entry_get_by_idx(const struct sl_media_ldev *media_ldev,
-					     u32 idx, struct sl_media_cable_attr *attr);
+int sl_media_data_cable_db_entry_get(struct sl_media_ldev *media_ldev,
+				     u32 idx, struct sl_media_cable_attr *attr);
 
 #endif /* _SL_MEDIA_CABLE_DB_LOAD_H_ */

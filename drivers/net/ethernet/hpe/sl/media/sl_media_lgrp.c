@@ -261,7 +261,7 @@ int sl_media_lgrp_vendor_pn_str_get(struct sl_media_lgrp *media_lgrp, char *vend
 			SL_MEDIA_VENDOR_PN_SIZE);
 		break;
 	default:
-		memset(vendor_pn_str, '0', SL_MEDIA_VENDOR_PN_SIZE - 2);
+		memset(vendor_pn_str, '0', SL_MEDIA_VENDOR_PN_SIZE - 1);
 		vendor_pn_str[SL_MEDIA_VENDOR_PN_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
@@ -373,7 +373,7 @@ int sl_media_lgrp_hpe_pn_str_get(struct sl_media_lgrp *media_lgrp, char *hpe_pn_
 		strscpy(hpe_pn_str, media_lgrp->cable_info->stashed_media_attr.hpe_pn_str, SL_MEDIA_HPE_PN_SIZE);
 		break;
 	default:
-		memset(hpe_pn_str, '0', SL_MEDIA_HPE_PN_SIZE - 2);
+		memset(hpe_pn_str, '0', SL_MEDIA_HPE_PN_SIZE - 1);
 		hpe_pn_str[SL_MEDIA_HPE_PN_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);
@@ -458,7 +458,7 @@ int sl_media_lgrp_date_code_str_get(struct sl_media_lgrp *media_lgrp, char *date
 			SL_MEDIA_DATE_CODE_SIZE);
 		break;
 	default:
-		memset(date_code_str, '0', SL_MEDIA_DATE_CODE_SIZE - 2);
+		memset(date_code_str, '0', SL_MEDIA_DATE_CODE_SIZE - 1);
 		date_code_str[SL_MEDIA_DATE_CODE_SIZE - 1] = '\0';
 	}
 	spin_unlock(&media_lgrp->media_jack->data_lock);

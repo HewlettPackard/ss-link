@@ -134,10 +134,13 @@ static ssize_t length_cm_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctrl_ldev_cable_hpe_pn_kobj *hpe_pn_kobj;
 	struct sl_media_ldev                  *media_ldev;
 	struct sl_media_cable_attr             entry;
+	int                                    rtn;
 
 	hpe_pn_kobj = container_of(kobj, struct sl_ctrl_ldev_cable_hpe_pn_kobj, kobj);
 	media_ldev  = sl_media_ldev_get(hpe_pn_kobj->ctrl_ldev->num);
-	sl_media_data_cable_db_entry_get_by_idx(media_ldev, hpe_pn_kobj->cable_idx, &entry);
+	rtn = sl_media_data_cable_db_entry_get(media_ldev, hpe_pn_kobj->cable_idx, &entry);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "length_cm show (ctrl_ldev = 0x%p, length_cm = %u)",
@@ -151,10 +154,13 @@ static ssize_t max_speed_show(struct kobject *kobj, struct kobj_attribute *kattr
 	struct sl_ctrl_ldev_cable_hpe_pn_kobj *hpe_pn_kobj;
 	struct sl_media_ldev                  *media_ldev;
 	struct sl_media_cable_attr             entry;
+	int                                    rtn;
 
 	hpe_pn_kobj = container_of(kobj, struct sl_ctrl_ldev_cable_hpe_pn_kobj, kobj);
 	media_ldev  = sl_media_ldev_get(hpe_pn_kobj->ctrl_ldev->num);
-	sl_media_data_cable_db_entry_get_by_idx(media_ldev, hpe_pn_kobj->cable_idx, &entry);
+	rtn = sl_media_data_cable_db_entry_get(media_ldev, hpe_pn_kobj->cable_idx, &entry);
+	if (rtn)
+		return sysfs_emit(buf, "error\n");
 
 	sl_log_dbg(hpe_pn_kobj->ctrl_ldev, LOG_BLOCK, LOG_NAME,
 		   "max_speed show (ctrl_ldev = 0x%p, max_speed = %s)",
@@ -294,14 +300,22 @@ static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 	media_ldev = sl_media_ldev_get(ctrl_ldev->num);
 
 	ctrl_ldev->cable_hpe_pns_kobj = kcalloc(media_ldev->cable_db.count,
-						sizeof(*ctrl_ldev->cable_hpe_pns_kobj),
-						GFP_KERNEL);
-	if (!ctrl_ldev->cable_hpe_pns_kobj)
+						sizeof(*ctrl_ldev->cable_hpe_pns_kobj), GFP_KERNEL);
+	if (!ctrl_ldev->cable_hpe_pns_kobj) {
+		sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db create no memory");
 		return -ENOMEM;
+	}
 
 	for (i = 0; i < media_ldev->cable_db.count; ++i) {
 		sl_log_dbg(ctrl_ldev, LOG_BLOCK, LOG_NAME, "db create (idx = %u)", i);
-		sl_media_data_cable_db_entry_get_by_idx(media_ldev, i, &entry);
+
+		rtn = sl_media_data_cable_db_entry_get(media_ldev, i, &entry);
+		if (rtn) {
+			sl_log_err_trace(ctrl_ldev, LOG_BLOCK, LOG_NAME,
+					 "db create entry_get (idx = %u) [%d]", i, rtn);
+			goto out;
+		}
+
 		switch (entry.type) {
 		case SL_MEDIA_TYPE_PEC:
 			type_kobj_num = SL_CABLE_TYPE_PEC;
@@ -329,23 +343,27 @@ static int sl_sysfs_cable_db_create(struct sl_ctrl_ldev *ctrl_ldev)
 					   hpe_pn);
 		if (rtn) {
 			sl_log_err(ctrl_ldev, LOG_BLOCK, LOG_NAME,
-				   "db create failed (idx = %u, type = 0x%X %s, vendor = %u %s, len = %ucm, hpe_pn = %u) [%d]",
+				   "db create kobject_init_and_add failed "
+				   "(idx = %u, type = 0x%X %s, vendor = %u %s, len = %ucm, hpe_pn = %u) [%d]",
 				   i, entry.type, sl_media_type_str(entry.type),
 				   entry.vendor, sl_media_vendor_str(entry.vendor),
 				   entry.length_cm, entry.hpe_pn, rtn);
 			kobject_put(&ctrl_ldev->cable_hpe_pns_kobj[i].kobj);
-			sl_sysfs_cable_db_delete(ctrl_ldev, i);
-			kfree(ctrl_ldev->cable_hpe_pns_kobj);
-			ctrl_ldev->cable_hpe_pns_kobj = NULL;
-			sl_sysfs_cable_vendors_delete(ctrl_ldev, SL_CABLE_TYPES_NUM, SL_CABLE_VENDORS_NUM);
-			sl_sysfs_cable_types_delete(ctrl_ldev, SL_CABLE_TYPES_NUM);
-			return -ENOMEM;
+			goto out;
 		}
 	}
 
 	return 0;
-}
 
+out:
+	sl_sysfs_cable_db_delete(ctrl_ldev, i);
+	kfree(ctrl_ldev->cable_hpe_pns_kobj);
+	ctrl_ldev->cable_hpe_pns_kobj = NULL;
+	sl_sysfs_cable_vendors_delete(ctrl_ldev, SL_CABLE_TYPES_NUM, SL_CABLE_VENDORS_NUM);
+	sl_sysfs_cable_types_delete(ctrl_ldev, SL_CABLE_TYPES_NUM);
+
+	return rtn;
+}
 static int sl_sysfs_cable_info_create(struct sl_ctrl_ldev *ctrl_ldev)
 {
 	int rtn;

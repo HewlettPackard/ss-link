@@ -4,6 +4,7 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
+#include <linux/bitmap.h>
 #include <linux/string.h>
 #include <linux/workqueue.h>
 
@@ -48,25 +49,41 @@ static struct notifier_block event_notifier = {
 /* max wait of 60s */
 #define SL_MEDIA_JACK_SCAN_DONE_TRIES_WAIT_MS 20
 #define SL_MEDIA_JACK_SCAN_DONE_TRIES         (60000 / SL_MEDIA_JACK_SCAN_DONE_TRIES_WAIT_MS)
-static int sl_media_data_jack_scan_done_check(struct sl_media_ldev *media_ldev, u32 done_check)
+static int sl_media_data_jack_scan_done_check(struct sl_media_ldev *media_ldev,
+					      const unsigned long *done_check)
 {
 	u32 done_tries;
 
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "scan done (done_check = 0x%X)", done_check);
+			 "scan done (done_check = 0x%lX)", *done_check);
 	done_tries = 0;
-	while ((sl_media_data_jack_insert_status_map_get(media_ldev->num) & done_check) != done_check) {
-		sl_media_log_dbg(media_ldev, LOG_NAME,
-				 "scan done (map = 0x%X)", sl_media_data_jack_insert_status_map_get(media_ldev->num));
+	while (!sl_media_data_jack_insert_status_map_contains(media_ldev->num, done_check)) {
 		if (done_tries++ >= SL_MEDIA_JACK_SCAN_DONE_TRIES) {
+			/* We can scan multiple times, don't log an error. Caller will log. */
 			sl_media_log_dbg(media_ldev, LOG_NAME,
-					 "scan done failed (map = 0x%X)", sl_media_data_jack_insert_status_map_get(media_ldev->num));
+					 "scan done failed (done_check = 0x%lX)", *done_check);
 			return -EIO;
 		}
 		msleep(SL_MEDIA_JACK_SCAN_DONE_TRIES_WAIT_MS);
 	}
 
 	return 0;
+}
+
+void sl_media_data_jack_scan_cancel(struct sl_media_ldev *media_ldev)
+{
+	u8 ldev_num;
+	u8 jack_num;
+
+	ldev_num = media_ldev->num;
+
+	sl_media_log_dbg(media_ldev, LOG_NAME, "scan cancel (ldev_num = %u)", ldev_num);
+
+	for (jack_num = 0; jack_num < SL_MEDIA_MAX_JACK_NUM; ++jack_num) {
+		sl_media_log_dbg(media_ldev, LOG_NAME, "scan cancel (jack_num = %u)", jack_num);
+
+		cancel_work_sync(&sl_media_data_jack_get(ldev_num, jack_num)->insert_work);
+	}
 }
 
 #define SL_MEDIA_JACK_STATUS_MASK  (XCVR_PRESENT | XCVR_JACK_POWERED | XCVR_OFFLINE)
@@ -82,9 +99,9 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 	int                         ret;
 	struct xcvr_jack_data_v3    jack_data;
 	struct xcvr_status_data     status_data;
-	u32                         done_check;
 	u8                          physical_jack_num;
 	int                         x;
+	DECLARE_BITMAP(done_check, SL_MEDIA_MAX_JACK_NUM);
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "scan (max_jack_num = %u)", SL_MEDIA_MAX_JACK_NUM);
 
@@ -94,14 +111,12 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 
 	rtn = register_hsnxcvr_notifier(&event_notifier);
 	if (rtn) {
-		sl_media_log_warn(media_ldev, LOG_NAME, "scan register jack event notifier failed [%d]", rtn);
-// FIXME: this seems bad
-		rtn = 0;
+		sl_media_log_err(media_ldev, LOG_NAME, "scan register jack event notifier failed [%d]", rtn);
 		goto out;
 	}
 
 	jack_count = 0;
-	done_check = 0;
+	bitmap_zero(done_check, SL_MEDIA_MAX_JACK_NUM);
 	hdl = hsnxcvr_get_next_hdl(NULL);
 	while (hdl && jack_count < SL_MEDIA_MAX_JACK_NUM) {
 		media_jack = sl_media_data_jack_get(media_ldev->num, jack_count);
@@ -183,7 +198,7 @@ int sl_media_data_jack_scan(struct sl_media_ldev *media_ldev)
 		    (media_jack->jack_type == XCVR_JACK_BACKPLANE)) {
 			media_jack->status = status_data.flags;
 			sl_media_data_jack_insert_status_map_clr(media_ldev->num, media_jack->num);
-			done_check |= BIT(jack_count);
+			set_bit(jack_count, done_check);
 			queue_work(media_ldev->workqueue, &media_jack->insert_work);
 		} else {
 			sl_media_log_info(media_jack, LOG_NAME,
@@ -199,13 +214,13 @@ next:
 
 	rtn = sl_media_data_jack_scan_done_check(media_ldev, done_check);
 	if (rtn) {
-		sl_media_log_warn(media_ldev, LOG_NAME, "scan done check failed [%d]", rtn);
+		sl_media_log_err(media_ldev, LOG_NAME, "scan done check failed [%d]", rtn);
 // FIXME: what else to do here
-		goto out;
+		goto unregister_event;
 	}
 
 	/* double check status */
-	done_check = 0;
+	bitmap_zero(done_check, SL_MEDIA_MAX_JACK_NUM);
 	for (x = 0; x < jack_count; ++x) {
 		media_jack = sl_media_data_jack_get(media_ldev->num, x);
 
@@ -232,7 +247,7 @@ next:
 			} else {
 				media_jack->status = status_data.flags;
 				sl_media_data_jack_insert_status_map_clr(media_ldev->num, media_jack->num);
-				done_check |= BIT(x);
+				set_bit(x, done_check);
 				queue_work(media_ldev->workqueue, &media_jack->insert_work);
 			}
 		} else {
@@ -248,12 +263,17 @@ next:
 
 	rtn = sl_media_data_jack_scan_done_check(media_ldev, done_check);
 	if (rtn) {
-		sl_media_log_warn(media_ldev, LOG_NAME, "scan done check failed [%d]", rtn);
+		sl_media_log_err(media_ldev, LOG_NAME, "scan done check failed [%d]", rtn);
 // FIXME: what else to do here
-		goto out;
+		goto unregister_event;
 	}
 
 	rtn = 0;
+
+	goto out;
+
+unregister_event:
+	sl_media_data_jack_unregister_event_notifier();
 
 out:
 
@@ -264,7 +284,15 @@ out:
 	return rtn;
 }
 
-void sl_media_data_jack_unregister_event_notifier(void)
+int sl_media_data_jack_unregister_event_notifier(void)
 {
-	unregister_hsnxcvr_notifier(&event_notifier);
+	int rtn;
+
+	rtn = unregister_hsnxcvr_notifier(&event_notifier);
+	if (rtn) {
+		sl_media_log_err(NULL, LOG_NAME, "unregister event notifier failed [%d]", rtn);
+		return rtn;
+	}
+
+	return 0;
 }

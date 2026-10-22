@@ -847,11 +847,10 @@ int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struc
 	spin_lock(&media_jack->data_lock);
 	switch (media_jack->lane_data.read_state) {
 	case SL_MEDIA_JACK_LANE_DATA_READ_STATE_IDLE:
+		reinit_completion(&media_jack->lane_data.read_complete);
 		media_jack->lane_data.read_state = SL_MEDIA_JACK_LANE_DATA_READ_STATE_BUSY;
 		sl_media_log_dbg(media_jack, LOG_NAME, "reading lane data - state set to BUSY");
 		spin_unlock(&media_jack->data_lock);
-
-		init_completion(&media_jack->lane_data.read_complete);
 
 		rtn = sl_media_jack_lane_data_get(ldev_num, lgrp_num, serdes_lane_map, &lane_data);
 
@@ -860,7 +859,7 @@ int sl_media_jack_signal_get(u8 ldev_num, u8 lgrp_num, u8 serdes_lane_map, struc
 		media_jack->lane_data.last_read_rtn = rtn;
 		spin_unlock(&media_jack->data_lock);
 
-		complete(&media_jack->lane_data.read_complete);
+		complete_all(&media_jack->lane_data.read_complete);
 
 		if (rtn) {
 			sl_media_log_err_trace(media_jack, LOG_NAME, "lane data read failed [%d]", rtn);
