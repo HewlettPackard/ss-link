@@ -1854,9 +1854,9 @@ static void sl_core_hw_link_fault_callback_start(struct sl_core_link *core_link)
 	switch (link_state) {
 	case SL_CORE_LINK_STATE_UP:
 		core_link->link.state = SL_CORE_LINK_STATE_GOING_DOWN;
+		spin_unlock(&core_link->link.state_lock);
 		core_link->config.fault_start_callback(core_link->core_lgrp->core_ldev->num,
 						       core_link->core_lgrp->num, core_link->num);
-		spin_unlock(&core_link->link.state_lock);
 		break;
 	default:
 		sl_core_log_dbg(core_link, LOG_NAME,
