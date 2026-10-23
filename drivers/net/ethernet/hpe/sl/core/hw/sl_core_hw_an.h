@@ -96,7 +96,7 @@ enum sl_core_hw_an_state {
 #define SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP             BIT(18)
 #define SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID       BIT(19)
 
-void sl_core_hw_an_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data);
+void sl_core_hw_an_intr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, void *data);
 
 void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link,
 				   struct sl_link_caps *my_caps);

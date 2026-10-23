@@ -41,6 +41,7 @@ struct sl_core_ldev {
 	u8                        num;
 
 	u8                        platform;
+	u16                       device_id;
 	u16                       revision;
 
 	struct sl_accessors       accessors;

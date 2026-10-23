@@ -200,24 +200,32 @@ EXPORT_SYMBOL(sl_media_vendor_str);
 const char *sl_media_speed_str(u32 speed)
 {
 	switch (speed) {
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
-		return "ck1600G";
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
-		return "ck800G";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_400G:
 		return "ck400G";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
 		return "ck200G";
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
 		return "ck100G";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
 		return "bs200G";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 		return "bj100G";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
 		return "cd100G";
 	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
 		return "cd50G";
+
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_800G:
+		return "dj800G";
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_400G:
+		return "dj400G";
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_200G:
+		return "dj200G";
+
 	default:
 		return "invalid";
 	}
@@ -245,48 +253,64 @@ const char *sl_media_host_interface_str(u32 speed, u32 type)
 {
 	if (!SL_MEDIA_LGRP_MEDIA_TYPE_IS_ACTIVE(type)) {
 		switch (speed) {
-		case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
-			return "50GBASE-CR";
-		case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
-			return "100GBASE-CR2";
-		case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
-			return "100GBASE-CR1";
-		case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
-			return "200GBASE-CR4";
-		case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
-			return "200GBASE-CR2";
+
 		case SL_MEDIA_SPEEDS_SUPPORT_CK_400G:
 			return "400GBASE-CR4";
-		case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
-			return "800GBASE-CR8";
-		case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
-			return "1600GBASE-CR16";
+		case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
+			return "200GBASE-CR2";
+		case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
+			return "100GBASE-CR1";
+
+		case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
+			return "200GBASE-CR4";
+
 		case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 			return "BJ-100G";
+
+		case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
+			return "100GBASE-CR2";
+		case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
+			return "50GBASE-CR";
+
+		case SL_MEDIA_SPEEDS_SUPPORT_DJ_800G:
+			return "800GBASE-CR8";
+		case SL_MEDIA_SPEEDS_SUPPORT_DJ_400G:
+			return "400GBASE-CR4";
+		case SL_MEDIA_SPEEDS_SUPPORT_DJ_200G:
+			return "200GBASE-CR2";
+
 		default:
 			return "invalid";
 		}
 	}
 
 	switch (speed) {
-	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
-		return "50GAUI-1-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
-		return "100GAUI-2-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
-		return "100GAUI-1-L-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
-		return "200GAUI-4-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
-		return "200GAUI-2-S-C2M";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_CK_400G:
 		return "400GAUI-4-S-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_800G:
-		return "800GAUI-8-S-C2M";
-	case SL_MEDIA_SPEEDS_SUPPORT_CK_1600G:
-		return "1600GAUI-16-S-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_CK_200G:
+		return "200GAUI-2-S-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_CK_100G:
+		return "100GAUI-1-L-C2M";
+
+	case SL_MEDIA_SPEEDS_SUPPORT_BS_200G:
+		return "200GAUI-4-C2M";
+
 	case SL_MEDIA_SPEEDS_SUPPORT_BJ_100G:
 		return "BJ-100G";
+
+	case SL_MEDIA_SPEEDS_SUPPORT_CD_100G:
+		return "100GAUI-2-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_CD_50G:
+		return "50GAUI-1-C2M";
+
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_800G:
+		return "800GAUI-8-S-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_400G:
+		return "400GAUI-4-S-C2M";
+	case SL_MEDIA_SPEEDS_SUPPORT_DJ_200G:
+		return "200GAUI-2-S-C2M";
+
 	default:
 		return "invalid";
 	}

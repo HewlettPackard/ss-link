@@ -43,25 +43,39 @@ static void sl_core_hw_intr_flgs_clr_source(struct sl_core_link *core_link, u32 
 	sl_core_flush64(core_link, SS2_PORT_PML_ERR_CLR);
 }
 
-void sl_core_hw_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
+void sl_core_hw_intr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, void *data)
 {
 	int                          rtn;
 	struct sl_core_hw_intr_data *info;
 	struct sl_core_link         *core_link;
 	int                          x;
 
-	info = data;
+	if (!err_flgs) {
+		sl_core_log_warn(NULL, LOG_NAME, "err_flgs NULL");
+		return;
+	}
+	if (!data) {
+		sl_core_log_warn(NULL, LOG_NAME, "data NULL");
+		return;
+	}
+
+	info      = data;
 	core_link = info->link;
 
+	if (!core_link) {
+		sl_core_log_warn(NULL, LOG_NAME, "link NULL");
+		return;
+	}
+
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"hdlr - %s (link = 0x%p, intr = %u, work = %u)",
-		info->log, core_link, info->intr_num, info->work_num);
+			"hdlr %s (num = %u, link = 0x%p, intr = %u, work = %u)",
+			info->log, intr_num, core_link, info->intr_num, info->work_num);
 
 	rtn = sl_core_hw_intr_flgs_disable(core_link, info->intr_num);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_link, LOG_NAME,
-			"hdlr - %s - flgs disable failed [%d]",
-			info->log, rtn);
+				       "hdlr %s flgs_disable failed [%d]",
+				       info->log, rtn);
 
 	for (x = 0; x < SL_CORE_HW_INTR_FLGS_COUNT; ++x)
 		core_link->intrs[info->intr_num].source[x] |= err_flgs[x];

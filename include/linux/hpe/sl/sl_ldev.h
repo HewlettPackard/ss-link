@@ -19,7 +19,7 @@ struct sl_ldev_policy {
 	u32 options;
 };
 
-typedef void (*sl_intr_handler_t)(u64 *err_flags, int flag_count, void *data);
+typedef void (*sl_intr_handler_t)(u16 intr_num, u64 *err_flags, int flag_count, void *data);
 
 /* ASIC types */
 typedef u64 (*sl_read64_t)(void *pci_accessor, long addr);
@@ -60,7 +60,7 @@ typedef int (*sl_uc_wr8_t)(void *uc_accessor, u8 page, u8 addr, u8 data);
 typedef void (*sl_uc_led_set_t)(void *uc_accessor, u8 led_pattern);
 
 /* MB types */
-typedef int (*sl_mb_info_get_t)(void *mb_accessor, u8 *platform, u16 *revision, u16 *proto);
+typedef int (*sl_mb_info_get_t)(void *mb_accessor, u8 *platform, u16 *device_id, u16 *revision, u16 *proto);
 
 /* DMAC types */
 typedef int  (*sl_dmac_alloc_t)(void *dmac_accessor, u32 offset, size_t size);

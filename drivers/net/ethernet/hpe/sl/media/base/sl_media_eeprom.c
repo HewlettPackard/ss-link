@@ -80,11 +80,11 @@ static void sl_media_eeprom_appsel_info_store(struct sl_media_jack *media_jack, 
 	case SL_MEDIA_SS2_HOST_INTERFACE_800GBASE_CR8:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_BJ_100G;
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
-		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_800G;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_DJ_800G;
 		break;
 	case SL_MEDIA_SS2_HOST_INTERFACE_800GAUI_8_S_C2M:
 		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_400G;
-		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_CK_800G;
+		*speeds_map |= SL_MEDIA_SPEEDS_SUPPORT_DJ_800G;
 		if (!media_jack->host_interface_400_gaui) {
 			media_jack->appsel_num_400_gaui = appsel_num;
 			media_jack->host_interface_400_gaui = host_interface;

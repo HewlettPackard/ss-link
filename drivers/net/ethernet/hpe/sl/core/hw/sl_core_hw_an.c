@@ -597,17 +597,31 @@ out:
 	queue_work(core_link->core_lgrp->core_ldev->workqueue, &core_link->work[core_link->an.done_work_num]);
 }
 
-void sl_core_hw_an_intr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
+void sl_core_hw_an_intr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, void *data)
 {
 	struct sl_core_hw_intr_data *info;
 	struct sl_core_link         *core_link;
 
-	info = data;
+	if (!err_flgs) {
+		sl_core_log_warn(NULL, LOG_NAME, "err_flgs NULL");
+		return;
+	}
+	if (!data) {
+		sl_core_log_warn(NULL, LOG_NAME, "data NULL");
+		return;
+	}
+
+	info      = data;
 	core_link = info->link;
 
+	if (!core_link) {
+		sl_core_log_warn(NULL, LOG_NAME, "link NULL");
+		return;
+	}
+
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"hdlr %s (link = 0x%p, intr = %u)",
-		info->log, core_link, info->intr_num);
+			"hdlr %s (num = %u, link = 0x%p, intr = %u)",
+			info->log, intr_num, core_link, info->intr_num);
 
 	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_AN_PAGE_RECV);
 

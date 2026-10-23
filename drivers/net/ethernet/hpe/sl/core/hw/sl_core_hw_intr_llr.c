@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2024-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/types.h>
 #include <linux/string.h>
@@ -20,24 +20,38 @@
  *
  * Context: Interrupt context.
  */
-void sl_core_hw_intr_llr_hdlr(u64 *err_flgs, int num_err_flgs, void *data)
+void sl_core_hw_intr_llr_hdlr(u16 intr_num, u64 *err_flgs, int num_err_flgs, void *data)
 {
 	int                              rtn;
 	struct sl_core_hw_intr_llr_data *info;
 	struct sl_core_llr              *core_llr;
 
-	info = data;
+	if (!err_flgs) {
+		sl_core_log_warn(NULL, LOG_NAME, "err_flgs NULL");
+		return;
+	}
+	if (!data) {
+		sl_core_log_warn(NULL, LOG_NAME, "data NULL");
+		return;
+	}
+
+	info     = data;
 	core_llr = info->core_llr;
 
+	if (!core_llr) {
+		sl_core_log_warn(NULL, LOG_NAME, "llr NULL");
+		return;
+	}
+
 	sl_core_log_dbg(core_llr, LOG_NAME,
-		"hdlr - %s (llr = 0x%p, intr = %d, work = %d)",
-		info->log, core_llr, info->intr_num, info->work_num);
+			"hdlr %s (num = %u, llr = 0x%p, intr = %d, work = %d)",
+			info->log, intr_num, core_llr, info->intr_num, info->work_num);
 
 	rtn = sl_core_hw_intr_llr_flgs_disable(core_llr, info->intr_num);
 	if (rtn != 0)
 		sl_core_log_warn_trace(core_llr, LOG_NAME,
-			"hdlr - %s - flgs disable failed [%d]",
-			info->log, rtn);
+				       "hdlr %s flgs_disable failed [%d]",
+				       info->log, rtn);
 
 	memcpy(&(core_llr->intrs[info->intr_num].source), err_flgs,
 		sizeof(core_llr->intrs[info->intr_num].source));

@@ -48,7 +48,8 @@ int sl_core_data_ldev_new(u8 ldev_num, struct sl_accessors *accessors,
 	spin_lock_init(&(core_ldev->data_lock));
 
 	rtn = core_ldev->ops.mb_info_get(core_ldev->accessors.mb,
-		&(core_ldev->platform), &(core_ldev->revision), &proto);
+					 &core_ldev->platform, &core_ldev->device_id,
+					 &core_ldev->revision, &proto);
 	if (rtn) {
 		sl_core_log_err(core_ldev, LOG_NAME, "mb_info_get failed [%d]", rtn);
 		return -EIO;
