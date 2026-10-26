@@ -16,7 +16,7 @@ import os
 import re
 import sys
 import struct
-from datetime import date
+import time
 
 DEFAULT_INFILE  = "sl_cable_db.tsv"
 DEFAULT_OUTFILE = "sl_cable_db.bin"
@@ -79,6 +79,7 @@ CABLE_DB_HDR_VERSION  = _fw["SL_MEDIA_CABLE_DB_HDR_VERSION"]
 CABLE_DB_DATA_VERSION = _fw["SL_MEDIA_CABLE_DB_DATA_VERSION"]
 VENDOR_PN_SIZE        = _sl["SL_MEDIA_VENDOR_PN_SIZE"]
 
+# Header and fixed-size fields are little-endian.
 HDR_FMT  = "<IIIII"
 HDR_SIZE = struct.calcsize(HDR_FMT)
 
@@ -189,8 +190,13 @@ def main():
             records.append(parse_record(fields, lineno))
 
     total  = len(records)
+
+    date_s = time.time_ns() // 1_000_000_000
+    if not 0 <= date_s <= 0xFFFFFFFF:
+        raise ValueError(f"timestamp does not fit in the 32-bit cable DB header field: {date_s}")
+
     header = struct.pack(HDR_FMT, CABLE_DB_MAGIC, CABLE_DB_HDR_VERSION,
-                         CABLE_DB_DATA_VERSION, total, date.today().toordinal())
+                         CABLE_DB_DATA_VERSION, total, date_s)
 
     with open(outfile, "wb") as f:
         f.write(header)

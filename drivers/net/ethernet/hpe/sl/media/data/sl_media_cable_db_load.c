@@ -5,6 +5,15 @@
 #include <linux/overflow.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/time.h>
+#include <linux/types.h>
+#include <linux/version.h>
+
+#if KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE
+#include <asm/unaligned.h>
+#else
+#include <linux/unaligned.h>
+#endif
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -33,19 +42,19 @@ int sl_media_data_cable_db_entry_get(struct sl_media_ldev *media_ldev, u32 idx,
 	case SL_MEDIA_CABLE_DB_DATA_VERSION:
 		v1 = media_ldev->cable_db.data + idx * media_ldev->cable_db.record_size;
 
-		attr->hpe_pn    = v1->hpe_pn;
-		attr->vendor    = v1->vendor;
-		attr->type      = v1->type;
-		attr->shape     = v1->shape;
-		attr->length_cm = v1->length_cm;
-		attr->max_speed = v1->max_speed;
+		attr->hpe_pn    = le32_to_cpu(v1->hpe_pn);
+		attr->vendor    = le32_to_cpu(v1->vendor);
+		attr->type      = le32_to_cpu(v1->type);
+		attr->shape     = le32_to_cpu(v1->shape);
+		attr->length_cm = le32_to_cpu(v1->length_cm);
+		attr->max_speed = le32_to_cpu(v1->max_speed);
 
-		attr->serdes_settings.pre1   = v1->serdes_pre1;
-		attr->serdes_settings.pre2   = v1->serdes_pre2;
-		attr->serdes_settings.pre3   = v1->serdes_pre3;
-		attr->serdes_settings.cursor = v1->serdes_cursor;
-		attr->serdes_settings.post1  = v1->serdes_post1;
-		attr->serdes_settings.post2  = v1->serdes_post2;
+		attr->serdes_settings.pre1   = (s16)le16_to_cpu(v1->serdes_pre1);
+		attr->serdes_settings.pre2   = (s16)le16_to_cpu(v1->serdes_pre2);
+		attr->serdes_settings.pre3   = (s16)le16_to_cpu(v1->serdes_pre3);
+		attr->serdes_settings.cursor = (s16)le16_to_cpu(v1->serdes_cursor);
+		attr->serdes_settings.post1  = (s16)le16_to_cpu(v1->serdes_post1);
+		attr->serdes_settings.post2  = (s16)le16_to_cpu(v1->serdes_post2);
 
 		attr->fw_ver.major       = v1->fw_ver_major;
 		attr->fw_ver.minor       = v1->fw_ver_minor;
@@ -73,6 +82,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	u32                              hdr_version;
 	u32                              data_version;
 	u32                              count;
+	u32                              date_s;
 	u32                              hdr_size;
 	u32                              record_size;
 	u32                              blob_size;
@@ -80,6 +90,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 	void                            *blob;
 	int                              rtn;
 	struct sl_media_cable_db_hdr_v1  hdr_v1;
+	struct tm                        db_date;
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "db load");
 
@@ -98,7 +109,7 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		goto out_release;
 	}
 
-	memcpy(&magic, fw->data + SL_MEDIA_CABLE_DB_MAGIC_OFFSET, sizeof(magic));
+	magic = le32_to_cpu(get_unaligned_le32(fw->data + SL_MEDIA_CABLE_DB_MAGIC_OFFSET));
 
 	if (magic != SL_MEDIA_CABLE_DB_MAGIC) {
 		sl_media_log_err(media_ldev, LOG_NAME,
@@ -108,15 +119,16 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		goto out_release;
 	}
 
-	memcpy(&hdr_version, fw->data + SL_MEDIA_CABLE_DB_HDR_VER_OFFSET, sizeof(hdr_version));
+	hdr_version = le32_to_cpu(get_unaligned_le32(fw->data + SL_MEDIA_CABLE_DB_HDR_VER_OFFSET));
 
 	sl_media_log_dbg(media_ldev, LOG_NAME, "db load (hdr_version = %u)", hdr_version);
 
 	switch (hdr_version) {
 	case SL_MEDIA_CABLE_DB_HDR_VERSION:
 		memcpy(&hdr_v1, fw->data, sizeof(hdr_v1));
-		data_version = hdr_v1.data_version;
-		count        = hdr_v1.count;
+		data_version = le32_to_cpu(hdr_v1.data_version);
+		count        = le32_to_cpu(hdr_v1.count);
+		date_s       = le32_to_cpu(hdr_v1.date_s);
 		hdr_size     = sizeof(hdr_v1);
 		break;
 	default:
@@ -126,8 +138,14 @@ int sl_media_data_cable_db_load(struct sl_media_ldev *media_ldev)
 		goto out_release;
 	}
 
+	time64_to_tm(date_s, 0, &db_date);
+
+	/* tm_year is years since 1900 */
 	sl_media_log_dbg(media_ldev, LOG_NAME,
-			 "db load (data_version = %u, count = %u)", data_version, count);
+			 "db load (data_version = %u, count = %u, date = %04ld-%02d-%02d %02d:%02d:%02d)",
+			 data_version, count, db_date.tm_year + 1900,
+			 db_date.tm_mon + 1, db_date.tm_mday,
+			 db_date.tm_hour, db_date.tm_min, db_date.tm_sec);
 
 	switch (data_version) {
 	case SL_MEDIA_CABLE_DB_DATA_VERSION:

@@ -20,11 +20,12 @@
 
 // FIXME: need to add this info to sysfs
 struct sl_media_cable_db_hdr_v1 {
-	u32 magic;
-	u32 hdr_version;
-	u32 data_version;
-	u32 count;
-	u32 date_s;
+	__le32 magic;
+	__le32 hdr_version;
+	__le32 data_version;
+	__le32 count;
+	/* Unix time in seconds; 32 bits overflows in 2038, change to 64 bits before then */
+	__le32 date_s;
 };
 
 #define SL_MEDIA_DB_HDR_SIZE sizeof(struct sl_media_cable_db_hdr_v1)
@@ -36,18 +37,18 @@ static_assert(sizeof(struct sl_media_cable_db_hdr_v1) == SL_MEDIA_DB_HDR_SIZE,
 union sl_media_cable_db_record_v1 {
 	u8 bytes[SL_MEDIA_CABLE_DB_RECORD_BASE_SIZE_BYTES];
 	struct {
-		u32 hpe_pn;
-		u32 vendor;
-		u32 type;
-		u32 shape;
-		u32 length_cm;
-		u32 max_speed;
-		s16 serdes_pre1;
-		s16 serdes_pre2;
-		s16 serdes_pre3;
-		s16 serdes_cursor;
-		s16 serdes_post1;
-		s16 serdes_post2;
+		__le32 hpe_pn;
+		__le32 vendor;
+		__le32 type;
+		__le32 shape;
+		__le32 length_cm;
+		__le32 max_speed;
+		__le16 serdes_pre1;
+		__le16 serdes_pre2;
+		__le16 serdes_pre3;
+		__le16 serdes_cursor;
+		__le16 serdes_post1;
+		__le16 serdes_post2;
 		s8  fw_ver_major;
 		s8  fw_ver_minor;
 		s8  fw_ver_split_major;
