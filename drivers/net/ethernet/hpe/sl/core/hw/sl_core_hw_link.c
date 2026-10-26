@@ -34,6 +34,8 @@
 #include "hw/sl_core_hw_reset.h"
 #include "sl_ctrl_lgrp.h"
 #include "sl_ctrl_link_counters.h"
+#include "sl_ctrl_mac.h"
+#include "sl_ctrl_llr.h"
 
 #define LOG_NAME SL_CORE_HW_LINK_LOG_NAME
 
@@ -49,6 +51,8 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	u8                    ldev_num;
 	u8                    lgrp_num;
 	u8                    link_num;
+	struct sl_ctrl_mac   *ctrl_mac;
+	struct sl_ctrl_llr   *ctrl_llr;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "link off");
 
@@ -56,8 +60,16 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 	lgrp_num = core_link->core_lgrp->num;
 	link_num = core_link->num;
 
-	core_mac   = sl_core_mac_get(ldev_num, lgrp_num, link_num);
-	core_llr   = sl_core_llr_get(ldev_num, lgrp_num, link_num);
+	ctrl_mac = sl_ctrl_mac_get_ref(ldev_num, lgrp_num, link_num);
+	if (!ctrl_mac)
+		sl_ctrl_log_warn_trace(NULL, LOG_NAME, "link off NULL mac");
+
+	ctrl_llr = sl_ctrl_llr_get_ref(ldev_num, lgrp_num, link_num);
+	if (!ctrl_llr)
+		sl_ctrl_log_warn_trace(NULL, LOG_NAME, "link off NULL llr");
+
+	core_mac   = ctrl_mac ? sl_core_mac_get(ldev_num, lgrp_num, link_num) : NULL;
+	core_llr   = ctrl_llr ? sl_core_llr_get(ldev_num, lgrp_num, link_num) : NULL;
 	media_lgrp = sl_media_lgrp_get(ldev_num, lgrp_num);
 
 	if (core_llr)
@@ -79,7 +91,7 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 
 	sl_core_hw_serdes_link_down(core_link);
 
-	rtn  = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
+	rtn = sl_media_jack_cable_temp_state_get(media_lgrp->media_jack, &temperature_state);
 	if (rtn)
 		sl_core_log_warn_trace(core_link, LOG_NAME, "link off cable_temp_state_get failed [%d]", rtn);
 
@@ -98,6 +110,12 @@ static void sl_core_hw_link_off(struct sl_core_link *core_link)
 		if (rx_state == SL_CORE_MAC_STATE_ON)
 			sl_core_hw_mac_rx_start(core_mac);
 	}
+
+	if (ctrl_llr)
+		sl_ctrl_llr_put_ref(ctrl_llr);
+
+	if (ctrl_mac)
+		sl_ctrl_mac_put_ref(ctrl_mac);
 }
 
 static void sl_core_hw_link_high_ser_intr_work_priv(struct sl_core_link *core_link)
