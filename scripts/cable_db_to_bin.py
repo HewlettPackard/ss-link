@@ -4,7 +4,7 @@
 # Converts the cable DB text table (TSV) to a firmware binary.
 #
 # Dependencies:
-#   Python 3 standard library only
+#   Python 3.6+ standard library only
 #
 # Usage:
 #   python3 <script> [infile] [outfile]
@@ -12,6 +12,7 @@
 #     infile  = sl_cable_db.tsv
 #     outfile = sl_cable_db.bin
 
+import math
 import os
 import re
 import sys
@@ -191,7 +192,8 @@ def main():
 
     total  = len(records)
 
-    date_s = time.time_ns() // 1_000_000_000
+    # Timestamp is given as a float. Round down.
+    date_s = math.floor(time.time())
     if not 0 <= date_s <= 0xFFFFFFFF:
         raise ValueError(f"timestamp does not fit in the 32-bit cable DB header field: {date_s}")
 
