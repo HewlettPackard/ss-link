@@ -14,6 +14,7 @@ settings="${SL_TEST_DIR}/systems/settings/ck400_x1.sh"
 ldev_num=0
 lgrp_nums=({0..63})
 link_up_timeouts=({100..3000..100})
+num_timeouts=${#link_up_timeouts[@]}
 
 function test_cleanup {
 	local rtn
@@ -144,18 +145,19 @@ function main {
 
 SCRIPT_NAME=$(basename $0)
 
-usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief] [-g | --lgrp_nums]"
+usage="Usage: ${SCRIPT_NAME} [-h | --help] [-b | --brief] [-g | --lgrp_nums] [-c | --count]"
 description=$(cat <<-EOF
 ${brief}
 
 Options:
 -b, --brief	Brief test description.
+-c, --count	Number of timeout values to sweep (1-${#link_up_timeouts[@]}).
 -g, --lgrp_nums Link group numbers to test.
 -h, --help	This message.
 EOF
 )
 
-options=$(getopt -o "hg:b" --long "help,lgrp_nums:,brief" -- "$@")
+options=$(getopt -o "hg:bc:" --long "help,lgrp_nums:,brief,count:" -- "$@")
 
 if [ "$?" != 0 ]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
@@ -176,7 +178,10 @@ while true; do
 		-g | --lgrp_nums)
 			lgrp_nums=(${2})
 			shift 2
-			break
+			;;
+		-c | --count)
+			num_timeouts=$2
+			shift 2
 			;;
 		-b | --brief)
 			echo ${brief}
@@ -192,14 +197,33 @@ while true; do
 	esac
 done
 
-shift
-
 if [[ "$#" != 0 ]]; then
 	sl_test_error_log "${SCRIPT_NAME}" "Incorrect number of arguments"
 	echo "${usage}"
 	echo "${description}"
 	exit 1
 fi
+
+if [[ ! "${num_timeouts}" =~ ^[0-9]+$ ]]; then
+	sl_test_error_log "${SCRIPT_NAME}" \
+		"Timeout count must be between 1 and ${#link_up_timeouts[@]}"
+	echo "${usage}"
+	exit 1
+fi
+
+while [[ ${#num_timeouts} -gt 1 && "${num_timeouts:0:1}" == "0" ]]; do
+	num_timeouts=${num_timeouts#0}
+done
+
+if (( ${#num_timeouts} > 2 || num_timeouts < 1 ||
+	num_timeouts > ${#link_up_timeouts[@]} )); then
+	sl_test_error_log "${SCRIPT_NAME}" \
+		"Timeout count must be between 1 and ${#link_up_timeouts[@]}"
+	echo "${usage}"
+	exit 1
+fi
+
+link_up_timeouts=("${link_up_timeouts[@]:0:num_timeouts}")
 
 sl_test_info_log "${SCRIPT_NAME}" "Starting"
 main $1
