@@ -26,6 +26,16 @@
 #define SL_CORE_HW_AN_STATE_COMPLETE_ACK  5
 #define SL_CORE_HW_AN_STATE_AN_GOOD_CHECK 9
 
+static const u32 tech_priority[] = {
+	SL_LGRP_CONFIG_TECH_CK_400G,
+	SL_LGRP_CONFIG_TECH_CK_200G,
+	SL_LGRP_CONFIG_TECH_BS_200G,
+	SL_LGRP_CONFIG_TECH_CK_100G,
+	SL_LGRP_CONFIG_TECH_CD_100G,
+	SL_LGRP_CONFIG_TECH_BJ_100G,
+	SL_LGRP_CONFIG_TECH_CD_50G,
+};
+
 void sl_core_hw_an_tx_pages_encode(struct sl_core_link *core_link, struct sl_link_caps *my_caps)
 {
 	int x;
@@ -490,9 +500,9 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 
 	/* common maps */
 	tech_map &= my_caps->tech_map;
-	for (x = 31; x >= 0; --x) {
-		if (tech_map & BIT(x)) {
-			link_caps->tech_map = BIT(x);
+	for (x = 0; x < ARRAY_SIZE(tech_priority); ++x) {
+		if (tech_map & tech_priority[x]) {
+			link_caps->tech_map = tech_priority[x];
 			break;
 		}
 	}
