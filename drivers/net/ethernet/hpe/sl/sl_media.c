@@ -179,10 +179,10 @@ const char *sl_media_vendor_str(u32 vendor)
 		return "leoni";
 	case SL_MEDIA_VENDOR_FINISAR:
 		return "finisar";
-	case SL_MEDIA_VENDOR_MOLEX:
-		return "molex";
 	case SL_MEDIA_VENDOR_BIZLINK:
 		return "bizlink";
+	case SL_MEDIA_VENDOR_MOLEX:
+		return "molex";
 	case SL_MEDIA_VENDOR_HPE:
 		return "hpe";
 	case SL_MEDIA_VENDOR_CLOUD_LIGHT:
@@ -191,6 +191,8 @@ const char *sl_media_vendor_str(u32 vendor)
 		return "multilane";
 	case SL_MEDIA_VENDOR_AMPHENOL:
 		return "amphenol";
+	case SL_MEDIA_VENDOR_LIGENT:
+		return "ligent";
 	default:
 		return "invalid";
 	}

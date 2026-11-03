@@ -73,6 +73,11 @@ int sl_media_data_cable_db_ops_cable_validate(struct sl_media_attr *media_attr, 
 			if (entry.vendor != SL_MEDIA_VENDOR_LEONI &&
 			    entry.vendor != SL_MEDIA_VENDOR_BIZLINK)
 				continue;
+		if (media_attr->vendor == SL_MEDIA_VENDOR_HISENSE ||
+		    media_attr->vendor == SL_MEDIA_VENDOR_LIGENT)
+			if (entry.vendor != SL_MEDIA_VENDOR_HISENSE &&
+			    entry.vendor != SL_MEDIA_VENDOR_LIGENT)
+				continue;
 
 		media_attr->shape                    = entry.shape;
 		media_attr->max_speed                = entry.max_speed;

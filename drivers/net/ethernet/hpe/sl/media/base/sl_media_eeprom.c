@@ -257,24 +257,16 @@ struct vendor {
 	u32  type;
 };
 static const struct vendor vendor_list[] = {
-	{ .name = "TE Connectivity",
-	  .type = SL_MEDIA_VENDOR_TE },
-	{ .name = "Hisense",
-	  .type = SL_MEDIA_VENDOR_HISENSE },
-	{ .name = "FINISAR CORP",
-	  .type = SL_MEDIA_VENDOR_FINISAR },
-	{ .name = "Bizlink",
-	  .type = SL_MEDIA_VENDOR_BIZLINK },
-	{ .name = "Cloud Light",
-	  .type = SL_MEDIA_VENDOR_CLOUD_LIGHT },
-	{ .name = "Molex",
-	  .type = SL_MEDIA_VENDOR_MOLEX },
-	{ .name = "MULTILANE",
-	  .type = SL_MEDIA_VENDOR_MULTILANE },
-	{ .name = "Amphenol",
-	  .type = SL_MEDIA_VENDOR_AMPHENOL },
-	{ .name = "Leoni",
-	  .type = SL_MEDIA_VENDOR_LEONI },
+	{ .name = "TE Connectivity", .type = SL_MEDIA_VENDOR_TE          },
+	{ .name = "Hisense",         .type = SL_MEDIA_VENDOR_HISENSE     },
+	{ .name = "Leoni",           .type = SL_MEDIA_VENDOR_LEONI       },
+	{ .name = "FINISAR CORP",    .type = SL_MEDIA_VENDOR_FINISAR     },
+	{ .name = "Bizlink",         .type = SL_MEDIA_VENDOR_BIZLINK     },
+	{ .name = "Molex",           .type = SL_MEDIA_VENDOR_MOLEX       },
+	{ .name = "Cloud Light",     .type = SL_MEDIA_VENDOR_CLOUD_LIGHT },
+	{ .name = "MULTILANE",       .type = SL_MEDIA_VENDOR_MULTILANE   },
+	{ .name = "Amphenol",        .type = SL_MEDIA_VENDOR_AMPHENOL    },
+	{ .name = "Ligent",          .type = SL_MEDIA_VENDOR_LIGENT      },
 };
 static int sl_media_eeprom_vendor_get(struct sl_media_jack *media_jack, u8 format, u32 *vendor)
 {
