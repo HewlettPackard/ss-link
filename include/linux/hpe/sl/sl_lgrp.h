@@ -192,6 +192,7 @@ struct sl_lgrp_notif_msg {
 
 #define SL_MAX_LANES 4
 struct sl_dt_lgrp_info {
+	u8 die_num;
 	u8 sbus_ring;
 	u8 dev_id;
 	u8 dev_addr;
