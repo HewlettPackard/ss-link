@@ -3,6 +3,12 @@
 
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
+#include <linux/bitops.h>
+#include <linux/version.h>
+
+#if KERNEL_VERSION(6, 6, 0) <= LINUX_VERSION_CODE
+#include <linux/int_log.h>
+#endif
 
 #include <linux/hpe/sl/sl_media.h>
 
@@ -19,6 +25,7 @@
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_jack.h"
 #include "base/sl_media_eeprom.h"
+#include "hw/sl_media_hw_power.h"
 #include "sl_sysfs_media_last_cable.h"
 
 #define LOG_BLOCK SL_LOG_BLOCK
@@ -70,6 +77,185 @@ static ssize_t cable_state_show(struct kobject *kobj, struct kobj_attribute *kat
 		   sl_media_jack_cable_state_str(cable_state));
 
 	return sysfs_emit(buf, "%s\n", sl_media_jack_cable_state_str(cable_state));
+}
+
+static ssize_t supported_monitors_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_media_lgrp *media_lgrp;
+	char                  supported_str[SL_STR_MAP_STR_SIZE_DEFAULT];
+	u32                   media_type;
+	u8                    supported;
+	int                   rtn;
+
+	media_lgrp = container_of(kobj->parent, struct sl_media_lgrp, kobj);
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME, "supported monitors show");
+
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
+	}
+
+	rtn = sl_media_lgrp_type_get(media_lgrp, &media_type);
+	if (rtn) {
+		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME, "supported monitors show type get failed [%d]", rtn);
+		return rtn;
+	}
+
+	if (!(media_type & SL_MEDIA_TYPE_OPTICAL))
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_OPTICAL "\n");
+
+	rtn = sl_media_jack_optical_monitors_supported_get(media_lgrp->media_jack, &supported);
+	if (rtn) {
+		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME, "supported monitors show get failed [%d]", rtn);
+		if (rtn == -EOPNOTSUPP)
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
+	}
+
+	rtn = sl_media_hw_power_optical_monitors_supported_str(supported, supported_str, sizeof(supported_str));
+	if (rtn) {
+		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME, "supported monitors show str failed [%d]", rtn);
+		return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
+	}
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME, "supported monitors show (supported = 0x%X %s)",
+		   supported, supported_str);
+
+	return sysfs_emit(buf, "%s\n", supported_str);
+}
+
+enum sl_sysfs_optical_monitor_type {
+	SL_SYSFS_TX_POWER_MW   = 1,
+	SL_SYSFS_TX_POWER_DBM,
+	SL_SYSFS_RX_POWER_MW,
+	SL_SYSFS_RX_POWER_DBM,
+	SL_SYSFS_TX_BIAS_MA,
+};
+
+struct sl_sysfs_optical_monitor_attribute {
+	struct kobj_attribute kattr;
+	u8                    lane;
+	u8                    type;
+};
+
+#if KERNEL_VERSION(6, 6, 0) <= LINUX_VERSION_CODE
+static int optical_monitor_dbm(int mw, int *dbm)
+{
+	/* Value cannot be 0 when calculating dBm because it is logarithmic. 0 dBm represents 1 mW. */
+	if (mw == 0) {
+		sl_log_err(NULL, LOG_BLOCK, LOG_NAME, "optical monitor dbm failed (mw = %d)", mw);
+		return -EINVAL;
+	}
+
+	/* optical_power_mW  = raw × 0.0001
+	 *                   = raw / 10000
+	 *
+	 * optical_power_dBm = 10 × log10(optical_power_mW)
+	 *
+	 * dBm = 10 * log10(raw / 10000)
+	 *     = 10 * (log10(raw) - log10(10000))
+	 *     = (10 * log10(raw)) - (10 * 4)
+	 *
+	 * intlog10() returns log10(value) scaled by 2^24. Scale the result to
+	 * hundredths of a dBm before removing the fixed-point scaling.
+	 *     = ((1000 * intlog10(raw)) >> 24) - 4000
+	 *
+	 * Round to the nearest hundredth by adding half of the 2^24 scale
+	 * after multiplying by 1000.
+	 *     = ((1000 * intlog10(raw) + (1 << 23)) >> 24) - 4000
+	 */
+
+	/* Cast to u64 to avoid overflow */
+	*dbm = ((1000 * (u64)intlog10(mw) + BIT(23)) >> 24) - 4000;
+
+	return 0;
+}
+#else
+static int optical_monitor_dbm(int mw, int *dbm)
+{
+	/* 0 is not reasonable for default dbm */
+
+	return -EOPNOTSUPP;
+}
+#endif
+
+static ssize_t optical_monitor_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+	struct sl_sysfs_optical_monitor_attribute *monitor_attr;
+	struct sl_media_lgrp                      *media_lgrp;
+	u16                                        media_value;
+	u32                                        value;
+	u32                                        media_type;
+	int                                        dbm;
+	int                                        rtn;
+
+	media_lgrp   = container_of(kobj->parent, struct sl_media_lgrp, kobj);
+	monitor_attr = container_of(kattr, struct sl_sysfs_optical_monitor_attribute, kattr);
+
+	sl_log_dbg(media_lgrp, LOG_BLOCK, LOG_NAME, "optical monitor show");
+
+	if (!sl_media_jack_is_cable_inserted(media_lgrp->media_jack)) {
+		if (sl_media_jack_is_cable_format_unsupported(media_lgrp->media_jack))
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED_FORMAT "\n");
+		return sysfs_emit(buf, SL_SYSFS_STR_NO_CABLE "\n");
+	}
+
+	rtn = sl_media_lgrp_type_get(media_lgrp, &media_type);
+	if (rtn) {
+		sl_log_err_trace(media_lgrp, LOG_BLOCK, LOG_NAME,
+				 "optical monitor show type get failed [%d]", rtn);
+		return rtn;
+	}
+
+	if (!(media_type & SL_MEDIA_TYPE_OPTICAL))
+		return sysfs_emit(buf, SL_SYSFS_STR_NOT_OPTICAL "\n");
+
+	switch (monitor_attr->type) {
+	case SL_SYSFS_TX_POWER_MW:
+	case SL_SYSFS_TX_POWER_DBM:
+		rtn = sl_media_jack_tx_power_get(media_lgrp->media_jack, monitor_attr->lane, &media_value);
+		if (rtn == -EOPNOTSUPP)
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+		if (rtn)
+			return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
+		break;
+	case SL_SYSFS_RX_POWER_MW:
+	case SL_SYSFS_RX_POWER_DBM:
+		rtn = sl_media_jack_rx_power_get(media_lgrp->media_jack, monitor_attr->lane, &media_value);
+		if (rtn == -EOPNOTSUPP)
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+		if (rtn)
+			return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
+		break;
+	case SL_SYSFS_TX_BIAS_MA:
+		rtn = sl_media_jack_tx_bias_get(media_lgrp->media_jack, monitor_attr->lane, &value);
+		if (rtn == -EOPNOTSUPP)
+			return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+		if (rtn)
+			return sysfs_emit(buf, SL_SYSFS_STR_IO_ERROR "\n");
+
+		return sysfs_emit(buf, "%u.%03u\n", value / 1000, value % 1000);
+	}
+
+	value = media_value;
+
+	if (monitor_attr->type == SL_SYSFS_TX_POWER_MW ||
+	    monitor_attr->type == SL_SYSFS_RX_POWER_MW)
+		return sysfs_emit(buf, "%u.%04u\n", value / 10000, value % 10000);
+
+	if (value == 0)
+		return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+
+	rtn = optical_monitor_dbm(value, &dbm);
+	if (rtn == -EOPNOTSUPP)
+		return sysfs_emit(buf, SL_SYSFS_STR_UNSUPPORTED "\n");
+	if (rtn)
+		return sysfs_emit(buf, SL_SYSFS_STR_ERROR "\n");
+
+	return sysfs_emit(buf, "%s%d.%02d\n", dbm < 0 ? "-" : "",
+			  abs(dbm) / 100, abs(dbm) % 100);
 }
 
 static ssize_t temperature_celsius_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -1092,6 +1278,89 @@ static struct kobj_attribute media_jack_part                        = __ATTR_RO(
 static struct kobj_attribute media_signal_cache_time                = __ATTR_RO(signal_cache_time);
 static struct kobj_attribute media_error_info                       = __ATTR_RO(error_info);
 static struct kobj_attribute media_loopback_caps                    = __ATTR_RO(loopback_caps);
+static struct kobj_attribute media_supported_monitors               = __ATTR_RO(supported_monitors);
+
+#define OPTICAL_MONITOR_ATTRIBUTE(_id, _name, _lane, _type)               \
+	static struct sl_sysfs_optical_monitor_attribute _id = {          \
+		.kattr = __ATTR(_name, 0444, optical_monitor_show, NULL), \
+		.lane = _lane,                                            \
+		.type = _type,                                            \
+	}
+
+OPTICAL_MONITOR_ATTRIBUTE(media_lane1_tx_power_mw,  tx_power_mw,  0, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane1_tx_power_dbm, tx_power_dbm, 0, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane1_rx_power_mw,  rx_power_mw,  0, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane1_rx_power_dbm, rx_power_dbm, 0, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane1_tx_bias_ma,   tx_bias_ma,   0, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane2_tx_power_mw,  tx_power_mw,  1, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane2_tx_power_dbm, tx_power_dbm, 1, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane2_rx_power_mw,  rx_power_mw,  1, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane2_rx_power_dbm, rx_power_dbm, 1, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane2_tx_bias_ma,   tx_bias_ma,   1, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane3_tx_power_mw,  tx_power_mw,  2, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane3_tx_power_dbm, tx_power_dbm, 2, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane3_rx_power_mw,  rx_power_mw,  2, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane3_rx_power_dbm, rx_power_dbm, 2, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane3_tx_bias_ma,   tx_bias_ma,   2, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane4_tx_power_mw,  tx_power_mw,  3, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane4_tx_power_dbm, tx_power_dbm, 3, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane4_rx_power_mw,  rx_power_mw,  3, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane4_rx_power_dbm, rx_power_dbm, 3, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane4_tx_bias_ma,   tx_bias_ma,   3, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane5_tx_power_mw,  tx_power_mw,  4, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane5_tx_power_dbm, tx_power_dbm, 4, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane5_rx_power_mw,  rx_power_mw,  4, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane5_rx_power_dbm, rx_power_dbm, 4, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane5_tx_bias_ma,   tx_bias_ma,   4, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane6_tx_power_mw,  tx_power_mw,  5, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane6_tx_power_dbm, tx_power_dbm, 5, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane6_rx_power_mw,  rx_power_mw,  5, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane6_rx_power_dbm, rx_power_dbm, 5, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane6_tx_bias_ma,   tx_bias_ma,   5, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane7_tx_power_mw,  tx_power_mw,  6, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane7_tx_power_dbm, tx_power_dbm, 6, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane7_rx_power_mw,  rx_power_mw,  6, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane7_rx_power_dbm, rx_power_dbm, 6, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane7_tx_bias_ma,   tx_bias_ma,   6, SL_SYSFS_TX_BIAS_MA);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane8_tx_power_mw,  tx_power_mw,  7, SL_SYSFS_TX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane8_tx_power_dbm, tx_power_dbm, 7, SL_SYSFS_TX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane8_rx_power_mw,  rx_power_mw,  7, SL_SYSFS_RX_POWER_MW);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane8_rx_power_dbm, rx_power_dbm, 7, SL_SYSFS_RX_POWER_DBM);
+OPTICAL_MONITOR_ATTRIBUTE(media_lane8_tx_bias_ma,   tx_bias_ma,   7, SL_SYSFS_TX_BIAS_MA);
+
+#define OPTICAL_MONITOR_LANE_ATTRIBUTES(_lane)                   \
+	static struct attribute *media_lane##_lane##_attrs[] = { \
+		&media_lane##_lane##_tx_power_mw.kattr.attr,     \
+		&media_lane##_lane##_tx_power_dbm.kattr.attr,    \
+		&media_lane##_lane##_rx_power_mw.kattr.attr,     \
+		&media_lane##_lane##_rx_power_dbm.kattr.attr,    \
+		&media_lane##_lane##_tx_bias_ma.kattr.attr,      \
+		NULL,                                            \
+	}
+
+OPTICAL_MONITOR_LANE_ATTRIBUTES(1);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(2);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(3);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(4);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(5);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(6);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(7);
+OPTICAL_MONITOR_LANE_ATTRIBUTES(8);
+
+#define OPTICAL_MONITOR_LANE_GROUP(_lane)                           \
+	static struct attribute_group media_lane##_lane##_group = { \
+		.name = "lane" #_lane,                              \
+		.attrs = media_lane##_lane##_attrs,                 \
+	}
+
+OPTICAL_MONITOR_LANE_GROUP(1);
+OPTICAL_MONITOR_LANE_GROUP(2);
+OPTICAL_MONITOR_LANE_GROUP(3);
+OPTICAL_MONITOR_LANE_GROUP(4);
+OPTICAL_MONITOR_LANE_GROUP(5);
+OPTICAL_MONITOR_LANE_GROUP(6);
+OPTICAL_MONITOR_LANE_GROUP(7);
+OPTICAL_MONITOR_LANE_GROUP(8);
 
 static struct attribute *media_attrs[] = {
 	&media_state.attr,
@@ -1134,11 +1403,46 @@ static struct attribute *media_attrs[] = {
 	&media_loopback_caps.attr,
 	NULL
 };
-ATTRIBUTE_GROUPS(media);
+
+static struct attribute_group media_group = {
+	.attrs = media_attrs,
+};
+
+static const struct attribute_group *media_groups[] = {
+	&media_group,
+	NULL,
+};
 
 static struct kobj_type media_info = {
 	.sysfs_ops      = &kobj_sysfs_ops,
 	.default_groups = media_groups,
+};
+
+static struct attribute *media_power_attrs[] = {
+	&media_supported_monitors.attr,
+	NULL,
+};
+
+static struct attribute_group media_power_group = {
+	.attrs = media_power_attrs,
+};
+
+static const struct attribute_group *media_power_groups[] = {
+	&media_power_group,
+	&media_lane1_group,
+	&media_lane2_group,
+	&media_lane3_group,
+	&media_lane4_group,
+	&media_lane5_group,
+	&media_lane6_group,
+	&media_lane7_group,
+	&media_lane8_group,
+	NULL,
+};
+
+static struct kobj_type media_power_info = {
+	.sysfs_ops      = &kobj_sysfs_ops,
+	.default_groups = media_power_groups,
 };
 
 static ssize_t host_interface_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
@@ -1262,9 +1566,18 @@ int sl_sysfs_media_create(struct sl_ctrl_lgrp *ctrl_lgrp)
 		return rtn;
 	}
 
+	rtn = kobject_init_and_add(&media_lgrp->power_kobj, &media_power_info, &media_lgrp->kobj, "power");
+	if (rtn) {
+		kobject_put(&media_lgrp->power_kobj);
+		kobject_put(&media_lgrp->kobj);
+		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "media power kobject_init_and_add failed [%d]", rtn);
+		return rtn;
+	}
+
 	rtn = kobject_init_and_add(&media_lgrp->parent_speed_kobj, &parent_speed_info, &media_lgrp->kobj, "speeds");
 	if (rtn) {
 		kobject_put(&media_lgrp->parent_speed_kobj);
+		kobject_put(&media_lgrp->power_kobj);
 		kobject_put(&media_lgrp->kobj);
 		sl_log_err(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "kobject_init_and_add failed [%d]", rtn);
 		return rtn;
@@ -1394,6 +1707,7 @@ void sl_sysfs_media_delete(struct sl_ctrl_lgrp *ctrl_lgrp)
 
 	media_lgrp->speeds_kobj_init = false;
 	kobject_put(&media_lgrp->parent_speed_kobj);
+	kobject_put(&media_lgrp->power_kobj);
 	kobject_put(&media_lgrp->kobj);
 #endif /* CONFIG_SYSFS */
 }

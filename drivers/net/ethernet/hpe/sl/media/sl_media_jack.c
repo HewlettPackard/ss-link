@@ -21,6 +21,7 @@
 #include "data/sl_media_data_lgrp.h"
 #include "data/sl_media_data_ldev.h"
 #include "base/sl_media_log.h"
+#include "base/sl_media_eeprom.h"
 #include "hw/sl_media_hw_power.h"
 #include "hw/sl_media_hw_cable.h"
 
@@ -419,6 +420,26 @@ int sl_media_jack_cable_temp_prev_state_get(struct sl_media_jack *media_jack, u8
 int sl_media_jack_cable_temp_get(u8 ldev_num, u8 lgrp_num, u8 *temp)
 {
 	return sl_media_data_jack_cable_temp_get((sl_media_lgrp_get(ldev_num, lgrp_num))->media_jack, temp);
+}
+
+int sl_media_jack_tx_power_get(struct sl_media_jack *media_jack, u8 lane, u16 *tx_power)
+{
+	return sl_media_hw_power_tx_get(media_jack, lane, tx_power);
+}
+
+int sl_media_jack_optical_monitors_supported_get(struct sl_media_jack *media_jack, u8 *supported)
+{
+	return sl_media_hw_power_optical_monitors_supported_get(media_jack, supported);
+}
+
+int sl_media_jack_tx_bias_get(struct sl_media_jack *media_jack, u8 lane, u32 *tx_bias_ua)
+{
+	return sl_media_hw_power_tx_bias_get(media_jack, lane, tx_bias_ua);
+}
+
+int sl_media_jack_rx_power_get(struct sl_media_jack *media_jack, u8 lane, u16 *rx_power)
+{
+	return sl_media_hw_power_rx_get(media_jack, lane, rx_power);
 }
 
 int sl_media_jack_cable_temp_warn_limit_get(u8 ldev_num, u8 lgrp_num, u8 *temp_warn_limit_c)

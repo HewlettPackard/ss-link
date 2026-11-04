@@ -40,6 +40,7 @@ struct sl_media_lgrp {
 	struct sl_media_lgrp_cable_info    *cable_info;
 
 	struct kobject                      kobj;
+	struct kobject                      power_kobj;
 	struct kobject                      parent_speed_kobj;
 	struct sl_media_lgrp_speed_kobject  speeds_kobj[SL_MEDIA_MAX_SUPPORTED_SPEEDS];
 	struct media_cable_entry            last_cable_insert_cables_kobj[SL_MEDIA_JACK_LAST_CABLE_INSERT_NUM_ENTRIES];

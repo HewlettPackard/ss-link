@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2022,2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2022-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/module.h>
 
@@ -90,6 +90,21 @@ const char *sl_media_cable_speed_state_str(u8 cable_speed_state)
 	}
 }
 EXPORT_SYMBOL(sl_media_cable_speed_state_str);
+
+const char *sl_media_mgmt_if_str(u8 format)
+{
+	switch (format) {
+	case SL_MEDIA_MGMT_IF_SFF8636:
+		return "SFF";
+	case SL_MEDIA_MGMT_IF_CMIS:
+		return "CMIS";
+	case SL_MEDIA_MGMT_IF_UNKNOWN:
+		return "unknown";
+	default:
+		return "invalid";
+	}
+}
+EXPORT_SYMBOL(sl_media_mgmt_if_str);
 
 const char *sl_media_type_str(u32 type)
 {

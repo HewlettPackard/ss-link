@@ -90,7 +90,11 @@ $(SL_NAME)-y += \
 	media/data/sl_media_data_cable_db_ops.o \
 	media/data/sl_media_cable_db_load.o     \
 	media/base/sl_media_eeprom.o            \
+	media/base/sl_media_eeprom_cmis.o       \
+	media/base/sl_media_eeprom_sff.o        \
 	media/hw/sl_media_hw_power.o            \
+	media/hw/sl_media_hw_cmis.o             \
+	media/hw/sl_media_hw_sff.o              \
 	media/hw/sl_media_hw_cable.o
 
 $(SL_NAME)-y += \

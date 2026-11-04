@@ -30,11 +30,13 @@
 #define SL_SYSFS_STR_NO_MAC             "no-mac"
 #define SL_SYSFS_STR_NO_SERDES          "no-serdes"
 #define SL_SYSFS_STR_NOT_ACTIVE         "not-active"
+#define SL_SYSFS_STR_NOT_OPTICAL        "not-optical"
 #define SL_SYSFS_STR_NOT_CROSSED        "not-crossed"
 #define SL_SYSFS_STR_NOT_MONITORING     "not-monitoring"
 #define SL_SYSFS_STR_NOT_SET            "not-set"
 #define SL_SYSFS_STR_ENABLED_CONTINUOUS "enabled-continuous"
 #define SL_SYSFS_STR_UNSUPPORTED_FORMAT "unsupported-format"
+#define SL_SYSFS_STR_UNSUPPORTED        "unsupported"
 
 struct sl_core_link;
 struct sl_core_llr;

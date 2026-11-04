@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 MAJOR=1
-MINOR=30
+MINOR=31
 
 SW_SYSFS=/sys/class/rossw
 NIC_SYSFS=/sys/class/cxi
@@ -502,6 +502,48 @@ function print_jack_counters {
         fi
 }
 
+function print_optical_monitors {
+	local path="${LGRP_PATH}/media"
+	local label="power"
+	local type
+	local lane
+	local supported_monitors
+        local tx_power_mw
+        local tx_power_dbm
+        local rx_power_mw
+        local rx_power_dbm
+        local tx_bias
+
+	type=$(cat "${path}/type")
+	case "${type}" in
+		AOC|POC|optical)
+			;;
+		*)
+			printf " %9s | %s\n" "${label}" "not-optical"
+			return
+			;;
+	esac
+
+	supported_monitors=$(cat "${path}/power/supported_monitors")
+	printf " %9s | supported monitors: %s\n" "${label}" "${supported_monitors}"
+
+        printf " %9s |  %4s | %14s %14s %14s %14s %14s\n" "" "lane" "tx (mW)" "tx (dBm)" \
+               "rx (mW)" "rx (dBm)" "tx bias (mA)"
+        printf "           |  -----+---------------------------------------------------------------------------\n"
+
+	for lane in {1..8} ; do
+                tx_power_mw=$(cat "${path}/power/lane${lane}/tx_power_mw")
+                tx_power_dbm=$(cat "${path}/power/lane${lane}/tx_power_dbm")
+                rx_power_mw=$(cat "${path}/power/lane${lane}/rx_power_mw")
+                rx_power_dbm=$(cat "${path}/power/lane${lane}/rx_power_dbm")
+                tx_bias_ma=$(cat "${path}/power/lane${lane}/tx_bias_ma")
+
+		printf "           |  %4s | %14s %14s %14s %14s %14s\n" \
+			"${lane}" "${tx_power_mw}" "${tx_power_dbm}" \
+			"${rx_power_mw}" "${rx_power_dbm}" "${tx_bias_ma}"
+	done
+}
+
 function print_jack {
         if [ ! -e ${LGRP_PATH}/media ] ; then
                 return
@@ -607,8 +649,10 @@ function print_jack {
 		printf "none "
 	fi
         printf " (max = ${max_speed})\n"
-
         printf "           | cable_loopback_caps = ${loopback_caps}\n"
+
+	print_optical_monitors
+
 	printf "           | error_info          = ${error_info}\n"
 	printf "           | last_io_fault_cause = ${last_io_fault_time}   ${last_io_fault_cause}\n"
 	printf "           | last_fault_cause    = ${last_fault_time}   ${last_fault_cause}\n"

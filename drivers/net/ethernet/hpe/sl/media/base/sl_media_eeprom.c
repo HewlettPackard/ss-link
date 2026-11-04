@@ -683,8 +683,9 @@ void sl_media_eeprom_parse(struct sl_media_jack *media_jack, struct sl_media_att
 	sl_media_eeprom_loopback_caps_get(media_jack, media_attr->type, &media_attr->loopback_caps);
 
 	sl_media_log_dbg(media_jack, LOG_NAME,
-			 "parse (format = %u, vendor = %u %s, vendor_pn_str = %s, fw = %02X.%02X)",
-			 media_attr->format, media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
+			 "parse (format = %u %s, vendor = %u %s, vendor_pn_str = %s, fw = %02X.%02X)",
+			 media_attr->format, sl_media_mgmt_if_str(media_attr->format),
+			 media_attr->vendor, sl_media_vendor_str(media_attr->vendor),
 			 media_attr->vendor_pn_str, media_attr->fw_ver[0], media_attr->fw_ver[1]);
 	sl_media_log_dbg(media_jack, LOG_NAME,
 			 "parse (type = 0x%X %s, length = %ucm, speeds_map = 0x%lX)",
