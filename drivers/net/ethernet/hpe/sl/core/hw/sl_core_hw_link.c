@@ -958,26 +958,37 @@ static int sl_core_hw_link_media_signal_get(struct sl_core_link *core_link,
 
 static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 {
-	int                                 rtn;
-	struct sl_core_link_fec_cw_cntrs    cw_cntrs;
-	struct sl_core_link_fec_lane_cntrs  lane_cntrs;
-	struct sl_core_link_fec_tail_cntrs  tail_cntrs;
-	struct sl_core_link_up_info         link_up_info;
-	u32                                 link_state;
-	struct sl_media_lgrp               *media_lgrp;
+	int                                rtn;
+	struct sl_core_link_fec_cw_cntrs   cw_cntrs;
+	struct sl_core_link_fec_lane_cntrs lane_cntrs;
+	struct sl_core_link_fec_tail_cntrs tail_cntrs;
+	struct sl_core_link_up_info        link_up_info;
+	u32                                link_state;
 
 	sl_core_log_dbg(core_link, LOG_NAME, "up success");
 
 	sl_core_timer_link_end(core_link, SL_CORE_TIMER_LINK_UP);
 
-	media_lgrp = sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num, core_link->core_lgrp->num);
+	sl_media_jack_fault_cause_clr(sl_media_lgrp_get(core_link->core_lgrp->core_ldev->num,
+							core_link->core_lgrp->num)->media_jack);
 
-	sl_media_jack_fault_cause_clr(media_lgrp->media_jack);
+	sl_ctrl_link_fec_down_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+							   core_link->core_lgrp->num, core_link->num));
 
-	sl_core_hw_intr_flgs_clr_all(core_link);
+	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
+	if (rtn) {
+		sl_core_log_warn_trace(core_link, LOG_NAME, "up success hw_fec_data_get failed [%d]", rtn);
+		sl_ctrl_link_fec_up_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+								 core_link->core_lgrp->num, core_link->num));
+	} else {
+		sl_ctrl_link_fec_up_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
+								 core_link->core_lgrp->num, core_link->num),
+						&cw_cntrs,
+						&lane_cntrs, &tail_cntrs);
+	}
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
-	if (rtn == -EAGAIN) {
+	if (rtn == -EALREADY) {
 		sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_HIGH_SER);
 		sl_core_hw_link_high_ser_intr_work_priv(core_link);
 	} else if (rtn != 0) {
@@ -1014,7 +1025,14 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 	}
 
 	rtn = sl_core_hw_intr_flgs_enable(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	if (rtn) {
+	if (rtn == -EALREADY) {
+		sl_core_log_err_trace(core_link, LOG_NAME, "up success link fault");
+		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_DOWN_MAP);
+		rtn = sl_core_link_up_fail(core_link);
+		if (rtn)
+			sl_core_log_err_trace(core_link, LOG_NAME, "link_up_fail failed [%d]", rtn);
+		return;
+	} else if (rtn) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
 				      "up success link fault enable failed [%d]", rtn);
 		sl_core_data_link_last_up_fail_cause_map_set(core_link, SL_LINK_DOWN_CAUSE_INTR_FAULT_ENABLE_MAP);
@@ -1022,19 +1040,6 @@ static void sl_core_hw_link_up_success(struct sl_core_link *core_link)
 		if (rtn)
 			sl_core_log_err_trace(core_link, LOG_NAME, "up success link_up_fail failed [%d]", rtn);
 		return;
-	}
-
-	sl_ctrl_link_fec_down_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
-		core_link->core_lgrp->num, core_link->num));
-
-	rtn = sl_core_hw_fec_data_get(core_link, &cw_cntrs, &lane_cntrs, &tail_cntrs);
-	if (rtn) {
-		sl_core_log_warn_trace(core_link, LOG_NAME, "up success w_fec_data_get failed [%d]", rtn);
-		sl_ctrl_link_fec_up_cache_clear(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, core_link->num));
-	} else {
-		sl_ctrl_link_fec_up_cache_store(sl_ctrl_link_get(core_link->core_lgrp->core_ldev->num,
-			core_link->core_lgrp->num, core_link->num), &cw_cntrs, &lane_cntrs, &tail_cntrs);
 	}
 
 	spin_lock(&core_link->link.state_lock);
@@ -1217,7 +1222,7 @@ out:
 
 	/* check to see if there were faults during up */
 	sl_core_hw_intr_flgs_check(core_link, SL_CORE_HW_INTR_LINK_FAULT);
-	sl_core_hw_intr_flgs_clr(core_link, SL_CORE_HW_INTR_LINK_FAULT);
+	sl_core_hw_intr_flgs_clr_all(core_link);
 
 	/* clear underrun */
 	sl_core_read64(core_link, SS2_PORT_PML_ERR_INFO_PCS_TX_DP, &data64);
