@@ -130,3 +130,6 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Slingshot Platform Team <hpcdev_ss_plat@hpe.com>");
 MODULE_DESCRIPTION("Slingshot Link Module");
 MODULE_VERSION(SL_VERSION_STR);
+MODULE_FIRMWARE("sl_cable_db.bin");
+MODULE_FIRMWARE("sl_fw_octet_3.08.bin");
+MODULE_FIRMWARE("sl_fw_quad_3.04.bin");
