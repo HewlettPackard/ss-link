@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #ifndef _SL_MEDIA_DATA_LGRP_H_
 #define _SL_MEDIA_DATA_LGRP_H_
@@ -10,12 +10,10 @@ int                   sl_media_data_lgrp_new(u8 ldev_num, u8 lgrp_num);
 void                  sl_media_data_lgrp_del(u8 ldev_num, u8 lgrp_num);
 struct sl_media_lgrp *sl_media_data_lgrp_get(u8 ldev_num, u8 lgrp_num);
 
-void                  sl_media_data_lgrp_connect_id_set(struct sl_media_lgrp *lgrp, const char *connect_id);
+void sl_media_data_lgrp_connect_id_set(struct sl_media_lgrp *media_lgrp, const char *connect_id);
+int  sl_media_data_lgrp_err_trace_enable_set(struct sl_media_lgrp *media_lgrp, bool err_trace_enable);
+int  sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp, bool warn_trace_enable);
 
-int                   sl_media_data_lgrp_err_trace_enable_set(struct sl_media_lgrp *media_lgrp,
-							      bool err_trace_enable);
-int                   sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp,
-							       bool warn_trace_enable);
+int  sl_media_data_lgrp_loopback_caps_get(struct sl_media_lgrp *media_lgrp, u8 *loopback_caps);
 
-int		      sl_media_data_lgrp_loopback_caps_get(struct sl_media_lgrp *media_lgrp, u8 *loopback_caps);
 #endif

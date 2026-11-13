@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2023-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/spinlock.h>
 #include <linux/slab.h>
@@ -40,6 +40,7 @@ int sl_media_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 
 	media_lgrp->speeds_kobj_init = false;
 	spin_lock_init(&media_lgrp->log_lock);
+	spin_lock_init(&media_lgrp->irq_trace_lock);
 	spin_lock_init(&media_lgrp->data_lock);
 	snprintf(media_lgrp->connect_id, sizeof(media_lgrp->connect_id), "lgrp%02u", lgrp_num);
 
@@ -104,22 +105,30 @@ void sl_media_data_lgrp_connect_id_set(struct sl_media_lgrp *media_lgrp, const c
 
 int sl_media_data_lgrp_err_trace_enable_set(struct sl_media_lgrp *media_lgrp, bool err_trace_enable)
 {
-	spin_lock(&media_lgrp->data_lock);
-	media_lgrp->err_trace_enable = err_trace_enable;
-	spin_unlock(&media_lgrp->data_lock);
+	unsigned long irq_flags;
 
-	sl_media_log_dbg(media_lgrp, LOG_NAME, "set (err_trace_enable = %s)", err_trace_enable ? "true" : "false");
+	spin_lock_irqsave(&media_lgrp->irq_trace_lock, irq_flags);
+	media_lgrp->err_trace_enable = err_trace_enable;
+	spin_unlock_irqrestore(&media_lgrp->irq_trace_lock, irq_flags);
+
+	sl_media_log_dbg(media_lgrp, LOG_NAME,
+			 "set (err_trace_enable = %s)",
+			 err_trace_enable ? "true" : "false");
 
 	return 0;
 }
 
 int sl_media_data_lgrp_warn_trace_enable_set(struct sl_media_lgrp *media_lgrp, bool warn_trace_enable)
 {
-	spin_lock(&media_lgrp->data_lock);
-	media_lgrp->warn_trace_enable = warn_trace_enable;
-	spin_unlock(&media_lgrp->data_lock);
+	unsigned long irq_flags;
 
-	sl_media_log_dbg(media_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", warn_trace_enable ? "true" : "false");
+	spin_lock_irqsave(&media_lgrp->irq_trace_lock, irq_flags);
+	media_lgrp->warn_trace_enable = warn_trace_enable;
+	spin_unlock_irqrestore(&media_lgrp->irq_trace_lock, irq_flags);
+
+	sl_media_log_dbg(media_lgrp, LOG_NAME,
+			 "set (warn_trace_enable = %s)",
+			 warn_trace_enable ? "true" : "false");
 
 	return 0;
 }

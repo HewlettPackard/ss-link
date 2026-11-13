@@ -1,94 +1,102 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2025-2026 Hewlett Packard Enterprise Development LP */
 
+#include <linux/types.h>
+#include <linux/spinlock.h>
+
 #include "base/sl_ctrl_log.h"
 #include "sl_ctrl_ldev.h"
+#include "sl_ctrl_lgrp.h"
 #include "sl_media_lgrp.h"
 #include "sl_core_lgrp.h"
-
 #include "data/sl_core_data_lgrp.h"
 #include "data/sl_media_data_lgrp.h"
+#include "data/sl_ctrl_data_lgrp.h"
+#include "data/sl_core_data_lgrp_trace.h"
+#include "data/sl_media_data_lgrp_trace.h"
 
-#include "sl_ctrl_data_lgrp.h"
+#define LOG_NAME SL_CTRL_DATA_LGRP_LOG_NAME
 
-#define LOG_NAME SL_CTRL_LGRP_LOG_NAME
-
-int sl_ctrl_data_lgrp_err_trace_enable_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_trace_enable)
+int sl_ctrl_data_lgrp_err_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_trace_enable)
 {
-	int rtn;
+	int           rtn;
+	unsigned long irq_flags;
 
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "set (err_trace_enable = %s)", err_trace_enable ? "true" : "false");
 
-	spin_lock(&ctrl_lgrp->config_lock);
+	spin_lock_irqsave(&ctrl_lgrp->irq_trace_lock, irq_flags);
 
 	//FIXME: Maybe each layer should set this separately.
 	rtn = sl_core_data_lgrp_err_trace_enable_set(sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num),
 						     err_trace_enable);
 	if (rtn) {
+		spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 		sl_ctrl_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "core trace enable set failed [%d]", rtn);
-		spin_unlock(&ctrl_lgrp->config_lock);
 		return rtn;
 	}
 
 	rtn = sl_media_data_lgrp_err_trace_enable_set(sl_media_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num),
 						      err_trace_enable);
 	if (rtn) {
+		spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 		sl_ctrl_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "media trace enable set failed [%d]", rtn);
-		spin_unlock(&ctrl_lgrp->config_lock);
 		return rtn;
 	}
 
 	ctrl_lgrp->err_trace_enable = err_trace_enable;
 
-	spin_unlock(&ctrl_lgrp->config_lock);
+	spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 
 	return 0;
 }
 
-int sl_ctrl_data_lgrp_warn_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool err_trace_enable)
+int sl_ctrl_data_lgrp_warn_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool warn_trace_enable)
 {
-	int rtn;
+	int           rtn;
+	unsigned long irq_flags;
 
-	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", err_trace_enable ? "true" : "false");
+	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", warn_trace_enable ? "true" : "false");
 
-	spin_lock(&ctrl_lgrp->config_lock);
+	spin_lock_irqsave(&ctrl_lgrp->irq_trace_lock, irq_flags);
 
 	//FIXME: Maybe each layer should set this separately.
 	rtn = sl_core_data_lgrp_warn_trace_enable_set(sl_core_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num),
-						      err_trace_enable);
+						      warn_trace_enable);
 	if (rtn) {
+		spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 		sl_ctrl_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "core trace enable set failed [%d]", rtn);
-		spin_unlock(&ctrl_lgrp->config_lock);
 		return rtn;
 	}
 
 	rtn = sl_media_data_lgrp_warn_trace_enable_set(sl_media_lgrp_get(ctrl_lgrp->ctrl_ldev->num, ctrl_lgrp->num),
-						       err_trace_enable);
+						       warn_trace_enable);
 	if (rtn) {
+		spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 		sl_ctrl_log_err_trace(ctrl_lgrp, LOG_NAME,
 				      "media trace enable set failed [%d]", rtn);
-		spin_unlock(&ctrl_lgrp->config_lock);
 		return rtn;
 	}
 
-	ctrl_lgrp->warn_trace_enable = err_trace_enable;
+	ctrl_lgrp->warn_trace_enable = warn_trace_enable;
 
-	spin_unlock(&ctrl_lgrp->config_lock);
+	spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 
 	return 0;
 }
 
 int sl_ctrl_data_lgrp_serdes_lane_io_trace_set(struct sl_ctrl_lgrp *ctrl_lgrp, bool serdes_lane_io_trace)
 {
+	unsigned long irq_flags;
+
 	sl_ctrl_log_dbg(ctrl_lgrp, LOG_NAME,
 			"set (serdes_lane_io_trace = %s)", serdes_lane_io_trace ? "enable" : "disable");
 
-	spin_lock(&ctrl_lgrp->config_lock);
+	spin_lock_irqsave(&ctrl_lgrp->irq_trace_lock, irq_flags);
 	ctrl_lgrp->serdes_lane_io_trace_enable = serdes_lane_io_trace;
-	spin_unlock(&ctrl_lgrp->config_lock);
+	spin_unlock_irqrestore(&ctrl_lgrp->irq_trace_lock, irq_flags);
 
 	return 0;
 }

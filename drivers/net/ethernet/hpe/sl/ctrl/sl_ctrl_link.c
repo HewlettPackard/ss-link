@@ -31,7 +31,7 @@
 #define SL_CTRL_LINK_DEL_WAIT_TIMEOUT_MS  2000
 
 static struct sl_ctrl_link *ctrl_links[SL_ASIC_MAX_LDEVS][SL_ASIC_MAX_LGRPS][SL_ASIC_MAX_LINKS];
-static DEFINE_SPINLOCK(ctrl_links_lock);
+static DEFINE_SPINLOCK(irq_ctrl_links_lock);
 static DECLARE_BITMAP(ctrl_links_busy, SL_ASIC_MAX_LDEVS * SL_ASIC_MAX_LGRPS * SL_ASIC_MAX_LINKS);
 
 static inline unsigned int sl_ctrl_link_busy_bit(u8 ldev_num, u8 lgrp_num, u8 link_num)
@@ -41,9 +41,10 @@ static inline unsigned int sl_ctrl_link_busy_bit(u8 ldev_num, u8 lgrp_num, u8 li
 
 int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysfs_parent)
 {
-	int                 rtn;
+	int                  rtn;
 	struct sl_ctrl_lgrp *ctrl_lgrp;
 	struct sl_ctrl_link *ctrl_link;
+	unsigned long        irq_flags;
 
 	ctrl_lgrp = sl_ctrl_lgrp_get_ref(ldev_num, lgrp_num);
 	if (!ctrl_lgrp) {
@@ -144,9 +145,9 @@ int sl_ctrl_link_new(u8 ldev_num, u8 lgrp_num, u8 link_num, struct kobject *sysf
 		}
 	}
 
-	spin_lock(&ctrl_links_lock);
+	spin_lock_irqsave(&irq_ctrl_links_lock, irq_flags);
 	ctrl_links[ldev_num][lgrp_num][link_num] = ctrl_link;
-	spin_unlock(&ctrl_links_lock);
+	spin_unlock_irqrestore(&irq_ctrl_links_lock, irq_flags);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "new (link = 0x%p)", ctrl_link);
 	clear_bit_unlock(sl_ctrl_link_busy_bit(ldev_num, lgrp_num, link_num), ctrl_links_busy);
@@ -251,10 +252,11 @@ static void sl_ctrl_link_release(struct kref *kref)
 
 static void sl_ctrl_link_remove(struct sl_ctrl_link *ctrl_link)
 {
-	u32 link_state;
-	u8  ldev_num;
-	u8  lgrp_num;
-	u8  link_num;
+	u32           link_state;
+	u8            ldev_num;
+	u8            lgrp_num;
+	u8            link_num;
+	unsigned long irq_flags;
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "remove (link = 0x%p)", ctrl_link);
 
@@ -307,9 +309,9 @@ static void sl_ctrl_link_remove(struct sl_ctrl_link *ctrl_link)
 	sl_ctrl_link_cause_counters_del(ctrl_link);
 	sl_ctrl_link_an_cause_counters_del(ctrl_link);
 
-	spin_lock(&ctrl_links_lock);
+	spin_lock_irqsave(&irq_ctrl_links_lock, irq_flags);
 	ctrl_links[ldev_num][lgrp_num][link_num] = NULL;
-	spin_unlock(&ctrl_links_lock);
+	spin_unlock_irqrestore(&irq_ctrl_links_lock, irq_flags);
 
 	kfree(ctrl_link);
 }
@@ -324,6 +326,7 @@ int sl_ctrl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	struct sl_ctrl_link *ctrl_link;
 	int                  rtn;
 	unsigned long        timeleft_jiffies;
+	unsigned long        irq_flags;
 
 	sl_ctrl_log_dbg(NULL, LOG_NAME, "link del (ldev_num = %u, lgrp_num = %u, link_num = %u)",
 		ldev_num, lgrp_num, link_num);
@@ -335,9 +338,9 @@ int sl_ctrl_link_del(u8 ldev_num, u8 lgrp_num, u8 link_num)
 		return -EBADRQC;
 	}
 
-	spin_lock(&ctrl_links_lock);
+	spin_lock_irqsave(&irq_ctrl_links_lock, irq_flags);
 	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
-	spin_unlock(&ctrl_links_lock);
+	spin_unlock_irqrestore(&irq_ctrl_links_lock, irq_flags);
 	if (!ctrl_link) {
 		sl_ctrl_log_err_trace(NULL, LOG_NAME,
 			"link del link not found (ldev_num = %u, lgrp_num = %u, link_num = %u)",
@@ -373,10 +376,11 @@ out:
 struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	struct sl_ctrl_link *ctrl_link;
+	unsigned long        irq_flags;
 
-	spin_lock(&ctrl_links_lock);
+	spin_lock_irqsave(&irq_ctrl_links_lock, irq_flags);
 	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
-	spin_unlock(&ctrl_links_lock);
+	spin_unlock_irqrestore(&irq_ctrl_links_lock, irq_flags);
 
 	return ctrl_link;
 }
@@ -384,8 +388,9 @@ struct sl_ctrl_link *sl_ctrl_link_get(u8 ldev_num, u8 lgrp_num, u8 link_num)
 struct sl_ctrl_link *sl_ctrl_link_get_ref(u8 ldev_num, u8 lgrp_num, u8 link_num)
 {
 	struct sl_ctrl_link *ctrl_link;
+	unsigned long        irq_flags;
 
-	spin_lock(&ctrl_links_lock);
+	spin_lock_irqsave(&irq_ctrl_links_lock, irq_flags);
 	ctrl_link = ctrl_links[ldev_num][lgrp_num][link_num];
 
 	/* If we are busy we are deleting/creating the object */
@@ -393,7 +398,7 @@ struct sl_ctrl_link *sl_ctrl_link_get_ref(u8 ldev_num, u8 lgrp_num, u8 link_num)
 	    !kref_get_unless_zero(&ctrl_link->ref_cnt)))
 		ctrl_link = NULL;
 
-	spin_unlock(&ctrl_links_lock);
+	spin_unlock_irqrestore(&irq_ctrl_links_lock, irq_flags);
 
 	sl_ctrl_log_dbg(ctrl_link, LOG_NAME, "get ref (link = 0x%p)", ctrl_link);
 

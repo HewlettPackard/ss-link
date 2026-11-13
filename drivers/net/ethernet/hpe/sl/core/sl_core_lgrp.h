@@ -32,6 +32,7 @@ struct sl_core_lgrp {
 
 	spinlock_t                      log_lock;
 	char                            log_connect_id[SL_LOG_CONNECT_ID_LEN + 1];
+	spinlock_t                      irq_trace_lock;  /* for trace logging */
 
 	// FIXME: maybe make this a state?
 	u8                              is_configuring;

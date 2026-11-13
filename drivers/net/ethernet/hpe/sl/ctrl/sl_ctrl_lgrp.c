@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright 2021-2023,2024,2025 Hewlett Packard Enterprise Development LP */
+/* Copyright 2021-2026 Hewlett Packard Enterprise Development LP */
 
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
@@ -75,6 +75,7 @@ int sl_ctrl_lgrp_new(u8 ldev_num, u8 lgrp_num, struct kobject *sysfs_parent)
 	spin_lock_init(&ctrl_lgrp->data_lock);
 	spin_lock_init(&ctrl_lgrp->config_lock);
 	spin_lock_init(&ctrl_lgrp->log_lock);
+	spin_lock_init(&ctrl_lgrp->irq_trace_lock);
 
 	spin_lock_init(&(ctrl_lgrp->ctrl_notif.lock));
 
