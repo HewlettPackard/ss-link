@@ -38,6 +38,7 @@ struct sl_ctrl_lgrp {
 
 	char                             log_connect_id[SL_LOG_CONNECT_ID_LEN + 1];
 	spinlock_t                       log_lock;
+	spinlock_t                       irq_trace_lock;  /* for trace logging */
 
 	struct sl_ctrl_ldev             *ctrl_ldev;
 

@@ -23,6 +23,7 @@
 #include "sl_media_jack.h"
 #include "data/sl_core_data_link.h"
 #include "data/sl_core_data_lgrp.h"
+#include "data/sl_core_data_lgrp_trace.h"
 #include "data/sl_ctrl_data_lgrp_trace.h"
 
 #define LOG_NAME SL_CORE_SERDES_LOG_NAME

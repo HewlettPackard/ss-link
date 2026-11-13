@@ -11,6 +11,7 @@
 #define SL_CTRL_MEDIA_LOG_NAME      "media"
 #define SL_CTRL_LDEV_LOG_NAME       "ldev"
 #define SL_CTRL_LGRP_LOG_NAME       "lgrp"
+#define SL_CTRL_DATA_LGRP_LOG_NAME  "d-lgrp"
 #define SL_CTRL_LGRP_NOTIF_LOG_NAME "lgrp-ntf"
 #define SL_CTRL_LINK_LOG_NAME       "link"
 #define SL_CTRL_LINK_FEC_LOG_NAME   "link-fec"

@@ -43,8 +43,9 @@ int sl_core_data_lgrp_new(u8 ldev_num, u8 lgrp_num)
 	core_lgrp->core_ldev = sl_core_data_ldev_get(ldev_num);
 	core_lgrp->num       = lgrp_num;
 	snprintf(core_lgrp->log_connect_id, sizeof(core_lgrp->log_connect_id), "core-lgrp%02u", lgrp_num);
-	spin_lock_init(&(core_lgrp->log_lock));
-	spin_lock_init(&(core_lgrp->data_lock));
+	spin_lock_init(&core_lgrp->log_lock);
+	spin_lock_init(&core_lgrp->irq_trace_lock);
+	spin_lock_init(&core_lgrp->data_lock);
 
 	if (SL_PLATFORM_IS_HARDWARE(core_lgrp->core_ldev)) {
 		rtn = core_lgrp->core_ldev->ops.dt_info_get(core_lgrp->core_ldev->accessors.dt,
@@ -223,50 +224,62 @@ void sl_core_data_lgrp_config_set(struct sl_core_lgrp *core_lgrp, struct sl_lgrp
 	}
 }
 
-u32 sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp)
-{
-	u32 flags;
-
-	spin_lock(&core_lgrp->data_lock);
-	flags = core_lgrp->config.options;
-	spin_unlock(&core_lgrp->data_lock);
-
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "config flags get (flags = 0x%X)", flags);
-
-	return flags;
-}
-
 int sl_core_data_lgrp_err_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool err_trace_enable)
 {
-	spin_lock(&core_lgrp->data_lock);
-	core_lgrp->err_trace_enable = err_trace_enable;
-	spin_unlock(&core_lgrp->data_lock);
+	unsigned long irq_flags;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (err_trace_enable = %s)", err_trace_enable ? "true" : "false");
+	spin_lock_irqsave(&core_lgrp->irq_trace_lock, irq_flags);
+	core_lgrp->err_trace_enable = err_trace_enable;
+	spin_unlock_irqrestore(&core_lgrp->irq_trace_lock, irq_flags);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+			"set (err_trace_enable = %s)",
+			err_trace_enable ? "true" : "false");
 
 	return 0;
 }
 
 int sl_core_data_lgrp_warn_trace_enable_set(struct sl_core_lgrp *core_lgrp, bool warn_trace_enable)
 {
-	spin_lock(&core_lgrp->data_lock);
-	core_lgrp->warn_trace_enable = warn_trace_enable;
-	spin_unlock(&core_lgrp->data_lock);
+	unsigned long irq_flags;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (warn_trace_enable = %s)", warn_trace_enable ? "true" : "false");
+	spin_lock_irqsave(&core_lgrp->irq_trace_lock, irq_flags);
+	core_lgrp->warn_trace_enable = warn_trace_enable;
+	spin_unlock_irqrestore(&core_lgrp->irq_trace_lock, irq_flags);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+			"set (warn_trace_enable = %s)",
+			warn_trace_enable ? "true" : "false");
 
 	return 0;
 }
 
 int sl_core_data_lgrp_io_trace_set(struct sl_core_lgrp *core_lgrp, bool io_trace)
 {
-	spin_lock(&core_lgrp->data_lock);
-	core_lgrp->io_trace = io_trace;
-	spin_unlock(&core_lgrp->data_lock);
+	unsigned long irq_flags;
 
-	sl_core_log_dbg(core_lgrp, LOG_NAME, "set (io_trace = %s)", io_trace ? "enabled" : "disabled");
+	spin_lock_irqsave(&core_lgrp->irq_trace_lock, irq_flags);
+	core_lgrp->io_trace = io_trace;
+	spin_unlock_irqrestore(&core_lgrp->irq_trace_lock, irq_flags);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME,
+			"set (io_trace = %s)",
+			io_trace ? "enabled" : "disabled");
 
 	return 0;
+}
+
+u32 sl_core_data_lgrp_config_flags_get(struct sl_core_lgrp *core_lgrp)
+{
+	u32 options;
+
+	spin_lock(&core_lgrp->data_lock);
+	options = core_lgrp->config.options;
+	spin_unlock(&core_lgrp->data_lock);
+
+	sl_core_log_dbg(core_lgrp, LOG_NAME, "config flags get (options = 0x%X)", options);
+
+	return options;
 }
 
 int sl_core_data_lgrp_furcation_get(struct sl_core_lgrp *core_lgrp, u32 *lgrp_furcation)

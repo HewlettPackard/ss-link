@@ -4,8 +4,9 @@
 #ifndef _SL_CORE_DATA_LGRP_H_
 #define _SL_CORE_DATA_LGRP_H_
 
-#include "sl_core_lgrp.h"
+#include <linux/types.h>
 
+struct sl_core_lgrp;
 struct sl_hw_attr;
 struct sl_lgrp_config;
 

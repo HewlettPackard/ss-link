@@ -8,6 +8,7 @@
 #include "sl_log.h"
 #include "sl_common.h"
 #include "sl_sysfs.h"
+#include "sl_ctrl_lgrp.h"
 #include "data/sl_ctrl_data_lgrp.h"
 #include "data/sl_ctrl_data_lgrp_trace.h"
 
@@ -259,7 +260,7 @@ static ssize_t err_trace_enable_store(struct kobject *kobj, struct kobj_attribut
 	sl_log_dbg(ctrl_lgrp, LOG_BLOCK, LOG_NAME, "err trace enable store (val = %u)", val);
 
 	//FIXME: This sets ctrl, core, and media layers
-	rtn = sl_ctrl_data_lgrp_err_trace_enable_set(ctrl_lgrp, val);
+	rtn = sl_ctrl_data_lgrp_err_trace_set(ctrl_lgrp, val);
 	if (rtn) {
 		sl_log_err_trace(ctrl_lgrp, LOG_BLOCK, LOG_NAME,
 				 "err trace enable store failed [%d]", rtn);

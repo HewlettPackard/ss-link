@@ -261,6 +261,7 @@ int sl_core_hw_an_base_page_send(struct sl_core_link *core_link)
 			"base page send intr enable failed [%d]", rtn);
 		sl_core_data_link_an_fail_cause_set(core_link,
 			SL_CORE_HW_AN_FAIL_CAUSE_BP_SEND_INTR_ENABLE_FAIL);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return rtn;
 	}
 
@@ -295,16 +296,16 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE(core_link->num), &data64);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"base page store (port = %u, pg %u = 0x%016llX, state = %llu)",
-		port, core_link->an.page_num, data64,
-		SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64));
+			"base page store (port = %u, pg %u = 0x%016llX, state = %llu)",
+			port, core_link->an.page_num, data64,
+			SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64));
 
 	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
 	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
 		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"base page store bad state (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "base page store bad state (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
@@ -312,20 +313,20 @@ static void sl_core_hw_an_base_page_store(struct sl_core_link *core_link)
 
 	if (!SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_LP_ABILITY_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"base page store lp ability not set (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "base page store lp ability not set (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link,
-			SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_LP_ABILITY_NOT_SET);
+						    SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_LP_ABILITY_NOT_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
 
 	if (!SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_BASE_PAGE_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"base page store base page not set (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "base page store base page not set (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link,
-			SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_BP_NOT_SET);
+						    SL_CORE_HW_AN_FAIL_CAUSE_BP_STORE_BP_NOT_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
 	}
@@ -357,16 +358,16 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE(core_link->num), &data64);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"next page store (port = %u, pg %u = 0x%016llX, state = %llu)",
-		port, core_link->an.page_num, data64,
-		SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_STATE_GET(data64));
+			"next page store (port = %u, pg %u = 0x%016llX, state = %llu)",
+			port, core_link->an.page_num, data64,
+			SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_STATE_GET(data64));
 
 	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
 	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
 		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"next page store bad state (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "next page store bad state (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
@@ -374,10 +375,10 @@ static void sl_core_hw_an_next_page_store(struct sl_core_link *core_link)
 
 	if (SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE_BASE_PAGE_GET(data64)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"next page store base page set (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "next page store base page set (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link,
-			SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_BP_SET);
+						    SL_CORE_HW_AN_FAIL_CAUSE_NP_STORE_BP_SET);
 		core_link->an.state = SL_CORE_HW_AN_STATE_RETRY;
 		return;
 	}
@@ -409,14 +410,14 @@ static void sl_core_hw_an_next_page_check(struct sl_core_link *core_link)
 	sl_core_read64(core_link, SS2_PORT_PML_STS_PCS_AUTONEG_NEXT_PAGE(core_link->num), &data64);
 
 	sl_core_log_dbg(core_link, LOG_NAME,
-		"next page check (port = %u, data = 0x%016llX)", port, data64);
+			"next page check (port = %u, data = 0x%016llX)", port, data64);
 
 	state = SS2_PORT_PML_STS_PCS_AUTONEG_BASE_PAGE_STATE_GET(data64);
 	if ((state != SL_CORE_HW_AN_STATE_COMPLETE_ACK) &&
 		(state != SL_CORE_HW_AN_STATE_AN_GOOD_CHECK)) {
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"next page check bad state (pg %u = 0x%016llX)",
-			core_link->an.page_num, data64);
+				      "next page check bad state (pg %u = 0x%016llX)",
+				      core_link->an.page_num, data64);
 		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_NP_CHECK_STATE_BAD);
 		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return;
@@ -455,6 +456,7 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 		sl_core_log_err_trace(core_link, LOG_NAME, "rx pages decode no base page");
 		sl_core_data_link_an_fail_cause_set(core_link,
 						    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_NO_BP);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		return -EIO;
 	}
 	pause_map  = (core_link->an.rx_pages[0] >> SL_CORE_HW_AN_BP_PAUSE_SHIFT);
@@ -476,6 +478,7 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 						      "rx pages decode incomplete oui");
 				sl_core_data_link_an_fail_cause_set(core_link,
 								    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
+				core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 				return -EIO;
 			}
 			switch (AN_OUI_VER_GET(core_link->an.rx_pages[x])) {
@@ -492,6 +495,7 @@ int sl_core_hw_an_rx_pages_decode(struct sl_core_link *core_link,
 						      AN_OUI_VER_GET(core_link->an.rx_pages[x]));
 				sl_core_data_link_an_fail_cause_set(core_link,
 								    SL_CORE_HW_AN_FAIL_CAUSE_PAGES_DECODE_OUI_INVALID);
+				core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 				return -EIO;
 			}
 			break;
@@ -545,8 +549,9 @@ static void sl_core_hw_an_page_recv_intr(struct sl_core_link *core_link)
 		break;
 	default:
 		sl_core_log_err_trace(core_link, LOG_NAME,
-			"page recv intr invalid (state = %u)", core_link->an.state);
+				      "page recv intr invalid (state = %u)", core_link->an.state);
 		sl_core_data_link_an_fail_cause_set(core_link, SL_CORE_HW_AN_FAIL_CAUSE_INTR_STATE_INVALID);
+		core_link->an.state = SL_CORE_HW_AN_STATE_ERROR;
 		goto out;
 	}
 
